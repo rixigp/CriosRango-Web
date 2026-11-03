@@ -413,7 +413,18 @@ jobs:
               ;;
           esac
 
+      - name: Diagnose FTP TLS certificate
+        shell: bash
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+        run: |
+          set -euo pipefail
+          openssl s_client -starttls ftp -connect "$SFTP_HOST:$SFTP_PORT" -servername "$SFTP_HOST" </dev/null 2>/dev/null \
+            | openssl x509 -noout -subject -issuer -ext subjectAltName
+
       - name: Deploy theme by FTP
+        if: ${{ false }} # Diagnostic commit: intentionally suppress deployment.
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
