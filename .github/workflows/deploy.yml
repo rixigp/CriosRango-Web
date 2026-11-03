@@ -347,7 +347,7 @@ jobs:
             git push origin HEAD:main
           fi
 
-      - name: Install validation and SFTP tools
+      - name: Install validation and FTP tools
         shell: bash
         run: |
           set -euo pipefail
@@ -373,7 +373,7 @@ jobs:
           find theme/crios-rango-2026 -type f -name "*.php" -print0 \
             | xargs -0 -r -n1 php -l
 
-      - name: Validate SFTP configuration
+      - name: Validate FTP configuration
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
@@ -398,6 +398,11 @@ jobs:
               ;;
           esac
 
+          if [ "$SFTP_PORT" != "21" ]; then
+            echo "ERROR: FTP deployment requires SFTP_PORT=21."
+            exit 1
+          fi
+
           case "$SFTP_PATH" in
             */wp-content/themes/crios-rango-2026/|*/wp-content/themes/crios-rango-2026)
               echo "Remote theme path validated."
@@ -408,7 +413,7 @@ jobs:
               ;;
           esac
 
-      - name: Deploy theme by SFTP
+      - name: Deploy theme by FTP
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
@@ -421,10 +426,10 @@ jobs:
 
           lftp <<LFTP_CMDS
           set cmd:fail-exit yes
-          set net:max-retries 1
+          set ftp:passive-mode true
+          set net:max-retries 2
           set net:timeout 20
-          set sftp:auto-confirm yes
-          open -p "$SFTP_PORT" -u "$SFTP_USER","$SFTP_PASSWORD" "sftp://$SFTP_HOST"
+          open -p "$SFTP_PORT" -u "$SFTP_USER","$SFTP_PASSWORD" "ftp://$SFTP_HOST"
           mirror --reverse --verbose ./theme/crios-rango-2026/ "$SFTP_PATH"
           bye
           LFTP_CMDS
