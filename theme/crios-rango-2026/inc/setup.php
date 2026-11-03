@@ -11,7 +11,16 @@ function cr2026_setup() {
     add_theme_support( 'responsive-embeds' );
     add_theme_support( 'align-wide' );
     add_theme_support( 'editor-styles' );
-    add_theme_support( 'html5', array( 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption', 'style', 'script' ) );
+    add_theme_support( 'html5', array(
+        'search-form',
+        'comment-form',
+        'comment-list',
+        'gallery',
+        'caption',
+        'style',
+        'script',
+    ) );
+
     add_theme_support( 'custom-logo', array(
         'height'      => 180,
         'width'       => 520,
@@ -35,3 +44,20 @@ function cr2026_content_width() {
     $GLOBALS['content_width'] = 1280;
 }
 add_action( 'after_setup_theme', 'cr2026_content_width', 0 );
+
+/**
+ * WordPress añade sizes="auto" a imágenes lazy y puede aplicar un
+ * contain-intrinsic-size muy grande mientras la imagen no está disponible.
+ *
+ * En la Home tenemos imágenes de categorías lazy. En staging algunas están
+ * temporalmente rotas/no disponibles, por lo que desactivamos auto-sizes
+ * únicamente en la portada para impedir cambios artificiales de layout.
+ */
+function cr2026_disable_auto_sizes_on_home( $enabled ) {
+    if ( is_front_page() ) {
+        return false;
+    }
+
+    return $enabled;
+}
+add_filter( 'wp_img_tag_add_auto_sizes', 'cr2026_disable_auto_sizes_on_home' );
