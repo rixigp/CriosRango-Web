@@ -403,28 +403,13 @@ jobs:
             exit 1
           fi
 
-          case "$SFTP_PATH" in
-            */wp-content/themes/crios-rango-2026/|*/wp-content/themes/crios-rango-2026)
-              echo "Remote theme path validated."
-              ;;
-            *)
-              echo "ERROR: SFTP_PATH is not the authorized theme path."
-              exit 1
-              ;;
-          esac
-
-      - name: Diagnose FTP TLS certificate
-        shell: bash
-        env:
-          SFTP_HOST: ${{ secrets.SFTP_HOST }}
-          SFTP_PORT: ${{ secrets.SFTP_PORT }}
-        run: |
-          set -euo pipefail
-          openssl s_client -starttls ftp -connect "$SFTP_HOST:$SFTP_PORT" -servername "$SFTP_HOST" </dev/null 2>/dev/null \
-            | openssl x509 -noout -subject -issuer -ext subjectAltName
+          if [[ "$SFTP_PATH" != *"/wp-content/themes/crios-rango-2026/"* ]]; then
+            echo "ERROR: SFTP_PATH must contain /wp-content/themes/crios-rango-2026/."
+            exit 1
+          fi
+          echo "Remote theme path validated."
 
       - name: Deploy theme by FTP
-        if: ${{ false }} # Diagnostic commit: intentionally suppress deployment.
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
@@ -440,6 +425,9 @@ jobs:
           set ftp:passive-mode true
           set net:max-retries 2
           set net:timeout 20
+          set ftp:ssl-force true
+          set ftp:ssl-protect-data true
+          set ssl:verify-certificate true
           open -p "$SFTP_PORT" -u "$SFTP_USER","$SFTP_PASSWORD" "ftp://$SFTP_HOST"
           mirror --reverse --verbose ./theme/crios-rango-2026/ "$SFTP_PATH"
           bye
