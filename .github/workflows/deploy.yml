@@ -420,15 +420,24 @@ jobs:
         run: |
           set -euo pipefail
 
-          lftp <<LFTP_CMDS
-          set cmd:fail-exit yes
-          set ftp:passive-mode true
-          set net:max-retries 2
-          set net:timeout 20
-          set ftp:ssl-force true
-          set ftp:ssl-protect-data true
-          set ssl:verify-certificate true
-          open -p "$SFTP_PORT" -u "$SFTP_USER","$SFTP_PASSWORD" "ftp://$SFTP_HOST"
-          mirror --reverse --verbose ./theme/crios-rango-2026/ "$SFTP_PATH"
-          bye
-          LFTP_CMDS
+          LOCAL_ROOT="./theme/crios-rango-2026"
+          REMOTE_ROOT="${SFTP_PATH%/}"
+
+          find "$LOCAL_ROOT" -type f -print0 |
+          while IFS= read -r -d '' FILE; do
+              RELATIVE="${FILE#"$LOCAL_ROOT"/}"
+
+              echo "Uploading: $RELATIVE"
+
+              curl \
+                --silent \
+                --show-error \
+                --ssl-reqd \
+                --ftp-pasv \
+                --ftp-create-dirs \
+                --connect-timeout 20 \
+                --retry 2 \
+                --user "${SFTP_USER}:${SFTP_PASSWORD}" \
+                --upload-file "$FILE" \
+                "ftp://${SFTP_HOST}:${SFTP_PORT}${REMOTE_ROOT}/${RELATIVE}"
+          done
