@@ -1,0 +1,49 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
+$is_app_home = is_front_page();
+$outlet_term = get_term_by( 'slug', 'outlet', 'product_cat' );
+$outlet_url  = ( $outlet_term && ! is_wp_error( $outlet_term ) ) ? get_term_link( $outlet_term ) : home_url( '/categoria-producto/outlet/' );
+if ( is_wp_error( $outlet_url ) ) {
+    $outlet_url = home_url( '/categoria-producto/outlet/' );
+}
+?>
+<?php if ( ! $is_app_home ) : ?>
+<footer class="cr-footer">
+    <div class="cr-shell cr-footer__grid">
+        <div>
+            <div class="cr-footer__brand">Críos &amp; Rango</div>
+            <p><?php esc_html_e( 'Moda para crecer, jugar y disfrutar.', 'crios-rango-2026' ); ?></p>
+        </div>
+        <nav aria-label="<?php esc_attr_e( 'Navegación del pie', 'crios-rango-2026' ); ?>">
+            <?php
+            wp_nav_menu( array(
+                'theme_location' => 'footer',
+                'container'      => false,
+                'menu_class'     => 'cr-footer__menu',
+                'fallback_cb'    => false,
+            ) );
+            ?>
+        </nav>
+        <div class="cr-footer__legal">
+            <a href="<?php echo esc_url( home_url( '/aviso-legal/' ) ); ?>"><?php esc_html_e( 'Aviso legal', 'crios-rango-2026' ); ?></a>
+            <a href="<?php echo esc_url( home_url( '/politica-de-privacidad/' ) ); ?>"><?php esc_html_e( 'Privacidad', 'crios-rango-2026' ); ?></a>
+            <a href="<?php echo esc_url( home_url( '/politica-de-cookies/' ) ); ?>"><?php esc_html_e( 'Cookies', 'crios-rango-2026' ); ?></a>
+        </div>
+    </div>
+    <div class="cr-shell cr-footer__bottom">© <?php echo esc_html( gmdate( 'Y' ) ); ?> Críos &amp; Rango</div>
+</footer>
+<?php endif; ?>
+
+<nav class="cr-mobile-bottom-nav cr-app-bottom-nav" aria-label="<?php esc_attr_e( 'Navegación móvil', 'crios-rango-2026' ); ?>">
+    <a class="<?php echo $is_app_home ? 'is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php echo cr2026_icon( 'home' ); ?><span><?php esc_html_e( 'Inicio', 'crios-rango-2026' ); ?></span></a>
+    <a href="<?php echo esc_url( $is_app_home ? '#categorias' : home_url( '/#categorias' ) ); ?>"><?php echo cr2026_icon( 'grid' ); ?><span><?php esc_html_e( 'Categorías', 'crios-rango-2026' ); ?></span></a>
+    <a href="<?php echo esc_url( $outlet_url ); ?>"><?php echo cr2026_icon( 'tag' ); ?><span><?php esc_html_e( 'Outlet', 'crios-rango-2026' ); ?></span></a>
+    <a class="cr-mobile-bottom-nav__cart" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>"><?php echo cr2026_icon( 'bag' ); ?><span><?php esc_html_e( 'Carrito', 'crios-rango-2026' ); ?></span><span class="cr-cart-count" data-cr-cart-count><?php echo esc_html( cr2026_cart_count() ); ?></span></a>
+    <a href="<?php echo esc_url( function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : home_url( '/mi-cuenta/' ) ); ?>"><?php echo cr2026_icon( 'user' ); ?><span><?php esc_html_e( 'Cuenta', 'crios-rango-2026' ); ?></span></a>
+</nav>
+<?php wp_footer(); ?>
+</body>
+</html>
