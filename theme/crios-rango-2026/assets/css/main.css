@@ -743,8 +743,8 @@ body.home .cr-mobile-bottom-nav .cr-cart-count {
     font-weight: 400;
   }
   body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
-    font-weight: 600;
-    color: #000;
+    font-weight: 400;
+    color: #111;
   }
   body.home .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-icon {
     width: 24px;
@@ -1299,7 +1299,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   body.home .cr-app-section-title {
     font-size: 22px;
     line-height: 28px;
-    font-weight: 500;
+    font-weight: 400;
     letter-spacing: 0;
   }
   body.home .cr-app-category__label {
@@ -1311,7 +1311,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   body.home .cr-home-section__header h2 {
     font-size: 22px;
     line-height: 28px;
-    font-weight: 500;
+    font-weight: 400;
     color: #183B35;
   }
   body.home .cr-home-section__header > a {
@@ -1323,22 +1323,22 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     border: 0;
   }
   body.home .cr-home-product__name {
-    font-size: 14px;
-    line-height: 19px;
+    font-size: 16px;
+    line-height: 22px;
     font-weight: 400;
     -webkit-line-clamp: 2;
     min-height: 38px;
   }
   body.home .cr-home-product__price {
-    font-size: 15px;
-    line-height: 20px;
-    font-weight: 500;
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 400;
     color: #183B35;
   }
   body.home .cr-home-outlet-card__copy strong {
     font-size: 16px;
-    line-height: 20px;
-    font-weight: 500;
+    line-height: 22px;
+    font-weight: 400;
   }
   body.home .cr-home-outlet-card__copy > span {
     font-size: 15px;
@@ -1352,7 +1352,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     color: #777277;
   }
   body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
-    font-weight: 600;
+    font-weight: 400;
     color: #111;
   }
 }
@@ -1661,7 +1661,8 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     font-size: 22px;
     line-height: 28px;
     font-weight: 400;
-  }
+  
+    color: #183B35;}
   body.home .cr-home-section__header > a {
     font-size: 14px;
     line-height: 20px;
@@ -1671,21 +1672,21 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     border: 0;
   }
   body.home .cr-home-product__name {
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 16px;
+    line-height: 22px;
     font-weight: 400;
     -webkit-line-clamp: 2;
     min-height: 40px;
   }
   body.home .cr-home-product__price {
-    font-size: 15px;
-    line-height: 20px;
+    font-size: 16px;
+    line-height: 22px;
     font-weight: 400;
     color: #183B35;
   }
   body.home .cr-home-outlet-card__copy strong {
     font-size: 16px;
-    line-height: 21px;
+    line-height: 22px;
     font-weight: 400;
   }
   body.home .cr-home-outlet-card__copy > span {
@@ -1694,7 +1695,8 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     font-weight: 400;
   }
   body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a { font-size: 11px; font-weight: 400; }
-  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active { font-weight: 600; }
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active { font-weight: 400; 
+    color: #111;}
   body.home .cr-home-mark { width: 44px; height: 44px; }
   body.home .cr-home-mark img,
   body.home .cr-home-mark .custom-logo,
@@ -1725,7 +1727,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   body.home .cr-app-section-title {
     font-size: 22px;
     line-height: 28px;
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: 0;
   }
   body.home .cr-app-category__label {
@@ -1742,14 +1744,14 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   body.home .cr-home-section__header h2 {
     font-size: 22px;
     line-height: 28px;
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: 0;
     color: #183B35;
   }
   body.home .cr-home-section__header > a {
     font-size: 14px;
     line-height: 20px;
-    font-weight: 500;
+    font-weight: 400;
     letter-spacing: 0;
     color: #D18162;
     background: transparent;
@@ -1769,26 +1771,26 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   }
   body.home .cr-home-novedades .cr-home-product__name {
     font-size: 16px;
-    line-height: 24px;
-    font-weight: 600;
+    line-height: 22px;
+    font-weight: 400;
     letter-spacing: 0;
     -webkit-line-clamp: 2;
     min-height: 48px;
   }
   body.home .cr-home-novedades .cr-home-product__price {
     font-size: 16px;
-    line-height: 24px;
-    font-weight: 700;
+    line-height: 22px;
+    font-weight: 400;
     letter-spacing: 0;
     color: #183B35;
   }
   body.home .cr-home-outlet-card__copy strong {
     font-size: 16px;
-    line-height: 24px;
-    font-weight: 600;
+    line-height: 22px;
+    font-weight: 400;
   }
   body.home .cr-home-outlet-card__copy > span {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 20px;
     font-weight: 400;
   }
