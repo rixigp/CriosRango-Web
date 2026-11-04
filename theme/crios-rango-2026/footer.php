@@ -42,7 +42,7 @@ $is_account_active = 'account' === $active_nav_item;
 </footer>
 <?php endif; ?>
 
-<?php if ( $is_app_nav_shell && ! $is_app_categories_hub ) : ?>
+<?php if ( $is_app_nav_shell ) : ?>
 <nav class="cr-desktop-rail" aria-label="<?php esc_attr_e( 'Navegación principal', 'crios-rango-2026' ); ?>">
     <a class="cr-desktop-rail__brand" href="<?php echo esc_url( $nav_urls['home'] ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
         <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/brand/home_logo.png' ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="42" height="42" decoding="async">
