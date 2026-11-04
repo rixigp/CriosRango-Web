@@ -7,7 +7,8 @@ if ( function_exists( 'is_shop' ) && is_shop() ) {
     ?>
     <main id="primary" class="cr-main cr-main--woocommerce cr-category-hub">
       <div class="cr-category-hub__shell">
-        <h1 class="cr-category-hub__title"><?php esc_html_e( 'Categorías', 'crios-rango-2026' ); ?></h1>
+        <div class="cr-parent-category__toolbar cr-category-hub__toolbar"><a class="cr-parent-category__back" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Volver', 'crios-rango-2026' ); ?>"><?php echo cr2026_icon( 'arrow' ); ?></a><h1 class="cr-parent-category__title"><?php esc_html_e( 'Categorías', 'crios-rango-2026' ); ?></h1><button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog"><?php esc_html_e( 'Filtros', 'crios-rango-2026' ); ?></button></div>
+        <?php cr2026_render_category_filter_sheet( null, 'root' ); ?>
         <div class="cr-app-category-grid cr-category-hub__grid">
         <?php foreach ( $categories as $category ) :
           $term = get_term( (int) $category['id'], 'product_cat' );
