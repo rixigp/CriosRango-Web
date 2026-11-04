@@ -238,6 +238,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .cr-footer__menu, .cr-footer__legal { display: flex; flex-direction: column; gap: 10px; }
 .cr-footer__bottom { margin-top: 42px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.14); font-size: .85rem; }
 .cr-mobile-bottom-nav { display: none; }
+.cr-desktop-rail { display: none; }
 
 /* WooCommerce: capa visual sin overrides de templates. */
 .cr-main--woocommerce { padding-block: clamp(30px, 5vw, 70px); }
