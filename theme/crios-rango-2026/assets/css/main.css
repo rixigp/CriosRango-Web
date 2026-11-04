@@ -366,7 +366,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     color: var(--cr-muted);
     text-decoration: none;
     font-size: .68rem;
-    font-weight: 700;
+    font-weight: 300;
   }
   .cr-mobile-bottom-nav a:hover, .cr-mobile-bottom-nav a:focus-visible { color: var(--cr-green); }
   .cr-mobile-bottom-nav .cr-icon { width: 22px; height: 22px; }
@@ -703,7 +703,7 @@ body.home .cr-mobile-bottom-nav .cr-cart-count {
     font-size: 22px;
     line-height: 28px;
     letter-spacing: 0;
-    font-weight: 700;
+    font-weight: 300;
   }
   .cr-app-category-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -783,7 +783,7 @@ body.home .cr-app-categories {
   color: #183b35;
   font-size: 22px;
   line-height: 28px;
-  font-weight: 700;
+  font-weight: 300;
   letter-spacing: 0;
 }
 .cr-home-section__header > a {
@@ -851,13 +851,13 @@ body.home .cr-app-categories {
   color: #292b29;
   font-size: 14px;
   line-height: 1.25;
-  font-weight: 600;
+  font-weight: 300;
 }
 .cr-home-product__price {
   color: #183b35;
   font-size: 14px;
   line-height: 20px;
-  font-weight: 700;
+  font-weight: 400;
 }
 .cr-home-product__price del {
   color: #777277;
@@ -915,7 +915,7 @@ body.home .cr-app-categories {
   color: #fff;
   font-size: 16px;
   line-height: 22px;
-  font-weight: 600;
+  font-weight: 300;
 }
 .cr-home-outlet-card__copy > span { color: rgba(255,255,255,.95); }
 .cr-home-brand-pager {
@@ -965,7 +965,7 @@ body.home .cr-app-categories {
   padding: 0 3px;
   font-size: 11px;
   line-height: 14px;
-  font-weight: 500;
+  font-weight: 300;
 }
 .cr-home-brand-dots {
   display: flex;
@@ -1151,7 +1151,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     margin-bottom: 32px;
     font-size: 26px;
     color: #183B35;
-    font-weight: 700;
+    font-weight: 300;
   }
   body.home .cr-app-category-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -1240,13 +1240,13 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     text-decoration: none;
     font-size: 12px;
     line-height: 1.2;
-    font-weight: 500;
+    font-weight: 300;
   }
   body.home .cr-desktop-rail__destination .cr-icon { width: 24px; height: 24px; }
   body.home .cr-desktop-rail__destination.is-active {
     min-height: 64px;
     background: #E3EFEB;
-    font-weight: 600;
+    font-weight: 400;
   }
   body.home .cr-desktop-rail__destination .cr-cart-count { top: 5px; right: 12px; }
 }
@@ -1285,7 +1285,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     line-height: 1.2;
     font-weight: 400;
   }
-  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active { color: #183B35; font-weight: 600; }
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active { color: #183B35; font-weight: 400; }
   body.home .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-icon { width: 24px; height: 24px; }
   body.home .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-cart-count { top: 4px; right: calc(50% - 25px); }
 }
@@ -1448,7 +1448,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   }
   body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
     color: #111;
-    font-weight: 600;
+    font-weight: 400;
   }
   body.home .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-icon {
     width: 24px;
@@ -1499,7 +1499,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     margin-bottom: 32px;
     font-size: 28px;
     line-height: 34px;
-    font-weight: 500;
+    font-weight: 300;
     letter-spacing: 0;
     color: #183B35;
   }
@@ -1527,7 +1527,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   body.home .cr-home-section__header h2 {
     font-size: 28px;
     line-height: 34px;
-    font-weight: 500;
+    font-weight: 300;
     color: #183B35;
   }
   body.home .cr-home-section__header > a {
@@ -1551,7 +1551,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   body.home .cr-home-product__price {
     font-size: 16px;
     line-height: 21px;
-    font-weight: 500;
+    font-weight: 400;
     color: #183B35;
   }
   body.home .cr-home-outlet__grid {
@@ -1563,7 +1563,7 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     gap: 20px;
   }
   body.home .cr-home-outlet-card { height: 225px; }
-  body.home .cr-home-outlet-card__copy strong { font-weight: 500; }
+  body.home .cr-home-outlet-card__copy strong { font-weight: 300; }
   body.home .cr-home-outlet-card__copy > span { font-weight: 400; }
   body.home .cr-home-brands {
     width: min(calc(100% - 48px), 980px);
@@ -1621,13 +1621,13 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     text-decoration: none;
     font-size: 12px;
     line-height: 1.2;
-    font-weight: 500;
+    font-weight: 300;
   }
   body.home .cr-desktop-rail__destination .cr-icon { width: 24px; height: 24px; }
   body.home .cr-desktop-rail__destination.is-active {
     min-height: 64px;
     background: #E3EFEB;
-    font-weight: 600;
+    font-weight: 400;
   }
   body.home .cr-desktop-rail__destination .cr-cart-count { top: 5px; right: 14px; }
 }
@@ -1645,58 +1645,8 @@ body.admin-bar .cr-header--app-home { top: 32px; }
 }
 
 
-/* Home mobile parity and Hero-dependent logo support; desktop styles remain untouched. */
+/* Home logo sizing only; typography is consolidated below. */
 @media (max-width: 767px) {
-  body.home .cr-app-section-title {
-    font-size: 22px;
-    line-height: 28px;
-    font-weight: 400;
-  }
-  body.home .cr-app-category__label {
-    font-size: 14px;
-    line-height: 20px;
-    font-weight: 400;
-  }
-  body.home .cr-home-section__header h2 {
-    font-size: 22px;
-    line-height: 28px;
-    font-weight: 400;
-  
-    color: #183B35;}
-  body.home .cr-home-section__header > a {
-    font-size: 14px;
-    line-height: 20px;
-    font-weight: 400;
-    color: #D18162;
-    background: transparent;
-    border: 0;
-  }
-  body.home .cr-home-product__name {
-    font-size: 16px;
-    line-height: 22px;
-    font-weight: 400;
-    -webkit-line-clamp: 2;
-    min-height: 40px;
-  }
-  body.home .cr-home-product__price {
-    font-size: 16px;
-    line-height: 22px;
-    font-weight: 400;
-    color: #183B35;
-  }
-  body.home .cr-home-outlet-card__copy strong {
-    font-size: 16px;
-    line-height: 22px;
-    font-weight: 400;
-  }
-  body.home .cr-home-outlet-card__copy > span {
-    font-size: 15px;
-    line-height: 20px;
-    font-weight: 400;
-  }
-  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a { font-size: 11px; font-weight: 400; }
-  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active { font-weight: 400; 
-    color: #111;}
   body.home .cr-home-mark { width: 44px; height: 44px; }
   body.home .cr-home-mark img,
   body.home .cr-home-mark .custom-logo,
@@ -1715,8 +1665,6 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   body.home .cr-home-mark .custom-logo,
   body.home .cr-home-mark__logo { width: 34px; height: 34px; }
 }
-
-
 /* Home typography: Roboto is loaded only on the front page. */
 .cr-home--app,
 .cr-header--app-home,
@@ -1898,5 +1846,118 @@ body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
   }
   body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
     font-weight: 400;
+  }
+}
+
+/* Home typography and navigation: authoritative Roboto Light/Regular cascade. */
+body.home .cr-home--app,
+body.home .cr-home--app *,
+body.home .cr-header--app-home,
+body.home .cr-header--app-home *,
+body.home .cr-mobile-bottom-nav,
+body.home .cr-mobile-bottom-nav *,
+body.home .cr-desktop-rail,
+body.home .cr-desktop-rail * {
+  font-family: "Roboto", Arial, sans-serif !important;
+}
+body.home .cr-home--app .cr-app-section-title,
+body.home .cr-home--app .cr-home-section__header h2,
+body.home .cr-home--app .cr-app-category__label,
+body.home .cr-home--app .cr-home-section__header > a,
+body.home .cr-home--app .cr-home-product__name,
+body.home .cr-home--app .cr-home-outlet-card__copy strong,
+body.home .cr-home--app .cr-home-outlet-card__copy > span,
+body.home .cr-home-brand > span,
+body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a,
+body.home .cr-desktop-rail__destination {
+  font-weight: 300;
+  letter-spacing: 0;
+}
+body.home .cr-home--app .cr-home-product__price,
+body.home .cr-home--app .cr-home-product__price *,
+body.home .cr-desktop-rail__destination.is-active,
+body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
+  font-weight: 400;
+}
+.cr-icon--material { width: 24px; height: 24px; }
+.cr-icon--material svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  stroke: none;
+}
+@media (max-width: 767px) {
+  body.home .cr-home--app .cr-app-section-title,
+  body.home .cr-home--app .cr-home-section__header h2 {
+    font-size: 21px;
+    line-height: 27px;
+    font-weight: 300;
+    letter-spacing: 0;
+    color: #183B35;
+  }
+  body.home .cr-home--app .cr-app-category__label {
+    font-size: 14px;
+    line-height: 19px;
+    font-weight: 300;
+    letter-spacing: 0;
+  }
+  body.home .cr-home--app .cr-home-section__header > a {
+    font-size: 14px;
+    line-height: 19px;
+    font-weight: 300;
+    letter-spacing: 0;
+    color: #D18162;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+  body.home .cr-home-novedades .cr-home-products {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+    scroll-padding-left: 20px;
+    scroll-padding-right: 20px;
+    gap: 14px;
+  }
+  body.home .cr-home-novedades .cr-home-product__name {
+    font-size: 15px;
+    line-height: 21px;
+    font-weight: 300;
+    letter-spacing: 0;
+    -webkit-line-clamp: 2;
+  }
+  body.home .cr-home-novedades .cr-home-product__price {
+    font-size: 15px;
+    line-height: 21px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: #183B35;
+  }
+  body.home .cr-home--app .cr-home-outlet-card__copy strong {
+    font-size: 15px;
+    line-height: 21px;
+    font-weight: 300;
+  }
+  body.home .cr-home--app .cr-home-outlet-card__copy > span {
+    font-size: 14px;
+    line-height: 19px;
+    font-weight: 300;
+  }
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a {
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 300;
+    letter-spacing: 0;
+  }
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
+    font-weight: 400;
+    color: #111;
+  }
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a:not(.is-active) {
+    color: #777277;
   }
 }
