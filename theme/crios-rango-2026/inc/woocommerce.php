@@ -32,7 +32,8 @@ add_filter( 'loop_shop_per_page', 'cr2026_products_per_page', 20 );
 function cr2026_cart_count_fragment( $fragments ) {
     ob_start();
     ?>
-    <span class="cr-cart-count" data-cr-cart-count><?php echo esc_html( cr2026_cart_count() ); ?></span>
+    <?php $cart_count = cr2026_cart_count(); ?>
+    <span class="cr-cart-count<?php echo 0 === $cart_count ? ' is-empty' : ''; ?>" data-cr-cart-count data-count="<?php echo esc_attr( $cart_count ); ?>"><?php echo esc_html( $cart_count ); ?></span>
     <?php
     $fragments['span[data-cr-cart-count]'] = ob_get_clean();
     return $fragments;

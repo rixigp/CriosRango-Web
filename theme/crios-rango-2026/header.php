@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $is_app_home = is_front_page();
+$cart_count  = cr2026_cart_count();
 ?><!doctype html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -35,7 +36,7 @@ $is_app_home = is_front_page();
                 </a>
                 <a class="cr-app-icon-button cr-cart-link" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>" aria-label="<?php esc_attr_e( 'Carrito', 'crios-rango-2026' ); ?>">
                     <?php echo cr2026_icon( 'bag' ); ?>
-                    <span class="cr-cart-count" data-cr-cart-count><?php echo esc_html( cr2026_cart_count() ); ?></span>
+                    <span class="cr-cart-count<?php echo 0 === $cart_count ? ' is-empty' : ''; ?>" data-cr-cart-count data-count="<?php echo esc_attr( $cart_count ); ?>"><?php echo esc_html( $cart_count ); ?></span>
                 </a>
             </div>
         </div>
@@ -77,7 +78,7 @@ $is_app_home = is_front_page();
                 </a>
                 <a class="cr-icon-button cr-cart-link" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>" aria-label="<?php esc_attr_e( 'Carrito', 'crios-rango-2026' ); ?>">
                     <?php echo cr2026_icon( 'bag' ); ?>
-                    <span class="cr-cart-count" data-cr-cart-count><?php echo esc_html( cr2026_cart_count() ); ?></span>
+                    <span class="cr-cart-count<?php echo 0 === $cart_count ? ' is-empty' : ''; ?>" data-cr-cart-count data-count="<?php echo esc_attr( $cart_count ); ?>"><?php echo esc_html( $cart_count ); ?></span>
                 </a>
             </div>
         </div>

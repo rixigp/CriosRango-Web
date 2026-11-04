@@ -103,6 +103,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
   cursor: pointer;
 }
 .cr-icon-button:hover, .cr-icon-button:focus-visible { background: var(--cr-white); outline: none; }
+.cr-cart-count.is-empty,
+.cr-cart-count[data-count="0"] {
+  display: none !important;
+}
+
 .cr-cart-count {
   min-width: 18px;
   height: 18px;
@@ -618,6 +623,12 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   color: #23473e;
 }
 
+body.home .cr-header--app-home .cr-cart-count,
+body.home .cr-mobile-bottom-nav .cr-cart-count {
+  background: #b3261e;
+  color: #fff;
+}
+
 /* App dock. Other pages keep their existing styles; Home uses these exact labels/order. */
 .cr-app-bottom-nav .is-active {
   color: #111 !important;
@@ -637,12 +648,21 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   }
 
   .cr-home-topbar {
-    width: calc(100% - 32px);
-    min-height: 82px;
+    width: 100%;
+    min-height: 64px;
+    padding-inline: 4px;
+    gap: 0;
   }
   .cr-home-mark {
     width: 48px;
     height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(251, 250, 246, .86);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 1px 7px rgba(0, 0, 0, .14);
   }
   .cr-home-mark img,
   .cr-home-mark .custom-logo,
@@ -650,14 +670,17 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     width: 34px;
     height: 34px;
   }
-  .cr-home-topbar__actions { gap: 11px; }
+  .cr-home-topbar__actions { gap: 0; }
   .cr-app-icon-button {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
   }
   .cr-app-icon-button .cr-icon {
-    width: 29px;
-    height: 29px;
+    width: 24px;
+    height: 24px;
+  }
+  .cr-header--app-home .cr-cart-link {
+    width: 56px;
   }
 
   .cr-home--app .cr-app-hero__slides,
@@ -669,46 +692,63 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   }
 
   .cr-app-categories {
-    padding: 52px 0 112px;
+    padding: 24px 0 28px;
   }
   .cr-app-shell {
-    width: calc(100% - 44px);
+    width: calc(100% - 40px);
   }
   .cr-app-section-title {
-    margin-bottom: 34px;
-    font-size: clamp(2rem, 9.5vw, 2.55rem);
-    font-weight: 400;
+    margin: 0 0 24px;
+    color: #183b35;
+    font-size: 22px;
+    line-height: 28px;
+    letter-spacing: 0;
+    font-weight: 700;
   }
   .cr-app-category-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 28px 12px;
+    column-gap: 12px;
+    row-gap: 12px;
   }
   .cr-app-category {
-    gap: 9px;
+    gap: 6px;
+  }
+  .cr-app-category__image {
+    width: 100%;
+    height: 100%;
+    padding: 1px;
+    box-sizing: border-box;
+    object-fit: contain;
+    object-position: center center;
   }
   .cr-app-category__label {
-    font-size: clamp(.82rem, 3.8vw, 1rem);
-    line-height: 1.15;
+    font-size: 14px;
+    line-height: 20px;
     font-weight: 400;
   }
 
-  .cr-mobile-bottom-nav.cr-app-bottom-nav {
-    min-height: calc(82px + env(safe-area-inset-bottom));
-    padding: 6px 8px env(safe-area-inset-bottom);
-    background: rgba(255, 255, 255, .98);
-    border-top: 1px solid rgba(0, 0, 0, .07);
-    backdrop-filter: blur(18px);
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav {
+    min-height: calc(64px + env(safe-area-inset-bottom));
+    padding: 0 4px env(safe-area-inset-bottom);
+    background: #fbfaf6;
+    border-top: 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, .07);
   }
-  .cr-mobile-bottom-nav.cr-app-bottom-nav a {
-    min-height: 66px;
-    gap: 5px;
-    color: #777674;
-    font-size: .73rem;
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a {
+    min-height: 64px;
+    gap: 2px;
+    color: #777277;
+    font-size: 11px;
+    line-height: 1.2;
     font-weight: 400;
   }
-  .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-icon {
-    width: 28px;
-    height: 28px;
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
+    font-weight: 600;
+    color: #000;
+  }
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-icon {
+    width: 24px;
+    height: 24px;
   }
   .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-cart-count {
     top: 4px;
@@ -716,8 +756,3 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   }
 }
 
-@media (max-width: 390px) {
-  .cr-app-shell { width: calc(100% - 34px); }
-  .cr-app-category-grid { gap-inline: 8px; }
-  .cr-app-category__label { font-size: .82rem; }
-}

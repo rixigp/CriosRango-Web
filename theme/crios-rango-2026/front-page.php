@@ -22,7 +22,7 @@ $categories = array(
     ),
     array(
         'id'    => 292,
-        'label' => 'Bebé niña',
+        'label' => 'Bebe niña',
         'asset' => 'category_bebe_nina.png',
     ),
     array(

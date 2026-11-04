@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $is_app_home = is_front_page();
+$cart_count  = cr2026_cart_count();
 $outlet_term = get_term_by( 'slug', 'outlet', 'product_cat' );
 $outlet_url  = ( $outlet_term && ! is_wp_error( $outlet_term ) ) ? get_term_link( $outlet_term ) : home_url( '/categoria-producto/outlet/' );
 if ( is_wp_error( $outlet_url ) ) {
@@ -41,7 +42,7 @@ if ( is_wp_error( $outlet_url ) ) {
     <a class="<?php echo $is_app_home ? 'is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php echo cr2026_icon( 'home' ); ?><span><?php esc_html_e( 'Inicio', 'crios-rango-2026' ); ?></span></a>
     <a href="<?php echo esc_url( $is_app_home ? '#categorias' : home_url( '/#categorias' ) ); ?>"><?php echo cr2026_icon( 'grid' ); ?><span><?php esc_html_e( 'Categorías', 'crios-rango-2026' ); ?></span></a>
     <a href="<?php echo esc_url( $outlet_url ); ?>"><?php echo cr2026_icon( 'tag' ); ?><span><?php esc_html_e( 'Outlet', 'crios-rango-2026' ); ?></span></a>
-    <a class="cr-mobile-bottom-nav__cart" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>"><?php echo cr2026_icon( 'bag' ); ?><span><?php esc_html_e( 'Carrito', 'crios-rango-2026' ); ?></span><span class="cr-cart-count" data-cr-cart-count><?php echo esc_html( cr2026_cart_count() ); ?></span></a>
+    <a class="cr-mobile-bottom-nav__cart" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>"><?php echo cr2026_icon( 'bag' ); ?><span><?php esc_html_e( 'Carrito', 'crios-rango-2026' ); ?></span><span class="cr-cart-count<?php echo 0 === $cart_count ? ' is-empty' : ''; ?>" data-cr-cart-count data-count="<?php echo esc_attr( $cart_count ); ?>"><?php echo esc_html( $cart_count ); ?></span></a>
     <a href="<?php echo esc_url( function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : home_url( '/mi-cuenta/' ) ); ?>"><?php echo cr2026_icon( 'user' ); ?><span><?php esc_html_e( 'Cuenta', 'crios-rango-2026' ); ?></span></a>
 </nav>
 <?php wp_footer(); ?>
