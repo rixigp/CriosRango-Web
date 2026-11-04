@@ -80,7 +80,7 @@
   // Dependent facets: one parallel base prefetch and contextual, cached recalculations.
   const filterSheet = document.querySelector('[data-cr-filter-sheet]');
   if (filterSheet) {
-    const categoryId = String(filterSheet.dataset.categoryId || '');
+    const categoryId = String(filterSheet.dataset.categoryId || 'root');
     const apiUrl = filterSheet.dataset.apiUrl;
     let termLabels = {};
     try { termLabels = JSON.parse(filterSheet.dataset.termLabels || '{}'); } catch (error) {}
@@ -107,7 +107,7 @@
     const facetEndpoint = async (facet,state,signal) => {
       const key=cacheKey(facet,state), cached=memoryCache[key]||readStore(storageKey+'|'+key);
       if(cached){memoryCache[key]=cached;return cached.rows;}
-      const params=new URLSearchParams({scope:'catalog',catalog_category_id:categoryId,facet,page:'1',per_page:'1'});
+      const params=new URLSearchParams({scope:'catalog',facet,page:'1',per_page:'1'});if(categoryId!=='root')params.set('catalog_category_id',categoryId);
       dimensions.forEach(d=>{if(d!==facet&&state[d].length)params.set(apiKeys[d],sortIds(state[d]).join(','));});
       const response=await fetch(apiUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'},signal});
       if(!response.ok)throw new Error('Filter API HTTP '+response.status);
