@@ -25,17 +25,7 @@ if ( empty( $subcategories ) ) {
 
 $GLOBALS['cr2026_parent_category_view'] = true;
 $display_title = cr2026_product_cat_display_name( $current_term );
-$back_url = home_url( '/' );
-
-if ( ! empty( $current_term->parent ) ) {
-    $parent_term = get_term( (int) $current_term->parent, 'product_cat' );
-    if ( $parent_term instanceof WP_Term && ! is_wp_error( $parent_term ) ) {
-        $parent_link = get_term_link( $parent_term );
-        if ( ! is_wp_error( $parent_link ) ) {
-            $back_url = $parent_link;
-        }
-    }
-}
+$back_url = cr2026_category_back_url( $current_term );
 
 $cart_count = cr2026_cart_count();
 ?><!doctype html>
@@ -70,13 +60,7 @@ $cart_count = cr2026_cart_count();
 </header>
 
 <main id="primary" class="cr-parent-category__canvas">
-    <div class="cr-parent-category__toolbar">
-        <a class="cr-parent-category__back" href="<?php echo esc_url( $back_url ); ?>" aria-label="<?php esc_attr_e( 'Volver', 'crios-rango-2026' ); ?>">
-            <?php echo cr2026_icon( 'arrow' ); ?>
-        </a>
-        <h1 class="cr-parent-category__title"><?php echo esc_html( $display_title ); ?></h1>
-        <button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog"><?php esc_html_e( 'Filtros', 'crios-rango-2026' ); ?></button>
-    </div>
+    <?php cr2026_render_category_toolbar( $display_title, $back_url, 'parent', true ); ?>
 
     <?php cr2026_render_category_filter_sheet( $current_term, 'parent' ); ?>
 

@@ -82,6 +82,39 @@ function cr2026_home_product_image_attributes( $attr, $attachment, $size ) {
 }
 add_filter( 'wp_get_attachment_image_attributes', 'cr2026_home_product_image_attributes', 10, 3 );
 
+/**
+ * Resolve the hierarchical back destination for the canonical category toolbar.
+ * Root shop hub returns Home; top-level terms return the shop hub; child terms
+ * return their direct parent category.
+ */
+function cr2026_category_back_url( $term = null ) {
+    if ( is_shop() && ! ( $term instanceof WP_Term ) ) {
+        return home_url( '/' );
+    }
+    if ( $term instanceof WP_Term && 'product_cat' === $term->taxonomy ) {
+        if ( (int) $term->parent > 0 ) {
+            $parent_term = get_term( (int) $term->parent, 'product_cat' );
+            if ( $parent_term instanceof WP_Term && ! is_wp_error( $parent_term ) ) {
+                $parent_link = get_term_link( $parent_term );
+                if ( ! is_wp_error( $parent_link ) ) { return $parent_link; }
+            }
+        }
+        return cr2026_shop_url();
+    }
+    return home_url( '/' );
+}
+
+/** Render the one shared toolbar markup for shop hub and category landings. */
+function cr2026_render_category_toolbar( $title, $back_url, $filter_context = 'parent', $show_filters = true ) {
+    echo '<div class="cr-parent-category__toolbar">';
+    echo '<a class="cr-parent-category__back" href="' . esc_url( $back_url ) . '" aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
+    echo '<h1 class="cr-parent-category__title">' . esc_html( $title ) . '</h1>';
+    if ( $show_filters ) {
+        echo '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
+    }
+    echo '</div>';
+}
+
 function cr2026_shop_url() {
     return function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/tienda/' );
 }
@@ -222,6 +255,9 @@ function cr2026_category_filter_api_main_query( $query ) {
     if ( is_admin() || ! $query->is_main_query() || ! $query->is_tax( 'product_cat' ) ) { return; }
     $term = get_queried_object();
     if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) { return; }
+    if ( ! cr2026_category_filters_selected() && ! empty( cr2026_product_cat_children( (int) $term->term_id ) ) ) {
+        return;
+    }
     $page = max( 1, absint( $query->get( 'paged' ) ) );
     $per_page = 12;
     $args = array(
