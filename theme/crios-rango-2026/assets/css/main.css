@@ -1717,11 +1717,12 @@ body.admin-bar .cr-header--app-home { top: 32px; }
 }
 
 
-/* Home app system-font and mobile Material 3 parity; scoped to Home surfaces. */
+/* Home typography: Roboto is loaded only on the front page. */
 .cr-home--app,
 .cr-header--app-home,
-.cr-mobile-bottom-nav {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+.cr-mobile-bottom-nav,
+.cr-desktop-rail {
+  font-family: "Roboto", Arial, sans-serif;
 }
 @media (max-width: 767px) {
   body.home .cr-app-section-title {
@@ -1792,6 +1793,110 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   body.home .cr-home-outlet-card__copy > span {
     font-size: 15px;
     line-height: 20px;
+    font-weight: 400;
+  }
+}
+
+
+/* Roboto must win over inherited and component-level font stacks on Home only. */
+body.home .cr-home--app,
+body.home .cr-home--app *,
+body.home .cr-header--app-home,
+body.home .cr-header--app-home *,
+body.home .cr-mobile-bottom-nav,
+body.home .cr-mobile-bottom-nav *,
+body.home .cr-desktop-rail,
+body.home .cr-desktop-rail * {
+  font-family: "Roboto", Arial, sans-serif !important;
+}
+
+/* Home typography weights: preserve all existing responsive geometry. */
+body.home .cr-home--app .cr-app-section-title,
+body.home .cr-home--app .cr-home-section__header h2 {
+  font-weight: 300;
+  letter-spacing: 0;
+}
+body.home .cr-home--app .cr-app-category__label,
+body.home .cr-home--app .cr-home-section__header > a,
+body.home .cr-home--app .cr-home-product__name,
+body.home .cr-home--app .cr-home-outlet-card__copy strong,
+body.home .cr-home--app .cr-home-outlet-card__copy > span,
+body.home .cr-home-brand > span,
+body.home .cr-desktop-rail__destination {
+  font-weight: 300;
+}
+body.home .cr-home--app .cr-home-product__price {
+  font-weight: 400;
+}
+body.home .cr-desktop-rail__destination.is-active {
+  font-weight: 400;
+}
+body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a {
+  font-weight: 300;
+}
+body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
+  font-weight: 400;
+}
+
+/* Mobile Home typography — Roboto Light 300 / Regular 400. */
+@media (max-width: 767px) {
+  body.home .cr-home--app .cr-app-section-title,
+  body.home .cr-home--app .cr-home-section__header h2 {
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 300;
+    letter-spacing: 0;
+  }
+  body.home .cr-home--app .cr-app-category__label {
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 300;
+    letter-spacing: 0;
+  }
+  body.home .cr-home--app .cr-home-section__header > a {
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 300;
+    letter-spacing: 0;
+    color: #D18162;
+  }
+  body.home .cr-home--app .cr-home-product__name {
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 300;
+    letter-spacing: 0;
+    -webkit-line-clamp: 2;
+  }
+  body.home .cr-home--app .cr-home-product__price {
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: #183B35;
+  }
+  body.home .cr-home--app .cr-home-outlet-card__copy strong {
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 300;
+  }
+  body.home .cr-home--app .cr-home-outlet-card__copy > span {
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 300;
+  }
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a {
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+  }
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
     font-weight: 400;
   }
 }

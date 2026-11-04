@@ -9,10 +9,22 @@ function cr2026_asset_version( $relative_path ) {
 }
 
 function cr2026_enqueue_assets() {
+    $main_style_dependencies = array();
+
+    if ( is_front_page() ) {
+        wp_enqueue_style(
+            'cr2026-roboto',
+            'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
+            array(),
+            null
+        );
+        $main_style_dependencies[] = 'cr2026-roboto';
+    }
+
     wp_enqueue_style(
         'cr2026-main',
         CR2026_URI . '/assets/css/main.css',
-        array(),
+        $main_style_dependencies,
         cr2026_asset_version( 'assets/css/main.css' )
     );
 
