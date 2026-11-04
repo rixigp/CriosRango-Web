@@ -70,13 +70,13 @@ $cart_count  = cr2026_cart_count();
             </nav>
 
             <div class="cr-header__actions">
-                <a class="cr-icon-button" href="<?php echo esc_url( home_url( '/?s=&post_type=product' ) ); ?>" aria-label="<?php esc_attr_e( 'Buscar', 'crios-rango-2026' ); ?>">
+                <a class="cr-icon-button cr-app-icon-button" href="<?php echo esc_url( home_url( '/?s=&post_type=product' ) ); ?>" aria-label="<?php esc_attr_e( 'Buscar', 'crios-rango-2026' ); ?>">
                     <?php echo cr2026_icon( 'search' ); ?>
                 </a>
                 <a class="cr-icon-button" href="<?php echo esc_url( function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : home_url( '/mi-cuenta/' ) ); ?>" aria-label="<?php esc_attr_e( 'Mi cuenta', 'crios-rango-2026' ); ?>">
                     <?php echo cr2026_icon( 'user' ); ?>
                 </a>
-                <a class="cr-icon-button cr-cart-link" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>" aria-label="<?php esc_attr_e( 'Carrito', 'crios-rango-2026' ); ?>">
+                <a class="cr-icon-button cr-app-icon-button cr-cart-link" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>" aria-label="<?php esc_attr_e( 'Carrito', 'crios-rango-2026' ); ?>">
                     <?php echo cr2026_icon( 'bag' ); ?>
                     <span class="cr-cart-count<?php echo 0 === $cart_count ? ' is-empty' : ''; ?>" data-cr-cart-count data-count="<?php echo esc_attr( $cart_count ); ?>"><?php echo esc_html( $cart_count ); ?></span>
                 </a>

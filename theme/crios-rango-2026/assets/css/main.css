@@ -314,7 +314,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .cr-brand { justify-content: center; min-width: 0; }
   .cr-brand .custom-logo { max-width: 145px; max-height: 42px; }
   .cr-brand__text { font-size: 1.08rem; white-space: nowrap; }
-  .cr-header__actions .cr-icon-button:first-child, .cr-header__actions .cr-icon-button:nth-child(2) { display: none; }
+  .cr-header__actions .cr-icon-button:nth-child(2) { display: none; }
 
   .cr-hero__slides { min-height: 52vh; border-radius: 0 0 var(--cr-radius-m) var(--cr-radius-m); }
   .cr-hero__fallback { min-height: 58vh; margin-top: 12px; padding: 30px 22px; border-radius: var(--cr-radius-m); }
@@ -1965,7 +1965,10 @@ body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active {
 
 /* App-like parent category landing; scoped away from Home and leaf archives. */
 body.cr-parent-category-view {
-  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   overflow-x: clip;
   background: #FCFAF7;
   color: #183B35;
@@ -1991,17 +1994,12 @@ body.cr-parent-category-view .cr-home-topbar {
 }
 body.cr-parent-category-view .cr-home-mark { width: 48px; height: 48px; }
 body.cr-parent-category-view .cr-home-mark__logo { width: 34px; height: 34px; }
-body.cr-parent-category-view .cr-home-topbar__actions { gap: 8px; }
-body.cr-parent-category-view .cr-app-icon-button {
-  width: 48px;
-  height: 48px;
-  color: #183B35;
-}
-body.cr-parent-category-view .cr-app-icon-button .cr-icon { width: 25px; height: 25px; }
+/* Category app header inherits the exact Home Search/Cart icon styling. */
 body.cr-parent-category-view .cr-parent-category__canvas {
   width: min(100%, 1360px);
   margin-inline: auto;
-  padding: 0 0 32px;
+  flex: 1 0 auto;
+  padding: 0;
 }
 body.cr-parent-category-view .cr-parent-category__toolbar {
   min-height: 64px;
@@ -2139,13 +2137,13 @@ body.cr-parent-category-view .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active
 body.cr-parent-category-view .cr-mobile-bottom-nav .cr-cart-count { top: 3px; right: calc(50% - 19px); }
 
 @media (max-width: 767px) {
-  body.cr-parent-category-view { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
+  body.cr-parent-category-view .cr-parent-category__canvas { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
   body.cr-parent-category-view .cr-home-topbar { min-height: 64px; padding-inline: 12px; }
   body.cr-parent-category-view .cr-parent-category__toolbar { margin: 0 20px 14px; }
   body.cr-parent-category-view .cr-parent-category__grid { width: calc(100% - 40px); }
 }
 @media (min-width: 768px) and (max-width: 1279px) {
-  body.cr-parent-category-view { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
+  body.cr-parent-category-view .cr-parent-category__canvas { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
   body.cr-parent-category-view .cr-home-topbar { min-height: 82px; }
   body.cr-parent-category-view .cr-parent-category__canvas { max-width: 1040px; }
   body.cr-parent-category-view .cr-parent-category__grid {
@@ -2202,4 +2200,26 @@ body:not(.home) .cr-home-mark {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: 0 !important;
+}
+
+
+/* Interior WooCommerce headers reuse Home's canonical Search and Bag icons. */
+body:not(.home) .cr-header__actions { gap: 14px; }
+body:not(.home) .cr-header__actions .cr-app-icon-button {
+  width: 50px;
+  height: 50px;
+  color: #5f6261;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+body:not(.home) .cr-header__actions .cr-app-icon-button:hover,
+body:not(.home) .cr-header__actions .cr-app-icon-button:focus-visible { background: transparent; }
+body:not(.home) .cr-header__actions .cr-app-icon-button .cr-icon { width: 31px; height: 31px; }
+body:not(.home) .cr-header__actions .cr-app-icon-button .cr-cart-count { top: 0; right: -1px; }
+@media (max-width: 767px) {
+  body:not(.home) .cr-header__actions { gap: 0; }
+  body:not(.home) .cr-header__actions .cr-app-icon-button { width: 48px; height: 48px; }
+  body:not(.home) .cr-header__actions .cr-app-icon-button.cr-cart-link { width: 56px; }
+  body:not(.home) .cr-header__actions .cr-app-icon-button .cr-icon { width: 24px; height: 24px; }
 }
