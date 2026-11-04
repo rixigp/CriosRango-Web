@@ -2193,3 +2193,13 @@ body.cr-parent-category-view .cr-mobile-bottom-nav .cr-cart-count { top: 3px; ri
   }
 
 }
+
+
+/* Interior pages: keep the shared logo mark clean; Home retains its Hero contrast support. */
+body:not(.home) .cr-home-mark {
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 0 !important;
+}
