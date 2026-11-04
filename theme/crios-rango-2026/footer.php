@@ -38,12 +38,29 @@ if ( is_wp_error( $outlet_url ) ) {
 </footer>
 <?php endif; ?>
 
+<?php if ( $is_app_home ) : ?>
+<nav class="cr-desktop-rail" aria-label="<?php esc_attr_e( 'Navegación principal', 'crios-rango-2026' ); ?>">
+    <a class="cr-desktop-rail__brand" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+        <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/brand/home_logo.png' ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="42" height="42" decoding="async">
+    </a>
+    <div class="cr-desktop-rail__destinations">
+        <a class="cr-desktop-rail__destination is-active" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-current="page"><?php echo cr2026_icon( 'home' ); ?><span><?php esc_html_e( 'Inicio', 'crios-rango-2026' ); ?></span></a>
+        <a class="cr-desktop-rail__destination" href="<?php echo esc_url( home_url( '/#categorias' ) ); ?>"><?php echo cr2026_icon( 'grid' ); ?><span><?php esc_html_e( 'Categorías', 'crios-rango-2026' ); ?></span></a>
+        <a class="cr-desktop-rail__destination" href="<?php echo esc_url( $outlet_url ); ?>"><?php echo cr2026_icon( 'tag' ); ?><span><?php esc_html_e( 'Outlet', 'crios-rango-2026' ); ?></span></a>
+        <a class="cr-desktop-rail__destination cr-mobile-bottom-nav__cart" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>"><?php echo cr2026_icon( 'bag' ); ?><span><?php esc_html_e( 'Carrito', 'crios-rango-2026' ); ?></span><span class="cr-cart-count<?php echo 0 === $cart_count ? ' is-empty' : ''; ?>" data-cr-cart-count data-count="<?php echo esc_attr( $cart_count ); ?>"><?php echo esc_html( $cart_count ); ?></span></a>
+        <a class="cr-desktop-rail__destination" href="<?php echo esc_url( function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : home_url( '/mi-cuenta/' ) ); ?>"><?php echo cr2026_icon( 'user' ); ?><span><?php esc_html_e( 'Cuenta', 'crios-rango-2026' ); ?></span></a>
+    </div>
+</nav>
+<?php endif; ?>
 <nav class="cr-mobile-bottom-nav cr-app-bottom-nav" aria-label="<?php esc_attr_e( 'Navegación móvil', 'crios-rango-2026' ); ?>">
+<div class="cr-mobile-bottom-nav__inner">
+
     <a class="<?php echo $is_app_home ? 'is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php echo cr2026_icon( 'home' ); ?><span><?php esc_html_e( 'Inicio', 'crios-rango-2026' ); ?></span></a>
     <a href="<?php echo esc_url( $is_app_home ? '#categorias' : home_url( '/#categorias' ) ); ?>"><?php echo cr2026_icon( 'grid' ); ?><span><?php esc_html_e( 'Categorías', 'crios-rango-2026' ); ?></span></a>
     <a href="<?php echo esc_url( $outlet_url ); ?>"><?php echo cr2026_icon( 'tag' ); ?><span><?php esc_html_e( 'Outlet', 'crios-rango-2026' ); ?></span></a>
     <a class="cr-mobile-bottom-nav__cart" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>"><?php echo cr2026_icon( 'bag' ); ?><span><?php esc_html_e( 'Carrito', 'crios-rango-2026' ); ?></span><span class="cr-cart-count<?php echo 0 === $cart_count ? ' is-empty' : ''; ?>" data-cr-cart-count data-count="<?php echo esc_attr( $cart_count ); ?>"><?php echo esc_html( $cart_count ); ?></span></a>
     <a href="<?php echo esc_url( function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : home_url( '/mi-cuenta/' ) ); ?>"><?php echo cr2026_icon( 'user' ); ?><span><?php esc_html_e( 'Cuenta', 'crios-rango-2026' ); ?></span></a>
+</div>
 </nav>
 <?php wp_footer(); ?>
 </body>
