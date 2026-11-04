@@ -19,16 +19,14 @@ $is_app_home = is_front_page();
     <header class="cr-header cr-header--app-home" data-cr-header>
         <div class="cr-home-topbar">
             <a class="cr-home-mark" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
-                <?php
-                $site_icon = get_site_icon_url( 128 );
-                if ( $site_icon ) :
-                    ?>
-                    <img src="<?php echo esc_url( $site_icon ); ?>" alt="" width="52" height="52">
-                <?php elseif ( has_custom_logo() ) : ?>
-                    <?php the_custom_logo(); ?>
-                <?php else : ?>
-                    <span class="cr-home-mark__text">C&amp;R</span>
-                <?php endif; ?>
+                <img
+                    class="cr-home-mark__logo"
+                    src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/brand/home_logo.png' ); ?>"
+                    alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"
+                    width="34"
+                    height="34"
+                    decoding="async"
+                >
             </a>
 
             <div class="cr-home-topbar__actions">

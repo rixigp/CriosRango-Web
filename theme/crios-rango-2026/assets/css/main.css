@@ -488,10 +488,11 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   color: #244f42;
 }
 .cr-home-mark img,
-.cr-home-mark .custom-logo {
+.cr-home-mark .custom-logo,
+.cr-home-mark__logo {
   display: block;
-  width: 54px;
-  height: 54px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
 }
 .cr-home-mark .custom-logo-link { display: contents; }
@@ -644,9 +645,10 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     height: 48px;
   }
   .cr-home-mark img,
-  .cr-home-mark .custom-logo {
-    width: 46px;
-    height: 46px;
+  .cr-home-mark .custom-logo,
+  .cr-home-mark__logo {
+    width: 34px;
+    height: 34px;
   }
   .cr-home-topbar__actions { gap: 11px; }
   .cr-app-icon-button {
