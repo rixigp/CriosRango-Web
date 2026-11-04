@@ -1713,3 +1713,83 @@ body.admin-bar .cr-header--app-home { top: 32px; }
   body.home .cr-home-mark .custom-logo,
   body.home .cr-home-mark__logo { width: 34px; height: 34px; }
 }
+
+
+/* Home app system-font and mobile Material 3 parity; scoped to Home surfaces. */
+.cr-home--app,
+.cr-header--app-home,
+.cr-mobile-bottom-nav {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+@media (max-width: 767px) {
+  body.home .cr-app-section-title {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  body.home .cr-app-category__label {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-align: center;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  body.home .cr-home-section__header h2 {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: #183B35;
+  }
+  body.home .cr-home-section__header > a {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: #D18162;
+    background: transparent;
+    border: 0;
+  }
+  /* The Home-only LazyRow equivalent; retain horizontal scrolling and 14px gap. */
+  body.home .cr-home-novedades .cr-home-products {
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+    scroll-padding-left: 20px;
+    scroll-padding-right: 20px;
+    gap: 14px;
+  }
+  body.home .cr-home-novedades .cr-home-product__name {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    letter-spacing: 0;
+    -webkit-line-clamp: 2;
+    min-height: 48px;
+  }
+  body.home .cr-home-novedades .cr-home-product__price {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: #183B35;
+  }
+  body.home .cr-home-outlet-card__copy strong {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+  body.home .cr-home-outlet-card__copy > span {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+}
