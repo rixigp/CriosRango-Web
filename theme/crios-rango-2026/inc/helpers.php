@@ -31,6 +31,33 @@ function cr2026_icon( $name, $class = '' ) {
     $icon_class = $is_material ? 'cr-icon--material ' : '';
     return '<span class="cr-icon ' . esc_attr( $icon_class . $class ) . '">' . $icons[ $name ] . '</span>';
 }
+
+/** Render the single canonical app header used by every theme template. */
+function cr2026_render_app_header() {
+    $cart_count = cr2026_cart_count();
+    $classes = array( 'cr-app-header', 'cr-header', is_front_page() ? 'is-home-hero' : 'is-solid' );
+    if ( ! empty( $GLOBALS['cr2026_parent_category_view'] ) ) {
+        $classes[] = 'is-category-view';
+    }
+    ?>
+    <header class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" data-cr-header>
+        <div class="cr-home-topbar">
+            <a class="cr-home-mark" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+                <img class="cr-home-mark__logo" src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/brand/home_logo.png' ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="34" height="34" decoding="async">
+            </a>
+            <div class="cr-home-topbar__actions">
+                <a class="cr-app-icon-button" href="<?php echo esc_url( home_url( '/?s=&post_type=product' ) ); ?>" aria-label="<?php esc_attr_e( 'Buscar', 'crios-rango-2026' ); ?>">
+                    <?php echo cr2026_icon( 'search' ); ?>
+                </a>
+                <a class="cr-app-icon-button cr-cart-link" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>" aria-label="<?php esc_attr_e( 'Carrito', 'crios-rango-2026' ); ?>">
+                    <?php echo cr2026_icon( 'bag' ); ?>
+                    <span class="cr-cart-count<?php echo 0 === $cart_count ? ' is-empty' : ''; ?>" data-cr-cart-count data-count="<?php echo esc_attr( $cart_count ); ?>"><?php echo esc_html( $cart_count ); ?></span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <?php
+}
 /**
  * Resolve an attachment URL to the public uploads origin, independent of a
  * WordPress staging path such as /prueba.
@@ -177,6 +204,8 @@ function cr2026_is_app_nav_shell() {
         || ( function_exists( 'is_account_page' ) && is_account_page() );
 }
 function cr2026_app_nav_body_class( $classes ) {
+    $classes[] = 'cr-global-app-header';
+    if ( ! empty( $GLOBALS['cr2026_parent_category_view'] ) ) { $classes[] = 'cr-parent-category-view'; }
     if ( cr2026_is_app_nav_shell() ) { $classes[] = 'cr-app-nav-shell'; }
     return $classes;
 }
