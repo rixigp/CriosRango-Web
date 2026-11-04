@@ -76,4 +76,42 @@
     }
   }
 
+
+  // Serialize selections into the existing WooCommerce layered-nav query format.
+  document.addEventListener('submit', (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || !form.matches('[data-cr-category-filter-form]')) return;
+    if (form.dataset.crFilterPrepared === 'true') {
+      delete form.dataset.crFilterPrepared;
+      return;
+    }
+    event.preventDefault();
+    ['sizes', 'colors', 'brands'].forEach((dimension) => {
+      const hidden = form.querySelector('[data-cr-filter-value="' + dimension + '"]');
+      if (!hidden) return;
+      const selected = Array.from(form.querySelectorAll('[data-cr-filter-option="' + dimension + '"]:checked')).map((input) => input.value);
+      hidden.value = selected.join(',');
+      hidden.disabled = selected.length === 0;
+    });
+    form.dataset.crFilterPrepared = 'true';
+    if (typeof form.requestSubmit === 'function') {
+      form.requestSubmit(event.submitter || undefined);
+      return;
+    }
+    const submitter = event.submitter;
+    if (submitter && submitter.name && submitter.value) {
+      let marker = form.querySelector('[data-cr-filter-submitter]');
+      if (!marker) {
+        marker = document.createElement('input');
+        marker.type = 'hidden';
+        marker.dataset.crFilterSubmitter = 'true';
+        form.appendChild(marker);
+      }
+      marker.name = submitter.name;
+      marker.value = submitter.value;
+      marker.disabled = false;
+    }
+    form.submit();
+  }, true);
+
 })();

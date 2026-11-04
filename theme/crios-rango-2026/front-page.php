@@ -8,74 +8,8 @@ $hero_ids    = array_values(
     )
 );
 
-/*
- * Home categories.
- *
- * IDs, labels, order and visual assets are the approved shared KMP baseline
- * used by the current Android/iOS application.
- */
-$categories = array(
-    array(
-        'id'    => 560,
-        'label' => 'Bautizo',
-        'asset' => 'category_bautizo.png',
-    ),
-    array(
-        'id'    => 292,
-        'label' => 'Bebé niña',
-        'asset' => 'category_bebe_nina.png',
-    ),
-    array(
-        'id'    => 294,
-        'label' => 'Bebé niño',
-        'asset' => 'category_bebe_nino.png',
-    ),
-    array(
-        'id'    => 420,
-        'label' => 'Calzado',
-        'asset' => 'category_calzado.png',
-    ),
-    array(
-        'id'    => 504,
-        'label' => 'Comunión niña',
-        'asset' => 'category_comunion_nina.png',
-    ),
-    array(
-        'id'    => 509,
-        'label' => 'Comunión niño',
-        'asset' => 'category_comunion_nino.png',
-    ),
-    array(
-        'id'    => 70,
-        'label' => 'Hombre',
-        'asset' => 'category_hombre.png',
-    ),
-    array(
-        'id'    => 71,
-        'label' => 'Mujer',
-        'asset' => 'category_mujer.png',
-    ),
-    array(
-        'id'    => 68,
-        'label' => 'Niña',
-        'asset' => 'category_nina.png',
-    ),
-    array(
-        'id'    => 310,
-        'label' => 'Niño',
-        'asset' => 'category_nino.png',
-    ),
-    array(
-        'id'    => 67,
-        'label' => 'Recién nacido',
-        'asset' => 'category_recien_nacido.png',
-    ),
-    array(
-        'id'    => 445,
-        'label' => 'Outlet',
-        'asset' => 'category_outlet.png',
-    ),
-);
+/* Shared canonical app category inventory. */
+$categories = cr2026_home_categories();
 
 $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets/images/categories/';
 ?>
