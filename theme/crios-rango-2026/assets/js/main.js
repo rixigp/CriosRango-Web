@@ -32,7 +32,7 @@
         entries.forEach((entry) => {
           document.body.classList.toggle('cr-home-hero-out', !entry.isIntersecting);
         });
-      }, { threshold: 0 });
+      }, { rootMargin: '0px 0px -90% 0px', threshold: 0 });
       homeHeroObserver.observe(homeHero);
     }
   }
