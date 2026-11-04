@@ -27,37 +27,14 @@ $GLOBALS['cr2026_parent_category_view'] = true;
 $display_title = cr2026_product_cat_display_name( $current_term );
 $back_url = cr2026_category_back_url( $current_term );
 
-$cart_count = cr2026_cart_count();
-?><!doctype html>
-<html <?php language_attributes(); ?>>
-<head>
-    <meta charset="<?php bloginfo( 'charset' ); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <?php wp_head(); ?>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-</head>
-<body <?php body_class( 'cr-parent-category-view' ); ?>>
-<?php wp_body_open(); ?>
-<a class="cr-skip-link" href="#primary"><?php esc_html_e( 'Saltar al contenido', 'crios-rango-2026' ); ?></a>
-
-<header class="cr-header cr-header--app-home cr-header--app-category" data-cr-header>
-    <div class="cr-home-topbar">
-        <a class="cr-home-mark" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
-            <img class="cr-home-mark__logo" src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/brand/home_logo.png' ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="34" height="34" decoding="async">
-        </a>
-        <div class="cr-home-topbar__actions">
-            <a class="cr-app-icon-button" href="<?php echo esc_url( home_url( '/?s=&post_type=product' ) ); ?>" aria-label="<?php esc_attr_e( 'Buscar', 'crios-rango-2026' ); ?>">
-                <?php echo cr2026_icon( 'search' ); ?>
-            </a>
-            <a class="cr-app-icon-button cr-cart-link" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>" aria-label="<?php esc_attr_e( 'Carrito', 'crios-rango-2026' ); ?>">
-                <?php echo cr2026_icon( 'bag' ); ?>
-                <span class="cr-cart-count<?php echo 0 === $cart_count ? ' is-empty' : ''; ?>" data-cr-cart-count data-count="<?php echo esc_attr( $cart_count ); ?>"><?php echo esc_html( $cart_count ); ?></span>
-            </a>
-        </div>
-    </div>
-</header>
+wp_enqueue_style(
+    'cr2026-category-roboto',
+    'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
+    array(),
+    null
+);
+get_header();
+?>
 
 <main id="primary" class="cr-parent-category__canvas">
     <?php cr2026_render_category_toolbar( $display_title, $back_url, 'parent', true ); ?>
