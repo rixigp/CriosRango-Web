@@ -29,7 +29,10 @@ get_header( 'shop' );
 do_action( 'woocommerce_before_main_content' );
 if ( is_product_category() ) {
     $category_term = get_queried_object();
-    if ( $category_term instanceof WP_Term ) { cr2026_render_category_filter_sheet( $category_term, 'archive' ); }
+    if ( $category_term instanceof WP_Term ) {
+        echo '<button type="button" class="cr-category-filter-sheet__trigger--archive" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
+        cr2026_render_category_filter_sheet( $category_term, 'archive' );
+    }
 }
 if ( woocommerce_product_loop() ) {
     do_action( 'woocommerce_before_shop_loop' );

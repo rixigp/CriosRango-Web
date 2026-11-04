@@ -14,7 +14,7 @@ if ( ! $current_term instanceof WP_Term || 'product_cat' !== $current_term->taxo
 }
 
 $subcategories = cr2026_product_cat_children( $current_term->term_id );
-if ( cr2026_category_filters_selected() || ! empty( $_GET['cr2026_open_filters'] ) ) {
+if ( cr2026_category_filters_selected() ) {
     wc_get_template( 'archive-product.php' );
     return;
 }
@@ -75,8 +75,10 @@ $cart_count = cr2026_cart_count();
             <?php echo cr2026_icon( 'arrow' ); ?>
         </a>
         <h1 class="cr-parent-category__title"><?php echo esc_html( $display_title ); ?></h1>
-        <a class="cr-parent-category__filters cr-category-filter-sheet__trigger" href="<?php echo esc_url( cr2026_category_filter_open_url( $current_term ) ); ?>"><?php esc_html_e( 'Filtros', 'crios-rango-2026' ); ?></a>
+        <button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog"><?php esc_html_e( 'Filtros', 'crios-rango-2026' ); ?></button>
     </div>
+
+    <?php cr2026_render_category_filter_sheet( $current_term, 'parent' ); ?>
 
     <div class="cr-parent-category__grid" aria-label="<?php echo esc_attr( sprintf( __( 'Subcategorías de %s', 'crios-rango-2026' ), $display_title ) ); ?>">
         <?php foreach ( $subcategories as $subcategory ) : ?>

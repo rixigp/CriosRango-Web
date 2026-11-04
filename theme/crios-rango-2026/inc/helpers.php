@@ -153,103 +153,111 @@ function cr2026_category_filter_selected_values( $key ) {
     if ( ! isset( $_GET[ $key ] ) ) { return array(); }
     $raw = wp_unslash( $_GET[ $key ] );
     $values = is_array( $raw ) ? $raw : explode( ',', (string) $raw );
-    $slugs = array();
+    $ids = array();
     foreach ( $values as $value ) {
         if ( ! is_scalar( $value ) ) { continue; }
-        foreach ( explode( ',', (string) $value ) as $slug ) {
-            $slug = sanitize_title( $slug );
-            if ( $slug ) { $slugs[] = $slug; }
+        foreach ( explode( ',', (string) $value ) as $id ) {
+            $id = absint( $id );
+            if ( $id ) { $ids[] = $id; }
         }
     }
-    return array_values( array_unique( $slugs ) );
+    return array_values( array_unique( $ids ) );
 }
-
-function cr2026_category_filter_open_url( $term ) {
-    if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) { return cr2026_shop_url(); }
-    $url = get_term_link( $term );
-    if ( is_wp_error( $url ) ) { return cr2026_shop_url(); }
-    return add_query_arg( 'cr2026_open_filters', '1', $url );
-}
-
 function cr2026_category_filters_selected() {
-    return ! empty( cr2026_category_filter_selected_values( 'filter_tallas' ) )
-        || ! empty( cr2026_category_filter_selected_values( 'filter_color' ) )
-        || ! empty( cr2026_category_filter_selected_values( 'product_tag' ) );
+    return ! empty( cr2026_category_filter_selected_values( 'size_ids' ) )
+        || ! empty( cr2026_category_filter_selected_values( 'color_ids' ) )
+        || ! empty( cr2026_category_filter_selected_values( 'brand_ids' ) );
 }
-
-/** Use existing WooCommerce global attributes and product tags (app Brands). */
-function cr2026_category_filter_options() {
-    $taxonomies = array( 'sizes' => '', 'colors' => '' );
-    if ( function_exists( 'wc_get_attribute_taxonomies' ) ) {
-        foreach ( (array) wc_get_attribute_taxonomies() as $attribute ) {
-            $name = strtolower( remove_accents( (string) $attribute->attribute_name ) );
-            $taxonomy = function_exists( 'wc_attribute_taxonomy_name' ) ? wc_attribute_taxonomy_name( $attribute->attribute_name ) : 'pa_' . sanitize_title( $attribute->attribute_name );
-            if ( ! taxonomy_exists( $taxonomy ) ) { continue; }
-            if ( in_array( $name, array( 'talla', 'tallas' ), true ) ) { $taxonomies['sizes'] = $taxonomy; }
-            elseif ( in_array( $name, array( 'color', 'colores' ), true ) ) { $taxonomies['colors'] = $taxonomy; }
-        }
-    }
-    if ( ! $taxonomies['sizes'] ) { foreach ( array( 'pa_tallas', 'pa_talla' ) as $t ) { if ( taxonomy_exists( $t ) ) { $taxonomies['sizes'] = $t; break; } } }
-    if ( ! $taxonomies['colors'] ) { foreach ( array( 'pa_color', 'pa_colores' ) as $t ) { if ( taxonomy_exists( $t ) ) { $taxonomies['colors'] = $t; break; } } }
-    $options = array( 'sizes' => array(), 'colors' => array(), 'brands' => array() );
-    foreach ( $taxonomies as $dimension => $taxonomy ) {
-        if ( ! $taxonomy ) { continue; }
-        $terms = get_terms( array( 'taxonomy' => $taxonomy, 'hide_empty' => true, 'number' => 0, 'orderby' => 'name', 'order' => 'ASC' ) );
-        if ( ! is_wp_error( $terms ) && is_array( $terms ) ) { $options[ $dimension ] = $terms; }
-    }
-    if ( taxonomy_exists( 'product_tag' ) ) {
-        $tags = get_terms( array( 'taxonomy' => 'product_tag', 'hide_empty' => true, 'number' => 0, 'orderby' => 'name', 'order' => 'ASC' ) );
-        if ( ! is_wp_error( $tags ) && is_array( $tags ) ) { $options['brands'] = $tags; }
-    }
-    return $options;
-}
-
-/** Functional app-like filter sheet, applying native Woo taxonomy clauses. */
-function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
-    if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) { return; }
-    $action = get_term_link( $term );
-    if ( is_wp_error( $action ) ) { return; }
-    $options = cr2026_category_filter_options();
-    $selected = array(
-        'sizes' => cr2026_category_filter_selected_values( 'filter_tallas' ),
-        'colors' => cr2026_category_filter_selected_values( 'filter_color' ),
-        'brands' => cr2026_category_filter_selected_values( 'product_tag' ),
-    );
-    $trigger_class = 'parent' === $context ? 'cr-parent-category__filters cr-category-filter-sheet__trigger' : 'cr-category-filter-sheet__trigger cr-category-filter-sheet__trigger--archive';
-    echo '<details class="cr-category-filter-sheet"' . ( isset( $_GET['cr2026_open_filters'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['cr2026_open_filters'] ) ) ? ' open' : '' ) . '><summary class="' . esc_attr( $trigger_class ) . '" aria-haspopup="dialog"><span>Filtros</span></summary>';
-    echo '<div class="cr-category-filter-sheet__panel" role="dialog" aria-modal="true" aria-label="' . esc_attr__( 'Filtros de productos', 'crios-rango-2026' ) . '">';
-    echo '<div class="cr-category-filter-sheet__heading"><strong>' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</strong><span>' . esc_html( cr2026_product_cat_display_name( $term ) ) . '</span></div>';
-    echo '<form method="get" action="' . esc_url( $action ) . '" class="cr-category-filter-sheet__form" data-cr-category-filter-form">';
-    echo '<input type="hidden" name="query_type_tallas" value="or"><input type="hidden" name="query_type_color" value="or">';
-    echo '<input type="hidden" name="source_id" value="' . esc_attr( (int) $term->term_id ) . '"><input type="hidden" name="source_tax" value="product_cat">';
-    echo '<input type="hidden" name="filter_tallas" value="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-cr-filter-value="sizes">';
-    echo '<input type="hidden" name="filter_color" value="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-cr-filter-value="colors">';
-    echo '<input type="hidden" name="product_tag" value="' . esc_attr( implode( ',', $selected['brands'] ) ) . '" data-cr-filter-value="brands">';
-    foreach ( array( 'sizes' => 'Talla', 'colors' => 'Color', 'brands' => 'Marca' ) as $dimension => $label ) {
-        echo '<fieldset class="cr-category-filter-sheet__group"><legend>' . esc_html( $label ) . '</legend>';
-        if ( empty( $options[ $dimension ] ) ) { echo '<p class="cr-category-filter-sheet__empty">' . esc_html__( 'No hay opciones disponibles.', 'crios-rango-2026' ) . '</p>'; }
-        else {
-            foreach ( $options[ $dimension ] as $option ) {
-                if ( ! $option instanceof WP_Term ) { continue; }
-                $checked = in_array( (string) $option->slug, $selected[ $dimension ], true ) ? ' checked' : '';
-                echo '<label class="cr-category-filter-sheet__option"><input type="checkbox" value="' . esc_attr( $option->slug ) . '" data-cr-filter-option="' . esc_attr( $dimension ) . '"' . $checked . '><span>' . esc_html( $option->name ) . '</span></label>';
+/** Labels are presentation metadata only; facet membership comes exclusively from Filter API. */
+function cr2026_category_filter_term_labels() {
+    $labels = array();
+    foreach ( array( 'pa_tallas', 'pa_color', 'product_tag' ) as $taxonomy ) {
+        if ( ! taxonomy_exists( $taxonomy ) ) { continue; }
+        $terms = get_terms( array( 'taxonomy' => $taxonomy, 'hide_empty' => false, 'number' => 0 ) );
+        if ( is_wp_error( $terms ) || ! is_array( $terms ) ) { continue; }
+        foreach ( $terms as $term ) {
+            if ( $term instanceof WP_Term ) {
+                $labels[ $taxonomy ][ (string) $term->term_id ] = array( 'label' => $term->name, 'slug' => $term->slug );
             }
         }
-        echo '</fieldset>';
     }
-    echo '<div class="cr-category-filter-sheet__actions"><button type="submit" name="cr2026_filter_cancel" value="1" class="cr-category-filter-sheet__cancel">' . esc_html__( 'Cancelar', 'crios-rango-2026' ) . '</button><button type="submit" name="cr2026_filter_clear" value="1" class="cr-category-filter-sheet__clear">' . esc_html__( 'Limpiar', 'crios-rango-2026' ) . '</button><button type="submit" class="cr-category-filter-sheet__apply">' . esc_html__( 'Aplicar', 'crios-rango-2026' ) . '</button></div></form></div></details>';
+    return $labels;
 }
-
-function cr2026_clear_category_filters_redirect() {
-    if ( ( empty( $_GET['cr2026_filter_clear'] ) && empty( $_GET['cr2026_filter_cancel'] ) ) || !( function_exists( 'is_product_category' ) && is_product_category() ) ) { return; }
+function cr2026_category_filter_api_get( $args ) {
+    $url = add_query_arg( $args, rest_url( 'criosrango-filter/v1/query' ) );
+    $response = wp_remote_get( $url, array( 'timeout' => 15, 'headers' => array( 'Accept' => 'application/json' ) ) );
+    if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+        return new WP_Error( 'cr2026_filter_api_error', 'No se pudieron cargar los filtros del catálogo.' );
+    }
+    $data = json_decode( wp_remote_retrieve_body( $response ), true );
+    if ( ! is_array( $data ) || ! isset( $data['product_ids'], $data['facets'] ) || ! is_array( $data['product_ids'] ) || ! is_array( $data['facets'] ) ) {
+        return new WP_Error( 'cr2026_filter_api_schema', 'Respuesta no válida del Filter API.' );
+    }
+    return $data;
+}
+/** Render the contextual filter dialog; its trigger lives in the category toolbar. */
+function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
+    if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) { return; }
+    $labels = cr2026_category_filter_term_labels();
+    $selected = array(
+        'sizes' => cr2026_category_filter_selected_values( 'size_ids' ),
+        'colors' => cr2026_category_filter_selected_values( 'color_ids' ),
+        'brands' => cr2026_category_filter_selected_values( 'brand_ids' ),
+    );
+    echo '<div class="cr-category-filter-sheet" data-cr-filter-sheet hidden data-category-id="' . esc_attr( (int) $term->term_id ) . '" data-api-url="' . esc_url( rest_url( 'criosrango-filter/v1/query' ) ) . '" data-term-labels="' . esc_attr( wp_json_encode( $labels ) ) . '" data-initial-sizes="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-initial-colors="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-initial-brands="' . esc_attr( implode( ',', $selected['brands'] ) ) . '">';
+    echo '<div class="cr-category-filter-sheet__backdrop" data-cr-filter-close></div><section class="cr-category-filter-sheet__dialog" role="dialog" aria-modal="true" aria-labelledby="cr-category-filter-title" tabindex="-1">';
+    echo '<div class="cr-category-filter-sheet__header"><h2 id="cr-category-filter-title">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</h2><button type="button" class="cr-category-filter-sheet__close" data-cr-filter-close aria-label="' . esc_attr__( 'Cerrar filtros', 'crios-rango-2026' ) . '">×</button></div>';
+    echo '<div class="cr-category-filter-sheet__heading"><span>' . esc_html( cr2026_product_cat_display_name( $term ) ) . '</span></div><div class="cr-category-filter-sheet__tabs" role="tablist" aria-label="' . esc_attr__( 'Tipo de filtro', 'crios-rango-2026' ) . '">';
+    foreach ( array( 'sizes' => 'Talla', 'colors' => 'Color', 'brands' => 'Marca' ) as $dimension => $label ) {
+        echo '<button type="button" role="tab" class="cr-category-filter-sheet__tab' . ( 'sizes' === $dimension ? ' is-active' : '' ) . '" data-cr-filter-tab="' . esc_attr( $dimension ) . '" aria-selected="' . ( 'sizes' === $dimension ? 'true' : 'false' ) . '">' . esc_html( $label ) . '</button>';
+    }
+    echo '</div><div class="cr-category-filter-sheet__content"><label class="cr-category-filter-sheet__search" data-cr-brand-search hidden><span class="screen-reader-text">' . esc_html__( 'Buscar marca', 'crios-rango-2026' ) . '</span><input type="search" data-cr-brand-query placeholder="' . esc_attr__( 'Buscar marca', 'crios-rango-2026' ) . '"></label>';
+    echo '<div class="cr-category-filter-sheet__options" data-cr-filter-options aria-live="polite"><p class="cr-category-filter-sheet__empty">' . esc_html__( 'Cargando opciones…', 'crios-rango-2026' ) . '</p></div></div>';
+    echo '<div class="cr-category-filter-sheet__actions"><button type="button" class="cr-category-filter-sheet__clear" data-cr-filter-clear>' . esc_html__( 'Limpiar', 'crios-rango-2026' ) . '</button><button type="button" class="cr-category-filter-sheet__apply" data-cr-filter-apply>' . esc_html__( 'Aplicar', 'crios-rango-2026' ) . '</button></div></section></div>';
+}
+/** Replace category archive eligibility with the Filter API page of product IDs. */
+function cr2026_category_filter_api_main_query( $query ) {
+    if ( is_admin() || ! $query->is_main_query() || ! $query->is_tax( 'product_cat' ) ) { return; }
     $term = get_queried_object();
-    if ( ! $term instanceof WP_Term ) { return; }
-    $url = get_term_link( $term );
-    if ( is_wp_error( $url ) ) { return; }
-    wp_safe_redirect( $url );
-    exit;
+    if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) { return; }
+    $page = max( 1, absint( $query->get( 'paged' ) ) );
+    $per_page = 12;
+    $args = array(
+        'scope' => 'catalog',
+        'catalog_category_id' => (int) $term->term_id,
+        'facet' => 'none',
+        'page' => $page,
+        'per_page' => $per_page,
+    );
+    foreach ( array( 'size_ids', 'color_ids', 'brand_ids' ) as $key ) {
+        $ids = cr2026_category_filter_selected_values( $key );
+        if ( $ids ) { $args[ $key ] = implode( ',', $ids ); }
+    }
+    $data = cr2026_category_filter_api_get( $args );
+    $ids = is_wp_error( $data ) ? array() : array_values( array_filter( array_map( 'absint', $data['product_ids'] ) ) );
+    $GLOBALS['cr2026_filter_api_total'] = is_wp_error( $data ) ? 0 : absint( $data['total'] );
+    $GLOBALS['cr2026_filter_api_has_more'] = ! is_wp_error( $data ) && ! empty( $data['has_more'] );
+    $GLOBALS['cr2026_filter_api_page'] = $page;
+    $GLOBALS['cr2026_filter_api_per_page'] = $per_page;
+    $GLOBALS['cr2026_filter_api_category_id'] = (int) $term->term_id;
+    $query->set( 'post_type', 'product' );
+    $query->set( 'post__in', $ids ? $ids : array( 0 ) );
+    $query->set( 'orderby', 'post__in' );
+    $query->set( 'posts_per_page', $per_page );
+    $query->set( 'paged', $page );
 }
-add_action( 'template_redirect', 'cr2026_clear_category_filters_redirect', 1 );
+add_action( 'pre_get_posts', 'cr2026_category_filter_api_main_query', 20 );
+function cr2026_category_filter_api_found_posts( $found_posts, $query ) {
+    if ( isset( $GLOBALS['cr2026_filter_api_category_id'] ) && $query->is_main_query() && $query->is_tax( 'product_cat' ) ) {
+        $total = (int) $GLOBALS['cr2026_filter_api_total'];
+        if ( ! empty( $GLOBALS['cr2026_filter_api_has_more'] ) ) {
+            $total = max( $total, (int) $GLOBALS['cr2026_filter_api_page'] * (int) $GLOBALS['cr2026_filter_api_per_page'] + 1 );
+        }
+        return $total;
+    }
+    return $found_posts;
+}
+add_filter( 'found_posts', 'cr2026_category_filter_api_found_posts', 20, 2 );
 
 function cr2026_cart_count() {
     if ( function_exists( 'WC' ) && WC()->cart ) {
