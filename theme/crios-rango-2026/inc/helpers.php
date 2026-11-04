@@ -206,12 +206,12 @@ function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
     );
     echo '<div class="cr-category-filter-sheet" data-cr-filter-sheet hidden data-category-id="' . esc_attr( (int) $term->term_id ) . '" data-api-url="' . esc_url( rest_url( 'criosrango-filter/v1/query' ) ) . '" data-term-labels="' . esc_attr( wp_json_encode( $labels ) ) . '" data-initial-sizes="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-initial-colors="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-initial-brands="' . esc_attr( implode( ',', $selected['brands'] ) ) . '">';
     echo '<div class="cr-category-filter-sheet__backdrop" data-cr-filter-close></div><section class="cr-category-filter-sheet__dialog" role="dialog" aria-modal="true" aria-labelledby="cr-category-filter-title" tabindex="-1">';
-    echo '<div class="cr-category-filter-sheet__header"><h2 id="cr-category-filter-title">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</h2><button type="button" class="cr-category-filter-sheet__close" data-cr-filter-close aria-label="' . esc_attr__( 'Cerrar filtros', 'crios-rango-2026' ) . '">×</button></div>';
-    echo '<div class="cr-category-filter-sheet__heading"><span>' . esc_html( cr2026_product_cat_display_name( $term ) ) . '</span></div><div class="cr-category-filter-sheet__tabs" role="tablist" aria-label="' . esc_attr__( 'Tipo de filtro', 'crios-rango-2026' ) . '">';
+    echo '<div class="cr-category-filter-sheet__header"><h2 id="cr-category-filter-title">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</h2></div>';
+    echo '<div class="cr-category-filter-sheet__tabs" role="tablist" aria-label="' . esc_attr__( 'Tipo de filtro', 'crios-rango-2026' ) . '">';
     foreach ( array( 'sizes' => 'Talla', 'colors' => 'Color', 'brands' => 'Marca' ) as $dimension => $label ) {
         echo '<button type="button" role="tab" class="cr-category-filter-sheet__tab' . ( 'sizes' === $dimension ? ' is-active' : '' ) . '" data-cr-filter-tab="' . esc_attr( $dimension ) . '" aria-selected="' . ( 'sizes' === $dimension ? 'true' : 'false' ) . '">' . esc_html( $label ) . '</button>';
     }
-    echo '</div><div class="cr-category-filter-sheet__content"><label class="cr-category-filter-sheet__search" data-cr-brand-search hidden><span class="screen-reader-text">' . esc_html__( 'Buscar marca', 'crios-rango-2026' ) . '</span><input type="search" data-cr-brand-query placeholder="' . esc_attr__( 'Buscar marca', 'crios-rango-2026' ) . '"></label>';
+    echo '</div><div class="cr-category-filter-sheet__content">';
     echo '<div class="cr-category-filter-sheet__options" data-cr-filter-options aria-live="polite"><p class="cr-category-filter-sheet__empty">' . esc_html__( 'Cargando opciones…', 'crios-rango-2026' ) . '</p></div></div>';
     echo '<div class="cr-category-filter-sheet__actions"><button type="button" class="cr-category-filter-sheet__clear" data-cr-filter-clear>' . esc_html__( 'Limpiar', 'crios-rango-2026' ) . '</button><button type="button" class="cr-category-filter-sheet__apply" data-cr-filter-apply>' . esc_html__( 'Aplicar', 'crios-rango-2026' ) . '</button></div></section></div>';
 }
