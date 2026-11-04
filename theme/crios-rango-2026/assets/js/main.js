@@ -150,7 +150,7 @@
         }
         const label=document.createElement('span');label.textContent=row.label;chip.appendChild(label);
         chip.addEventListener('click',()=>{
-          const all=row.term_ids.every(id=>draft[dimension].includes(id));
+          const all=row.term_ids.some(id=>draft[dimension].includes(id));
           if(all)draft[dimension]=draft[dimension].filter(id=>!row.term_ids.includes(id));
           else row.term_ids.forEach(id=>{if(!draft[dimension].includes(id))draft[dimension].push(id);});
           rowsByDimension[dimension]=rowsByDimension[dimension].filter(existing=>existing!==row);
@@ -172,6 +172,7 @@
     };
     const scheduleDependentRefresh = changedDimension => {
       generation++;const token=generation;
+      refreshing.clear();
       activeControllers.forEach(controller=>controller.abort());activeControllers=[];
       if(debounceTimer)window.clearTimeout(debounceTimer);
       debounceTimer=window.setTimeout(async()=>{
