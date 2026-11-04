@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $active_nav_item = cr2026_app_nav_active_item();
 $is_app_home = 'home' === $active_nav_item;
 $is_app_category_view = ! empty( $GLOBALS['cr2026_parent_category_view'] );
+$is_app_categories_hub = function_exists( 'is_shop' ) && is_shop();
 $is_app_nav_shell = cr2026_is_app_nav_shell();
 $cart_count = cr2026_cart_count();
 $nav_urls = cr2026_app_nav_urls();
@@ -14,7 +15,7 @@ $is_categories_active = 'categories' === $active_nav_item;
 $is_cart_active = 'cart' === $active_nav_item;
 $is_account_active = 'account' === $active_nav_item;
 ?>
-<?php if ( ! $is_app_home && ! $is_app_category_view ) : ?>
+<?php if ( ! $is_app_home && ! $is_app_category_view && ! $is_app_categories_hub ) : ?>
 <footer class="cr-footer">
     <div class="cr-shell cr-footer__grid">
         <div>

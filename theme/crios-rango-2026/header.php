@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $is_app_home = is_front_page();
+$is_app_categories_hub = function_exists( 'is_shop' ) && is_shop();
 $cart_count  = cr2026_cart_count();
 ?><!doctype html>
 <html <?php language_attributes(); ?>>
@@ -16,7 +17,7 @@ $cart_count  = cr2026_cart_count();
 <?php wp_body_open(); ?>
 <a class="cr-skip-link" href="#primary"><?php esc_html_e( 'Saltar al contenido', 'crios-rango-2026' ); ?></a>
 
-<?php if ( $is_app_home ) : ?>
+<?php if ( $is_app_home || $is_app_categories_hub ) : ?>
     <header class="cr-header cr-header--app-home" data-cr-header>
         <div class="cr-home-topbar">
             <a class="cr-home-mark" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">

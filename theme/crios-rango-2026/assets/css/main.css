@@ -2417,3 +2417,16 @@ body.cr-parent-category-view .cr-parent-category__toolbar{position:static}
 .cr-category-filter-sheet__retry{min-height:44px;padding:8px 12px;border:1px solid #183B35;border-radius:999px;background:transparent;color:#183B35;font:400 14px/20px "Roboto",Arial,sans-serif;cursor:pointer}
 @media(max-width:767px){.cr-category-filter-sheet:not([hidden]){align-items:center!important}.cr-category-filter-sheet__dialog{width:calc(100vw - 80px)!important;max-width:400px!important;max-height:78dvh!important;border-radius:28px!important}}
 @media(max-width:360px){.cr-category-filter-sheet__dialog{width:calc(100vw - 48px)!important}}
+
+
+/* Shop is the app category hub: fixed app topbar, one rail/bottom-nav shell. */
+body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-header--app-home {
+  position:fixed;top:0;left:0;right:0;width:auto;z-index:var(--cr-app-topbar-z-index,1150);
+  background:#FCFAF7;border:0;outline:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;
+}
+body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-header--app-home::before,
+body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-header--app-home::after {content:none!important;display:none!important}
+body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-header--app-home .cr-home-topbar {min-height:64px}
+body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub {padding-top:80px}
+@media(min-width:768px){body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-header--app-home .cr-home-topbar{min-height:82px}body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub{padding-top:98px}}
+@media(min-width:1280px){body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-header--app-home{left:104px}body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-header--app-home .cr-home-topbar{min-height:88px}body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub{padding-top:104px}}

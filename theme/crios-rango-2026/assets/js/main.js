@@ -77,7 +77,7 @@
   }
 
 
-  // Contextual filters: prefetch one category-wide facet snapshot and reuse it.
+  // Dependent facets: one parallel base prefetch and contextual, cached recalculations.
   const filterSheet = document.querySelector('[data-cr-filter-sheet]');
   if (filterSheet) {
     const categoryId = String(filterSheet.dataset.categoryId || '');
@@ -88,29 +88,48 @@
     const apiKeys = {sizes:'size_ids',colors:'color_ids',brands:'brand_ids'};
     const taxonomies = {sizes:'pa_tallas',colors:'pa_color',brands:'product_tag'};
     const initialKeys = {sizes:'initialSizes',colors:'initialColors',brands:'initialBrands'};
-    const ttl = 300000, storageKey = 'cr2026_filters_v1_category_' + categoryId;
-    const memoryCache = window.categoryFacetCache || (window.categoryFacetCache = Object.create(null));
-    const inflight = window.cr2026FacetRequests || (window.cr2026FacetRequests = Object.create(null));
-    const collator = new Intl.Collator('es',{sensitivity:'base',numeric:true});
-    let snapshot = null, activeDimension = 'sizes', currentRows = [], savedScrollY = 0;
-    const draft = {sizes:[],colors:[],brands:[]};
-    const optionsNode = filterSheet.querySelector('[data-cr-filter-options]');
-    const dialog = filterSheet.querySelector('.cr-category-filter-sheet__dialog');
-    const openButtons = Array.from(document.querySelectorAll('[data-cr-filter-open]'));
+    const ttl = 300000, storageKey = 'cr2026_filters_v2_category_' + categoryId;
+    try { sessionStorage.removeItem('cr2026_filters_v1_category_' + categoryId); } catch (error) {}
+    const memoryCache = window.categoryFacetCacheV2 || (window.categoryFacetCacheV2 = Object.create(null));
+    const collator = new Intl.Collator('es',{sensitivity:'base'});
     const normalize = value => String(value||'').trim().normalize('NFC').toLocaleLowerCase('es');
-    const isValid = value => value && Number(value.timestamp)>0 && Date.now()-Number(value.timestamp)<ttl && dimensions.every(d=>Array.isArray(value[d]));
-    const readSession = () => {try{const value=JSON.parse(sessionStorage.getItem(storageKey)||'null');return isValid(value)?value:null;}catch(error){return null;}};
-    const storeSnapshot = value => {snapshot=value;memoryCache[categoryId]=value;try{sessionStorage.setItem(storageKey,JSON.stringify(value));}catch(error){}};
+    const sortIds = values => Array.from(new Set((values||[]).map(String).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'en',{numeric:true}));
+    const cacheKey = (facet,state) => [categoryId,facet,sortIds(state.sizes).join(','),sortIds(state.colors).join(','),sortIds(state.brands).join(',')].join('|');
+    const isValid = value => value && Number(value.timestamp)>0 && Date.now()-Number(value.timestamp)<ttl;
+    const readStore = key => {try{const value=JSON.parse(sessionStorage.getItem(key)||'null');return isValid(value)?value:null;}catch(error){return null;}};
+    const writeStore = (key,value) => {memoryCache[key]=value;try{sessionStorage.setItem(key,JSON.stringify(value));}catch(error){}};
+    const draft = {sizes:[],colors:[],brands:[]};
+    let baseFacets=null, activeDimension='sizes', rowsByDimension={sizes:[],colors:[],brands:[]}, savedScrollY=0;
+    let generation=0, debounceTimer=null, activeControllers=[];
+    const optionsNode=filterSheet.querySelector('[data-cr-filter-options]');
+    const dialog=filterSheet.querySelector('.cr-category-filter-sheet__dialog');
+    const openButtons=Array.from(document.querySelectorAll('[data-cr-filter-open]'));
+    const facetEndpoint = async (facet,state,signal) => {
+      const key=cacheKey(facet,state), cached=memoryCache[key]||readStore(storageKey+'|'+key);
+      if(cached){memoryCache[key]=cached;return cached.rows;}
+      const params=new URLSearchParams({scope:'catalog',catalog_category_id:categoryId,facet,page:'1',per_page:'1'});
+      dimensions.forEach(d=>{if(d!==facet&&state[d].length)params.set(apiKeys[d],sortIds(state[d]).join(','));});
+      const response=await fetch(apiUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'},signal});
+      if(!response.ok)throw new Error('Filter API HTTP '+response.status);
+      const payload=await response.json(), facets=payload&&payload.facets||{};
+      const raw=Array.isArray(facets[facet])?facets[facet]:(Array.isArray(facets[facet==='colors'?'colors':facet])?facets[facet]:[]);
+      const rows=rowsFor(raw,facet);
+      writeStore(storageKey+'|'+key,{timestamp:Date.now(),rows});
+      return rows;
+    };
     const rowsFor = (facet,dimension) => {
       const grouped=new Map(),taxonomy=taxonomies[dimension];
       (Array.isArray(facet)?facet:[]).forEach(item=>{
-        const id=String(item&&item.term_id||''),meta=termLabels[taxonomy]&&termLabels[taxonomy][id];
-        if(!id||!meta||!meta.label)return;
-        const label=String(meta.label).trim(),key=normalize(label);
-        if(!grouped.has(key))grouped.set(key,{label,slug:meta.slug||'',term_ids:[],count:0});
+        const id=String(item&&item.term_id||'');if(!id)return;
+        const meta=termLabels[taxonomy]&&termLabels[taxonomy][id];
+        let label=meta&&meta.label?String(meta.label).trim():'';
+        if(!label){label=String(item.label||item.name||item.slug||('Opción '+id)).trim();console.warn('[Críos&Rango filtros] Term ID sin metadata resoluble; fallback label:',{dimension,term_id:id,label});}
+        if(!label)label='Opción '+id;
+        const key=normalize(label);
+        if(!grouped.has(key))grouped.set(key,{label,slug:(meta&&meta.slug)||item.slug||'',term_ids:[],count:0});
         const row=grouped.get(key);row.term_ids.push(id);row.count+=Number(item.count)||0;
       });
-      const rows=Array.from(grouped.values()).map(row=>({...row,term_ids:Array.from(new Set(row.term_ids))}));
+      const rows=Array.from(grouped.values()).map(row=>({...row,term_ids:sortIds(row.term_ids)}));
       if(dimension==='sizes'){
         const order=['XXS','2XS','XS','S','SM','M','ML','L','XL','XXL','2XL','XXXL','3XL','4XL','5XL','UNICA','ÚNICA','TU'];
         const key=label=>{const s=label.trim().toLocaleUpperCase('es'),n=s.match(/^([0-9]+(?:[.,][0-9]+)?)$/);return n?[0,Number(n[1].replace(',','.')),s]:[1,order.indexOf(s)<0?order.length:order.indexOf(s),s];};
@@ -118,11 +137,11 @@
       }else rows.sort((a,b)=>collator.compare(a.label,b.label));
       return rows;
     };
-    const render = (dimension,rows) => {
-      currentRows=rows;optionsNode.replaceChildren();
+    const render = dimension => {
+      const rows=rowsByDimension[dimension]||[];optionsNode.replaceChildren();
       if(!rows.length){const empty=document.createElement('p');empty.className='cr-category-filter-sheet__empty';empty.textContent='No hay opciones disponibles.';optionsNode.appendChild(empty);return;}
       rows.forEach(row=>{
-        const selected=row.term_ids.every(id=>draft[dimension].includes(id));
+        const selected=row.term_ids.some(id=>draft[dimension].includes(id));
         const chip=document.createElement('button');chip.type='button';chip.className='cr-category-filter-sheet__option'+(selected?' is-selected':'');chip.setAttribute('aria-pressed',String(selected));chip.setAttribute('aria-label',row.label);
         if(dimension==='colors'){
           const swatch=document.createElement('span');swatch.className='cr-category-filter-sheet__swatch';swatch.setAttribute('aria-hidden','true');
@@ -130,53 +149,82 @@
           swatch.style.backgroundColor=swatches[normalize(row.label)]||'#B8B8B2';chip.appendChild(swatch);
         }
         const label=document.createElement('span');label.textContent=row.label;chip.appendChild(label);
-        chip.addEventListener('click',()=>{const all=row.term_ids.every(id=>draft[dimension].includes(id));if(all)draft[dimension]=draft[dimension].filter(id=>!row.term_ids.includes(id));else row.term_ids.forEach(id=>{if(!draft[dimension].includes(id))draft[dimension].push(id);});render(dimension,currentRows);});
+        chip.addEventListener('click',()=>{
+          const all=row.term_ids.some(id=>draft[dimension].includes(id));
+          if(all)draft[dimension]=draft[dimension].filter(id=>!row.term_ids.includes(id));
+          else row.term_ids.forEach(id=>{if(!draft[dimension].includes(id))draft[dimension].push(id);});
+          rowsByDimension[dimension]=rowsByDimension[dimension].filter(existing=>existing!==row);
+          if(!all)rowsByDimension[dimension].push(row);
+          render(dimension);scheduleDependentRefresh(dimension);
+        });
         optionsNode.appendChild(chip);
       });
+      if(dimensions.some(d=>d!==dimension&&refreshing.has(d))){
+        const status=document.createElement('span');status.className='cr-category-filter-sheet__refreshing';status.textContent='Actualizando…';status.setAttribute('aria-live','polite');optionsNode.appendChild(status);
+      }
     };
-    let errorPanelShown=false;
-    const showError = () => {
-      if(errorPanelShown)return;errorPanelShown=true;optionsNode.replaceChildren();
-      const message=document.createElement('p');message.className='cr-category-filter-sheet__empty';message.textContent='No se han podido cargar los filtros.';
-      const retry=document.createElement('button');retry.type='button';retry.className='cr-category-filter-sheet__retry';retry.textContent='Reintentar';
-      retry.addEventListener('click',()=>{errorPanelShown=false;retry.disabled=true;getSnapshot(true).then(value=>render(activeDimension,value[activeDimension])).catch(showError);});
-      optionsNode.append(message,retry);
+    const refreshing=new Set();
+    const sanitizeSelected = (dimension,rows) => {
+      const available=new Set(rows.flatMap(row=>row.term_ids));
+      const before=draft[dimension].length;
+      draft[dimension]=draft[dimension].filter(id=>available.has(id));
+      return before!==draft[dimension].length;
     };
-    const getSnapshot = (retry=false) => {
-      const cached=memoryCache[categoryId]||readSession();
-      if(!retry&&isValid(cached)){snapshot=cached;memoryCache[categoryId]=cached;return Promise.resolve(cached);}
-      if(!retry&&inflight[categoryId])return inflight[categoryId];
-      const params=new URLSearchParams({scope:'catalog',catalog_category_id:categoryId,facet:'all',page:'1',per_page:'1'});
-      inflight[categoryId]=fetch(apiUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'}}).then(async response=>{
-        if(!response.ok)throw new Error('Filter API HTTP '+response.status);
-        const payload=await response.json(),facets=payload&&payload.facets||{};
-        const value={timestamp:Date.now(),sizes:rowsFor(facets.sizes,'sizes'),colors:rowsFor(facets.colors,'colors'),brands:rowsFor(facets.brands,'brands')};
-        storeSnapshot(value);errorPanelShown=false;return value;
-      }).finally(()=>{delete inflight[categoryId];});
-      return inflight[categoryId];
+    const scheduleDependentRefresh = changedDimension => {
+      generation++;const token=generation;
+      refreshing.clear();
+      activeControllers.forEach(controller=>controller.abort());activeControllers=[];
+      if(debounceTimer)window.clearTimeout(debounceTimer);
+      debounceTimer=window.setTimeout(async()=>{
+        const state={sizes:draft.sizes.slice(),colors:draft.colors.slice(),brands:draft.brands.slice()};
+        const affected=dimensions.filter(d=>d!==changedDimension);
+        affected.forEach(d=>refreshing.add(d));if(affected.includes(activeDimension))render(activeDimension);
+        const controllers=affected.map(()=>new AbortController());activeControllers=controllers;
+        try{
+          const results=await Promise.all(affected.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal)));
+          if(token!==generation)return;
+          results.forEach((rows,index)=>{rowsByDimension[affected[index]]=rows;sanitizeSelected(affected[index],rows);});
+          affected.forEach(d=>refreshing.delete(d));
+          render(activeDimension);
+        }catch(error){
+          if(error&&error.name==='AbortError')return;
+          if(token===generation){affected.forEach(d=>refreshing.delete(d));console.error('[Críos&Rango filtros] Error recalculando facetas dependientes',error);render(activeDimension);}
+        }
+      },120);
+    };
+    const fetchBase = async force => {
+      if(!force&&baseFacets)return baseFacets;
+      const cache=memoryCache[storageKey]||readStore(storageKey);
+      if(!force&&cache&&dimensions.every(d=>Array.isArray(cache[d]))){baseFacets=cache;return cache;}
+      const state={sizes:[],colors:[],brands:[]};
+      const controllers=dimensions.map(()=>new AbortController());
+      const results=await Promise.all(dimensions.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal)));
+      const value={timestamp:Date.now(),sizes:results[0],colors:results[1],brands:results[2]};
+      baseFacets=value;writeStore(storageKey,value);dimensions.forEach(d=>rowsByDimension[d]=value[d]);return value;
     };
     const setDimension = dimension => {
       if(!dimensions.includes(dimension))return;activeDimension=dimension;
       filterSheet.querySelectorAll('[data-cr-filter-tab]').forEach(button=>{const active=button.dataset.crFilterTab===dimension;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));});
-      if(snapshot)render(dimension,snapshot[dimension]);else if(errorPanelShown){return;}else{optionsNode.textContent='Cargando opciones…';getSnapshot().then(value=>render(dimension,value[dimension])).catch(showError);}
+      render(dimension);
     };
-    const closeSheet = () => {filterSheet.hidden=true;document.body.classList.remove('cr-category-filter-open');document.body.style.removeProperty('overflow');window.scrollTo(0,savedScrollY);};
-    const openSheet = () => {
+    const closeSheet=()=>{filterSheet.hidden=true;document.body.classList.remove('cr-category-filter-open');document.body.style.removeProperty('overflow');window.scrollTo(0,savedScrollY);};
+    const openSheet=()=>{
       savedScrollY=window.scrollY;dimensions.forEach(d=>draft[d]=(filterSheet.dataset[initialKeys[d]]||'').split(',').filter(Boolean));
       filterSheet.hidden=false;document.body.classList.add('cr-category-filter-open');document.body.style.overflow='hidden';
-      snapshot=memoryCache[categoryId]||readSession();if(isValid(snapshot))memoryCache[categoryId]=snapshot;else snapshot=null;
-      setDimension('sizes');window.requestAnimationFrame(()=>dialog.focus());
+      if(baseFacets){dimensions.forEach(d=>rowsByDimension[d]=baseFacets[d]);setDimension('sizes');}
+      else {optionsNode.textContent='Cargando opciones…';fetchBase(false).then(()=>setDimension('sizes')).catch(error=>{optionsNode.textContent='No se han podido cargar los filtros.';console.error(error);});}
+      window.requestAnimationFrame(()=>dialog.focus());
     };
     openButtons.forEach(button=>button.addEventListener('click',openSheet));
     filterSheet.querySelectorAll('[data-cr-filter-close]').forEach(button=>button.addEventListener('click',closeSheet));
     filterSheet.querySelectorAll('[data-cr-filter-tab]').forEach(button=>button.addEventListener('click',()=>setDimension(button.dataset.crFilterTab)));
-    filterSheet.querySelector('[data-cr-filter-clear]').addEventListener('click',()=>{dimensions.forEach(d=>draft[d]=[]);if(snapshot)render(activeDimension,snapshot[activeDimension]);});
+    filterSheet.querySelector('[data-cr-filter-clear]').addEventListener('click',()=>{dimensions.forEach(d=>draft[d]=[]);if(baseFacets)dimensions.forEach(d=>rowsByDimension[d]=baseFacets[d]);render(activeDimension);generation++;activeControllers.forEach(c=>c.abort());activeControllers=[];});
     filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',()=>{
-      const url=new URL(window.location.href);dimensions.forEach(d=>{url.searchParams.delete(apiKeys[d]);if(draft[d].length)url.searchParams.set(apiKeys[d],Array.from(new Set(draft[d])).sort((a,b)=>Number(a)-Number(b)).join(','));});
+      const url=new URL(window.location.href);dimensions.forEach(d=>{url.searchParams.delete(apiKeys[d]);if(draft[d].length)url.searchParams.set(apiKeys[d],sortIds(draft[d]).join(','));});
       window.location.assign(url.toString());
     });
     document.addEventListener('keydown',event=>{if(!filterSheet.hidden&&event.key==='Escape')closeSheet();});
-    const prefetch=()=>getSnapshot().catch(showError);
+    const prefetch=()=>fetchBase(false).catch(error=>console.error('[Críos&Rango filtros] Prefetch base fallido',error));
     if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(prefetch,{timeout:1800});else window.setTimeout(prefetch,350);
   }
 })();
