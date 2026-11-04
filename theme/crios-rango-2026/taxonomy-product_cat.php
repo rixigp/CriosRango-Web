@@ -81,17 +81,17 @@ $cart_count = cr2026_cart_count();
             if ( is_wp_error( $subcategory_url ) ) {
                 continue;
             }
-            $image_url = cr2026_product_cat_image_url( $current_term, $subcategory );
+            $image_url = cr2026_subcategory_image_url( $subcategory );
             ?>
             <a class="cr-parent-category__item" href="<?php echo esc_url( $subcategory_url ); ?>">
                 <span class="cr-parent-category__media">
                     <?php if ( $image_url ) : ?>
-                        <img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $subcategory->name ); ?>" loading="lazy" decoding="async">
+                        <img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( cr2026_product_cat_display_name( $subcategory ) ); ?>" loading="lazy" decoding="async">
                     <?php else : ?>
                         <span class="cr-parent-category__placeholder" aria-hidden="true"></span>
                     <?php endif; ?>
                 </span>
-                <span class="cr-parent-category__label"><?php echo esc_html( $subcategory->name ); ?></span>
+                <span class="cr-parent-category__label"><?php echo esc_html( cr2026_product_cat_display_name( $subcategory ) ); ?></span>
             </a>
         <?php endforeach; ?>
     </div>
