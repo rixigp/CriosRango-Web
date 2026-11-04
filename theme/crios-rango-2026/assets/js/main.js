@@ -101,6 +101,7 @@
     const draft = {sizes:[],colors:[],brands:[]};
     let baseFacets=null, activeDimension='sizes', rowsByDimension={sizes:[],colors:[],brands:[]}, savedScrollY=0;
     let generation=0, debounceTimer=null, activeControllers=[];
+    let prefetchControllers=[], prefetchIdleHandle=null, prefetchTimer=null, prefetchStarted=false;
     const optionsNode=filterSheet.querySelector('[data-cr-filter-options]');
     const dialog=filterSheet.querySelector('.cr-category-filter-sheet__dialog');
     const openButtons=Array.from(document.querySelectorAll('[data-cr-filter-open]'));
@@ -192,13 +193,15 @@
         }
       },120);
     };
-    const fetchBase = async force => {
+    const fetchBase = async (force, isPrefetch=false) => {
       if(!force&&baseFacets)return baseFacets;
       const cache=memoryCache[storageKey]||readStore(storageKey);
       if(!force&&cache&&dimensions.every(d=>Array.isArray(cache[d]))){baseFacets=cache;return cache;}
       const state={sizes:[],colors:[],brands:[]};
       const controllers=dimensions.map(()=>new AbortController());
+      if(isPrefetch)prefetchControllers=controllers;
       const results=await Promise.all(dimensions.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal)));
+      if(isPrefetch)prefetchControllers=[];
       const value={timestamp:Date.now(),sizes:results[0],colors:results[1],brands:results[2]};
       baseFacets=value;writeStore(storageKey,value);dimensions.forEach(d=>rowsByDimension[d]=value[d]);return value;
     };
@@ -208,7 +211,13 @@
       render(dimension);
     };
     const closeSheet=()=>{filterSheet.hidden=true;document.body.classList.remove('cr-category-filter-open');document.body.style.removeProperty('overflow');window.scrollTo(0,savedScrollY);};
+    const cancelDeferredPrefetch = abortRequests => {
+      if(prefetchTimer!==null){window.clearTimeout(prefetchTimer);prefetchTimer=null;}
+      if(prefetchIdleHandle!==null&&typeof window.cancelIdleCallback==='function'){window.cancelIdleCallback(prefetchIdleHandle);prefetchIdleHandle=null;}
+      if(abortRequests){prefetchControllers.forEach(controller=>controller.abort());prefetchControllers=[];}
+    };
     const openSheet=()=>{
+      cancelDeferredPrefetch(true);
       savedScrollY=window.scrollY;dimensions.forEach(d=>draft[d]=(filterSheet.dataset[initialKeys[d]]||'').split(',').filter(Boolean));
       filterSheet.hidden=false;document.body.classList.add('cr-category-filter-open');document.body.style.overflow='hidden';
       if(baseFacets){dimensions.forEach(d=>rowsByDimension[d]=baseFacets[d]);setDimension('sizes');}
@@ -224,7 +233,32 @@
       window.location.assign(url.toString());
     });
     document.addEventListener('keydown',event=>{if(!filterSheet.hidden&&event.key==='Escape')closeSheet();});
-    const prefetch=()=>fetchBase(false).catch(error=>console.error('[Críos&Rango filtros] Prefetch base fallido',error));
-    if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(prefetch,{timeout:1800});else window.setTimeout(prefetch,350);
+    const prefetch=()=>{
+      prefetchIdleHandle=null;
+      if(prefetchStarted||filterSheet.hidden===false)return;
+      prefetchStarted=true;
+      fetchBase(false,true).catch(error=>{
+        prefetchControllers=[];
+        if(error&&error.name==='AbortError')return;
+        console.error('[Críos&Rango filtros] Prefetch base fallido',error);
+      });
+    };
+    const scheduleDeferredPrefetch=()=>{
+      if(prefetchStarted)return;
+      prefetchTimer=window.setTimeout(()=>{
+        prefetchTimer=null;
+        if(typeof window.requestIdleCallback==='function'){
+          prefetchIdleHandle=window.requestIdleCallback(prefetch,{timeout:2500});
+        }else{
+          prefetchTimer=window.setTimeout(prefetch,500);
+        }
+      },1500);
+    };
+    const startAfterInteractive=()=>{
+      if(document.readyState==='complete')scheduleDeferredPrefetch();
+      else window.addEventListener('load',scheduleDeferredPrefetch,{once:true});
+    };
+    startAfterInteractive();
+    window.addEventListener('pagehide',()=>cancelDeferredPrefetch(true),{once:true});
   }
 })();
