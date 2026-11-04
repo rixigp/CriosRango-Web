@@ -89,6 +89,7 @@
     const taxonomies = {sizes:'pa_tallas',colors:'pa_color',brands:'product_tag'};
     const initialKeys = {sizes:'initialSizes',colors:'initialColors',brands:'initialBrands'};
     const ttl = 300000, storageKey = 'cr2026_filters_v2_category_' + categoryId;
+    try { sessionStorage.removeItem('cr2026_filters_v1_category_' + categoryId); } catch (error) {}
     const memoryCache = window.categoryFacetCacheV2 || (window.categoryFacetCacheV2 = Object.create(null));
     const collator = new Intl.Collator('es',{sensitivity:'base'});
     const normalize = value => String(value||'').trim().normalize('NFC').toLocaleLowerCase('es');
@@ -169,7 +170,6 @@
       draft[dimension]=draft[dimension].filter(id=>available.has(id));
       return before!==draft[dimension].length;
     };
-    const refreshDependent = async changedDimension, token => {};
     const scheduleDependentRefresh = changedDimension => {
       generation++;const token=generation;
       activeControllers.forEach(controller=>controller.abort());activeControllers=[];
