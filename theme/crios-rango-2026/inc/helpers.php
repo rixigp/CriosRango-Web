@@ -357,3 +357,61 @@ function cr2026_home_brands_url() {
     $page = get_page_by_path( 'marcas' );
     return $page ? get_permalink( $page ) : cr2026_shop_url();
 }
+
+
+/**
+ * Return direct WooCommerce product-category children in taxonomy order.
+ * Empty categories are included so the app hierarchy remains stable.
+ */
+function cr2026_product_cat_children( $term_id ) {
+    $term_id = absint( $term_id );
+    if ( ! $term_id || ! taxonomy_exists( 'product_cat' ) ) {
+        return array();
+    }
+    $children = get_terms( array(
+        'taxonomy' => 'product_cat',
+        'parent' => $term_id,
+        'hide_empty' => false,
+        'number' => 0,
+        'orderby' => 'term_order',
+        'order' => 'ASC',
+    ) );
+    if ( is_wp_error( $children ) || ! is_array( $children ) ) {
+        return array();
+    }
+    return array_values( array_filter( $children, static function ( $child ) {
+        return $child instanceof WP_Term && 'product_cat' === $child->taxonomy;
+    } ) );
+}
+
+/** Display-only labels; the stored term name, slug and ID are never changed. */
+function cr2026_product_cat_display_name( $term ) {
+    if ( ! $term instanceof WP_Term ) {
+        return '';
+    }
+    return 'bebe-nina' === $term->slug ? 'Bebé niña' : $term->name;
+}
+
+/**
+ * Resolve subcategory artwork: mapped app asset, WooCommerce term thumbnail,
+ * then an empty neutral placeholder (never a random product image).
+ */
+function cr2026_product_cat_image_url( $parent, $child ) {
+    if ( ! $parent instanceof WP_Term || ! $child instanceof WP_Term ) {
+        return '';
+    }
+    $app_assets = array(
+        'abrigos-y-cazadoras-bebe-nina' => 'subcat_bebe_nina_abrigos_cazadoras.png',
+        'ropa-de-bano-bebe-nina' => 'subcat_bebe_nina_ropa_bano.png',
+        'ropa-de-sport-bebe-nina' => 'subcat_bebe_nina_ropa_sport.png',
+        'ropa-de-vestir-bebe-nina' => 'subcat_bebe_nina_ropa_vestir.png',
+    );
+    if ( 'bebe-nina' === $parent->slug && isset( $app_assets[ $child->slug ] ) ) {
+        $relative_path = 'assets/images/subcategories/bebe-nina/' . $app_assets[ $child->slug ];
+        if ( file_exists( trailingslashit( get_template_directory() ) . $relative_path ) ) {
+            return trailingslashit( get_template_directory_uri() ) . $relative_path;
+        }
+    }
+    $thumbnail_id = absint( get_term_meta( $child->term_id, 'thumbnail_id', true ) );
+    return $thumbnail_id ? cr2026_attachment_public_url( $thumbnail_id ) : '';
+}
