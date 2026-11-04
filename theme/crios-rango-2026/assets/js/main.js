@@ -158,7 +158,7 @@
     const setDimension = dimension => {
       if(!dimensions.includes(dimension))return;activeDimension=dimension;
       filterSheet.querySelectorAll('[data-cr-filter-tab]').forEach(button=>{const active=button.dataset.crFilterTab===dimension;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));});
-      if(snapshot)render(dimension,snapshot[dimension]);else{optionsNode.textContent='Cargando opciones…';getSnapshot().then(value=>render(dimension,value[dimension])).catch(showError);}
+      if(snapshot)render(dimension,snapshot[dimension]);else if(errorPanelShown){return;}else{optionsNode.textContent='Cargando opciones…';getSnapshot().then(value=>render(dimension,value[dimension])).catch(showError);}
     };
     const closeSheet = () => {filterSheet.hidden=true;document.body.classList.remove('cr-category-filter-open');document.body.style.removeProperty('overflow');window.scrollTo(0,savedScrollY);};
     const openSheet = () => {
