@@ -197,14 +197,16 @@ function cr2026_category_filter_api_get( $args ) {
 }
 /** Render the contextual filter dialog; its trigger lives in the category toolbar. */
 function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
-    if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) { return; }
+    $is_root_catalog = 'root' === $context;
+    if ( ! $is_root_catalog && ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) ) { return; }
+    $filter_category_id = $is_root_catalog ? '' : (string) (int) $term->term_id;
     $labels = cr2026_category_filter_term_labels();
     $selected = array(
         'sizes' => cr2026_category_filter_selected_values( 'size_ids' ),
         'colors' => cr2026_category_filter_selected_values( 'color_ids' ),
         'brands' => cr2026_category_filter_selected_values( 'brand_ids' ),
     );
-    echo '<div class="cr-category-filter-sheet" data-cr-filter-sheet hidden data-category-id="' . esc_attr( (int) $term->term_id ) . '" data-api-url="' . esc_url( rest_url( 'criosrango-filter/v1/query' ) ) . '" data-term-labels="' . esc_attr( wp_json_encode( $labels ) ) . '" data-initial-sizes="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-initial-colors="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-initial-brands="' . esc_attr( implode( ',', $selected['brands'] ) ) . '">';
+    echo '<div class="cr-category-filter-sheet" data-cr-filter-sheet hidden data-category-id="' . esc_attr( $filter_category_id ) . '" data-api-url="' . esc_url( rest_url( 'criosrango-filter/v1/query' ) ) . '" data-term-labels="' . esc_attr( wp_json_encode( $labels ) ) . '" data-initial-sizes="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-initial-colors="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-initial-brands="' . esc_attr( implode( ',', $selected['brands'] ) ) . '">';
     echo '<div class="cr-category-filter-sheet__backdrop" data-cr-filter-close></div><section class="cr-category-filter-sheet__dialog" role="dialog" aria-modal="true" aria-labelledby="cr-category-filter-title" tabindex="-1">';
     echo '<div class="cr-category-filter-sheet__header"><h2 id="cr-category-filter-title">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</h2></div>';
     echo '<div class="cr-category-filter-sheet__tabs" role="tablist" aria-label="' . esc_attr__( 'Tipo de filtro', 'crios-rango-2026' ) . '">';
