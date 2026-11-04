@@ -24,6 +24,19 @@
   }
 
 
+  // Remove the Home logo's circular surface once the Hero leaves the viewport.
+  const homeHero = document.querySelector('.cr-app-hero');
+  if (homeHero && document.body.classList.contains('home')) {
+    if ('IntersectionObserver' in window) {
+      const homeHeroObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          document.body.classList.toggle('cr-home-hero-out', !entry.isIntersecting);
+        });
+      }, { threshold: 0 });
+      homeHeroObserver.observe(homeHero);
+    }
+  }
+
   const brandPager = document.querySelector('[data-cr-brand-pager]');
   const brandPages = brandPager ? Array.from(brandPager.querySelectorAll('[data-cr-brand-page]')) : [];
   const brandDots = Array.from(document.querySelectorAll('[data-cr-brand-dot]'));

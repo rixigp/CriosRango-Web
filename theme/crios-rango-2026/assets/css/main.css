@@ -1643,3 +1643,73 @@ body.admin-bar .cr-header--app-home { top: 32px; }
     margin-inline: auto;
   }
 }
+
+
+/* Home mobile parity and Hero-dependent logo support; desktop styles remain untouched. */
+@media (max-width: 767px) {
+  body.home .cr-app-section-title {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 400;
+  }
+  body.home .cr-app-category__label {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+  body.home .cr-home-section__header h2 {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 400;
+  }
+  body.home .cr-home-section__header > a {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    color: #D18162;
+    background: transparent;
+    border: 0;
+  }
+  body.home .cr-home-product__name {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    -webkit-line-clamp: 2;
+    min-height: 40px;
+  }
+  body.home .cr-home-product__price {
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 400;
+    color: #183B35;
+  }
+  body.home .cr-home-outlet-card__copy strong {
+    font-size: 16px;
+    line-height: 21px;
+    font-weight: 400;
+  }
+  body.home .cr-home-outlet-card__copy > span {
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a { font-size: 11px; font-weight: 400; }
+  body.home .cr-mobile-bottom-nav.cr-app-bottom-nav a.is-active { font-weight: 600; }
+  body.home .cr-home-mark { width: 44px; height: 44px; }
+  body.home .cr-home-mark img,
+  body.home .cr-home-mark .custom-logo,
+  body.home .cr-home-mark__logo { width: 34px; height: 34px; }
+}
+@media (max-width: 1279px) {
+  body.home.cr-home-hero-out .cr-home-mark,
+  body.home.cr-home-hero-out .cr-header--app-home .cr-home-mark {
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  body.home .cr-home-mark { min-width: 44px; min-height: 44px; }
+  body.home .cr-home-mark img,
+  body.home .cr-home-mark .custom-logo,
+  body.home .cr-home-mark__logo { width: 34px; height: 34px; }
+}

@@ -22,6 +22,57 @@ function cr2026_icon( $name, $class = '' ) {
     return '<span class="cr-icon ' . esc_attr( $class ) . '">' . $icons[ $name ] . '</span>';
 }
 
+/**
+ * Resolve an attachment URL to the public uploads origin, independent of a
+ * WordPress staging path such as /prueba.
+ */
+function cr2026_attachment_public_url( $attachment_id ) {
+    $attachment_id = absint( $attachment_id );
+
+    if ( ! $attachment_id ) {
+        return '';
+    }
+
+    $relative = get_post_meta( $attachment_id, '_wp_attached_file', true );
+
+    if ( ! $relative ) {
+        return (string) wp_get_attachment_url( $attachment_id );
+    }
+
+    $home = wp_parse_url( home_url( '/' ) );
+
+    if ( empty( $home['scheme'] ) || empty( $home['host'] ) ) {
+        return (string) wp_get_attachment_url( $attachment_id );
+    }
+
+    $origin = $home['scheme'] . '://' . $home['host'];
+
+    return trailingslashit( $origin . '/wp-content/uploads' ) . ltrim( $relative, '/' );
+}
+
+/**
+ * Canonicalize Home product image URLs emitted by the existing front-page
+ * wp_get_attachment_image() renderer without altering its markup or queries.
+ */
+function cr2026_home_product_image_attributes( $attr, $attachment, $size ) {
+    if ( ! is_front_page() || empty( $attr['class'] ) || false === strpos( $attr['class'], 'cr-home-product__photo' ) ) {
+        return $attr;
+    }
+
+    $attachment_id = isset( $attachment->ID ) ? absint( $attachment->ID ) : 0;
+    if ( $attachment_id ) {
+        $canonical_url = cr2026_attachment_public_url( $attachment_id );
+        if ( $canonical_url ) {
+            $attr['src'] = $canonical_url;
+            // Avoid WordPress-generated srcset candidates that retain /prueba.
+            $attr['srcset'] = '';
+        }
+    }
+
+    return $attr;
+}
+add_filter( 'wp_get_attachment_image_attributes', 'cr2026_home_product_image_attributes', 10, 3 );
+
 function cr2026_shop_url() {
     return function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/tienda/' );
 }
@@ -275,7 +326,7 @@ function cr2026_home_brand_image_url( $term ) {
     foreach ( array( 'thumbnail_id', 'image_id' ) as $meta_key ) {
         $image_id = absint( get_term_meta( $term->term_id, $meta_key, true ) );
         if ( $image_id ) {
-            $image_url = wp_get_attachment_image_url( $image_id, 'full' );
+            $image_url = cr2026_attachment_public_url( $image_id );
             if ( $image_url ) {
                 return $image_url;
             }
