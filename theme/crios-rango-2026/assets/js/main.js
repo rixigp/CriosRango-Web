@@ -181,7 +181,7 @@
           const before=draft[dimension].slice();
           draft[dimension]=toggleFacetSelection(draft[dimension],row.term_ids);
           if(debug)console.debug('[CR2026 facets] selection',{facet:dimension,selectedBefore:before,termIds:row.term_ids,selectedAfter:draft[dimension].slice()});
-          render(dimension);scheduleDependentRefresh(dimension);
+          render(dimension);publishLiveFilters();scheduleDependentRefresh(dimension);
         });
         optionsNode.appendChild(chip);
       });
@@ -191,7 +191,6 @@
     };
     const refreshing=new Set();
     const scheduleDependentRefresh = changedDimension => {
-      publishLiveFilters();
       generation++;const token=generation;
       refreshing.clear();
       activeControllers.forEach(controller=>controller.abort());activeControllers=[];
@@ -258,6 +257,10 @@
     });
     filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',closeSheet);
     document.addEventListener('keydown',event=>{if(!filterSheet.hidden&&event.key==='Escape')closeSheet();});
+    window.CR2026CatalogFilterState={
+      remove:(key,id)=>{const dimension=key==='size_ids'?'sizes':key==='color_ids'?'colors':'brands';draft[dimension]=draft[dimension].filter(value=>value!==String(id));render(activeDimension);publishLiveFilters();scheduleDependentRefresh(dimension);},
+      clear:()=>{dimensions.forEach(d=>draft[d]=[]);if(baseFacets)dimensions.forEach(d=>{rowsByDimension[d]=baseFacets[d];facetAvailability[d]=new Set(baseFacets[d].flatMap(row=>row.term_ids));});render(activeDimension);publishLiveFilters();generation++;activeControllers.forEach(controller=>controller.abort());activeControllers=[];}
+    };
     const prefetch=()=>{
       prefetchIdleHandle=null;
       if(prefetchStarted||filterSheet.hidden===false)return;
@@ -287,35 +290,81 @@
     window.addEventListener('pagehide',()=>cancelDeferredPrefetch(true),{once:true});
   }
 
-  // App-like product listing. A single theme endpoint dispatches the Filter API
-  // internally and returns already ordered card HTML for both filtered/unfiltered pages.
+  // Category catalog: app-contract page size, live filter state, and automatic prefetch.
   const productListing = document.querySelector('[data-cr-product-list]');
   if (productListing) {
     const grid = productListing.querySelector('[data-cr-product-grid]');
-    const loadMoreButton = productListing.querySelector('[data-cr-product-load-more]');
     const emptyState = productListing.querySelector('[data-cr-product-empty]');
     const orderControl = productListing.querySelector('[data-cr-product-order]');
+    const sentinel = productListing.querySelector('[data-cr-product-sentinel]');
+    const filterSheetNode = document.querySelector('[data-cr-filter-sheet]');
     const categoryId = String(productListing.dataset.categoryId || '0');
     const debug = productListing.dataset.debug === '1';
     const productsUrl = productListing.dataset.productsUrl;
+    const pageSize = Number(productListing.dataset.pageSize || 0);
+    if (!Number.isInteger(pageSize) || pageSize < 1) throw new Error('Invalid app catalog page size: '+productListing.dataset.pageSize);
     const currentUrl = new URL(window.location.href);
-    const orderby = ['date','price','price-desc'].includes(currentUrl.searchParams.get('orderby')) ? currentUrl.searchParams.get('orderby') : 'date';
+    let orderby = ['date','price','price-desc'].includes(currentUrl.searchParams.get('orderby')) ? currentUrl.searchParams.get('orderby') : 'date';
     const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc'};
     const filterKeys = ['size_ids','color_ids','brand_ids'];
-    let currentPage = 0, hasMore = false, loading = false;
-    const showEmpty = () => { grid.replaceChildren(); emptyState.hidden = false; if (loadMoreButton) loadMoreButton.hidden = true; };
-    const loadPage = async (page, append) => {
-      if (loading) return;
-      loading = true;
-      if (loadMoreButton) { loadMoreButton.disabled = true; loadMoreButton.setAttribute('aria-busy','true'); }
+    const taxonomyByKey = {size_ids:'pa_tallas',color_ids:'pa_color',brand_ids:'product_tag'};
+    const labelByKey = {size_ids:'Talla',color_ids:'',brand_ids:''};
+    let currentPage = 0, hasMore = false, loading = false, requestGeneration = 0, activeRequest = null;
+    let totalProducts = null;
+    const normalizeIds = values => Array.from(new Set((values||[]).map(String).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'en',{numeric:true}));
+    const getFilters = () => Object.fromEntries(filterKeys.map(key=>[key,(currentUrl.searchParams.get(key)||'').split(',').filter(Boolean)]));
+    const filterCount = filters => filterKeys.reduce((sum,key)=>sum+(filters[key]||[]).length,0);
+    const getTermLabels = () => {
+      try { return JSON.parse(filterSheetNode&&filterSheetNode.dataset.termLabels||'{}'); } catch(error) { return {}; }
+    };
+    const renderActiveFilterChips = () => {
+      const node=productListing.querySelector('[data-cr-active-filter-chips]');
+      if(!node)return;
+      const filters=getFilters(), labels=getTermLabels(), count=filterCount(filters);
+      node.replaceChildren();node.hidden=count===0;
+      const trigger=document.querySelector('[data-cr-filter-open]');
+      if(trigger)trigger.textContent=count?'Filtros ('+count+')':'Filtros';
+      filterKeys.forEach(key=>{
+        const taxonomy=taxonomyByKey[key], prefix=labelByKey[key];
+        (filters[key]||[]).forEach(id=>{
+          const metadata=labels[taxonomy]&&labels[taxonomy][String(id)];
+          const value=metadata&&metadata.label?String(metadata.label):'Opción '+id;
+          const chipLabel=prefix?prefix+' '+value:value;
+          const chip=document.createElement('button');chip.type='button';chip.className='cr-product-listing__active-filter-chip';
+          chip.setAttribute('aria-label','Eliminar filtro '+chipLabel);chip.title='Eliminar '+chipLabel;
+          const textNode=document.createElement('span');textNode.textContent=chipLabel;chip.appendChild(textNode);
+          const cross=document.createElement('span');cross.className='cr-filter-remove';cross.setAttribute('aria-hidden','true');cross.textContent='×';chip.appendChild(cross);
+          chip.addEventListener('click',()=>{
+            if(window.CR2026CatalogFilterState&&typeof window.CR2026CatalogFilterState.remove==='function')window.CR2026CatalogFilterState.remove(key,id);
+            else {const next=getFilters();next[key]=next[key].filter(valueId=>valueId!==String(id));applyFilters(next);}
+          });
+          node.appendChild(chip);
+        });
+      });
+      if(count){
+        const clear=document.createElement('button');clear.type='button';clear.className='cr-product-listing__clear-filters';clear.textContent='Borrar filtros';
+        clear.addEventListener('click',()=>{
+          if(window.CR2026CatalogFilterState&&typeof window.CR2026CatalogFilterState.clear==='function')window.CR2026CatalogFilterState.clear();
+          else applyFilters({size_ids:[],color_ids:[],brand_ids:[]});
+        });
+        node.appendChild(clear);
+      }
+    };
+    const showEmpty = () => { grid.replaceChildren(); emptyState.hidden = false; };
+    const loadPage = async (page, append, token=requestGeneration) => {
+      if (append && loading) return;
+      const controller=new AbortController();
+      activeRequest=controller;loading=true;
       try {
-        const params = new URLSearchParams({page:String(page),per_page:'12',scope:'catalog',facet:'none',sort:sortMap[orderby]});
+        const params = new URLSearchParams({page:String(page),per_page:String(pageSize),scope:'catalog',facet:'none',sort:sortMap[orderby]});
         if (categoryId !== '0') params.set('catalog_category_id',categoryId);
         filterKeys.forEach(key=>{const value=currentUrl.searchParams.get(key);if(value)params.set(key,value);});
-        const response = await fetch(productsUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'}});
+        const response = await fetch(productsUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'},signal:controller.signal});
         if (!response.ok) throw new Error('Catalog page HTTP '+response.status);
         const responseData = await response.json();
+        if(token!==requestGeneration)return;
         if (!responseData || Number(responseData.page) !== page) throw new Error('Catalog page mismatch: requested '+page+', received '+(responseData&&responseData.page));
+        if(Number(responseData.per_page)!==pageSize)throw new Error('Catalog page size mismatch: app='+pageSize+', endpoint='+responseData.per_page);
         const template=document.createElement('template');template.innerHTML=responseData.html||'';
         const returnedIds=Array.isArray(responseData.product_ids)?responseData.product_ids.map(String):[];
         const endpointIds=Array.isArray(responseData.rendered_product_ids)?responseData.rendered_product_ids.map(String):[];
@@ -324,16 +373,22 @@
         if(!sameOrderedIds(returnedIds,endpointIds))throw new Error('Catalog endpoint ID/order mismatch: response='+JSON.stringify(returnedIds)+' cards='+JSON.stringify(endpointIds));
         if(!sameOrderedIds(endpointIds,renderedIds))throw new Error('Catalog DOM ID/order mismatch: cards='+JSON.stringify(endpointIds)+' DOM='+JSON.stringify(renderedIds));
         if(responseData.source==='filter_api'&&!sameOrderedIds(filterApiIds,endpointIds))throw new Error('Filter API ID/order mismatch: API='+JSON.stringify(filterApiIds)+' cards='+JSON.stringify(endpointIds));
-        if(debug)console.debug('[CR2026 catalog] page',{page,sort:sortMap[orderby],filter_api_ids:filterApiIds,card_endpoint_ids:endpointIds,dom_ids:renderedIds,total:responseData.total,has_more:responseData.has_more});
+        if(debug)console.debug('[CR2026 catalog] page',{page,sort:sortMap[orderby],page_size:pageSize,filter_api_ids:filterApiIds,card_endpoint_ids:endpointIds,dom_ids:renderedIds,prices:Array.from(template.content.querySelectorAll('[data-product-id]')).map(node=>node.querySelector('.cr-product-card__price')?.textContent?.trim()||''),total:responseData.total,has_more:responseData.has_more});
         const previousIds=append?Array.from(grid.querySelectorAll('[data-product-id]')).map(node=>String(node.getAttribute('data-product-id'))):[];
         const completeIds=previousIds.concat(renderedIds);
         const seenIds=new Set(),duplicates=[];
         completeIds.forEach(id=>{if(seenIds.has(id))duplicates.push(id);else seenIds.add(id);});
         if(duplicates.length)throw new Error('Catalog duplicate product IDs across pages: '+JSON.stringify(duplicates));
+        const prices=Array.from((append?grid:template.content).querySelectorAll('[data-product-id]')).map(node=>{
+          const text=node.querySelector('.cr-product-card__price')?.textContent||'';
+          const normalized=text.replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:,|$))/g,'').replace(',','.');
+          return Number(normalized);
+        });
+        if(orderby==='price'&&prices.some((price,index)=>index>0&&Number.isFinite(price)&&Number.isFinite(prices[index-1])&&prices[index-1]>price))throw new Error('PRICE_ASC=FAIL within rendered page sequence: '+JSON.stringify(prices));
+        if(orderby==='price-desc'&&prices.some((price,index)=>index>0&&Number.isFinite(price)&&Number.isFinite(prices[index-1])&&prices[index-1]<price))throw new Error('PRICE_DESC=FAIL within rendered page sequence: '+JSON.stringify(prices));
         if (!returnedIds.length) {
           if (!append) showEmpty();
           hasMore = false;
-          if (loadMoreButton) loadMoreButton.hidden = true;
           if (responseData.total !== null && responseData.total !== undefined && Number(responseData.total) !== completeIds.length) throw new Error('Catalog total mismatch: loaded='+completeIds.length+' total='+responseData.total);
           if(debug)console.debug('[CR2026 catalog] complete',{sort:sortMap[orderby],loaded_ids:completeIds,total:responseData.total,duplicates});
           return;
@@ -343,26 +398,56 @@
         emptyState.hidden = true;
         currentPage = page;
         hasMore = Boolean(responseData.has_more);
-        if(!hasMore&&responseData.total!==null&&responseData.total!==undefined&&Number(responseData.total)!==completeIds.length)throw new Error('Catalog total mismatch: loaded='+completeIds.length+' total='+responseData.total);
-        if(debug&&!hasMore)console.debug('[CR2026 catalog] complete',{sort:sortMap[orderby],loaded_ids:completeIds,total:responseData.total,duplicates});
-        if (loadMoreButton) loadMoreButton.hidden = !hasMore;
+        totalProducts=responseData.total===null||responseData.total===undefined?null:Number(responseData.total);
+        if(!hasMore&&totalProducts!==null&&totalProducts!==completeIds.length)throw new Error('Catalog total mismatch: loaded='+completeIds.length+' total='+totalProducts);
+        if(debug&&!hasMore)console.debug('[CR2026 catalog] complete',{sort:sortMap[orderby],loaded_ids:completeIds,total:totalProducts,duplicates,missing:totalProducts===null?null:totalProducts-completeIds.length});
       } catch (error) {
+        if(token!==requestGeneration||(error&&error.name==='AbortError'))return;
         console.error('[Críos&Rango productos] No se pudo cargar la página del catálogo',error);
         if (!append) showEmpty();
         hasMore = false;
-        if (loadMoreButton) loadMoreButton.hidden = true;
       } finally {
-        loading = false;
-        if (loadMoreButton) { loadMoreButton.disabled = false; loadMoreButton.removeAttribute('aria-busy'); }
+        if(token===requestGeneration){
+          loading=false;if(activeRequest===controller)activeRequest=null;
+        }
       }
     };
-    loadPage(1,false);
-    if (loadMoreButton) loadMoreButton.addEventListener('click',()=>{if(hasMore)loadPage(currentPage+1,true);});
+    const resetAndLoad = () => {
+      requestGeneration++;
+      if(activeRequest)activeRequest.abort();
+      activeRequest=null;loading=false;currentPage=0;hasMore=false;totalProducts=null;
+      loadPage(1,false,requestGeneration);
+    };
+    const applyFilters = filters => {
+      filterKeys.forEach(key=>{
+        const values=normalizeIds(filters&&filters[key]||[]);
+        if(values.length)currentUrl.searchParams.set(key,values.join(','));
+        else currentUrl.searchParams.delete(key);
+      });
+      window.history.replaceState({},'',currentUrl.toString());
+      if(filterSheetNode){
+        filterSheetNode.dataset.initialSizes=(currentUrl.searchParams.get('size_ids')||'');
+        filterSheetNode.dataset.initialColors=(currentUrl.searchParams.get('color_ids')||'');
+        filterSheetNode.dataset.initialBrands=(currentUrl.searchParams.get('brand_ids')||'');
+      }
+      renderActiveFilterChips();
+      resetAndLoad();
+    };
+    window.CR2026CatalogListing={applyFilters,getFilters,renderActiveFilterChips,pageSize};
+    renderActiveFilterChips();
+    resetAndLoad();
+    if (sentinel && 'IntersectionObserver' in window) {
+      const catalogObserver=new IntersectionObserver(entries=>{
+        if(entries.some(entry=>entry.isIntersecting)&&hasMore&&!loading&&currentPage>0)loadPage(currentPage+1,true,requestGeneration);
+      },{root:null,rootMargin:'0px 0px 900px 0px',threshold:0});
+      catalogObserver.observe(sentinel);
+      window.addEventListener('pagehide',()=>catalogObserver.disconnect(),{once:true});
+    }
     if (orderControl) orderControl.addEventListener('change',()=>{
-      const nextUrl = new URL(window.location.href);
-      if (orderControl.value === 'date') nextUrl.searchParams.delete('orderby');
-      else nextUrl.searchParams.set('orderby',orderControl.value);
-      window.location.assign(nextUrl.toString());
+      orderby=['date','price','price-desc'].includes(orderControl.value)?orderControl.value:'date';
+      if(orderby==='date')currentUrl.searchParams.delete('orderby');else currentUrl.searchParams.set('orderby',orderby);
+      window.history.replaceState({},'',currentUrl.toString());
+      resetAndLoad();
     });
   }
 
