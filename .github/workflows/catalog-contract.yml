@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - main
+      - fix/catalog-runtime-parity
     paths:
       - "theme/crios-rango-2026/**"
       - "tests/catalog-contract.test.cjs"
