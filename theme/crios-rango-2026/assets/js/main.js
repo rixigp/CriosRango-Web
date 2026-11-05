@@ -382,7 +382,7 @@
           const normalized=String(text).replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:,|$))/g,'').replace(',','.');
           return Number(normalized);
         });
-        if(debug)console.debug('[CR2026 catalog] page',{page,sort:sortMap[orderby],page_size:pageSize,api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds,prices,total:responseData.total,has_more:responseData.has_more});
+        if(debug)console.debug('[CR2026 catalog] page',{category_id:categoryId,sort:sortMap[orderby],page,per_page:pageSize,filters:getFilters(),source:responseData.source,api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds,prices,returned_total:responseData.total,total:responseData.total,has_more:responseData.has_more});
         if(orderby==='price'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_ASC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
         if(orderby==='price'&&prices.some((price,index)=>index>0&&prices[index-1]>price))throw new Error('PRICE_ASC=FAIL within concatenated page sequence: '+JSON.stringify(prices));
         if(orderby==='price-desc'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_DESC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
