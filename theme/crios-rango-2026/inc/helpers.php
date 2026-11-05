@@ -178,14 +178,14 @@ function cr2026_render_product_card( $product, $index = 99 ) {
     if ( $image_id ) {
         $image = wp_get_attachment_image( $image_id, 'medium_large', false, array(
             'class' => 'cr-product-card__image', 'alt' => $name,
-            'loading' => $index < 4 ? 'eager' : 'lazy', 'decoding' => 'async',
+            'loading' => $index < 2 ? 'eager' : 'lazy', 'decoding' => 'async',
             'fetchpriority' => 0 === (int) $index ? 'high' : 'auto',
             'sizes' => '(max-width: 767px) calc((100vw - 52px) / 2), (max-width: 1023px) 28vw, (max-width: 1439px) 22vw, 18vw',
         ) );
     } else {
         $placeholder = function_exists( 'wc_placeholder_img_src' ) ? wc_placeholder_img_src( 'medium_large' ) : '';
         if ( $placeholder ) {
-            $image = '<img class="cr-product-card__image" src="' . esc_url( $placeholder ) . '" alt="' . esc_attr( $name ) . '" loading="' . ( $index < 4 ? 'eager' : 'lazy' ) . '" decoding="async">';
+            $image = '<img class="cr-product-card__image" src="' . esc_url( $placeholder ) . '" alt="' . esc_attr( $name ) . '" loading="' . ( $index < 2 ? 'eager' : 'lazy' ) . '" decoding="async">';
         }
     }
     echo '<article class="cr-product-card"><a class="cr-product-card__link" href="' . esc_url( $permalink ) . '">';
