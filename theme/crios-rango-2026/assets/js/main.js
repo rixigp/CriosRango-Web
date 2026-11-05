@@ -379,9 +379,11 @@
         const seenIds=new Set(),duplicates=[];
         completeIds.forEach(id=>{if(seenIds.has(id))duplicates.push(id);else seenIds.add(id);});
         if(duplicates.length)throw new Error('Catalog duplicate product IDs across pages: '+JSON.stringify(duplicates));
-        const prices=Array.from((append?grid:template.content).querySelectorAll('[data-product-id]')).map(node=>{
-          const text=node.querySelector('.cr-product-card__price')?.textContent||'';
-          const normalized=text.replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:,|$))/g,'').replace(',','.');
+        const priceNodes=append?Array.from(grid.querySelectorAll('[data-product-id]')).concat(Array.from(template.content.querySelectorAll('[data-product-id]'))):Array.from(template.content.querySelectorAll('[data-product-id]'));
+        const prices=priceNodes.map(node=>{
+          const amountNode=node.querySelector('.cr-product-card__price ins .amount, .cr-product-card__price ins bdi, .cr-product-card__price .amount, .cr-product-card__price bdi');
+          const text=amountNode?amountNode.textContent:(node.querySelector('.cr-product-card__price')?.textContent||'');
+          const normalized=String(text).replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:,|$))/g,'').replace(',','.');
           return Number(normalized);
         });
         if(orderby==='price'&&prices.some((price,index)=>index>0&&Number.isFinite(price)&&Number.isFinite(prices[index-1])&&prices[index-1]>price))throw new Error('PRICE_ASC=FAIL within rendered page sequence: '+JSON.stringify(prices));
