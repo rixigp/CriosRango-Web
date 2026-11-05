@@ -49,7 +49,7 @@ get_header( 'shop' );
     data-filtered="<?php echo $listing_filtered ? '1' : '0'; ?>"
     data-category-id="<?php echo esc_attr( $listing_category_id ); ?>"
     data-filter-api-url="<?php echo esc_url( rest_url( 'criosrango-filter/v1/query' ) ); ?>"
-    data-products-url="<?php echo esc_url( rest_url( 'criosrango/v1/product-list' ) ); ?>">
+    data-products-url="<?php echo esc_url( rest_url( 'cr2026/v1/catalog-page' ) ); ?>">
     <div class="cr-product-listing__shell">
         <?php cr2026_render_category_toolbar( $listing_title, $listing_back_url, $listing_context, true ); ?>
         <?php cr2026_render_category_filter_sheet( $listing_term, $listing_context ); ?>

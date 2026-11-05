@@ -101,6 +101,155 @@ function cr2026_product_list_rest_response( WP_REST_Request $request ) {
     return rest_ensure_response( array( 'html' => ob_get_clean(), 'has_more' => $has_more, 'count' => count( $products ) ) );
 }
 
+/**
+ * One browser request for catalog result pages. Filter API is dispatched inside
+ * WordPress (REST internal dispatch, never an HTTP loopback); card HTML is
+ * rendered through the canonical theme product-card renderer.
+ */
+function cr2026_register_catalog_page_route() {
+    register_rest_route( 'cr2026/v1', '/catalog-page', array(
+        'methods' => WP_REST_Server::READABLE,
+        'callback' => 'cr2026_catalog_page_rest_response',
+        'permission_callback' => '__return_true',
+    ) );
+}
+add_action( 'rest_api_init', 'cr2026_register_catalog_page_route' );
+
+function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
+    $page = max( 1, absint( $request->get_param( 'page' ) ) );
+    $per_page = 12;
+    $category_id = absint( $request->get_param( 'catalog_category_id' ) );
+    $sort = sanitize_key( (string) $request->get_param( 'sort' ) );
+    if ( ! in_array( $sort, array( 'newest', 'oldest', 'price_asc', 'price_desc', 'title_asc', 'title_desc', 'default' ), true ) ) {
+        $sort = 'newest';
+    }
+    $filter_keys = array( 'size_ids', 'color_ids', 'brand_ids' );
+    $has_filters = false;
+    foreach ( $filter_keys as $filter_key ) {
+        if ( '' !== trim( (string) $request->get_param( $filter_key ) ) ) {
+            $has_filters = true;
+            break;
+        }
+    }
+
+    $products = array();
+    $product_ids = array();
+    $has_more = false;
+    $total = null;
+
+    if ( $has_filters ) {
+        $filter_request = new WP_REST_Request( 'GET', '/criosrango-filter/v1/query' );
+        $filter_params = array(
+            'scope' => 'catalog',
+            'facet' => 'none',
+            'page' => $page,
+            'per_page' => $per_page,
+            'sort' => $sort,
+        );
+        if ( $category_id > 0 ) {
+            $filter_params['catalog_category_id'] = $category_id;
+        }
+        foreach ( $filter_keys as $filter_key ) {
+            $value = trim( (string) $request->get_param( $filter_key ) );
+            if ( '' !== $value ) {
+                $filter_params[ $filter_key ] = $value;
+            }
+        }
+        $filter_request->set_query_params( $filter_params );
+        $filter_response = rest_do_request( $filter_request );
+        if ( is_wp_error( $filter_response ) ) {
+            return $filter_response;
+        }
+        if ( $filter_response->get_status() < 200 || $filter_response->get_status() >= 300 ) {
+            return new WP_Error( 'cr2026_filter_api_dispatch', __( 'No se pudieron obtener los productos filtrados.', 'crios-rango-2026' ), array( 'status' => 502 ) );
+        }
+        $filter_payload = $filter_response->get_data();
+        if ( ! is_array( $filter_payload ) ) {
+            return new WP_Error( 'cr2026_filter_api_payload', __( 'Respuesta de filtros no válida.', 'crios-rango-2026' ), array( 'status' => 502 ) );
+        }
+        $raw_product_ids = isset( $filter_payload['product_ids'] ) && is_array( $filter_payload['product_ids'] ) ? $filter_payload['product_ids'] : array();
+        $product_ids = array_values( array_unique( array_filter( array_map( 'absint', $raw_product_ids ) ) ) );
+        $product_ids = array_slice( $product_ids, 0, $per_page );
+        if ( $product_ids ) {
+            $products = wc_get_products( array(
+                'status' => 'publish',
+                'visibility' => 'visible',
+                'include' => $product_ids,
+                'limit' => count( $product_ids ),
+                'return' => 'objects',
+                'orderby' => 'include',
+            ) );
+            // Preserve the exact Filter API ID order; do not sort the page locally.
+            $products_by_id = array();
+            foreach ( $products as $product ) {
+                $products_by_id[ $product->get_id() ] = $product;
+            }
+            $products = array_values( array_filter( array_map(
+                static function ( $id ) use ( $products_by_id ) {
+                    return isset( $products_by_id[ $id ] ) ? $products_by_id[ $id ] : null;
+                },
+                $product_ids
+            ) ) );
+        }
+        $has_more = ! empty( $filter_payload['has_more'] );
+        if ( isset( $filter_payload['total'] ) ) {
+            $total = absint( $filter_payload['total'] );
+        } elseif ( isset( $filter_payload['total_products'] ) ) {
+            $total = absint( $filter_payload['total_products'] );
+        } elseif ( isset( $filter_payload['total_count'] ) ) {
+            $total = absint( $filter_payload['total_count'] );
+        }
+    } else {
+        $term = $category_id ? get_term( $category_id, 'product_cat' ) : null;
+        if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) {
+            return new WP_Error( 'cr2026_catalog_category', __( 'Categoría no válida.', 'crios-rango-2026' ), array( 'status' => 400 ) );
+        }
+        $orderby = 'date';
+        $order = 'DESC';
+        if ( 'oldest' === $sort ) {
+            $orderby = 'date';
+            $order = 'ASC';
+        } elseif ( 'price_asc' === $sort ) {
+            $orderby = 'price';
+            $order = 'ASC';
+        } elseif ( 'price_desc' === $sort ) {
+            $orderby = 'price';
+            $order = 'DESC';
+        } elseif ( 'title_asc' === $sort ) {
+            $orderby = 'title';
+            $order = 'ASC';
+        } elseif ( 'title_desc' === $sort ) {
+            $orderby = 'title';
+            $order = 'DESC';
+        }
+        $products = wc_get_products( array(
+            'status' => 'publish',
+            'visibility' => 'visible',
+            'category' => array( $term->slug ),
+            'limit' => $per_page + 1,
+            'offset' => ( $page - 1 ) * $per_page,
+            'return' => 'objects',
+            'orderby' => $orderby,
+            'order' => $order,
+        ) );
+        $has_more = count( $products ) > $per_page;
+        $products = array_slice( $products, 0, $per_page );
+        $product_ids = array_map( static function ( $product ) { return $product->get_id(); }, $products );
+    }
+
+    ob_start();
+    foreach ( $products as $index => $product ) {
+        cr2026_render_product_card( $product, $index + ( $page > 1 ? 4 : 0 ) );
+    }
+    return rest_ensure_response( array(
+        'html' => ob_get_clean(),
+        'product_ids' => $product_ids,
+        'page' => $page,
+        'total' => $total,
+        'has_more' => $has_more,
+    ) );
+}
+
 function cr2026_woocommerce_wrappers() {
     remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', 10 );
     remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
