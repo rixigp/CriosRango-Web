@@ -124,3 +124,11 @@ test('price monotonicity validation includes previous pages plus the incoming pa
   assert.match(js, /PRICE_ASC=FAIL/);
   assert.match(js, /PRICE_DESC=FAIL/);
 });
+
+test('catalog endpoint echoes page size and staging debug exposes all ID layers plus prices', () => {
+  assert.match(php, /'per_page' => \$per_page/);
+  assert.match(js, /api_product_ids:returnedIds/);
+  assert.match(js, /hydrated_product_ids:endpointIds/);
+  assert.match(js, /dom_product_ids:renderedIds/);
+  assert.match(js, /prices,total:responseData\.total/);
+});
