@@ -164,3 +164,8 @@ test('catalog debug diagnostics are enabled only on staging /prueba or non-produ
   assert.match(archive, /REQUEST_URI[\s\S]*?\/prueba\//);
   assert.match(archive, /data-debug=.*\$listing_debug/s);
 });
+
+test('price monotonicity reads the current sale amount rather than the struck regular amount', () => {
+  assert.match(js, /const saleAmount=priceContainer\?\.querySelector\('ins \.amount, ins bdi'\)/);
+  assert.match(js, /const amountNode=saleAmount\|\|priceContainer\?\.querySelector\('\.amount, bdi'\)/);
+});
