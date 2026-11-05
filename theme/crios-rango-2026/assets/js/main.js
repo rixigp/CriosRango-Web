@@ -1,6 +1,15 @@
 (() => {
   'use strict';
 
+  const toggleFacetSelection = (selected, termIds) => {
+    const ids = termIds.map(String);
+    return ids.some(id => selected.includes(id))
+      ? selected.filter(id => !ids.includes(id))
+      : selected.concat(ids.filter(id => !selected.includes(id)));
+  };
+  const sameOrderedIds = (left, right) => Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((id, index) => String(id) === String(right[index]));
+  window.CR2026CatalogState = { toggleFacetSelection, sameOrderedIds };
+
   const menuButton = document.querySelector('[data-cr-menu-toggle]');
   const mobileMenu = document.querySelector('[data-cr-mobile-menu]');
 
@@ -82,6 +91,7 @@
   if (filterSheet) {
     const categoryId = String(filterSheet.dataset.categoryId || 'root');
     const apiUrl = filterSheet.dataset.apiUrl;
+    const debug = filterSheet.dataset.debug === '1';
     let termLabels = {};
     try { termLabels = JSON.parse(filterSheet.dataset.termLabels || '{}'); } catch (error) {}
     const dimensions = ['sizes', 'colors', 'brands'];
@@ -99,7 +109,7 @@
     const readStore = key => {try{const value=JSON.parse(sessionStorage.getItem(key)||'null');return isValid(value)?value:null;}catch(error){return null;}};
     const writeStore = (key,value) => {memoryCache[key]=value;try{sessionStorage.setItem(key,JSON.stringify(value));}catch(error){}};
     const draft = {sizes:[],colors:[],brands:[]};
-    let baseFacets=null, activeDimension='sizes', rowsByDimension={sizes:[],colors:[],brands:[]}, savedScrollY=0;
+    let baseFacets=null, activeDimension='sizes', rowsByDimension={sizes:[],colors:[],brands:[]}, facetAvailability={sizes:null,colors:null,brands:null}, savedScrollY=0;
     let generation=0, debounceTimer=null, activeControllers=[];
     let prefetchControllers=[], prefetchIdleHandle=null, prefetchTimer=null, prefetchStarted=false;
     const optionsNode=filterSheet.querySelector('[data-cr-filter-options]');
@@ -110,11 +120,13 @@
       if(cached){memoryCache[key]=cached;return cached.rows;}
       const params=new URLSearchParams({scope:'catalog',facet,page:'1',per_page:'1'});if(categoryId!=='root')params.set('catalog_category_id',categoryId);
       dimensions.forEach(d=>{if(d!==facet&&state[d].length)params.set(apiKeys[d],sortIds(state[d]).join(','));});
+      if(debug)console.debug('[CR2026 facets] request',{facet,selectedState:state,params:Object.fromEntries(params.entries())});
       const response=await fetch(apiUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'},signal});
       if(!response.ok)throw new Error('Filter API HTTP '+response.status);
       const payload=await response.json(), facets=payload&&payload.facets||{};
       const raw=Array.isArray(facets[facet])?facets[facet]:(Array.isArray(facets[facet==='colors'?'colors':facet])?facets[facet]:[]);
       const rows=rowsFor(raw,facet);
+      if(debug)console.debug('[CR2026 facets] response',{facet,responseTermIds:rows.flatMap(row=>row.term_ids)});
       writeStore(storageKey+'|'+key,{timestamp:Date.now(),rows});
       return rows;
     };
@@ -143,7 +155,9 @@
       if(!rows.length){const empty=document.createElement('p');empty.className='cr-category-filter-sheet__empty';empty.textContent='No hay opciones disponibles.';optionsNode.appendChild(empty);return;}
       rows.forEach(row=>{
         const selected=row.term_ids.some(id=>draft[dimension].includes(id));
-        const chip=document.createElement('button');chip.type='button';chip.className='cr-category-filter-sheet__option'+(selected?' is-selected':'');chip.setAttribute('aria-pressed',String(selected));chip.setAttribute('aria-label',row.label);
+        const available=facetAvailability[dimension];
+        const enabled=!available||row.term_ids.some(id=>available.has(id))||selected;
+        const chip=document.createElement('button');chip.type='button';chip.disabled=!enabled;chip.className='cr-category-filter-sheet__option'+(selected?' is-selected':'');chip.setAttribute('aria-pressed',String(selected));chip.setAttribute('aria-label',row.label);
         if(dimension==='colors'){
           const swatch=document.createElement('span');swatch.className='cr-category-filter-sheet__swatch';swatch.setAttribute('aria-hidden','true');
           const swatches={azul:'#4B78B8','azul claro':'#91BDE8','azul marino':'#203B68','azul turquesa':'#48B8B1',beige:'#D8C6A5',berenjena:'#65345C',blanco:'#FFFFFF',caldero:'#B86B3C',negro:'#222222',rojo:'#C74A45',verde:'#56856A',gris:'#929292',rosa:'#D88FA8',amarillo:'#E5C84D',marron:'#806044','marrón':'#806044'};
@@ -151,11 +165,9 @@
         }
         const label=document.createElement('span');label.textContent=row.label;chip.appendChild(label);
         chip.addEventListener('click',()=>{
-          const all=row.term_ids.some(id=>draft[dimension].includes(id));
-          if(all)draft[dimension]=draft[dimension].filter(id=>!row.term_ids.includes(id));
-          else row.term_ids.forEach(id=>{if(!draft[dimension].includes(id))draft[dimension].push(id);});
-          rowsByDimension[dimension]=rowsByDimension[dimension].filter(existing=>existing!==row);
-          if(!all)rowsByDimension[dimension].push(row);
+          const before=draft[dimension].slice();
+          draft[dimension]=toggleFacetSelection(draft[dimension],row.term_ids);
+          if(debug)console.debug('[CR2026 facets] selection',{facet:dimension,selectedBefore:before,termIds:row.term_ids,selectedAfter:draft[dimension].slice()});
           render(dimension);scheduleDependentRefresh(dimension);
         });
         optionsNode.appendChild(chip);
@@ -165,12 +177,6 @@
       }
     };
     const refreshing=new Set();
-    const sanitizeSelected = (dimension,rows) => {
-      const available=new Set(rows.flatMap(row=>row.term_ids));
-      const before=draft[dimension].length;
-      draft[dimension]=draft[dimension].filter(id=>available.has(id));
-      return before!==draft[dimension].length;
-    };
     const scheduleDependentRefresh = changedDimension => {
       generation++;const token=generation;
       refreshing.clear();
@@ -184,7 +190,7 @@
         try{
           const results=await Promise.all(affected.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal)));
           if(token!==generation)return;
-          results.forEach((rows,index)=>{rowsByDimension[affected[index]]=rows;sanitizeSelected(affected[index],rows);});
+          results.forEach((rows,index)=>{facetAvailability[affected[index]]=new Set(rows.flatMap(row=>row.term_ids));});
           affected.forEach(d=>refreshing.delete(d));
           render(activeDimension);
         }catch(error){
@@ -194,16 +200,16 @@
       },120);
     };
     const fetchBase = async (force, isPrefetch=false) => {
-      if(!force&&baseFacets)return baseFacets;
+      if(!force&&baseFacets){dimensions.forEach(d=>{rowsByDimension[d]=baseFacets[d]||[];facetAvailability[d]=new Set(rowsByDimension[d].flatMap(row=>row.term_ids));});return baseFacets;}
       const cache=memoryCache[storageKey]||readStore(storageKey);
-      if(!force&&cache&&dimensions.every(d=>Array.isArray(cache[d]))){baseFacets=cache;return cache;}
+      if(!force&&cache&&dimensions.every(d=>Array.isArray(cache[d]))){baseFacets=cache;dimensions.forEach(d=>{rowsByDimension[d]=cache[d];facetAvailability[d]=new Set(cache[d].flatMap(row=>row.term_ids));});return cache;}
       const state={sizes:[],colors:[],brands:[]};
       const controllers=dimensions.map(()=>new AbortController());
       if(isPrefetch)prefetchControllers=controllers;
       const results=await Promise.all(dimensions.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal)));
       if(isPrefetch)prefetchControllers=[];
       const value={timestamp:Date.now(),sizes:results[0],colors:results[1],brands:results[2]};
-      baseFacets=value;writeStore(storageKey,value);dimensions.forEach(d=>rowsByDimension[d]=value[d]);return value;
+      baseFacets=value;writeStore(storageKey,value);dimensions.forEach(d=>{rowsByDimension[d]=value[d];facetAvailability[d]=new Set(value[d].flatMap(row=>row.term_ids));});return value;
     };
     const setDimension = dimension => {
       if(!dimensions.includes(dimension))return;activeDimension=dimension;
@@ -220,14 +226,14 @@
       cancelDeferredPrefetch(true);
       savedScrollY=window.scrollY;dimensions.forEach(d=>draft[d]=(filterSheet.dataset[initialKeys[d]]||'').split(',').filter(Boolean));
       filterSheet.hidden=false;document.body.classList.add('cr-category-filter-open');document.body.style.overflow='hidden';
-      if(baseFacets){dimensions.forEach(d=>rowsByDimension[d]=baseFacets[d]);setDimension('sizes');}
+      if(baseFacets){dimensions.forEach(d=>{rowsByDimension[d]=baseFacets[d];facetAvailability[d]=new Set(baseFacets[d].flatMap(row=>row.term_ids));});setDimension('sizes');}
       else {optionsNode.textContent='Cargando opciones…';fetchBase(false).then(()=>setDimension('sizes')).catch(error=>{optionsNode.textContent='No se han podido cargar los filtros.';console.error(error);});}
       window.requestAnimationFrame(()=>dialog.focus());
     };
     openButtons.forEach(button=>button.addEventListener('click',openSheet));
     filterSheet.querySelectorAll('[data-cr-filter-close]').forEach(button=>button.addEventListener('click',closeSheet));
     filterSheet.querySelectorAll('[data-cr-filter-tab]').forEach(button=>button.addEventListener('click',()=>setDimension(button.dataset.crFilterTab)));
-    filterSheet.querySelector('[data-cr-filter-clear]').addEventListener('click',()=>{dimensions.forEach(d=>draft[d]=[]);if(baseFacets)dimensions.forEach(d=>rowsByDimension[d]=baseFacets[d]);render(activeDimension);generation++;activeControllers.forEach(c=>c.abort());activeControllers=[];});
+    filterSheet.querySelector('[data-cr-filter-clear]').addEventListener('click',()=>{dimensions.forEach(d=>draft[d]=[]);if(baseFacets)dimensions.forEach(d=>{rowsByDimension[d]=baseFacets[d];facetAvailability[d]=new Set(baseFacets[d].flatMap(row=>row.term_ids));});render(activeDimension);generation++;activeControllers.forEach(c=>c.abort());activeControllers=[];});
     filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',()=>{
       const url=new URL(window.location.href);dimensions.forEach(d=>{url.searchParams.delete(apiKeys[d]);if(draft[d].length)url.searchParams.set(apiKeys[d],sortIds(draft[d]).join(','));});
       window.location.assign(url.toString());
@@ -271,13 +277,13 @@
     const emptyState = productListing.querySelector('[data-cr-product-empty]');
     const orderControl = productListing.querySelector('[data-cr-product-order]');
     const categoryId = String(productListing.dataset.categoryId || '0');
-    const filtered = productListing.dataset.filtered === '1';
+    const debug = productListing.dataset.debug === '1';
     const productsUrl = productListing.dataset.productsUrl;
     const currentUrl = new URL(window.location.href);
     const orderby = ['date','price','price-desc'].includes(currentUrl.searchParams.get('orderby')) ? currentUrl.searchParams.get('orderby') : 'date';
     const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc'};
     const filterKeys = ['size_ids','color_ids','brand_ids'];
-    let currentPage = 1, hasMore = !filtered && loadMoreButton && !loadMoreButton.hidden, loading = false;
+    let currentPage = 0, hasMore = false, loading = false;
     const showEmpty = () => { grid.replaceChildren(); emptyState.hidden = false; if (loadMoreButton) loadMoreButton.hidden = true; };
     const loadPage = async (page, append) => {
       if (loading) return;
@@ -290,9 +296,15 @@
         const response = await fetch(productsUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'}});
         if (!response.ok) throw new Error('Catalog page HTTP '+response.status);
         const responseData = await response.json();
-        if (!responseData || !responseData.html) { if (!append) showEmpty(); hasMore = false; if (loadMoreButton) loadMoreButton.hidden = true; return; }
-        if (append) grid.insertAdjacentHTML('beforeend',responseData.html);
-        else grid.innerHTML = responseData.html;
+        if (!responseData || Number(responseData.page) !== page) throw new Error('Catalog page mismatch: requested '+page+', received '+(responseData&&responseData.page));
+        const template=document.createElement('template');template.innerHTML=responseData.html||'';
+        const returnedIds=Array.isArray(responseData.product_ids)?responseData.product_ids.map(String):[];
+        const renderedIds=Array.from(template.content.querySelectorAll('[data-product-id]')).map(node=>String(node.getAttribute('data-product-id')));
+        if(!sameOrderedIds(returnedIds,renderedIds))throw new Error('Catalog ID/order mismatch: API='+JSON.stringify(returnedIds)+' DOM='+JSON.stringify(renderedIds));
+        if(debug)console.debug('[CR2026 catalog] page',{page,sort:sortMap[orderby],returned_product_ids:returnedIds,rendered_product_ids:renderedIds});
+        if (!returnedIds.length) { if (!append) showEmpty(); hasMore = false; if (loadMoreButton) loadMoreButton.hidden = true; return; }
+        if (append) grid.appendChild(template.content);
+        else grid.replaceChildren(template.content);
         emptyState.hidden = true;
         currentPage = page;
         hasMore = Boolean(responseData.has_more);
@@ -307,7 +319,7 @@
         if (loadMoreButton) { loadMoreButton.disabled = false; loadMoreButton.removeAttribute('aria-busy'); }
       }
     };
-    if (filtered) loadPage(1,false);
+    loadPage(1,false);
     if (loadMoreButton) loadMoreButton.addEventListener('click',()=>{if(hasMore)loadPage(currentPage+1,true);});
     if (orderControl) orderControl.addEventListener('change',()=>{
       const nextUrl = new URL(window.location.href);
