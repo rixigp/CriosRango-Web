@@ -4,15 +4,18 @@ on:
   push:
     branches:
       - main
+      - fix/catalog-runtime-parity
     paths:
       - "theme/**"
+      - "tests/catalog-contract.test.cjs"
       - ".github/workflows/deploy.yml"
+      - ".github/workflows/catalog-contract.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: crios-rango-production
+  group: ${{ github.ref == 'refs/heads/fix/catalog-runtime-parity' && 'crios-rango-staging' || 'crios-rango-production' }}
   cancel-in-progress: false
 
 jobs:
@@ -33,6 +36,11 @@ jobs:
           if [ -f "theme/crios-rango-2026/style.css" ]; then
             echo "Theme already present. Bootstrap skipped."
             exit 0
+          fi
+
+          if [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ]; then
+            echo "ERROR: staging deploy must not bootstrap or push to main."
+            exit 1
           fi
 
           mkdir -p /tmp/crios-bootstrap theme
@@ -347,6 +355,17 @@ jobs:
             git push origin HEAD:main
           fi
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Validate JavaScript syntax
+        run: node --check theme/crios-rango-2026/assets/js/main.js
+
+      - name: Run catalog contract tests
+        run: node --test tests/catalog-contract.test.cjs
+
       - name: Install validation and FTP tools
         shell: bash
         run: |
@@ -373,14 +392,42 @@ jobs:
           find theme/crios-rango-2026 -type f -name "*.php" -print0 \
             | xargs -0 -r -n1 php -l
 
+      - name: Check exact PR13 staging HEAD
+        id: staging-head
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ]; then
+            git fetch origin fix/catalog-runtime-parity
+            REMOTE_SHA="$(git rev-parse FETCH_HEAD)"
+            if [ "$REMOTE_SHA" = "$GITHUB_SHA" ]; then
+              echo "current=true" >> "$GITHUB_OUTPUT"
+              echo "Staging deploy HEAD matches PR branch: $GITHUB_SHA"
+            else
+              echo "current=false" >> "$GITHUB_OUTPUT"
+              echo "Skipping stale staging deploy SHA=$GITHUB_SHA; branch HEAD=$REMOTE_SHA"
+            fi
+          else
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate staging build manifest
+        if: github.ref == 'refs/heads/fix/catalog-runtime-parity' && steps.staging-head.outputs.current == 'true'
+        env:
+          BUILD_SHA: ${{ github.sha }}
+          BUILD_BRANCH: ${{ github.ref_name }}
+        run: |
+          node -e 'const fs=require("fs");const manifest={sha:process.env.BUILD_SHA,branch:process.env.BUILD_BRANCH,pr:13};fs.writeFileSync("theme/crios-rango-2026/build.json",JSON.stringify(manifest,null,2)+"\n");'
+
       - name: Validate FTP configuration
+        if: steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ github.ref == 'refs/heads/fix/catalog-runtime-parity' && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
@@ -410,13 +457,14 @@ jobs:
           echo "Remote theme path validated."
 
       - name: Deploy theme by FTP
+        if: steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ github.ref == 'refs/heads/fix/catalog-runtime-parity' && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
@@ -446,3 +494,22 @@ jobs:
                 --upload-file "$FILE" \
                 "${BASE_URL}/${RELATIVE}"
           done
+
+      - name: Verify remote staging build.json SHA
+        if: github.ref == 'refs/heads/fix/catalog-runtime-parity' && steps.staging-head.outputs.current == 'true'
+        shell: bash
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_PATH: /public/prueba/wp-content/themes/crios-rango-2026/
+        run: |
+          set -euo pipefail
+          REMOTE_ROOT="${SFTP_PATH#/}"
+          REMOTE_ROOT="${REMOTE_ROOT%/}"
+          BASE_URL="ftp://${SFTP_HOST}:${SFTP_PORT}/${REMOTE_ROOT}"
+          curl --silent --show-error --fail --ssl-reqd --ftp-pasv --connect-timeout 20 --retry 2 \
+            --user "${SFTP_USER}:${SFTP_PASSWORD}" "${BASE_URL}/build.json" --output /tmp/criosrango-build.json
+          node -e 'const fs=require("fs");const manifest=JSON.parse(fs.readFileSync("/tmp/criosrango-build.json","utf8"));if(manifest.sha!==process.env.GITHUB_SHA){console.error("STAGING_BUILD_SHA mismatch: "+manifest.sha+" != "+process.env.GITHUB_SHA);process.exit(1)}console.log("STAGING_BUILD_SHA="+manifest.sha);'
+

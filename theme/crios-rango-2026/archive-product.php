@@ -41,17 +41,22 @@ $listing_back_url = $listing_term ? cr2026_category_back_url( $listing_term ) : 
 $listing_category_id = $listing_term ? (int) $listing_term->term_id : 0;
 $listing_filtered = cr2026_category_filters_selected();
 $listing_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
-if ( ! in_array( $listing_orderby, array( 'date', 'price', 'price-desc' ), true ) ) { $listing_orderby = 'date'; }
+if ( ! in_array( $listing_orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $listing_orderby = 'date'; }
 $remove_filter_url = remove_query_arg( array( 'size_ids', 'color_ids', 'brand_ids' ) );
+$listing_debug = ( function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), array( 'staging', 'development', 'local' ), true ) )
+    || ( isset( $_SERVER['REQUEST_URI'] ) && 0 === strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/prueba/' ) );
 get_header( 'shop' );
 ?>
 <main id="primary" class="cr-main cr-main--woocommerce cr-product-listing" data-cr-product-list
     data-filtered="<?php echo $listing_filtered ? '1' : '0'; ?>"
+    data-debug="<?php echo $listing_debug ? '1' : '0'; ?>"
     data-category-id="<?php echo esc_attr( $listing_category_id ); ?>"
+    data-page-size="<?php echo esc_attr( CR2026_CATALOG_PAGE_SIZE ); ?>"
     data-filter-api-url="<?php echo esc_url( rest_url( 'criosrango-filter/v1/query' ) ); ?>"
     data-products-url="<?php echo esc_url( rest_url( 'cr2026/v1/catalog-page' ) ); ?>">
     <div class="cr-product-listing__shell">
         <?php cr2026_render_category_toolbar( $listing_title, $listing_back_url, $listing_context, true ); ?>
+        <div class="cr-product-listing__active-filters" data-cr-active-filter-chips hidden aria-live="polite"></div>
         <?php cr2026_render_category_filter_sheet( $listing_term, $listing_context ); ?>
         <div class="cr-product-listing__ordering">
             <label for="cr-product-order"><?php esc_html_e( 'Ordenar por', 'crios-rango-2026' ); ?></label>
@@ -60,33 +65,20 @@ get_header( 'shop' );
                     <option value="date"<?php selected( 'date', $listing_orderby ); ?>><?php esc_html_e( 'Más recientes', 'crios-rango-2026' ); ?></option>
                     <option value="price"<?php selected( 'price', $listing_orderby ); ?>><?php esc_html_e( 'Precio: menor a mayor', 'crios-rango-2026' ); ?></option>
                     <option value="price-desc"<?php selected( 'price-desc', $listing_orderby ); ?>><?php esc_html_e( 'Precio: mayor a menor', 'crios-rango-2026' ); ?></option>
+                    <option value="title"<?php selected( 'title', $listing_orderby ); ?>><?php esc_html_e( 'Nombre A-Z', 'crios-rango-2026' ); ?></option>
                 </select>
             </span>
         </div>
         <div class="cr-product-grid" data-cr-product-grid aria-live="polite">
-        <?php if ( $listing_filtered ) : ?>
             <?php for ( $skeleton_index = 0; $skeleton_index < 4; $skeleton_index++ ) : ?>
                 <div class="cr-product-skeleton" aria-hidden="true"><span></span><i></i><b></b></div>
             <?php endfor; ?>
-        <?php else : ?>
-            <?php
-            global $wp_query;
-            $listing_posts = isset( $wp_query->posts ) && is_array( $wp_query->posts ) ? $wp_query->posts : array();
-            $listing_has_more = count( $listing_posts ) > 12;
-            foreach ( array_slice( $listing_posts, 0, 12 ) as $product_index => $listing_post ) :
-                $listing_product = wc_get_product( $listing_post->ID );
-                if ( $listing_product ) { cr2026_render_product_card( $listing_product, $product_index ); }
-            endforeach;
-            ?>
-        <?php endif; ?>
         </div>
-        <div class="cr-product-listing__empty" data-cr-product-empty<?php echo $listing_filtered || ! empty( $listing_posts ) ? ' hidden' : ''; ?>>
+        <div class="cr-product-listing__empty" data-cr-product-empty hidden>
             <p><?php echo $listing_filtered ? esc_html__( 'No encontramos productos con esos filtros.', 'crios-rango-2026' ) : esc_html__( 'No hay productos disponibles.', 'crios-rango-2026' ); ?></p>
             <?php if ( $listing_filtered ) : ?><a href="<?php echo esc_url( $remove_filter_url ); ?>"><?php esc_html_e( 'Limpiar filtros', 'crios-rango-2026' ); ?></a><?php endif; ?>
         </div>
-        <button class="cr-product-listing__load-more" type="button" data-cr-product-load-more<?php echo ( ! $listing_filtered && ! empty( $listing_has_more ) ) ? '' : ' hidden'; ?>>
-            <?php esc_html_e( 'Cargar más', 'crios-rango-2026' ); ?>
-        </button>
+        <div class="cr-product-listing__sentinel" data-cr-product-sentinel aria-hidden="true"></div>
     </div>
 </main>
 <?php get_footer( 'shop' );
