@@ -56,7 +56,7 @@ test('facet responses update availability without replacing the option universe 
 });
 
 test('every category page, including page one, uses the same catalog-page endpoint', () => {
-  assert.match(js, /loadPage\(1,false\)/);
+  assert.match(js, /loadPage\(1,false,requestGeneration\)/);
   assert.doesNotMatch(archive, /\$wp_query->posts/);
   assert.match(archive, /data-products-url=.*cr2026\/v1\/catalog-page/s);
 });
