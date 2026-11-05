@@ -94,7 +94,7 @@
     const collator = new Intl.Collator('es',{sensitivity:'base'});
     const normalize = value => String(value||'').trim().normalize('NFC').toLocaleLowerCase('es');
     const sortIds = values => Array.from(new Set((values||[]).map(String).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'en',{numeric:true}));
-    const cacheKey = (facet,state) => [categoryId,facet,sortIds(state.sizes).join(','),sortIds(state.colors).join(','),sortIds(state.brands).join(',')].join('|');
+    const cacheKey = (facet,state) => [categoryId,facet,...dimensions.filter(d=>d!==facet).map(d=>d+':'+sortIds(state[d]).join(','))].join('|');
     const isValid = value => value && Number(value.timestamp)>0 && Date.now()-Number(value.timestamp)<ttl;
     const readStore = key => {try{const value=JSON.parse(sessionStorage.getItem(key)||'null');return isValid(value)?value:null;}catch(error){return null;}};
     const writeStore = (key,value) => {memoryCache[key]=value;try{sessionStorage.setItem(key,JSON.stringify(value));}catch(error){}};
