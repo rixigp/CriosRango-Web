@@ -507,7 +507,7 @@ jobs:
           done
 
       - name: Verify remote staging build.json SHA
-        if: github.ref == 'refs/heads/fix/catalog-runtime-parity' && steps.staging-head.outputs.current == 'true'
+        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity') && steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
