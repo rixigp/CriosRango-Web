@@ -185,30 +185,24 @@
         });
         optionsNode.appendChild(chip);
       });
-      if(dimensions.some(d=>d!==dimension&&refreshing.has(d))){
-        const status=document.createElement('span');status.className='cr-category-filter-sheet__refreshing';status.textContent='Actualizando…';status.setAttribute('aria-live','polite');optionsNode.appendChild(status);
-      }
     };
-    const refreshing=new Set();
     const scheduleDependentRefresh = changedDimension => {
       generation++;const token=generation;
-      refreshing.clear();
       activeControllers.forEach(controller=>controller.abort());activeControllers=[];
       if(debounceTimer)window.clearTimeout(debounceTimer);
       debounceTimer=window.setTimeout(async()=>{
         const state={sizes:draft.sizes.slice(),colors:draft.colors.slice(),brands:draft.brands.slice()};
         const affected=changedDimension ? dimensions.filter(d=>d!==changedDimension) : dimensions.slice();
-        affected.forEach(d=>{refreshing.add(d);facetAvailability[d]=null;});if(affected.includes(activeDimension))render(activeDimension);
+        // Keep existing availability/options rendered until a current response is accepted.
         const controllers=affected.map(()=>new AbortController());activeControllers=controllers;
         try{
           const results=await Promise.all(affected.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal)));
           if(token!==generation)return;
           results.forEach((rows,index)=>{facetAvailability[affected[index]]=new Set(rows.flatMap(row=>row.term_ids));});
-          affected.forEach(d=>refreshing.delete(d));
           render(activeDimension);
         }catch(error){
           if(error&&error.name==='AbortError')return;
-          if(token===generation){affected.forEach(d=>refreshing.delete(d));console.error('[Críos&Rango filtros] Error recalculando facetas dependientes',error);render(activeDimension);}
+          if(token===generation){console.error('[Críos&Rango filtros] Error recalculando facetas dependientes',error);render(activeDimension);}
         }
       },120);
     };
