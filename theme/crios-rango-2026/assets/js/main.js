@@ -304,8 +304,8 @@
     const pageSize = Number(productListing.dataset.pageSize || 0);
     if (!Number.isInteger(pageSize) || pageSize < 1) throw new Error('Invalid app catalog page size: '+productListing.dataset.pageSize);
     const currentUrl = new URL(window.location.href);
-    let orderby = ['date','price','price-desc'].includes(currentUrl.searchParams.get('orderby')) ? currentUrl.searchParams.get('orderby') : 'date';
-    const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc'};
+    let orderby = ['date','price','price-desc','title'].includes(currentUrl.searchParams.get('orderby')) ? currentUrl.searchParams.get('orderby') : 'date';
+    const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc',title:'title_asc'};
     const filterKeys = ['size_ids','color_ids','brand_ids'];
     const taxonomyByKey = {size_ids:'pa_tallas',color_ids:'pa_color',brand_ids:'product_tag'};
     const labelByKey = {size_ids:'Talla',color_ids:'',brand_ids:''};
@@ -386,8 +386,10 @@
           const normalized=String(text).replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:,|$))/g,'').replace(',','.');
           return Number(normalized);
         });
-        if(orderby==='price'&&prices.some((price,index)=>index>0&&Number.isFinite(price)&&Number.isFinite(prices[index-1])&&prices[index-1]>price))throw new Error('PRICE_ASC=FAIL within rendered page sequence: '+JSON.stringify(prices));
-        if(orderby==='price-desc'&&prices.some((price,index)=>index>0&&Number.isFinite(price)&&Number.isFinite(prices[index-1])&&prices[index-1]<price))throw new Error('PRICE_DESC=FAIL within rendered page sequence: '+JSON.stringify(prices));
+        if(orderby==='price'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_ASC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
+        if(orderby==='price'&&prices.some((price,index)=>index>0&&prices[index-1]>price))throw new Error('PRICE_ASC=FAIL within concatenated page sequence: '+JSON.stringify(prices));
+        if(orderby==='price-desc'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_DESC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
+        if(orderby==='price-desc'&&prices.some((price,index)=>index>0&&prices[index-1]<price))throw new Error('PRICE_DESC=FAIL within concatenated page sequence: '+JSON.stringify(prices));
         if (!returnedIds.length) {
           if (!append) showEmpty();
           hasMore = false;
@@ -446,7 +448,7 @@
       window.addEventListener('pagehide',()=>catalogObserver.disconnect(),{once:true});
     }
     if (orderControl) orderControl.addEventListener('change',()=>{
-      orderby=['date','price','price-desc'].includes(orderControl.value)?orderControl.value:'date';
+      orderby=['date','price','price-desc','title'].includes(orderControl.value)?orderControl.value:'date';
       if(orderby==='date')currentUrl.searchParams.delete('orderby');else currentUrl.searchParams.set('orderby',orderby);
       window.history.replaceState({},'',currentUrl.toString());
       resetAndLoad();
