@@ -169,3 +169,9 @@ test('price monotonicity reads the current sale amount rather than the struck re
   assert.match(js, /const saleAmount=priceContainer\?\.querySelector\('ins \.amount, ins bdi'\)/);
   assert.match(js, /const amountNode=saleAmount\|\|priceContainer\?\.querySelector\('\.amount, bdi'\)/);
 });
+
+test('staging page diagnostics run only after the concatenated prices array is computed', () => {
+  const pricesIndex = js.indexOf('const prices=priceNodes.map');
+  const diagnosticsIndex = js.indexOf("if(debug)console.debug('[CR2026 catalog] page'");
+  assert.ok(pricesIndex >= 0 && diagnosticsIndex > pricesIndex);
+});
