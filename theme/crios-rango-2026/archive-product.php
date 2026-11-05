@@ -27,6 +27,12 @@ if ( function_exists( 'is_shop' ) && is_shop() && ! cr2026_category_filters_sele
     <?php get_footer( 'shop' ); return;
 }
 $GLOBALS['cr2026_product_listing_view'] = true;
+wp_enqueue_style(
+    'cr2026-product-list-roboto',
+    'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
+    array(),
+    null
+);
 $listing_term = is_product_category() ? get_queried_object() : null;
 $listing_term = $listing_term instanceof WP_Term && 'product_cat' === $listing_term->taxonomy ? $listing_term : null;
 $listing_context = $listing_term ? 'archive' : 'root';
