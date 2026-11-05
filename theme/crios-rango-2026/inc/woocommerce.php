@@ -96,7 +96,7 @@ function cr2026_product_list_rest_response( WP_REST_Request $request ) {
 
     ob_start();
     foreach ( $products as $index => $product ) {
-        cr2026_render_product_card( $product, $index + ( $page > 1 ? 2 : 0 ) );
+        cr2026_render_product_card( $product, $index + ( $page > 1 ? 4 : 0 ) );
     }
     return rest_ensure_response( array( 'html' => ob_get_clean(), 'has_more' => $has_more, 'count' => count( $products ) ) );
 }
