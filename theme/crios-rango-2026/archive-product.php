@@ -41,7 +41,7 @@ $listing_back_url = $listing_term ? cr2026_category_back_url( $listing_term ) : 
 $listing_category_id = $listing_term ? (int) $listing_term->term_id : 0;
 $listing_filtered = cr2026_category_filters_selected();
 $listing_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
-if ( ! in_array( $listing_orderby, array( 'date', 'price', 'price-desc' ), true ) ) { $listing_orderby = 'date'; }
+if ( ! in_array( $listing_orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $listing_orderby = 'date'; }
 $remove_filter_url = remove_query_arg( array( 'size_ids', 'color_ids', 'brand_ids' ) );
 get_header( 'shop' );
 ?>
@@ -63,6 +63,7 @@ get_header( 'shop' );
                     <option value="date"<?php selected( 'date', $listing_orderby ); ?>><?php esc_html_e( 'Más recientes', 'crios-rango-2026' ); ?></option>
                     <option value="price"<?php selected( 'price', $listing_orderby ); ?>><?php esc_html_e( 'Precio: menor a mayor', 'crios-rango-2026' ); ?></option>
                     <option value="price-desc"<?php selected( 'price-desc', $listing_orderby ); ?>><?php esc_html_e( 'Precio: mayor a menor', 'crios-rango-2026' ); ?></option>
+                    <option value="title"<?php selected( 'title', $listing_orderby ); ?>><?php esc_html_e( 'Nombre A-Z', 'crios-rango-2026' ); ?></option>
                 </select>
             </span>
         </div>
