@@ -227,18 +227,21 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
             $orderby = 'title';
             $order = 'DESC';
         }
-        $products = wc_get_products( array(
+        $catalog_result = wc_get_products( array(
             'status' => 'publish',
             'visibility' => 'visible',
             'category' => array( $term->slug ),
-            'limit' => $per_page + 1,
-            'offset' => ( $page - 1 ) * $per_page,
+            'limit' => $per_page,
+            'page' => $page,
+            'paginate' => true,
             'return' => 'objects',
             'orderby' => $orderby,
             'order' => $order,
         ) );
-        $has_more = count( $products ) > $per_page;
-        $products = array_slice( $products, 0, $per_page );
+        $products = isset( $catalog_result->products ) && is_array( $catalog_result->products ) ? $catalog_result->products : array();
+        $total = isset( $catalog_result->total ) ? absint( $catalog_result->total ) : null;
+        $max_num_pages = isset( $catalog_result->max_num_pages ) ? absint( $catalog_result->max_num_pages ) : 0;
+        $has_more = $page < $max_num_pages;
         $product_ids = array_map( static function ( $product ) { return $product->get_id(); }, $products );
     }
 
