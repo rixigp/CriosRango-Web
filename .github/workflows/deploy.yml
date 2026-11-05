@@ -393,7 +393,7 @@ jobs:
           find theme/crios-rango-2026 -type f -name "*.php" -print0 \
             | xargs -0 -r -n1 php -l
 
-      - name: Check exact PR14 staging HEAD
+      - name: Check exact PR13 staging HEAD compatibility and PR14 staging HEAD
         id: staging-head
         shell: bash
         run: |
