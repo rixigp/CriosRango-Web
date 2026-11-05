@@ -108,6 +108,24 @@ function cr2026_register_catalog_page_route() {
     ) );
 }
 add_action( 'rest_api_init', 'cr2026_register_catalog_page_route' );
+/** Price ordering for catalog-page wc_get_products queries, scoped by orderby sentinel. */
+function cr2026_catalog_price_sort_post_clauses( $clauses, $query ) {
+    $sort = $query->get( 'orderby' );
+    if ( ! in_array( $sort, array( 'cr2026_price_asc', 'cr2026_price_desc' ), true ) ) { return $clauses; }
+    global $wpdb;
+    $lookup_alias = 'cr2026_catalog_price_lookup';
+    $lookup_table = $wpdb->wc_product_meta_lookup;
+    if ( false === strpos( $clauses['join'], $lookup_alias ) ) {
+        $clauses['join'] .= " LEFT JOIN {$lookup_table} AS {$lookup_alias} ON {$wpdb->posts}.ID = {$lookup_alias}.product_id ";
+    }
+    if ( 'cr2026_price_asc' === $sort ) {
+        $clauses['orderby'] = " CASE WHEN {$lookup_alias}.product_id IS NULL OR {$lookup_alias}.min_price <= 0 THEN 1 ELSE 0 END ASC, {$lookup_alias}.min_price ASC, {$lookup_alias}.product_id ASC ";
+    } else {
+        $clauses['orderby'] = " CASE WHEN {$lookup_alias}.product_id IS NULL OR {$lookup_alias}.max_price <= 0 THEN 1 ELSE 0 END ASC, {$lookup_alias}.max_price DESC, {$lookup_alias}.product_id DESC ";
+    }
+    return $clauses;
+}
+add_filter( 'posts_clauses', 'cr2026_catalog_price_sort_post_clauses', 20, 2 );
 
 function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $page = max( 1, absint( $request->get_param( 'page' ) ) );
@@ -221,10 +239,11 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
             $orderby = 'date';
             $order = 'ASC';
         } elseif ( 'price_asc' === $sort ) {
-            $orderby = 'price';
+            // WC_Product_Query does not implement Woo's archive price orderby.
+            $orderby = 'cr2026_price_asc';
             $order = 'ASC';
         } elseif ( 'price_desc' === $sort ) {
-            $orderby = 'price';
+            $orderby = 'cr2026_price_desc';
             $order = 'DESC';
         } elseif ( 'title_asc' === $sort ) {
             $orderby = 'title';
