@@ -9,11 +9,13 @@ const jsPath = path.join(root, 'theme/crios-rango-2026/assets/js/main.js');
 const phpPath = path.join(root, 'theme/crios-rango-2026/inc/woocommerce.php');
 const helpersPath = path.join(root, 'theme/crios-rango-2026/inc/helpers.php');
 const archivePath = path.join(root, 'theme/crios-rango-2026/archive-product.php');
+const deployPath = path.join(root, '.github/workflows/deploy.yml');
 
 const js = fs.readFileSync(jsPath, 'utf8');
 const php = fs.readFileSync(phpPath, 'utf8');
 const helpers = fs.readFileSync(helpersPath, 'utf8');
 const archive = fs.readFileSync(archivePath, 'utf8');
+const deploy = fs.readFileSync(deployPath, 'utf8');
 
 function catalogStateApi() {
   const window = {};
@@ -131,4 +133,15 @@ test('catalog endpoint echoes page size and staging debug exposes all ID layers 
   assert.match(js, /hydrated_product_ids:endpointIds/);
   assert.match(js, /dom_product_ids:renderedIds/);
   assert.match(js, /prices,total:responseData\.total/);
+});
+
+test('staging deploy is exact-HEAD guarded and verifies remote build.json SHA', () => {
+  assert.ok(deploy.includes('Check exact PR13 staging HEAD'));
+  assert.ok(deploy.includes('git fetch origin fix/catalog-runtime-parity'));
+  assert.ok(deploy.includes('Generate staging build manifest'));
+  assert.ok(deploy.includes('BUILD_SHA: $' + '{{ github.sha }}'));
+  assert.ok(deploy.includes('Verify remote staging build.json SHA'));
+  assert.ok(deploy.includes('console.log("STAGING_BUILD_SHA="+manifest.sha)'));
+  assert.ok(deploy.includes('/public/prueba/wp-content/themes/crios-rango-2026/'));
+  assert.doesNotMatch(deploy, /--delete/);
 });
