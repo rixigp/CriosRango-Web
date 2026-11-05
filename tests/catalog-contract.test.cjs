@@ -132,7 +132,7 @@ test('catalog endpoint echoes page size and staging debug exposes all ID layers 
   assert.match(js, /api_product_ids:returnedIds/);
   assert.match(js, /hydrated_product_ids:endpointIds/);
   assert.match(js, /dom_product_ids:renderedIds/);
-  assert.match(js, /prices,total:responseData\.total/);
+  assert.match(js, /prices,returned_total:responseData\.total,total:responseData\.total/);
 });
 
 test('staging deploy is exact-HEAD guarded and verifies remote build.json SHA', () => {
