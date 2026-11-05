@@ -159,3 +159,8 @@ test('price ASC and DESC fail on nonnumeric values and every adjacent pair acros
   assert.match(js, /prices\.some\(\(price,index\)=>index>0&&prices\[index-1\]<price\)/);
   assert.match(js, /concatenated page sequence/);
 });
+
+test('catalog debug diagnostics are enabled only on staging /prueba or non-production WP environments', () => {
+  assert.match(archive, /REQUEST_URI[\s\S]*?\/prueba\//);
+  assert.match(archive, /data-debug=.*\$listing_debug/s);
+});
