@@ -305,13 +305,27 @@
         if(!sameOrderedIds(returnedIds,endpointIds))throw new Error('Catalog endpoint ID/order mismatch: response='+JSON.stringify(returnedIds)+' cards='+JSON.stringify(endpointIds));
         if(!sameOrderedIds(endpointIds,renderedIds))throw new Error('Catalog DOM ID/order mismatch: cards='+JSON.stringify(endpointIds)+' DOM='+JSON.stringify(renderedIds));
         if(responseData.source==='filter_api'&&!sameOrderedIds(filterApiIds,endpointIds))throw new Error('Filter API ID/order mismatch: API='+JSON.stringify(filterApiIds)+' cards='+JSON.stringify(endpointIds));
-        if(debug)console.debug('[CR2026 catalog] page',{page,sort:sortMap[orderby],filter_api_ids:filterApiIds,card_endpoint_ids:endpointIds,dom_ids:renderedIds});
-        if (!returnedIds.length) { if (!append) showEmpty(); hasMore = false; if (loadMoreButton) loadMoreButton.hidden = true; return; }
+        if(debug)console.debug('[CR2026 catalog] page',{page,sort:sortMap[orderby],filter_api_ids:filterApiIds,card_endpoint_ids:endpointIds,dom_ids:renderedIds,total:responseData.total,has_more:responseData.has_more});
+        const previousIds=append?Array.from(grid.querySelectorAll('[data-product-id]')).map(node=>String(node.getAttribute('data-product-id'))):[];
+        const completeIds=previousIds.concat(renderedIds);
+        const seenIds=new Set(),duplicates=[];
+        completeIds.forEach(id=>{if(seenIds.has(id))duplicates.push(id);else seenIds.add(id);});
+        if(duplicates.length)throw new Error('Catalog duplicate product IDs across pages: '+JSON.stringify(duplicates));
+        if (!returnedIds.length) {
+          if (!append) showEmpty();
+          hasMore = false;
+          if (loadMoreButton) loadMoreButton.hidden = true;
+          if (responseData.total !== null && responseData.total !== undefined && Number(responseData.total) !== completeIds.length) throw new Error('Catalog total mismatch: loaded='+completeIds.length+' total='+responseData.total);
+          if(debug)console.debug('[CR2026 catalog] complete',{sort:sortMap[orderby],loaded_ids:completeIds,total:responseData.total,duplicates});
+          return;
+        }
         if (append) grid.appendChild(template.content);
         else grid.replaceChildren(template.content);
         emptyState.hidden = true;
         currentPage = page;
         hasMore = Boolean(responseData.has_more);
+        if(!hasMore&&responseData.total!==null&&responseData.total!==undefined&&Number(responseData.total)!==completeIds.length)throw new Error('Catalog total mismatch: loaded='+completeIds.length+' total='+responseData.total);
+        if(debug&&!hasMore)console.debug('[CR2026 catalog] complete',{sort:sortMap[orderby],loaded_ids:completeIds,total:responseData.total,duplicates});
         if (loadMoreButton) loadMoreButton.hidden = !hasMore;
       } catch (error) {
         console.error('[Críos&Rango productos] No se pudo cargar la página del catálogo',error);
