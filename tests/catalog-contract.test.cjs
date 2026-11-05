@@ -63,11 +63,15 @@ test('every category page, including page one, uses the same catalog-page endpoi
 
 test('ordered IDs are validated at API, card endpoint and DOM boundaries', () => {
   assert.match(php, /'orderby'\s*=>\s*'include'/);
+  assert.match(php, /'paginate'\s*=>\s*true/);
+  assert.match(php, /\$total\s*=\s*isset\( \$catalog_result->total \)/);
   assert.match(php, /'rendered_product_ids'\s*=>/);
   assert.match(php, /cr2026_catalog_duplicate_ids/);
   assert.match(php, /cr2026_catalog_missing_cards/);
   assert.match(js, /sameOrderedIds\(returnedIds,endpointIds\)/);
   assert.match(js, /sameOrderedIds\(endpointIds,renderedIds\)/);
+  assert.match(js, /Catalog duplicate product IDs across pages/);
+  assert.match(js, /Catalog total mismatch/);
   assert.doesNotMatch(php, /usort\s*\(/);
 });
 
