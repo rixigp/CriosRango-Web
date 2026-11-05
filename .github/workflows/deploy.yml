@@ -38,6 +38,11 @@ jobs:
             exit 0
           fi
 
+          if [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ]; then
+            echo "ERROR: staging deploy must not bootstrap or push to main."
+            exit 1
+          fi
+
           mkdir -p /tmp/crios-bootstrap theme
 
           cat > /tmp/crios-bootstrap/theme.tgz.b64 <<'CRIOS_PAYLOAD'
