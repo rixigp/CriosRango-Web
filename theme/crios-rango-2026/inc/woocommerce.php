@@ -122,6 +122,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
 
     $products = array();
     $product_ids = array();
+    $filter_api_product_ids = array();
     $has_more = false;
     $total = null;
 
@@ -164,6 +165,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
             return new WP_Error( 'cr2026_catalog_duplicate_ids', __( 'Filter API devolvió IDs de producto duplicados.', 'crios-rango-2026' ), array( 'status' => 502 ) );
         }
         $product_ids = array_slice( $normalized_product_ids, 0, $per_page );
+        $filter_api_product_ids = $product_ids;
         if ( $product_ids ) {
             $products = wc_get_products( array(
                 'status' => 'publish',
@@ -246,7 +248,9 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     }
     return rest_ensure_response( array(
         'html' => ob_get_clean(),
+        'source' => $has_filters ? 'filter_api' : 'woocommerce',
         'product_ids' => $product_ids,
+        'filter_api_product_ids' => $filter_api_product_ids,
         'rendered_product_ids' => array_map( static function ( $product ) { return $product->get_id(); }, $products ),
         'page' => $page,
         'total' => $total,
