@@ -184,14 +184,15 @@ function cr2026_render_product_card( $product, $index = 99 ) {
     $image_id = absint( $product->get_image_id() );
     $image = '';
     if ( $image_id ) {
-        $image = wp_get_attachment_image( $image_id, 'medium_large', false, array(
+        // Match app CatalogImage: choose a responsive source large enough, then crop in-browser.
+        $image = wp_get_attachment_image( $image_id, 'full', false, array(
             'class' => 'cr-product-card__image', 'alt' => $name,
             'loading' => $index < 2 ? 'eager' : 'lazy', 'decoding' => 'async',
             'fetchpriority' => 0 === (int) $index ? 'high' : 'auto',
             'sizes' => '(max-width: 767px) calc((100vw - 52px) / 2), (max-width: 1023px) 28vw, (max-width: 1439px) 22vw, 18vw',
         ) );
     } else {
-        $placeholder = function_exists( 'wc_placeholder_img_src' ) ? wc_placeholder_img_src( 'medium_large' ) : '';
+        $placeholder = function_exists( 'wc_placeholder_img_src' ) ? wc_placeholder_img_src( 'full' ) : '';
         if ( $placeholder ) {
             $image = '<img class="cr-product-card__image" src="' . esc_url( $placeholder ) . '" alt="' . esc_attr( $name ) . '" loading="' . ( $index < 2 ? 'eager' : 'lazy' ) . '" decoding="async">';
         }
