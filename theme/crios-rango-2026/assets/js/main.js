@@ -299,9 +299,13 @@
         if (!responseData || Number(responseData.page) !== page) throw new Error('Catalog page mismatch: requested '+page+', received '+(responseData&&responseData.page));
         const template=document.createElement('template');template.innerHTML=responseData.html||'';
         const returnedIds=Array.isArray(responseData.product_ids)?responseData.product_ids.map(String):[];
+        const endpointIds=Array.isArray(responseData.rendered_product_ids)?responseData.rendered_product_ids.map(String):[];
+        const filterApiIds=Array.isArray(responseData.filter_api_product_ids)?responseData.filter_api_product_ids.map(String):[];
         const renderedIds=Array.from(template.content.querySelectorAll('[data-product-id]')).map(node=>String(node.getAttribute('data-product-id')));
-        if(!sameOrderedIds(returnedIds,renderedIds))throw new Error('Catalog ID/order mismatch: API='+JSON.stringify(returnedIds)+' DOM='+JSON.stringify(renderedIds));
-        if(debug)console.debug('[CR2026 catalog] page',{page,sort:sortMap[orderby],returned_product_ids:returnedIds,rendered_product_ids:renderedIds});
+        if(!sameOrderedIds(returnedIds,endpointIds))throw new Error('Catalog endpoint ID/order mismatch: response='+JSON.stringify(returnedIds)+' cards='+JSON.stringify(endpointIds));
+        if(!sameOrderedIds(endpointIds,renderedIds))throw new Error('Catalog DOM ID/order mismatch: cards='+JSON.stringify(endpointIds)+' DOM='+JSON.stringify(renderedIds));
+        if(responseData.source==='filter_api'&&!sameOrderedIds(filterApiIds,endpointIds))throw new Error('Filter API ID/order mismatch: API='+JSON.stringify(filterApiIds)+' cards='+JSON.stringify(endpointIds));
+        if(debug)console.debug('[CR2026 catalog] page',{page,sort:sortMap[orderby],filter_api_ids:filterApiIds,card_endpoint_ids:endpointIds,dom_ids:renderedIds});
         if (!returnedIds.length) { if (!append) showEmpty(); hasMore = false; if (loadMoreButton) loadMoreButton.hidden = true; return; }
         if (append) grid.appendChild(template.content);
         else grid.replaceChildren(template.content);
