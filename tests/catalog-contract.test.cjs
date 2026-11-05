@@ -82,44 +82,45 @@ test('product cards expose their real product IDs and EUR uses a non-breaking sp
 });
 
 test('web catalog page size is sourced from the audited app paginator contract', () => {
-  const pageSizeMatch = php.match(/define\\(\\s*'CR2026_CATALOG_PAGE_SIZE',\\s*(\\d+)\\s*\\)/);
+  const pageSizeMatch = php.match(/define\(\s*'CR2026_CATALOG_PAGE_SIZE',\s*(\d+)\s*\)/);
   assert.ok(pageSizeMatch, 'PHP must define the canonical page size');
   assert.equal(Number(pageSizeMatch[1]), 12);
   assert.match(archive, /data-page-size=.*CR2026_CATALOG_PAGE_SIZE/s);
-  assert.match(php, /\\$per_page = CR2026_CATALOG_PAGE_SIZE/);
-  assert.match(js, /per_page:String\\(pageSize\\)/);
-  assert.match(js, /Number\\(responseData\\.per_page\\)!==pageSize/);
+  assert.match(php, /\$per_page = CR2026_CATALOG_PAGE_SIZE/);
+  assert.match(js, /per_page:String\(pageSize\)/);
+  assert.match(js, /Number\(responseData\.per_page\)!==pageSize/);
 });
 
 test('category filter selection is live, chips are actionable, and Apply only closes', () => {
-  assert.match(js, /publishLiveFilters\\(\\);scheduleDependentRefresh\\(dimension\\)/);
-  assert.match(js, /window\\.CR2026CatalogListing=\\{applyFilters,getFilters,renderActiveFilterChips,pageSize\\}/);
-  assert.match(js, /filterSheet\\.querySelector\\('\\[data-cr-filter-apply\\]'\\)\\.addEventListener\\('click',closeSheet\\)/);
+  assert.match(js, /publishLiveFilters\(\);scheduleDependentRefresh\(dimension\)/);
+  assert.match(js, /window\.CR2026CatalogListing=\{applyFilters,getFilters,renderActiveFilterChips,pageSize\}/);
+  assert.ok(js.includes("filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',closeSheet)"));
   assert.match(js, /data-cr-active-filter-chips/);
   assert.match(js, /cr-product-listing__clear-filters/);
-  assert.doesNotMatch(js, /window\\.location\\.assign\\(url\\.toString\\(\\)\\)/);
-  assert.match(js, /window\\.history\\.replaceState/);
+  assert.doesNotMatch(js, /window\.location\.assign\(url\.toString\(\)\)/);
+  assert.match(js, /window\.history\.replaceState/);
 });
 
 test('catalog automatically paginates through an observer sentinel without a visible Load more button', () => {
   assert.match(archive, /data-cr-product-sentinel/);
   assert.doesNotMatch(archive, /data-cr-product-load-more/);
   assert.match(js, /new IntersectionObserver/);
-  assert.match(js, /catalogObserver\\.observe\\(sentinel\\)/);
-  assert.match(js, /CatalogPaginator\\.PREFETCH_DISTANCE|rootMargin:'0px 0px 900px 0px'/);
+  assert.match(js, /catalogObserver\.observe\(sentinel\)/);
+  assert.match(js, /rootMargin:'0px 0px 900px 0px'/);
 });
 
 test('product card image source and crop match app responsive source selection and ContentScale.Crop', () => {
-  assert.match(helpers, /wp_get_attachment_image\\(\\s*\\$image_id, 'full'/);
-  assert.match(helpers, /'sizes'\\s*=>/);
+  assert.match(helpers, /wp_get_attachment_image\(\s*\$image_id, 'full'/);
+  assert.match(helpers, /'sizes'\s*=>/);
   assert.match(helpers, /data-product-id=/);
-  assert.match(fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8'), /cr-product-card__media \\{[^}]*aspect-ratio:\.78;[^}]*border-radius:14px;[^}]*background:#FFFFFF/s);
-  assert.match(fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8'), /cr-product-card__image \\{ display:block; width:100%; height:100%; object-fit:cover; object-position:center; \\}/);
-  assert.match(fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8'), /cr-category-filter-sheet__option:disabled \\{ opacity:\.42!important; cursor:not-allowed!important; \\}/);
+  const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
+  assert.match(css, /cr-product-card__media \{[^}]*aspect-ratio:\.78;[^}]*border-radius:14px;[^}]*background:#FFFFFF/s);
+  assert.match(css, /cr-product-card__image \{ display:block; width:100%; height:100%; object-fit:cover; object-position:center; \}/);
+  assert.match(css, /cr-category-filter-sheet__option:disabled \{ opacity:\.42!important; cursor:not-allowed!important; \}/);
 });
 
 test('price monotonicity validation includes previous pages plus the incoming page', () => {
-  assert.match(js, /const priceNodes=append\\?Array\\.from\\(grid\\.querySelectorAll\\(\\'\\[data-product-id\\]\\'\\)\\)\\.concat\\(Array\\.from\\(template\\.content\\.querySelectorAll/);
+  assert.match(js, /const priceNodes=append\?Array\.from\(grid\.querySelectorAll\('\[data-product-id\]'\)\)\.concat\(Array\.from\(template\.content\.querySelectorAll/);
   assert.match(js, /PRICE_ASC=FAIL/);
   assert.match(js, /PRICE_DESC=FAIL/);
 });
