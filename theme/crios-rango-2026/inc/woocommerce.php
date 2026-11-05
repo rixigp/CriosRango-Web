@@ -3,6 +3,11 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// Canonical catalogue page size audited against app CatalogPaginator.PAGE_SIZE.
+if ( ! defined( 'CR2026_CATALOG_PAGE_SIZE' ) ) {
+    define( 'CR2026_CATALOG_PAGE_SIZE', 12 );
+}
+
 /**
  * Product archives use a count-free first page. Filtered archives and the
  * unfiltered Shop hub are shell-only requests resolved asynchronously in JS.
@@ -45,6 +50,7 @@ add_action( 'rest_api_init', 'cr2026_register_product_list_route' );
 
 function cr2026_product_list_rest_response( WP_REST_Request $request ) {
     $page = max( 1, absint( $request->get_param( 'page' ) ) );
+    $per_page = CR2026_CATALOG_PAGE_SIZE;
     $orderby = sanitize_key( (string) $request->get_param( 'orderby' ) );
     $order = 'price-desc' === $orderby ? 'DESC' : ( 'price' === $orderby ? 'ASC' : 'DESC' );
     $query_orderby = ( 'price' === $orderby || 'price-desc' === $orderby ) ? 'price' : 'date';
@@ -60,7 +66,7 @@ function cr2026_product_list_rest_response( WP_REST_Request $request ) {
         if ( count( $ids ) !== count( array_unique( $ids ) ) ) {
             return new WP_Error( 'cr2026_product_list_duplicate_ids', __( 'La lista de productos contiene IDs duplicados.', 'crios-rango-2026' ), array( 'status' => 502 ) );
         }
-        $ids = array_slice( $ids, 0, 12 );
+        $ids = array_slice( $ids, 0, $per_page );
         if ( ! $ids ) { return rest_ensure_response( array( 'html' => '', 'has_more' => false, 'count' => 0 ) ); }
         $products = wc_get_products( array(
             'status' => 'publish', 'visibility' => 'visible', 'include' => $ids,
@@ -74,12 +80,12 @@ function cr2026_product_list_rest_response( WP_REST_Request $request ) {
         }
         $products = wc_get_products( array(
             'status' => 'publish', 'visibility' => 'visible',
-            'category' => array( $term->slug ), 'limit' => 13,
-            'offset' => ( $page - 1 ) * 12, 'return' => 'objects',
+            'category' => array( $term->slug ), 'limit' => $per_page + 1,
+            'offset' => ( $page - 1 ) * $per_page, 'return' => 'objects',
             'orderby' => $query_orderby, 'order' => $order,
         ) );
-        $has_more = count( $products ) > 12;
-        $products = array_slice( $products, 0, 12 );
+        $has_more = count( $products ) > $per_page;
+        $products = array_slice( $products, 0, $per_page );
     }
 
     ob_start();
@@ -105,7 +111,7 @@ add_action( 'rest_api_init', 'cr2026_register_catalog_page_route' );
 
 function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $page = max( 1, absint( $request->get_param( 'page' ) ) );
-    $per_page = 12;
+    $per_page = CR2026_CATALOG_PAGE_SIZE;
     $category_id = absint( $request->get_param( 'catalog_category_id' ) );
     $sort = sanitize_key( (string) $request->get_param( 'sort' ) );
     if ( ! in_array( $sort, array( 'newest', 'oldest', 'price_asc', 'price_desc', 'title_asc', 'title_desc', 'default' ), true ) ) {
