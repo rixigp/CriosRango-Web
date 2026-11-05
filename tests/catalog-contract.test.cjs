@@ -177,43 +177,45 @@ test('staging page diagnostics run only after the concatenated prices array is c
 });
 
 
+
 test('price sorting uses scoped WooCommerce lookup-table SQL order without changing result-set predicates', () => {
-  assert.match(php, /\\$orderby = 'cr2026_price_asc'/);
-  assert.match(php, /\\$orderby = 'cr2026_price_desc'/);
-  assert.doesNotMatch(php, /\\$orderby = 'price';\\s*\\$order = '(?:ASC|DESC)'/);
-  assert.match(php, /function cr2026_catalog_price_sort_post_clauses\\( \\$clauses, \\$query \\)/);
-  assert.match(php, /LEFT JOIN \\{\\$lookup_table\\} AS \\{\\$lookup_alias\\} ON \\{\\$wpdb->posts\\}\\.ID = \\{\\$lookup_alias\\}\\.product_id/);
-  assert.match(php, /\\$lookup_alias\\}\\.min_price ASC, \\{\\$lookup_alias\\}\\.product_id ASC/);
-  assert.match(php, /\\$lookup_alias\\}\\.max_price DESC, \\{\\$lookup_alias\\}\\.product_id DESC/);
-  assert.match(php, /wc_product_meta_lookup/);
-  assert.match(php, /CASE WHEN \\{\\$lookup_alias\\}\\.product_id IS NULL OR \\{\\$lookup_alias\\}\\.(?:min|max)_price <= 0 THEN 1 ELSE 0 END ASC/);
-  assert.match(php, /'category' => array\\( \\$term->slug \\)/);
-  assert.match(php, /'status' => 'publish'/);
-  assert.match(php, /'visibility' => 'visible'/);
-  assert.match(php, /'paginate' => true/);
+  assert.ok(php.includes("$orderby = 'cr2026_price_asc'"));
+  assert.ok(php.includes("$orderby = 'cr2026_price_desc'"));
+  assert.doesNotMatch(php, /orderby = 'price';\s*order = '(?:ASC|DESC)'/);
+  assert.ok(php.includes("function cr2026_catalog_price_sort_post_clauses( $clauses, $query )"));
+  assert.ok(php.includes("LEFT JOIN {$lookup_table} AS {$lookup_alias} ON {$wpdb->posts}.ID = {$lookup_alias}.product_id"));
+  assert.ok(php.includes("{$lookup_alias}.min_price ASC, {$lookup_alias}.product_id ASC"));
+  assert.ok(php.includes("{$lookup_alias}.max_price DESC, {$lookup_alias}.product_id DESC"));
+  assert.ok(php.includes("wc_product_meta_lookup"));
+  assert.ok(php.includes("CASE WHEN {$lookup_alias}.product_id IS NULL OR {$lookup_alias}.min_price <= 0 THEN 1 ELSE 0 END ASC"));
+  assert.ok(php.includes("CASE WHEN {$lookup_alias}.product_id IS NULL OR {$lookup_alias}.max_price <= 0 THEN 1 ELSE 0 END ASC"));
+  assert.ok(php.includes("'category' => array( $term->slug )"));
+  assert.ok(php.includes("'status' => 'publish'"));
+  assert.ok(php.includes("'visibility' => 'visible'"));
+  assert.ok(php.includes("'paginate' => true"));
 });
 
 test('canonical price sort tokens remain unchanged on the Filter API path with filter dimensions intact', () => {
-  assert.match(js, /price:'price_asc','price-desc':'price_desc'/);
-  assert.match(php, /'sort' => \\$sort/);
-  assert.match(php, /foreach \\( \\$filter_keys as \\$filter_key \\)/);
-  assert.match(php, /\\$filter_params\\[ \\$filter_key \\] = \\$value/);
+  assert.ok(js.includes("price:'price_asc','price-desc':'price_desc'"));
+  assert.ok(php.includes("'sort' => $sort"));
+  assert.ok(php.includes("foreach ( $filter_keys as $filter_key )"));
+  assert.ok(php.includes("$filter_params[ $filter_key ] = $value"));
 });
 
 test('order selector measures selected option content width and shows focus ring only for keyboard focus', () => {
-  assert.match(js, /const fitOrderControl = \\(\\) =>/);
-  assert.match(js, /context\\.measureText\\(selectedText\\)\\.width/);
-  assert.match(js, /orderControl\\.style\\.width = Math\\.ceil\\(textWidth \\+ paddingLeft \\+ paddingRight\\) \\+ 'px'/);
+  assert.ok(js.includes("const fitOrderControl = () =>"));
+  assert.ok(js.includes("context.measureText(selectedText).width"));
+  assert.ok(js.includes("orderControl.style.width = Math.ceil(textWidth + paddingLeft + paddingRight) + 'px'"));
   const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
-  assert.match(css, /cr-product-listing__select-wrap::after \\{ content:\"\"; position:absolute; right:3px/);
-  assert.match(css, /cr-product-listing__ordering select:focus-visible \\{ outline:2px solid/);
-  assert.doesNotMatch(css, /cr-product-listing__ordering select:focus \\{[^}]*outline:[^n]/);
+  assert.ok(css.includes(".cr-product-listing__select-wrap::after { content:\"\"; position:absolute; right:3px"));
+  assert.match(css, /cr-product-listing__ordering select:focus-visible \{ outline:2px solid/);
+  assert.ok(css.includes(".cr-product-listing__ordering select:focus { outline:none; }"));
 });
 
 test('facet refresh keeps existing availability in-flight and removes visible updating status', () => {
-  assert.doesNotMatch(js, /Actualizando…/);
-  assert.doesNotMatch(js, /facetAvailability\\[d\\]=null/);
-  assert.match(js, /Keep existing availability\\/options rendered until a current response is accepted/);
-  assert.match(js, /activeControllers\\.forEach\\(controller=>controller\\.abort\\(\\)\\)/);
-  assert.match(js, /generation\\+\\+;const token=generation/);
+  assert.ok(!js.includes("Actualizando…"));
+  assert.ok(!js.includes("facetAvailability[d]=null"));
+  assert.ok(js.includes("Keep existing availability/options rendered until a current response is accepted"));
+  assert.ok(js.includes("activeControllers.forEach(controller=>controller.abort())"));
+  assert.ok(js.includes("generation++;const token=generation"));
 });
