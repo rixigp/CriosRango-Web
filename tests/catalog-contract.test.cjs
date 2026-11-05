@@ -219,3 +219,9 @@ test('facet refresh keeps existing availability in-flight and removes visible up
   assert.ok(js.includes("activeControllers.forEach(controller=>controller.abort())"));
   assert.ok(js.includes("generation++;const token=generation"));
 });
+
+test('staging sort diagnostics record category, exact sort/page size, filters, totals and all ID layers', () => {
+  assert.ok(js.includes("category_id:categoryId,sort:sortMap[orderby],page,per_page:pageSize,filters:getFilters()"));
+  assert.ok(js.includes("api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds"));
+  assert.ok(js.includes("returned_total:responseData.total"));
+});
