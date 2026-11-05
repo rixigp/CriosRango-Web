@@ -475,7 +475,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ github.ref == 'refs/heads/fix/catalog-runtime-parity' && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
