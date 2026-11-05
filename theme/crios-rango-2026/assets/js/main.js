@@ -302,13 +302,13 @@
           const payload = await filterResponse.json();
           productIds = Array.isArray(payload.product_ids) ? payload.product_ids.map(Number).filter(id=>Number.isInteger(id)&&id>0) : [];
           hasMore = Boolean(payload.has_more);
-          if (!productIds.length) { if (!append) showEmpty(); hasMore = false; return; }
+          if (!productIds.length) { if (!append) showEmpty(); hasMore = false; if (loadMoreButton) loadMoreButton.hidden = true; return; }
           responseData = await productEndpoint(page,productIds);
         } else {
           responseData = await productEndpoint(page,null);
           hasMore = Boolean(responseData.has_more);
         }
-        if (!responseData || !responseData.html) { if (!append) showEmpty(); hasMore = false; return; }
+        if (!responseData || !responseData.html) { if (!append) showEmpty(); hasMore = false; if (loadMoreButton) loadMoreButton.hidden = true; return; }
         if (append) grid.insertAdjacentHTML('beforeend',responseData.html);
         else grid.innerHTML = responseData.html;
         emptyState.hidden = true;
