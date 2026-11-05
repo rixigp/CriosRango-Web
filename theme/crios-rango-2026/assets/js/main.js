@@ -117,7 +117,7 @@
     const openButtons=Array.from(document.querySelectorAll('[data-cr-filter-open]'));
     const facetEndpoint = async (facet,state,signal) => {
       const key=cacheKey(facet,state), cached=memoryCache[key]||readStore(storageKey+'|'+key);
-      if(cached){memoryCache[key]=cached;return cached.rows;}
+      if(cached){memoryCache[key]=cached;if(debug)console.debug('[CR2026 facets] cache-hit',{facet,selectedState:state,responseTermIds:cached.rows.flatMap(row=>row.term_ids)});return cached.rows;}
       const params=new URLSearchParams({scope:'catalog',facet,page:'1',per_page:'1'});if(categoryId!=='root')params.set('catalog_category_id',categoryId);
       dimensions.forEach(d=>{if(d!==facet&&state[d].length)params.set(apiKeys[d],sortIds(state[d]).join(','));});
       if(debug)console.debug('[CR2026 facets] request',{facet,selectedState:state,params:Object.fromEntries(params.entries())});
@@ -185,7 +185,7 @@
       debounceTimer=window.setTimeout(async()=>{
         const state={sizes:draft.sizes.slice(),colors:draft.colors.slice(),brands:draft.brands.slice()};
         const affected=dimensions.filter(d=>d!==changedDimension);
-        affected.forEach(d=>refreshing.add(d));if(affected.includes(activeDimension))render(activeDimension);
+        affected.forEach(d=>{refreshing.add(d);facetAvailability[d]=null;});if(affected.includes(activeDimension))render(activeDimension);
         const controllers=affected.map(()=>new AbortController());activeControllers=controllers;
         try{
           const results=await Promise.all(affected.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal)));
