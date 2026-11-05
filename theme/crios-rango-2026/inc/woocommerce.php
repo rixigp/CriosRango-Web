@@ -119,9 +119,9 @@ function cr2026_catalog_price_sort_post_clauses( $clauses, $query ) {
         $clauses['join'] .= " LEFT JOIN {$lookup_table} AS {$lookup_alias} ON {$wpdb->posts}.ID = {$lookup_alias}.product_id ";
     }
     if ( 'cr2026_price_asc' === $sort ) {
-        $clauses['orderby'] = " CASE WHEN {$lookup_alias}.product_id IS NULL OR {$lookup_alias}.min_price <= 0 THEN 1 ELSE 0 END ASC, {$lookup_alias}.min_price ASC, {$lookup_alias}.product_id ASC ";
+        $clauses['orderby'] = " CASE WHEN {$lookup_alias}.product_id IS NULL OR {$lookup_alias}.min_price <= 0 THEN 1 ELSE 0 END ASC, {$lookup_alias}.min_price ASC, {$wpdb->posts}.post_date DESC, {$wpdb->posts}.ID DESC ";
     } else {
-        $clauses['orderby'] = " CASE WHEN {$lookup_alias}.product_id IS NULL OR {$lookup_alias}.max_price <= 0 THEN 1 ELSE 0 END ASC, {$lookup_alias}.max_price DESC, {$lookup_alias}.product_id DESC ";
+        $clauses['orderby'] = " CASE WHEN {$lookup_alias}.product_id IS NULL OR {$lookup_alias}.max_price <= 0 THEN 1 ELSE 0 END ASC, {$lookup_alias}.min_price DESC, {$wpdb->posts}.post_date DESC, {$wpdb->posts}.ID DESC ";
     }
     return $clauses;
 }
@@ -239,7 +239,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
             $orderby = 'date';
             $order = 'ASC';
         } elseif ( 'price_asc' === $sort ) {
-            // WC_Product_Query does not implement Woo's archive price orderby.
+            // App's Store API prices.price is the active minimum for variable parents; use min_price in both directions.
             $orderby = 'cr2026_price_asc';
             $order = 'ASC';
         } elseif ( 'price_desc' === $sort ) {
