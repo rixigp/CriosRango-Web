@@ -4,15 +4,18 @@ on:
   push:
     branches:
       - main
+      - fix/catalog-runtime-parity
     paths:
       - "theme/**"
+      - "tests/catalog-contract.test.cjs"
       - ".github/workflows/deploy.yml"
+      - ".github/workflows/catalog-contract.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: crios-rango-production
+  group: ${{ github.ref == 'refs/heads/fix/catalog-runtime-parity' && 'crios-rango-staging' || 'crios-rango-production' }}
   cancel-in-progress: false
 
 jobs:
@@ -347,6 +350,17 @@ jobs:
             git push origin HEAD:main
           fi
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Validate JavaScript syntax
+        run: node --check theme/crios-rango-2026/assets/js/main.js
+
+      - name: Run catalog contract tests
+        run: node --test tests/catalog-contract.test.cjs
+
       - name: Install validation and FTP tools
         shell: bash
         run: |
@@ -380,7 +394,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ github.ref == 'refs/heads/fix/catalog-runtime-parity' && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
@@ -416,7 +430,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ github.ref == 'refs/heads/fix/catalog-runtime-parity' && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
