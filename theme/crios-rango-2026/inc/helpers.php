@@ -185,7 +185,7 @@ function cr2026_render_product_card( $product, $index = 99 ) {
     } else {
         $placeholder = function_exists( 'wc_placeholder_img_src' ) ? wc_placeholder_img_src( 'medium_large' ) : '';
         if ( $placeholder ) {
-            $image = '<img class="cr-product-card__image" src="' . esc_url( $placeholder ) . '" alt="' . esc_attr( $name ) . '" loading="' . ( $index < 2 ? 'eager' : 'lazy' ) . '" decoding="async">';
+            $image = '<img class="cr-product-card__image" src="' . esc_url( $placeholder ) . '" alt="' . esc_attr( $name ) . '" loading="' . ( $index < 4 ? 'eager' : 'lazy' ) . '" decoding="async">';
         }
     }
     echo '<article class="cr-product-card"><a class="cr-product-card__link" href="' . esc_url( $permalink ) . '">';
