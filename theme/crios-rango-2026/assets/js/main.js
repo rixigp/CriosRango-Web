@@ -381,8 +381,10 @@
         if(duplicates.length)throw new Error('Catalog duplicate product IDs across pages: '+JSON.stringify(duplicates));
         const priceNodes=append?Array.from(grid.querySelectorAll('[data-product-id]')).concat(Array.from(template.content.querySelectorAll('[data-product-id]'))):Array.from(template.content.querySelectorAll('[data-product-id]'));
         const prices=priceNodes.map(node=>{
-          const amountNode=node.querySelector('.cr-product-card__price ins .amount, .cr-product-card__price ins bdi, .cr-product-card__price .amount, .cr-product-card__price bdi');
-          const text=amountNode?amountNode.textContent:(node.querySelector('.cr-product-card__price')?.textContent||'');
+          const priceContainer=node.querySelector('.cr-product-card__price');
+          const saleAmount=priceContainer?.querySelector('ins .amount, ins bdi');
+          const amountNode=saleAmount||priceContainer?.querySelector('.amount, bdi');
+          const text=amountNode?amountNode.textContent:(priceContainer?.textContent||'');
           const normalized=String(text).replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:,|$))/g,'').replace(',','.');
           return Number(normalized);
         });
