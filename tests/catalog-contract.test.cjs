@@ -184,8 +184,8 @@ test('price sorting uses scoped WooCommerce lookup-table SQL order without chang
   assert.doesNotMatch(php, /orderby = 'price';\s*order = '(?:ASC|DESC)'/);
   assert.ok(php.includes("function cr2026_catalog_price_sort_post_clauses( $clauses, $query )"));
   assert.ok(php.includes("LEFT JOIN {$lookup_table} AS {$lookup_alias} ON {$wpdb->posts}.ID = {$lookup_alias}.product_id"));
-  assert.ok(php.includes("{$lookup_alias}.min_price ASC, {$lookup_alias}.product_id ASC"));
-  assert.ok(php.includes("{$lookup_alias}.max_price DESC, {$lookup_alias}.product_id DESC"));
+  assert.ok(php.includes("{$lookup_alias}.min_price ASC, {$wpdb->posts}.post_date DESC, {$wpdb->posts}.ID DESC"));
+  assert.ok(php.includes("{$lookup_alias}.min_price DESC, {$wpdb->posts}.post_date DESC, {$wpdb->posts}.ID DESC"));
   assert.ok(php.includes("wc_product_meta_lookup"));
   assert.ok(php.includes("CASE WHEN {$lookup_alias}.product_id IS NULL OR {$lookup_alias}.min_price <= 0 THEN 1 ELSE 0 END ASC"));
   assert.ok(php.includes("CASE WHEN {$lookup_alias}.product_id IS NULL OR {$lookup_alias}.max_price <= 0 THEN 1 ELSE 0 END ASC"));
