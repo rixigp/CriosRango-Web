@@ -131,6 +131,28 @@ function cr2026_category_back_url( $term = null ) {
     return home_url( '/' );
 }
 
+/**
+ * Keep product-card attachment URLs on the public uploads origin while
+ * preserving WordPress-generated responsive srcset candidates and widths.
+ */
+function cr2026_product_card_image_attributes( $attr, $attachment, $size ) {
+    if ( empty( $attr['class'] ) || false === strpos( $attr['class'], 'cr-product-card__image' ) ) {
+        return $attr;
+    }
+    $attachment_id = isset( $attachment->ID ) ? absint( $attachment->ID ) : 0;
+    if ( ! $attachment_id ) { return $attr; }
+    $canonical_url = cr2026_attachment_public_url( $attachment_id );
+    if ( $canonical_url ) { $attr['src'] = $canonical_url; }
+    $uploads = wp_upload_dir();
+    $home = wp_parse_url( home_url( '/' ) );
+    if ( ! empty( $attr['srcset'] ) && ! empty( $uploads['baseurl'] ) && ! empty( $home['scheme'] ) && ! empty( $home['host'] ) ) {
+        $canonical_base = $home['scheme'] . '://' . $home['host'] . '/wp-content/uploads';
+        $attr['srcset'] = str_replace( untrailingslashit( $uploads['baseurl'] ), $canonical_base, $attr['srcset'] );
+    }
+    return $attr;
+}
+add_filter( 'wp_get_attachment_image_attributes', 'cr2026_product_card_image_attributes', 20, 3 );
+
 /** Render the one shared toolbar markup for shop hub and category landings. */
 function cr2026_render_category_toolbar( $title, $back_url, $filter_context = 'parent', $show_filters = true ) {
     echo '<div class="cr-parent-category__toolbar">';
