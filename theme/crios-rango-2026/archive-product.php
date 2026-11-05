@@ -49,10 +49,12 @@ get_header( 'shop' );
     data-filtered="<?php echo $listing_filtered ? '1' : '0'; ?>"
     data-debug="<?php echo function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), array( 'staging', 'development', 'local' ), true ) ? '1' : '0'; ?>"
     data-category-id="<?php echo esc_attr( $listing_category_id ); ?>"
+    data-page-size="<?php echo esc_attr( CR2026_CATALOG_PAGE_SIZE ); ?>"
     data-filter-api-url="<?php echo esc_url( rest_url( 'criosrango-filter/v1/query' ) ); ?>"
     data-products-url="<?php echo esc_url( rest_url( 'cr2026/v1/catalog-page' ) ); ?>">
     <div class="cr-product-listing__shell">
         <?php cr2026_render_category_toolbar( $listing_title, $listing_back_url, $listing_context, true ); ?>
+        <div class="cr-product-listing__active-filters" data-cr-active-filter-chips hidden aria-live="polite"></div>
         <?php cr2026_render_category_filter_sheet( $listing_term, $listing_context ); ?>
         <div class="cr-product-listing__ordering">
             <label for="cr-product-order"><?php esc_html_e( 'Ordenar por', 'crios-rango-2026' ); ?></label>
@@ -73,9 +75,7 @@ get_header( 'shop' );
             <p><?php echo $listing_filtered ? esc_html__( 'No encontramos productos con esos filtros.', 'crios-rango-2026' ) : esc_html__( 'No hay productos disponibles.', 'crios-rango-2026' ); ?></p>
             <?php if ( $listing_filtered ) : ?><a href="<?php echo esc_url( $remove_filter_url ); ?>"><?php esc_html_e( 'Limpiar filtros', 'crios-rango-2026' ); ?></a><?php endif; ?>
         </div>
-        <button class="cr-product-listing__load-more" type="button" data-cr-product-load-more hidden>
-            <?php esc_html_e( 'Cargar más', 'crios-rango-2026' ); ?>
-        </button>
+        <div class="cr-product-listing__sentinel" data-cr-product-sentinel aria-hidden="true"></div>
     </div>
 </main>
 <?php get_footer( 'shop' );
