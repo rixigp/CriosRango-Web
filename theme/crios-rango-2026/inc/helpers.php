@@ -281,32 +281,48 @@ function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
 }
 /** Replace category archive eligibility with the Filter API page of product IDs. */
 function cr2026_category_filter_api_main_query( $query ) {
-    if ( is_admin() || ! $query->is_main_query() || ! $query->is_tax( 'product_cat' ) ) { return; }
-    $term = get_queried_object();
-    if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) { return; }
-    if ( ! cr2026_category_filters_selected() && ! empty( cr2026_product_cat_children( (int) $term->term_id ) ) ) {
+    if ( is_admin() || ! $query->is_main_query() ) { return; }
+
+    $is_shop_query = function_exists( 'is_shop' ) && is_shop();
+    $is_category_query = $query->is_tax( 'product_cat' );
+    if ( ! $is_shop_query && ! $is_category_query ) { return; }
+
+    $term = null;
+    if ( $is_category_query ) {
+        $term = get_queried_object();
+        if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) { return; }
+        if ( ! cr2026_category_filters_selected() && ! empty( cr2026_product_cat_children( (int) $term->term_id ) ) ) {
+            return;
+        }
+    } elseif ( ! cr2026_category_filters_selected() ) {
         return;
     }
+
     $page = max( 1, absint( $query->get( 'paged' ) ) );
     $per_page = 12;
     $args = array(
         'scope' => 'catalog',
-        'catalog_category_id' => (int) $term->term_id,
         'facet' => 'none',
         'page' => $page,
         'per_page' => $per_page,
     );
+    if ( $term instanceof WP_Term ) {
+        $args['catalog_category_id'] = (int) $term->term_id;
+    }
     foreach ( array( 'size_ids', 'color_ids', 'brand_ids' ) as $key ) {
         $ids = cr2026_category_filter_selected_values( $key );
         if ( $ids ) { $args[ $key ] = implode( ',', $ids ); }
     }
+
     $data = cr2026_category_filter_api_get( $args );
     $ids = is_wp_error( $data ) ? array() : array_values( array_filter( array_map( 'absint', $data['product_ids'] ) ) );
     $GLOBALS['cr2026_filter_api_total'] = is_wp_error( $data ) ? 0 : absint( $data['total'] );
     $GLOBALS['cr2026_filter_api_has_more'] = ! is_wp_error( $data ) && ! empty( $data['has_more'] );
     $GLOBALS['cr2026_filter_api_page'] = $page;
     $GLOBALS['cr2026_filter_api_per_page'] = $per_page;
-    $GLOBALS['cr2026_filter_api_category_id'] = (int) $term->term_id;
+    $GLOBALS['cr2026_filter_api_query_context'] = $is_shop_query ? 'shop' : 'category';
+    $GLOBALS['cr2026_filter_api_category_id'] = $term instanceof WP_Term ? (int) $term->term_id : 0;
+
     $query->set( 'post_type', 'product' );
     $query->set( 'post__in', $ids ? $ids : array( 0 ) );
     $query->set( 'orderby', 'post__in' );
@@ -314,15 +330,21 @@ function cr2026_category_filter_api_main_query( $query ) {
     $query->set( 'paged', $page );
 }
 add_action( 'pre_get_posts', 'cr2026_category_filter_api_main_query', 20 );
+
 function cr2026_category_filter_api_found_posts( $found_posts, $query ) {
-    if ( isset( $GLOBALS['cr2026_filter_api_category_id'] ) && $query->is_main_query() && $query->is_tax( 'product_cat' ) ) {
-        $total = (int) $GLOBALS['cr2026_filter_api_total'];
-        if ( ! empty( $GLOBALS['cr2026_filter_api_has_more'] ) ) {
-            $total = max( $total, (int) $GLOBALS['cr2026_filter_api_page'] * (int) $GLOBALS['cr2026_filter_api_per_page'] + 1 );
-        }
-        return $total;
+    if ( ! $query->is_main_query() || ! isset( $GLOBALS['cr2026_filter_api_query_context'] ) ) {
+        return $found_posts;
     }
-    return $found_posts;
+    $context = $GLOBALS['cr2026_filter_api_query_context'];
+    $matches_context = ( 'shop' === $context && function_exists( 'is_shop' ) && is_shop() )
+        || ( 'category' === $context && $query->is_tax( 'product_cat' ) );
+    if ( ! $matches_context ) { return $found_posts; }
+
+    $total = (int) $GLOBALS['cr2026_filter_api_total'];
+    if ( ! empty( $GLOBALS['cr2026_filter_api_has_more'] ) ) {
+        $total = max( $total, (int) $GLOBALS['cr2026_filter_api_page'] * (int) $GLOBALS['cr2026_filter_api_per_page'] + 1 );
+    }
+    return $total;
 }
 add_filter( 'found_posts', 'cr2026_category_filter_api_found_posts', 20, 2 );
 

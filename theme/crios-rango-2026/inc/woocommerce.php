@@ -3,6 +3,30 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * The unfiltered Shop request is a category hub, not a product archive.
+ * Short-circuit only its main query before SQL; filtered Shop requests continue
+ * through the Filter API integration in helpers.php.
+ */
+function cr2026_shop_hub_short_circuit_main_query( $posts, $query ) {
+    if (
+        null !== $posts
+        || is_admin()
+        || ! $query->is_main_query()
+        || ! function_exists( 'is_shop' )
+        || ! is_shop()
+        || cr2026_category_filters_selected()
+    ) {
+        return $posts;
+    }
+
+    $query->set( 'no_found_rows', true );
+    $query->found_posts = 0;
+    $query->max_num_pages = 0;
+    return array();
+}
+add_filter( 'posts_pre_query', 'cr2026_shop_hub_short_circuit_main_query', 20, 2 );
+
 function cr2026_woocommerce_wrappers() {
     remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', 10 );
     remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
