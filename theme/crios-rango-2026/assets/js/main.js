@@ -318,6 +318,7 @@
         console.error('[Críos&Rango productos] No se pudo cargar la página del catálogo',error);
         if (!append) showEmpty();
         hasMore = false;
+        if (loadMoreButton) loadMoreButton.hidden = true;
       } finally {
         loading = false;
         if (loadMoreButton) { loadMoreButton.disabled = false; loadMoreButton.removeAttribute('aria-busy'); }
