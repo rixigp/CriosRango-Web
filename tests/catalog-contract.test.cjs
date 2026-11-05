@@ -145,3 +145,17 @@ test('staging deploy is exact-HEAD guarded and verifies remote build.json SHA', 
   assert.ok(deploy.includes('/public/prueba/wp-content/themes/crios-rango-2026/'));
   assert.doesNotMatch(deploy, /--delete/);
 });
+
+test('web sort options reproduce app enum mapping including Name A-Z', () => {
+  assert.match(archive, /value="title".*Nombre A-Z/s);
+  assert.match(js, /title:'title_asc'/);
+  assert.match(js, /orderby=\['date','price','price-desc','title'\]/);
+  assert.match(php, /'title_asc' === \$sort/);
+});
+
+test('price ASC and DESC fail on nonnumeric values and every adjacent pair across pages', () => {
+  assert.match(js, /prices\.some\(price=>!Number\.isFinite\(price\)\)/);
+  assert.match(js, /prices\.some\(\(price,index\)=>index>0&&prices\[index-1\]>price\)/);
+  assert.match(js, /prices\.some\(\(price,index\)=>index>0&&prices\[index-1\]<price\)/);
+  assert.match(js, /concatenated page sequence/);
+});
