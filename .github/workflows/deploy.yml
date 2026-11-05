@@ -417,7 +417,7 @@ jobs:
           BUILD_SHA: ${{ github.sha }}
           BUILD_BRANCH: ${{ github.ref_name }}
         run: |
-          node -e 'const fs=require("fs");const manifest={sha:process.env.BUILD_SHA,branch:process.env.BUILD_BRANCH,pr:13};fs.writeFileSync("theme/crios-rango-2026/build.json",JSON.stringify(manifest,null,2)+"\\n");'
+          node -e 'const fs=require("fs");const manifest={sha:process.env.BUILD_SHA,branch:process.env.BUILD_BRANCH,pr:13};fs.writeFileSync("theme/crios-rango-2026/build.json",JSON.stringify(manifest,null,2)+"\n");'
 
       - name: Validate FTP configuration
         if: steps.staging-head.outputs.current == 'true'
