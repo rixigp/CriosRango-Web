@@ -47,6 +47,7 @@ get_header( 'shop' );
 ?>
 <main id="primary" class="cr-main cr-main--woocommerce cr-product-listing" data-cr-product-list
     data-filtered="<?php echo $listing_filtered ? '1' : '0'; ?>"
+    data-debug="<?php echo function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), array( 'staging', 'development', 'local' ), true ) ? '1' : '0'; ?>"
     data-category-id="<?php echo esc_attr( $listing_category_id ); ?>"
     data-filter-api-url="<?php echo esc_url( rest_url( 'criosrango-filter/v1/query' ) ); ?>"
     data-products-url="<?php echo esc_url( rest_url( 'cr2026/v1/catalog-page' ) ); ?>">
@@ -64,27 +65,15 @@ get_header( 'shop' );
             </span>
         </div>
         <div class="cr-product-grid" data-cr-product-grid aria-live="polite">
-        <?php if ( $listing_filtered ) : ?>
             <?php for ( $skeleton_index = 0; $skeleton_index < 4; $skeleton_index++ ) : ?>
                 <div class="cr-product-skeleton" aria-hidden="true"><span></span><i></i><b></b></div>
             <?php endfor; ?>
-        <?php else : ?>
-            <?php
-            global $wp_query;
-            $listing_posts = isset( $wp_query->posts ) && is_array( $wp_query->posts ) ? $wp_query->posts : array();
-            $listing_has_more = count( $listing_posts ) > 12;
-            foreach ( array_slice( $listing_posts, 0, 12 ) as $product_index => $listing_post ) :
-                $listing_product = wc_get_product( $listing_post->ID );
-                if ( $listing_product ) { cr2026_render_product_card( $listing_product, $product_index ); }
-            endforeach;
-            ?>
-        <?php endif; ?>
         </div>
-        <div class="cr-product-listing__empty" data-cr-product-empty<?php echo $listing_filtered || ! empty( $listing_posts ) ? ' hidden' : ''; ?>>
+        <div class="cr-product-listing__empty" data-cr-product-empty hidden>
             <p><?php echo $listing_filtered ? esc_html__( 'No encontramos productos con esos filtros.', 'crios-rango-2026' ) : esc_html__( 'No hay productos disponibles.', 'crios-rango-2026' ); ?></p>
             <?php if ( $listing_filtered ) : ?><a href="<?php echo esc_url( $remove_filter_url ); ?>"><?php esc_html_e( 'Limpiar filtros', 'crios-rango-2026' ); ?></a><?php endif; ?>
         </div>
-        <button class="cr-product-listing__load-more" type="button" data-cr-product-load-more<?php echo ( ! $listing_filtered && ! empty( $listing_has_more ) ) ? '' : ' hidden'; ?>>
+        <button class="cr-product-listing__load-more" type="button" data-cr-product-load-more hidden>
             <?php esc_html_e( 'Cargar más', 'crios-rango-2026' ); ?>
         </button>
     </div>
