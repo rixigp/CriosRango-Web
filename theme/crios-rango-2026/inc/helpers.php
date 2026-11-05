@@ -142,6 +142,37 @@ function cr2026_render_category_toolbar( $title, $back_url, $filter_context = 'p
     echo '</div>';
 }
 
+/**
+ * One semantic, fully clickable product card for every catalogue listing.
+ * WooCommerce remains the source of product URLs, images, stock and prices.
+ */
+function cr2026_render_product_card( $product, $index = 99 ) {
+    if ( ! $product instanceof WC_Product ) { return; }
+    $product_id = $product->get_id();
+    $name = $product->get_name();
+    $permalink = get_permalink( $product_id );
+    $image_id = absint( $product->get_image_id() );
+    $image = '';
+    if ( $image_id ) {
+        $image = wp_get_attachment_image( $image_id, 'medium_large', false, array(
+            'class' => 'cr-product-card__image', 'alt' => $name,
+            'loading' => $index < 2 ? 'eager' : 'lazy', 'decoding' => 'async',
+            'fetchpriority' => 0 === (int) $index ? 'high' : 'auto',
+            'sizes' => '(max-width: 767px) calc((100vw - 52px) / 2), (max-width: 1023px) 28vw, (max-width: 1439px) 22vw, 18vw',
+        ) );
+    } else {
+        $placeholder = function_exists( 'wc_placeholder_img_src' ) ? wc_placeholder_img_src( 'medium_large' ) : '';
+        if ( $placeholder ) {
+            $image = '<img class="cr-product-card__image" src="' . esc_url( $placeholder ) . '" alt="' . esc_attr( $name ) . '" loading="' . ( $index < 2 ? 'eager' : 'lazy' ) . '" decoding="async">';
+        }
+    }
+    echo '<article class="cr-product-card"><a class="cr-product-card__link" href="' . esc_url( $permalink ) . '">';
+    echo '<span class="cr-product-card__media">' . $image; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    if ( ! $product->is_in_stock() ) { echo '<span class="cr-product-card__stock">' . esc_html__( 'Agotado', 'crios-rango-2026' ) . '</span>'; }
+    echo '</span><span class="cr-product-card__details"><span class="cr-product-card__name">' . esc_html( $name ) . '</span>';
+    echo '<span class="cr-product-card__price">' . wp_kses_post( $product->get_price_html() ) . '</span></span></a></article>';
+}
+
 function cr2026_shop_url() {
     return function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/tienda/' );
 }
@@ -206,6 +237,7 @@ function cr2026_is_app_nav_shell() {
 function cr2026_app_nav_body_class( $classes ) {
     $classes[] = 'cr-global-app-header';
     if ( ! empty( $GLOBALS['cr2026_parent_category_view'] ) ) { $classes[] = 'cr-parent-category-view'; }
+    if ( ! empty( $GLOBALS['cr2026_product_listing_view'] ) ) { $classes[] = 'cr-product-listing-view'; }
     if ( cr2026_is_app_nav_shell() ) { $classes[] = 'cr-app-nav-shell'; }
     return $classes;
 }
@@ -245,18 +277,6 @@ function cr2026_category_filter_term_labels() {
     }
     return $labels;
 }
-function cr2026_category_filter_api_get( $args ) {
-    $url = add_query_arg( $args, rest_url( 'criosrango-filter/v1/query' ) );
-    $response = wp_remote_get( $url, array( 'timeout' => 15, 'headers' => array( 'Accept' => 'application/json' ) ) );
-    if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-        return new WP_Error( 'cr2026_filter_api_error', 'No se pudieron cargar los filtros del catálogo.' );
-    }
-    $data = json_decode( wp_remote_retrieve_body( $response ), true );
-    if ( ! is_array( $data ) || ! isset( $data['product_ids'], $data['facets'] ) || ! is_array( $data['product_ids'] ) || ! is_array( $data['facets'] ) ) {
-        return new WP_Error( 'cr2026_filter_api_schema', 'Respuesta no válida del Filter API.' );
-    }
-    return $data;
-}
 /** Render the contextual filter dialog; its trigger lives in the category toolbar. */
 function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
     $is_root_catalog = 'root' === $context;
@@ -279,75 +299,6 @@ function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
     echo '<div class="cr-category-filter-sheet__options" data-cr-filter-options aria-live="polite"><p class="cr-category-filter-sheet__empty">' . esc_html__( 'Cargando opciones…', 'crios-rango-2026' ) . '</p></div></div>';
     echo '<div class="cr-category-filter-sheet__actions"><button type="button" class="cr-category-filter-sheet__clear" data-cr-filter-clear>' . esc_html__( 'Limpiar', 'crios-rango-2026' ) . '</button><button type="button" class="cr-category-filter-sheet__apply" data-cr-filter-apply>' . esc_html__( 'Aplicar', 'crios-rango-2026' ) . '</button></div></section></div>';
 }
-/** Replace category archive eligibility with the Filter API page of product IDs. */
-function cr2026_category_filter_api_main_query( $query ) {
-    if ( is_admin() || ! $query->is_main_query() ) { return; }
-
-    $is_shop_query = function_exists( 'is_shop' ) && is_shop();
-    $is_category_query = $query->is_tax( 'product_cat' );
-    if ( ! $is_shop_query && ! $is_category_query ) { return; }
-
-    $term = null;
-    if ( $is_category_query ) {
-        $term = get_queried_object();
-        if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) { return; }
-        if ( ! cr2026_category_filters_selected() && ! empty( cr2026_product_cat_children( (int) $term->term_id ) ) ) {
-            return;
-        }
-    } elseif ( ! cr2026_category_filters_selected() ) {
-        return;
-    }
-
-    $page = max( 1, absint( $query->get( 'paged' ) ) );
-    $per_page = 12;
-    $args = array(
-        'scope' => 'catalog',
-        'facet' => 'none',
-        'page' => $page,
-        'per_page' => $per_page,
-    );
-    if ( $term instanceof WP_Term ) {
-        $args['catalog_category_id'] = (int) $term->term_id;
-    }
-    foreach ( array( 'size_ids', 'color_ids', 'brand_ids' ) as $key ) {
-        $ids = cr2026_category_filter_selected_values( $key );
-        if ( $ids ) { $args[ $key ] = implode( ',', $ids ); }
-    }
-
-    $data = cr2026_category_filter_api_get( $args );
-    $ids = is_wp_error( $data ) ? array() : array_values( array_filter( array_map( 'absint', $data['product_ids'] ) ) );
-    $GLOBALS['cr2026_filter_api_total'] = is_wp_error( $data ) ? 0 : absint( $data['total'] );
-    $GLOBALS['cr2026_filter_api_has_more'] = ! is_wp_error( $data ) && ! empty( $data['has_more'] );
-    $GLOBALS['cr2026_filter_api_page'] = $page;
-    $GLOBALS['cr2026_filter_api_per_page'] = $per_page;
-    $GLOBALS['cr2026_filter_api_query_context'] = $is_shop_query ? 'shop' : 'category';
-    $GLOBALS['cr2026_filter_api_category_id'] = $term instanceof WP_Term ? (int) $term->term_id : 0;
-
-    $query->set( 'post_type', 'product' );
-    $query->set( 'post__in', $ids ? $ids : array( 0 ) );
-    $query->set( 'orderby', 'post__in' );
-    $query->set( 'posts_per_page', $per_page );
-    $query->set( 'paged', $page );
-}
-add_action( 'pre_get_posts', 'cr2026_category_filter_api_main_query', 20 );
-
-function cr2026_category_filter_api_found_posts( $found_posts, $query ) {
-    if ( ! $query->is_main_query() || ! isset( $GLOBALS['cr2026_filter_api_query_context'] ) ) {
-        return $found_posts;
-    }
-    $context = $GLOBALS['cr2026_filter_api_query_context'];
-    $matches_context = ( 'shop' === $context && function_exists( 'is_shop' ) && is_shop() )
-        || ( 'category' === $context && $query->is_tax( 'product_cat' ) );
-    if ( ! $matches_context ) { return $found_posts; }
-
-    $total = (int) $GLOBALS['cr2026_filter_api_total'];
-    if ( ! empty( $GLOBALS['cr2026_filter_api_has_more'] ) ) {
-        $total = max( $total, (int) $GLOBALS['cr2026_filter_api_page'] * (int) $GLOBALS['cr2026_filter_api_per_page'] + 1 );
-    }
-    return $total;
-}
-add_filter( 'found_posts', 'cr2026_category_filter_api_found_posts', 20, 2 );
-
 function cr2026_cart_count() {
     if ( function_exists( 'WC' ) && WC()->cart ) {
         return (int) WC()->cart->get_cart_contents_count();
