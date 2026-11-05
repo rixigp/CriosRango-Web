@@ -175,3 +175,45 @@ test('staging page diagnostics run only after the concatenated prices array is c
   const diagnosticsIndex = js.indexOf("if(debug)console.debug('[CR2026 catalog] page'");
   assert.ok(pricesIndex >= 0 && diagnosticsIndex > pricesIndex);
 });
+
+
+test('price sorting uses scoped WooCommerce lookup-table SQL order without changing result-set predicates', () => {
+  assert.match(php, /\\$orderby = 'cr2026_price_asc'/);
+  assert.match(php, /\\$orderby = 'cr2026_price_desc'/);
+  assert.doesNotMatch(php, /\\$orderby = 'price';\\s*\\$order = '(?:ASC|DESC)'/);
+  assert.match(php, /function cr2026_catalog_price_sort_post_clauses\\( \\$clauses, \\$query \\)/);
+  assert.match(php, /LEFT JOIN \\{\\$lookup_table\\} AS \\{\\$lookup_alias\\} ON \\{\\$wpdb->posts\\}\\.ID = \\{\\$lookup_alias\\}\\.product_id/);
+  assert.match(php, /\\$lookup_alias\\}\\.min_price ASC, \\{\\$lookup_alias\\}\\.product_id ASC/);
+  assert.match(php, /\\$lookup_alias\\}\\.max_price DESC, \\{\\$lookup_alias\\}\\.product_id DESC/);
+  assert.match(php, /wc_product_meta_lookup/);
+  assert.match(php, /CASE WHEN \\{\\$lookup_alias\\}\\.product_id IS NULL OR \\{\\$lookup_alias\\}\\.(?:min|max)_price <= 0 THEN 1 ELSE 0 END ASC/);
+  assert.match(php, /'category' => array\\( \\$term->slug \\)/);
+  assert.match(php, /'status' => 'publish'/);
+  assert.match(php, /'visibility' => 'visible'/);
+  assert.match(php, /'paginate' => true/);
+});
+
+test('canonical price sort tokens remain unchanged on the Filter API path with filter dimensions intact', () => {
+  assert.match(js, /price:'price_asc','price-desc':'price_desc'/);
+  assert.match(php, /'sort' => \\$sort/);
+  assert.match(php, /foreach \\( \\$filter_keys as \\$filter_key \\)/);
+  assert.match(php, /\\$filter_params\\[ \\$filter_key \\] = \\$value/);
+});
+
+test('order selector measures selected option content width and shows focus ring only for keyboard focus', () => {
+  assert.match(js, /const fitOrderControl = \\(\\) =>/);
+  assert.match(js, /context\\.measureText\\(selectedText\\)\\.width/);
+  assert.match(js, /orderControl\\.style\\.width = Math\\.ceil\\(textWidth \\+ paddingLeft \\+ paddingRight\\) \\+ 'px'/);
+  const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
+  assert.match(css, /cr-product-listing__select-wrap::after \\{ content:\"\"; position:absolute; right:3px/);
+  assert.match(css, /cr-product-listing__ordering select:focus-visible \\{ outline:2px solid/);
+  assert.doesNotMatch(css, /cr-product-listing__ordering select:focus \\{[^}]*outline:[^n]/);
+});
+
+test('facet refresh keeps existing availability in-flight and removes visible updating status', () => {
+  assert.doesNotMatch(js, /Actualizando…/);
+  assert.doesNotMatch(js, /facetAvailability\\[d\\]=null/);
+  assert.match(js, /Keep existing availability\\/options rendered until a current response is accepted/);
+  assert.match(js, /activeControllers\\.forEach\\(controller=>controller\\.abort\\(\\)\\)/);
+  assert.match(js, /generation\\+\\+;const token=generation/);
+});
