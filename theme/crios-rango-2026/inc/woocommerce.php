@@ -4,28 +4,102 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The unfiltered Shop request is a category hub, not a product archive.
- * Short-circuit only its main query before SQL; filtered Shop requests continue
- * through the Filter API integration in helpers.php.
+ * Product archives use a count-free first page. Filtered archives and the
+ * unfiltered Shop hub are shell-only requests resolved asynchronously in JS.
  */
-function cr2026_shop_hub_short_circuit_main_query( $posts, $query ) {
-    if (
-        null !== $posts
-        || is_admin()
-        || ! $query->is_main_query()
-        || ! function_exists( 'is_shop' )
-        || ! is_shop()
-        || cr2026_category_filters_selected()
-    ) {
-        return $posts;
+function cr2026_product_listing_main_query( $query ) {
+    if ( is_admin() || ! $query->is_main_query() ) { return; }
+    $is_shop_query = function_exists( 'is_shop' ) && is_shop();
+    $is_category_query = $query->is_tax( 'product_cat' );
+    if ( ! $is_shop_query && ! $is_category_query ) { return; }
+    if ( cr2026_category_filters_selected() ) {
+        $query->set( 'posts_per_page', 1 );
+        $query->set( 'no_found_rows', true );
+        return;
     }
+    if ( $is_shop_query ) { return; }
+    $orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
+    $query->set( 'posts_per_page', 13 );
+    $query->set( 'no_found_rows', true );
+    if ( 'price' === $orderby || 'price-desc' === $orderby ) {
+        $query->set( 'meta_key', '_price' );
+        $query->set( 'orderby', 'meta_value_num' );
+        $query->set( 'order', 'price-desc' === $orderby ? 'DESC' : 'ASC' );
+    } else {
+        $query->set( 'orderby', 'date' );
+        $query->set( 'order', 'DESC' );
+    }
+}
+add_action( 'pre_get_posts', 'cr2026_product_listing_main_query', 99 );
 
+/** Skip SQL for the Shop hub and for filtered category/root result shells. */
+function cr2026_product_listing_short_circuit_query( $posts, $query ) {
+    if ( null !== $posts || is_admin() || ! $query->is_main_query() ) { return $posts; }
+    $is_shop_query = function_exists( 'is_shop' ) && is_shop();
+    $is_filtered_category = $query->is_tax( 'product_cat' ) && cr2026_category_filters_selected();
+    if ( ! $is_shop_query && ! $is_filtered_category ) { return $posts; }
     $query->set( 'no_found_rows', true );
     $query->found_posts = 0;
     $query->max_num_pages = 0;
     return array();
 }
-add_filter( 'posts_pre_query', 'cr2026_shop_hub_short_circuit_main_query', 20, 2 );
+add_filter( 'posts_pre_query', 'cr2026_product_listing_short_circuit_query', 20, 2 );
+
+/** Public read-only endpoint used by the app-like Load more control. */
+function cr2026_register_product_list_route() {
+    register_rest_route( 'criosrango/v1', '/product-list', array(
+        'methods' => WP_REST_Server::READABLE,
+        'callback' => 'cr2026_product_list_rest_response',
+        'permission_callback' => '__return_true',
+    ) );
+}
+add_action( 'rest_api_init', 'cr2026_register_product_list_route' );
+
+function cr2026_product_list_rest_response( WP_REST_Request $request ) {
+    $page = max( 1, absint( $request->get_param( 'page' ) ) );
+    $orderby = sanitize_key( (string) $request->get_param( 'orderby' ) );
+    $order = 'price-desc' === $orderby ? 'DESC' : ( 'price' === $orderby ? 'ASC' : 'DESC' );
+    $query_orderby = ( 'price' === $orderby || 'price-desc' === $orderby ) ? 'price' : 'date';
+    $raw_ids = (string) $request->get_param( 'product_ids' );
+    $products = array();
+    $has_more = false;
+
+    if ( '' !== $raw_ids ) {
+        $ids = array_values( array_unique( array_filter( array_map( 'absint', explode( ',', $raw_ids ) ) ) ) );
+        $ids = array_slice( $ids, 0, 12 );
+        if ( ! $ids ) { return rest_ensure_response( array( 'html' => '', 'has_more' => false, 'count' => 0 ) ); }
+        $products = wc_get_products( array(
+            'status' => 'publish', 'visibility' => 'visible', 'include' => $ids,
+            'limit' => count( $ids ), 'return' => 'objects', 'orderby' => 'include',
+        ) );
+        if ( 'price' === $query_orderby ) {
+            usort( $products, static function ( $left, $right ) use ( $order ) {
+                $comparison = (float) $left->get_price() <=> (float) $right->get_price();
+                return 'ASC' === $order ? $comparison : -$comparison;
+            } );
+        }
+    } else {
+        $category_id = absint( $request->get_param( 'category_id' ) );
+        $term = $category_id ? get_term( $category_id, 'product_cat' ) : null;
+        if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) {
+            return new WP_Error( 'cr2026_product_list_category', __( 'Categoría no válida.', 'crios-rango-2026' ), array( 'status' => 400 ) );
+        }
+        $products = wc_get_products( array(
+            'status' => 'publish', 'visibility' => 'visible',
+            'category' => array( $term->slug ), 'limit' => 13,
+            'offset' => ( $page - 1 ) * 12, 'return' => 'objects',
+            'orderby' => $query_orderby, 'order' => $order,
+        ) );
+        $has_more = count( $products ) > 12;
+        $products = array_slice( $products, 0, 12 );
+    }
+
+    ob_start();
+    foreach ( $products as $index => $product ) {
+        cr2026_render_product_card( $product, $index + ( $page > 1 ? 4 : 0 ) );
+    }
+    return rest_ensure_response( array( 'html' => ob_get_clean(), 'has_more' => $has_more, 'count' => count( $products ) ) );
+}
 
 function cr2026_woocommerce_wrappers() {
     remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', 10 );

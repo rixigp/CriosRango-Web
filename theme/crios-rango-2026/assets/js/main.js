@@ -261,4 +261,77 @@
     startAfterInteractive();
     window.addEventListener('pagehide',()=>cancelDeferredPrefetch(true),{once:true});
   }
+
+  // App-like product listing. Filter API is requested only in the browser;
+  // unfiltered category archives use their native WooCommerce main query.
+  const productListing = document.querySelector('[data-cr-product-list]');
+  if (productListing) {
+    const grid = productListing.querySelector('[data-cr-product-grid]');
+    const loadMoreButton = productListing.querySelector('[data-cr-product-load-more]');
+    const emptyState = productListing.querySelector('[data-cr-product-empty]');
+    const orderControl = productListing.querySelector('[data-cr-product-order]');
+    const categoryId = String(productListing.dataset.categoryId || '0');
+    const filtered = productListing.dataset.filtered === '1';
+    const filterApiUrl = productListing.dataset.filterApiUrl;
+    const productsUrl = productListing.dataset.productsUrl;
+    const currentUrl = new URL(window.location.href);
+    const orderby = ['date','price','price-desc'].includes(currentUrl.searchParams.get('orderby')) ? currentUrl.searchParams.get('orderby') : 'date';
+    const filterKeys = ['size_ids','color_ids','brand_ids'];
+    let currentPage = 1, hasMore = !filtered && loadMoreButton && !loadMoreButton.hidden, loading = false;
+    const showEmpty = () => { grid.replaceChildren(); emptyState.hidden = false; if (loadMoreButton) loadMoreButton.hidden = true; };
+    const productEndpoint = async (page, productIds) => {
+      const params = new URLSearchParams({page:String(page),orderby});
+      if (productIds && productIds.length) params.set('product_ids',productIds.join(','));
+      else params.set('category_id',categoryId);
+      const response = await fetch(productsUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'}});
+      if (!response.ok) throw new Error('Product list HTTP '+response.status);
+      return response.json();
+    };
+    const loadPage = async (page, append) => {
+      if (loading) return;
+      loading = true;
+      if (loadMoreButton) { loadMoreButton.disabled = true; loadMoreButton.setAttribute('aria-busy','true'); }
+      try {
+        let productIds = null, responseData;
+        if (filtered) {
+          const params = new URLSearchParams({scope:'catalog',facet:'none',page:String(page),per_page:'12'});
+          if (categoryId !== '0') params.set('catalog_category_id',categoryId);
+          filterKeys.forEach(key=>{const value=currentUrl.searchParams.get(key);if(value)params.set(key,value);});
+          const filterResponse = await fetch(filterApiUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'}});
+          if (!filterResponse.ok) throw new Error('Filter API HTTP '+filterResponse.status);
+          const payload = await filterResponse.json();
+          productIds = Array.isArray(payload.product_ids) ? payload.product_ids.map(Number).filter(id=>Number.isInteger(id)&&id>0) : [];
+          hasMore = Boolean(payload.has_more);
+          if (!productIds.length) { if (!append) showEmpty(); hasMore = false; if (loadMoreButton) loadMoreButton.hidden = true; return; }
+          responseData = await productEndpoint(page,productIds);
+        } else {
+          responseData = await productEndpoint(page,null);
+          hasMore = Boolean(responseData.has_more);
+        }
+        if (!responseData || !responseData.html) { if (!append) showEmpty(); hasMore = false; if (loadMoreButton) loadMoreButton.hidden = true; return; }
+        if (append) grid.insertAdjacentHTML('beforeend',responseData.html);
+        else grid.innerHTML = responseData.html;
+        emptyState.hidden = true;
+        currentPage = page;
+        if (loadMoreButton) loadMoreButton.hidden = !hasMore;
+      } catch (error) {
+        console.error('[Críos&Rango productos] No se pudo cargar la página del catálogo',error);
+        if (!append) showEmpty();
+        hasMore = false;
+        if (loadMoreButton) loadMoreButton.hidden = true;
+      } finally {
+        loading = false;
+        if (loadMoreButton) { loadMoreButton.disabled = false; loadMoreButton.removeAttribute('aria-busy'); }
+      }
+    };
+    if (filtered) loadPage(1,false);
+    if (loadMoreButton) loadMoreButton.addEventListener('click',()=>{if(hasMore)loadPage(currentPage+1,true);});
+    if (orderControl) orderControl.addEventListener('change',()=>{
+      const nextUrl = new URL(window.location.href);
+      if (orderControl.value === 'date') nextUrl.searchParams.delete('orderby');
+      else nextUrl.searchParams.set('orderby',orderControl.value);
+      window.location.assign(nextUrl.toString());
+    });
+  }
+
 })();

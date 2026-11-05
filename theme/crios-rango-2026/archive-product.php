@@ -26,30 +26,67 @@ if ( function_exists( 'is_shop' ) && is_shop() && ! cr2026_category_filters_sele
     </main>
     <?php get_footer( 'shop' ); return;
 }
+$GLOBALS['cr2026_product_listing_view'] = true;
+wp_enqueue_style(
+    'cr2026-product-list-roboto',
+    'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
+    array(),
+    null
+);
+$listing_term = is_product_category() ? get_queried_object() : null;
+$listing_term = $listing_term instanceof WP_Term && 'product_cat' === $listing_term->taxonomy ? $listing_term : null;
+$listing_context = $listing_term ? 'archive' : 'root';
+$listing_title = $listing_term ? cr2026_product_cat_display_name( $listing_term ) : __( 'Categorías', 'crios-rango-2026' );
+$listing_back_url = $listing_term ? cr2026_category_back_url( $listing_term ) : home_url( '/' );
+$listing_category_id = $listing_term ? (int) $listing_term->term_id : 0;
+$listing_filtered = cr2026_category_filters_selected();
+$listing_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
+if ( ! in_array( $listing_orderby, array( 'date', 'price', 'price-desc' ), true ) ) { $listing_orderby = 'date'; }
+$remove_filter_url = remove_query_arg( array( 'size_ids', 'color_ids', 'brand_ids' ) );
 get_header( 'shop' );
-do_action( 'woocommerce_before_main_content' );
-if ( function_exists( 'is_shop' ) && is_shop() ) {
-    cr2026_render_category_toolbar( __( 'Categorías', 'crios-rango-2026' ), cr2026_category_back_url(), 'root', true );
-    cr2026_render_category_filter_sheet( null, 'root' );
-} elseif ( is_product_category() ) {
-    $category_term = get_queried_object();
-    if ( $category_term instanceof WP_Term ) {
-        echo '<button type="button" class="cr-category-filter-sheet__trigger--archive" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
-        cr2026_render_category_filter_sheet( $category_term, 'archive' );
-    }
-}
-if ( woocommerce_product_loop() ) {
-    do_action( 'woocommerce_before_shop_loop' );
-    woocommerce_product_loop_start();
-    if ( wc_get_loop_prop( 'total' ) ) {
-        while ( have_posts() ) {
-            the_post();
-            do_action( 'woocommerce_shop_loop' );
-            wc_get_template_part( 'content', 'product' );
-        }
-    }
-    woocommerce_product_loop_end();
-    do_action( 'woocommerce_after_shop_loop' );
-} else { do_action( 'woocommerce_no_products_found' ); }
-do_action( 'woocommerce_after_main_content' );
-get_footer( 'shop' );
+?>
+<main id="primary" class="cr-main cr-main--woocommerce cr-product-listing" data-cr-product-list
+    data-filtered="<?php echo $listing_filtered ? '1' : '0'; ?>"
+    data-category-id="<?php echo esc_attr( $listing_category_id ); ?>"
+    data-filter-api-url="<?php echo esc_url( rest_url( 'criosrango-filter/v1/query' ) ); ?>"
+    data-products-url="<?php echo esc_url( rest_url( 'criosrango/v1/product-list' ) ); ?>">
+    <div class="cr-product-listing__shell">
+        <?php cr2026_render_category_toolbar( $listing_title, $listing_back_url, $listing_context, true ); ?>
+        <?php cr2026_render_category_filter_sheet( $listing_term, $listing_context ); ?>
+        <div class="cr-product-listing__ordering">
+            <label for="cr-product-order"><?php esc_html_e( 'Ordenar por', 'crios-rango-2026' ); ?></label>
+            <span class="cr-product-listing__select-wrap">
+                <select id="cr-product-order" data-cr-product-order aria-label="<?php esc_attr_e( 'Ordenar productos', 'crios-rango-2026' ); ?>">
+                    <option value="date"<?php selected( 'date', $listing_orderby ); ?>><?php esc_html_e( 'Más recientes', 'crios-rango-2026' ); ?></option>
+                    <option value="price"<?php selected( 'price', $listing_orderby ); ?>><?php esc_html_e( 'Precio: menor a mayor', 'crios-rango-2026' ); ?></option>
+                    <option value="price-desc"<?php selected( 'price-desc', $listing_orderby ); ?>><?php esc_html_e( 'Precio: mayor a menor', 'crios-rango-2026' ); ?></option>
+                </select>
+            </span>
+        </div>
+        <div class="cr-product-grid" data-cr-product-grid aria-live="polite">
+        <?php if ( $listing_filtered ) : ?>
+            <?php for ( $skeleton_index = 0; $skeleton_index < 4; $skeleton_index++ ) : ?>
+                <div class="cr-product-skeleton" aria-hidden="true"><span></span><i></i><b></b></div>
+            <?php endfor; ?>
+        <?php else : ?>
+            <?php
+            global $wp_query;
+            $listing_posts = isset( $wp_query->posts ) && is_array( $wp_query->posts ) ? $wp_query->posts : array();
+            $listing_has_more = count( $listing_posts ) > 12;
+            foreach ( array_slice( $listing_posts, 0, 12 ) as $product_index => $listing_post ) :
+                $listing_product = wc_get_product( $listing_post->ID );
+                if ( $listing_product ) { cr2026_render_product_card( $listing_product, $product_index ); }
+            endforeach;
+            ?>
+        <?php endif; ?>
+        </div>
+        <div class="cr-product-listing__empty" data-cr-product-empty<?php echo $listing_filtered || ! empty( $listing_posts ) ? ' hidden' : ''; ?>>
+            <p><?php echo $listing_filtered ? esc_html__( 'No encontramos productos con esos filtros.', 'crios-rango-2026' ) : esc_html__( 'No hay productos disponibles.', 'crios-rango-2026' ); ?></p>
+            <?php if ( $listing_filtered ) : ?><a href="<?php echo esc_url( $remove_filter_url ); ?>"><?php esc_html_e( 'Limpiar filtros', 'crios-rango-2026' ); ?></a><?php endif; ?>
+        </div>
+        <button class="cr-product-listing__load-more" type="button" data-cr-product-load-more<?php echo ( ! $listing_filtered && ! empty( $listing_has_more ) ) ? '' : ' hidden'; ?>>
+            <?php esc_html_e( 'Cargar más', 'crios-rango-2026' ); ?>
+        </button>
+    </div>
+</main>
+<?php get_footer( 'shop' );
