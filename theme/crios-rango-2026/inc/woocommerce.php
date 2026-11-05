@@ -262,6 +262,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         'filter_api_product_ids' => $filter_api_product_ids,
         'rendered_product_ids' => array_map( static function ( $product ) { return $product->get_id(); }, $products ),
         'page' => $page,
+        'per_page' => $per_page,
         'total' => $total,
         'has_more' => $has_more,
     ) );
