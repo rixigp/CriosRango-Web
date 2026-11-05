@@ -43,11 +43,13 @@ $listing_filtered = cr2026_category_filters_selected();
 $listing_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
 if ( ! in_array( $listing_orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $listing_orderby = 'date'; }
 $remove_filter_url = remove_query_arg( array( 'size_ids', 'color_ids', 'brand_ids' ) );
+$listing_debug = ( function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), array( 'staging', 'development', 'local' ), true ) )
+    || ( isset( $_SERVER['REQUEST_URI'] ) && 0 === strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/prueba/' ) );
 get_header( 'shop' );
 ?>
 <main id="primary" class="cr-main cr-main--woocommerce cr-product-listing" data-cr-product-list
     data-filtered="<?php echo $listing_filtered ? '1' : '0'; ?>"
-    data-debug="<?php echo function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), array( 'staging', 'development', 'local' ), true ) ? '1' : '0'; ?>"
+    data-debug="<?php echo $listing_debug ? '1' : '0'; ?>"
     data-category-id="<?php echo esc_attr( $listing_category_id ); ?>"
     data-page-size="<?php echo esc_attr( CR2026_CATALOG_PAGE_SIZE ); ?>"
     data-filter-api-url="<?php echo esc_url( rest_url( 'criosrango-filter/v1/query' ) ); ?>"
