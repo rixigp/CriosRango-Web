@@ -444,12 +444,29 @@
       catalogObserver.observe(sentinel);
       window.addEventListener('pagehide',()=>catalogObserver.disconnect(),{once:true});
     }
-    if (orderControl) orderControl.addEventListener('change',()=>{
-      orderby=['date','price','price-desc','title'].includes(orderControl.value)?orderControl.value:'date';
-      if(orderby==='date')currentUrl.searchParams.delete('orderby');else currentUrl.searchParams.set('orderby',orderby);
-      window.history.replaceState({},'',currentUrl.toString());
-      resetAndLoad();
-    });
+    if (orderControl) {
+      const fitOrderControl = () => {
+        const selectedText = (orderControl.selectedOptions[0]?.textContent || orderControl.value || '').trim();
+        const computed = window.getComputedStyle(orderControl);
+        let textWidth = selectedText.length * 7;
+        try {
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          if (context) { context.font = computed.font; textWidth = context.measureText(selectedText).width; }
+        } catch (error) {}
+        const paddingLeft = parseFloat(computed.paddingLeft) || 2;
+        const paddingRight = parseFloat(computed.paddingRight) || 22;
+        orderControl.style.width = Math.ceil(textWidth + paddingLeft + paddingRight) + 'px';
+      };
+      fitOrderControl();
+      orderControl.addEventListener('change',()=>{
+        orderby=['date','price','price-desc','title'].includes(orderControl.value)?orderControl.value:'date';
+        fitOrderControl();
+        if(orderby==='date')currentUrl.searchParams.delete('orderby');else currentUrl.searchParams.set('orderby',orderby);
+        window.history.replaceState({},'',currentUrl.toString());
+        resetAndLoad();
+      });
+    }
   }
 
 })();
