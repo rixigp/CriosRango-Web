@@ -373,7 +373,7 @@
         if(!sameOrderedIds(returnedIds,endpointIds))throw new Error('Catalog endpoint ID/order mismatch: response='+JSON.stringify(returnedIds)+' cards='+JSON.stringify(endpointIds));
         if(!sameOrderedIds(endpointIds,renderedIds))throw new Error('Catalog DOM ID/order mismatch: cards='+JSON.stringify(endpointIds)+' DOM='+JSON.stringify(renderedIds));
         if(responseData.source==='filter_api'&&!sameOrderedIds(filterApiIds,endpointIds))throw new Error('Filter API ID/order mismatch: API='+JSON.stringify(filterApiIds)+' cards='+JSON.stringify(endpointIds));
-        if(debug)console.debug('[CR2026 catalog] page',{page,sort:sortMap[orderby],page_size:pageSize,api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds,prices,total:responseData.total,has_more:responseData.has_more});
+
         const previousIds=append?Array.from(grid.querySelectorAll('[data-product-id]')).map(node=>String(node.getAttribute('data-product-id'))):[];
         const completeIds=previousIds.concat(renderedIds);
         const seenIds=new Set(),duplicates=[];
@@ -388,6 +388,7 @@
           const normalized=String(text).replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:,|$))/g,'').replace(',','.');
           return Number(normalized);
         });
+        if(debug)console.debug('[CR2026 catalog] page',{page,sort:sortMap[orderby],page_size:pageSize,api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds,prices,total:responseData.total,has_more:responseData.has_more});
         if(orderby==='price'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_ASC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
         if(orderby==='price'&&prices.some((price,index)=>index>0&&prices[index-1]>price))throw new Error('PRICE_ASC=FAIL within concatenated page sequence: '+JSON.stringify(prices));
         if(orderby==='price-desc'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_DESC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
