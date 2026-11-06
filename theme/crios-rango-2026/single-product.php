@@ -111,6 +111,17 @@ if ( ! $product instanceof WC_Product ) {
                 <div class="cr-product-variation-chips" data-cr-variation-chips>
                   <?php foreach ( $variation_attributes as $attribute_name => $options ) :
                     $attribute_label = wc_attribute_label( $attribute_name );
+                    if ( 'Tallas' === $attribute_label ) {
+                        usort( $options, static function ( $left, $right ) use ( $attribute_name ) {
+                            $left_term = taxonomy_exists( $attribute_name ) ? get_term_by( 'slug', sanitize_title( $left ), $attribute_name ) : false;
+                            $right_term = taxonomy_exists( $attribute_name ) ? get_term_by( 'slug', sanitize_title( $right ), $attribute_name ) : false;
+                            $left_name = $left_term && ! is_wp_error( $left_term ) ? $left_term->name : $left;
+                            $right_name = $right_term && ! is_wp_error( $right_term ) ? $right_term->name : $right;
+                            $left_key = cr2026_product_size_sort_key( $left_name );
+                            $right_key = cr2026_product_size_sort_key( $right_name );
+                            return $left_key === $right_key ? strcasecmp( $left_name, $right_name ) : $left_key <=> $right_key;
+                        } );
+                    }
                     $is_color = false !== stripos( $attribute_name, 'color' ) || false !== stripos( $attribute_name, 'colour' );
                     ?>
                     <fieldset class="cr-product-variation-group" data-attribute-name="<?php echo esc_attr( $attribute_name ); ?>" data-attribute-label="<?php echo esc_attr( $attribute_label ); ?>">
