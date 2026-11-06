@@ -162,8 +162,7 @@ body.cr-product-detail-app .cr-main--woocommerce div.product .woocommerce-produc
 }
 body.cr-product-detail-app .cr-main--woocommerce div.product .woocommerce-product-details__short-description a {
   color: var(--cr-product-green);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration: none;
 }
 body.cr-product-detail-app .cr-main--woocommerce div.product form.cart {
   display: block;
