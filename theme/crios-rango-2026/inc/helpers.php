@@ -874,3 +874,5 @@ function cr2026_product_gallery_attachment_image_attributes( $attr, $attachment,
     return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'cr2026_product_gallery_attachment_image_attributes', 30, 3 );
+
+// The attachment-src and srcset filters preserve WooCommerce's native gallery markup and controls.
