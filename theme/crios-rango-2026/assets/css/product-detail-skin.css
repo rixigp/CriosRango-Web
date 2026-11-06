@@ -80,7 +80,7 @@ body.cr-product-detail-app .woocommerce-product-gallery__image img {
   width: 100%;
   aspect-ratio: 4 / 5;
   height: auto;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   background: #fff;
 }
@@ -365,4 +365,141 @@ body.cr-product-detail-app .cr-app-header {
   body.admin-bar.cr-product-detail-app .cr-app-header {
     top: 0 !important;
   }
+}
+
+
+/* APP product actions and progressive native-control presentation. */
+body.cr-product-detail-app .cr-product-actions {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  margin: 0 0 16px;
+  overflow: hidden;
+  border: 1px solid var(--cr-product-border);
+  border-radius: 23px;
+  background: #fff;
+}
+body.cr-product-detail-app .cr-product-actions__button {
+  display: inline-flex;
+  flex: 1 1 50%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 46px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--cr-product-green);
+  font: 300 14px/20px "Roboto",Arial,sans-serif;
+  text-decoration: none;
+}
+body.cr-product-detail-app .cr-product-actions__button + .cr-product-actions__button {
+  border-left: 1px solid var(--cr-product-border);
+}
+body.cr-product-detail-app .cr-product-actions__button:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
+body.cr-product-detail-app .cr-product-gallery-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+  margin: -12px 0 14px;
+}
+body.cr-product-detail-app .cr-product-gallery-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #C9CBC6;
+}
+body.cr-product-detail-app .cr-product-gallery-dot[aria-current="true"] {
+  width: 8px;
+  height: 8px;
+  background: var(--cr-product-green);
+}
+body.cr-product-detail-app.cr-product-ui-enhanced .woocommerce-product-gallery .flex-control-thumbs {
+  display: none !important;
+}
+body.cr-product-detail-app .cr-product-choice-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 8px 0 12px;
+}
+body.cr-product-detail-app .cr-product-choice-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 7px 13px;
+  border: 1px solid var(--cr-product-border);
+  border-radius: 20px;
+  background: #fff;
+  color: #303432;
+  font: 300 13px/18px "Roboto",Arial,sans-serif;
+}
+body.cr-product-detail-app .cr-product-choice-chip[aria-pressed="true"] {
+  border-color: var(--cr-product-green);
+  box-shadow: inset 0 0 0 1px var(--cr-product-green);
+  color: var(--cr-product-green);
+}
+body.cr-product-detail-app .cr-product-choice-chip:disabled {
+  opacity: .35;
+  text-decoration: line-through;
+}
+body.cr-product-detail-app .cr-product-choice-chip__swatch {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 50%;
+  background: #D8D9D5;
+}
+body.cr-product-detail-app.cr-product-ui-enhanced form.cart table.variations select {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  white-space: nowrap !important;
+}
+body.cr-product-detail-app .cr-product-quantity-stepper {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  margin: 0 10px 10px 0;
+  overflow: hidden;
+  border: 1px solid var(--cr-product-border);
+  border-radius: 12px;
+  background: #fff;
+}
+body.cr-product-detail-app .cr-product-quantity-stepper button {
+  width: 38px;
+  height: 46px;
+  border: 0;
+  background: transparent;
+  color: var(--cr-product-green);
+  font: 300 20px/1 "Roboto",Arial,sans-serif;
+}
+body.cr-product-detail-app .cr-product-quantity-stepper input.qty {
+  width: 48px !important;
+  min-height: 46px !important;
+  padding: 4px 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+body.cr-product-detail-app .cr-product-quantity-stepper button:disabled {
+  opacity: .35;
+}
+body.cr-product-detail-app .cr-product-variation-cta-label {
+  display: none;
+}
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button:disabled,
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.disabled {
+  opacity: .55;
 }
