@@ -89,10 +89,12 @@ if ( ! $product instanceof WC_Product ) {
 
         <div class="cr-product-detail__content">
           <div class="cr-product-detail__eyebrow">
-            <?php if ( $product->is_on_sale() ) : ?><span class="cr-product-detail__sale"><?php esc_html_e( 'OFERTA', 'crios-rango-2026' ); ?></span><?php endif; ?>
+            <span class="cr-product-detail__sale"<?php echo $product->is_on_sale() ? '' : ' hidden'; ?>><?php esc_html_e( 'OFERTA', 'crios-rango-2026' ); ?></span>
           </div>
           <h1 class="cr-product-detail__name"><?php echo esc_html( $product->get_name() ); ?></h1>
           <div class="cr-product-detail__price" data-cr-product-price><?php echo wp_kses_post( $product->get_price_html() ); ?></div>
+          <?php $availability = $product->get_availability(); ?>
+          <p class="cr-product-stock" data-cr-product-stock><?php echo wp_kses_post( $availability['availability'] ); ?></p>
 
           <?php if ( $brand_line || $composition_line || $description_text ) : ?>
             <div class="cr-product-detail__metadata">
@@ -134,7 +136,7 @@ if ( ! $product instanceof WC_Product ) {
                 </tbody></table>
                 <a class="reset_variations" href="#" aria-label="<?php esc_attr_e( 'Limpiar opciones', 'crios-rango-2026' ); ?>"><?php esc_html_e( 'Limpiar', 'crios-rango-2026' ); ?></a>
                 <div class="single_variation_wrap">
-                  <div class="woocommerce-variation single_variation" role="status" aria-live="polite"></div>
+                  <div class="woocommerce-variation single_variation" aria-hidden="true"></div>
                   <div class="woocommerce-variation-add-to-cart variations_button cr-product-detail__cart-controls">
                     <div class="cr-product-quantity" data-cr-quantity>
                       <button type="button" data-cr-quantity-minus aria-label="<?php esc_attr_e( 'Reducir cantidad', 'crios-rango-2026' ); ?>">−</button>
