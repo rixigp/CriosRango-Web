@@ -270,7 +270,6 @@ body.cr-product-detail-app .woocommerce-notices-wrapper .button.wc-forward {
   font: 400 12px/18px "Roboto",Arial,sans-serif;
 }
 body.cr-product-detail-app .cr-main--woocommerce div.product .product_meta,
-body.cr-product-detail-app .cr-main--woocommerce div.product .woocommerce-tabs,
 body.cr-product-detail-app .cr-main--woocommerce div.product .related,
 body.cr-product-detail-app .cr-main--woocommerce div.product .upsells,
 body.cr-product-detail-app .cr-footer {
@@ -280,6 +279,8 @@ body.cr-product-detail-app .cr-footer {
 body.cr-product-detail-app .cr-main--woocommerce div.product .wlr-product-points,
 body.cr-product-detail-app .cr-main--woocommerce div.product .wlr-product-points-message,
 body.cr-product-detail-app .cr-main--woocommerce div.product .wlr-points-message,
+body.cr-product-detail-app .cr-main--woocommerce div.product .wlr-product-message,
+body.cr-product-detail-app .cr-main--woocommerce div.product .wlr-points-earning-message,
 body.cr-product-detail-app .cr-main--woocommerce div.product .wployalty-product-points,
 body.cr-product-detail-app .cr-main--woocommerce div.product .wployalty-product-message {
   display: none !important;
@@ -331,4 +332,10 @@ body.cr-product-detail-app .cr-mobile-bottom-nav {
   body.admin-bar.cr-product-detail-app .cr-product-detail-toolbar {
     top: calc(var(--cr-app-topbar-height, 64px) + 46px);
   }
+}
+
+/* Additional Information stays in native tab markup/data but is not shown in the app shell. */
+body.cr-product-detail-app .cr-main--woocommerce div.product .additional_information_tab,
+body.cr-product-detail-app .cr-main--woocommerce div.product #tab-additional_information {
+  display: none !important;
 }
