@@ -7,11 +7,13 @@ on:
     paths:
       - "theme/crios-rango-2026/**"
       - "tests/catalog-contract.test.cjs"
+      - "tests/product-detail-contract.test.cjs"
       - ".github/workflows/catalog-contract.yml"
   push:
     branches:
       - main
       - fix/catalog-runtime-parity
+      - feat/product-detail-app-parity
     paths:
       - "theme/crios-rango-2026/**"
       - "tests/catalog-contract.test.cjs"
@@ -32,8 +34,9 @@ jobs:
           node-version: "22"
       - name: Check JavaScript syntax
         run: node --check theme/crios-rango-2026/assets/js/main.js
+          node --check theme/crios-rango-2026/assets/js/product-detail.js
       - name: Run catalog contract tests
-        run: node --test tests/catalog-contract.test.cjs
+        run: node --test tests/catalog-contract.test.cjs tests/product-detail-contract.test.cjs
       - name: Install PHP CLI
         run: |
           sudo apt-get update -qq
