@@ -53,10 +53,19 @@ test('product toolbar reuses canonical category toolbar and has no invented cont
   assert.doesNotMatch(css, /\.cr-product-toolbar/);
 });
 
-test('product bottom inset reuses global bottom-nav and safe-area tokens', () => {
+test('product bottom inset reserves the exact global fixed-nav height at document scroll end', () => {
   const css = read('assets/css/product-detail.css');
-  assert.match(css, /padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
+  assert.match(css, /body\.single-product\s*\{\s*padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
+  assert.match(css, /body\.single-product\s+\.cr-product-detail\s*\{\s*padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
   assert.doesNotMatch(css, /padding(?:-bottom)?\s*:[^;]*42px/);
+});
+
+test('product classic footer is omitted while shared navigation and wp_footer remain', () => {
+  const footer = fs.readFileSync(path.join(root, 'footer.php'), 'utf8');
+  assert.match(footer, /if\s*\(\s*!\s*is_product\(\)\s*&&[\s\S]*?<footer class="cr-footer">/);
+  assert.match(footer, /<nav class="cr-mobile-bottom-nav cr-app-bottom-nav"/);
+  assert.match(footer, /<\?php\s*wp_footer\(\);\s*\?>/);
+  assert.doesNotMatch(footer, /if\s*\(\s*!\s*is_product\(\)\s*\)\s*\{[^}]*wp_footer/);
 });
 
 test('native WooCommerce variable form remains the variation and add-to-cart authority', () => {

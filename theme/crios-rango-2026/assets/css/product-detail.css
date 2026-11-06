@@ -1,6 +1,16 @@
 /* APP-parity product presentation. All selectors are scoped to the single-product shell. */
+/*
+ * The fixed mobile navigation occupies exactly the global nav token plus the
+ * device safe area. Reserve that same document-scroll extent on the product
+ * page so its final controls can scroll completely above the fixed nav.
+ */
 @media (max-width: 1279px) {
-  .cr-product-detail { padding-bottom: calc(var(--cr-bottom-nav) + env(safe-area-inset-bottom)); }
+  body.single-product {
+    padding-bottom: calc(var(--cr-bottom-nav) + env(safe-area-inset-bottom));
+  }
+  body.single-product .cr-product-detail {
+    padding-bottom: calc(var(--cr-bottom-nav) + env(safe-area-inset-bottom));
+  }
 }
 .cr-product-detail__shell { width: min(100% - 32px, 1180px); margin-inline: auto; }
 .cr-product-gallery { position:relative; width:100%; overflow:hidden; }

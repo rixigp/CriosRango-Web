@@ -15,7 +15,7 @@ $is_categories_active = 'categories' === $active_nav_item;
 $is_cart_active = 'cart' === $active_nav_item;
 $is_account_active = 'account' === $active_nav_item;
 ?>
-<?php if ( ! $is_app_home && ! $is_app_category_view && ! $is_app_categories_hub ) : ?>
+<?php if ( ! is_product() && ! $is_app_home && ! $is_app_category_view && ! $is_app_categories_hub ) : ?>
 <footer class="cr-footer">
     <div class="cr-shell cr-footer__grid">
         <div>
