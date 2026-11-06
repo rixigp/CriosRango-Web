@@ -81,6 +81,11 @@ if ( ! $product instanceof WC_Product ) {
           <?php endif; ?>
         </section>
 
+        <div class="cr-product-actions">
+          <button type="button" data-cr-product-share><?php esc_html_e( 'Compartir', 'crios-rango-2026' ); ?></button>
+          <button type="button" data-cr-product-reserve<?php echo $product->is_type( 'variable' ) ? ' disabled' : ''; ?>><?php esc_html_e( 'Reservarlo', 'crios-rango-2026' ); ?></button>
+        </div>
+
         <div class="cr-product-detail__content">
           <div class="cr-product-detail__eyebrow">
             <?php if ( $product->is_on_sale() ) : ?><span class="cr-product-detail__sale"><?php esc_html_e( 'OFERTA', 'crios-rango-2026' ); ?></span><?php endif; ?>
