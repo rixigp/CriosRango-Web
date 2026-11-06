@@ -316,10 +316,8 @@ function cr2026_category_filter_term_labels() {
  * Request: /prueba/wp-json/cr2026/v1/outlet-bubbles-debug?branch_id=475
  */
 function cr2026_outlet_bubbles_debug_permission() {
-    $environment = function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : 'production';
     $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-    return in_array( $environment, array( 'staging', 'development', 'local' ), true )
-        && 0 === strpos( $request_uri, '/prueba/' );
+    return 0 === strpos( $request_uri, '/prueba/' );
 }
 function cr2026_outlet_bubbles_debug( WP_REST_Request $request ) {
     if ( ! cr2026_outlet_bubbles_debug_permission() ) {
