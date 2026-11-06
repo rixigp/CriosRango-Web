@@ -1,6 +1,20 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+function cr2026_product_size_sort_key( $value ) {
+    $clean = strtoupper( preg_replace( '/\s+/', '', trim( (string) $value ) ) );
+    if ( preg_match( '/M$/', $clean ) ) {
+        $number = (int) preg_replace( '/M$/', '', $clean );
+        return $number > 0 ? $number : 999;
+    }
+    if ( preg_match( '/A$/', $clean ) ) {
+        $number = (int) preg_replace( '/A$/', '', $clean );
+        return ( $number > 0 ? $number : 99 ) * 12;
+    }
+    $sizes = array( 'XXS' => 1000, 'XS' => 1001, 'S' => 1002, 'M' => 1003, 'L' => 1004, 'XL' => 1005, 'XXL' => 1006 );
+    return isset( $sizes[ $clean ] ) ? $sizes[ $clean ] : 2000;
+}
+
 /**
  * Remove only loyalty promotional render callbacks from the classic single
  * product hooks. Points accrual, balances, cart and checkout integrations stay
