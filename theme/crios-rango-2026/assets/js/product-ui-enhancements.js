@@ -2,24 +2,76 @@
   'use strict';
 
   var COLOR_SWATCH_MAP = {
-    granate: '#800020',
-    rosa: '#E7A3B5',
-    rojo: '#C83D45',
-    azul: '#477DAA',
-    marino: '#263B5B',
-    verde: '#64856A',
-    kaki: '#8B8960',
-    beige: '#D8C7A5',
-    blanco: '#F5F3ED',
-    negro: '#292929',
-    gris: '#969A9B',
-    marron: '#805B43',
-    camel: '#B78A58',
-    crudo: '#E8E0CF',
-    amarillo: '#E3C34F',
-    naranja: '#D9823B',
-    lila: '#B7A1C8'
+    'amarillo': '#E3C34F',
+    'azul': '#477DAA',
+    'azul claro': '#8FC5E8',
+    'azul marino': '#263B5B',
+    'azul pavo': '#1F6F78',
+    'azul turquesa': '#39BFC1',
+    'azulon': '#2457A6',
+    'beige': '#D8C7A5',
+    'berenjena': '#583047',
+    'blanco': '#F5F3ED',
+    'caldero': '#B65A32',
+    'camel': '#B78A58',
+    'celeste': '#8ECFE8',
+    'chicle': '#F47FAE',
+    'coral': '#F07868',
+    'fucsia': '#D52C88',
+    'granate': '#800020',
+    'gris': '#969A9B',
+    'kaki': '#8B8960',
+    'lila': '#B7A1C8',
+    'marron': '#805B43',
+    'morado': '#76519A',
+    'mostaza': '#D5A62E',
+    'naranja': '#D9823B',
+    'negro': '#292929',
+    'oro': '#C6A23A',
+    'pistacho': '#A9C96A',
+    'rojo': '#C83D45',
+    'rosa': '#E7A3B5',
+    'salmon': '#F29A82',
+    'verde': '#64856A',
+    'verde esmeralda': '#16866A',
+    'verde fluor': '#B7E334',
+    'verde manzana': '#8DBF45',
+    'verde oscuro': '#315B3C',
+    // Existing legacy entries retained without changing their appearance.
+    'marino': '#263B5B',
+    'crudo': '#E8E0CF'
   };
+
+  var COLOR_MAPPING_AUDIT_SEEN = Object.create(null);
+
+  function normalizeColorKey(value) {
+    return String(value == null ? '' : value)
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+      .replace(/\s+/g, ' ');
+  }
+
+  function resolveColorSwatch(rawValue, label) {
+    var candidates = [label, rawValue].map(normalizeColorKey).filter(Boolean);
+    for (var i = 0; i < candidates.length; i += 1) {
+      if (Object.prototype.hasOwnProperty.call(COLOR_SWATCH_MAP, candidates[i])) {
+        return { normalized: candidates[i], color: COLOR_SWATCH_MAP[candidates[i]], fallback: false };
+      }
+    }
+    return { normalized: candidates.join(' | '), color: null, fallback: true };
+  }
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+      COLOR_SWATCH_MAP: COLOR_SWATCH_MAP,
+      normalizeColorKey: normalizeColorKey,
+      resolveColorSwatch: resolveColorSwatch
+    };
+  }
 
   function ready(fn) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn, { once: true });
@@ -134,8 +186,22 @@
               var swatch = document.createElement('span');
               swatch.className = 'cr-product-choice-chip__swatch';
               swatch.setAttribute('aria-hidden', 'true');
-              var swatchKey = option.textContent.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
-              if (COLOR_SWATCH_MAP[swatchKey]) swatch.style.backgroundColor = COLOR_SWATCH_MAP[swatchKey];
+              var rawColorValue = option.value;
+              var rawColorLabel = option.textContent.trim();
+              var colorMapping = resolveColorSwatch(rawColorValue, rawColorLabel);
+              if (colorMapping.color) swatch.style.backgroundColor = colorMapping.color;
+              var auditKey = normalizeColorKey(rawColorLabel) + '|' + normalizeColorKey(rawColorValue);
+              if (!COLOR_MAPPING_AUDIT_SEEN[auditKey]) {
+                COLOR_MAPPING_AUDIT_SEEN[auditKey] = true;
+                if (window.console && console.info) {
+                  console.info('[CR Product UI] COLOR_MAPPING_AUDIT', {
+                    raw: { label: rawColorLabel, value: rawColorValue, slug: rawColorValue },
+                    normalized: colorMapping.normalized,
+                    resolved: colorMapping.color || 'neutral',
+                    fallback: colorMapping.fallback ? 'YES' : 'NO'
+                  });
+                }
+              }
               chip.appendChild(swatch);
             }
             var text = document.createElement('span');

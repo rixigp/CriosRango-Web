@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const theme = path.join(root, 'theme/crios-rango-2026');
@@ -264,4 +265,74 @@ test('color chip is independently toggleable through its native select', () => {
   assert.ok(productUiJs.includes("dispatchNativeChange(select)"));
   assert.ok(productUiJs.includes("select.value === option.value ? 'true' : 'false'"));
   assert.ok(productUiJs.includes("COLOR_OPTIONS_AUDIT"));
+});
+
+test('all 35 current WooCommerce colors resolve to a visual swatch without fallback', () => {
+  const sandboxModule = { exports: {} };
+  vm.runInNewContext(productUiJs, {
+    module: sandboxModule,
+    document: { readyState: 'loading', addEventListener() {} }
+  });
+  const { resolveColorSwatch } = sandboxModule.exports;
+  const colors = [
+    'Amarillo', 'Azul', 'Azul claro', 'Azul marino', 'Azul pavo',
+    'Azul turquesa', 'Azulón', 'Beige', 'Berenjena', 'Blanco',
+    'Caldero', 'Camel', 'Celeste', 'Chicle', 'Coral', 'Fucsia',
+    'Granate', 'Gris', 'Kaki', 'Lila', 'Marrón', 'Morado',
+    'Mostaza', 'Naranja', 'Negro', 'Oro', 'Pistacho', 'Rojo',
+    'Rosa', 'Salmón', 'Verde', 'Verde esmeralda', 'Verde fluor',
+    'Verde manzana', 'Verde oscuro'
+  ];
+  assert.equal(colors.length, 35);
+  for (const color of colors) {
+    const result = resolveColorSwatch(color.toLowerCase().replace(/ /g, '-'), color);
+    assert.equal(result.fallback, false, color + ' must not use fallback');
+    assert.match(result.color, /^#[0-9A-F]{6}$/i, color + ' must resolve to HEX');
+  }
+});
+
+test('color resolver normalizes accents, case, whitespace and WooCommerce slug separators', () => {
+  const sandboxModule = { exports: {} };
+  vm.runInNewContext(productUiJs, {
+    module: sandboxModule,
+    document: { readyState: 'loading', addEventListener() {} }
+  });
+  const { resolveColorSwatch } = sandboxModule.exports;
+  for (const value of ['Salmón', 'Salmon', 'salmón', 'salmon', ' SALMÓN ']) {
+    assert.equal(resolveColorSwatch(value, value).color, '#F29A82', value);
+    assert.equal(resolveColorSwatch(value, value).fallback, false, value);
+  }
+  assert.equal(resolveColorSwatch('azulon', 'Azulón').color, '#2457A6');
+  assert.equal(resolveColorSwatch('marron', 'Marrón').color, '#805B43');
+  assert.equal(resolveColorSwatch('azul-marino', 'Azul marino').color, '#263B5B');
+});
+
+test('Granate keeps its exact existing HEX and unknown future terms keep neutral fallback', () => {
+  const sandboxModule = { exports: {} };
+  vm.runInNewContext(productUiJs, {
+    module: sandboxModule,
+    document: { readyState: 'loading', addEventListener() {} }
+  });
+  const { resolveColorSwatch } = sandboxModule.exports;
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(resolveColorSwatch('granate', 'Granate'))),
+    { normalized: 'granate', color: '#800020', fallback: false }
+  );
+  assert.equal(resolveColorSwatch('ultravioleta-futuro', 'Ultravioleta futuro').fallback, true);
+  assert.equal(resolveColorSwatch('ultravioleta-futuro', 'Ultravioleta futuro').color, null);
+});
+
+test('visual color resolution never mutates the native WooCommerce option value', () => {
+  const sandboxModule = { exports: {} };
+  vm.runInNewContext(productUiJs, {
+    module: sandboxModule,
+    document: { readyState: 'loading', addEventListener() {} }
+  });
+  const { resolveColorSwatch } = sandboxModule.exports;
+  const nativeSelectValue = 'salmon';
+  const originalValue = nativeSelectValue;
+  resolveColorSwatch(nativeSelectValue, 'Salmón');
+  assert.equal(nativeSelectValue, originalValue);
+  assert.match(productUiJs, /var rawColorValue = option\.value;[\s\S]*?resolveColorSwatch\(rawColorValue, rawColorLabel\)/);
+  assert.match(productUiJs, /select\.value = isToggleAttribute && select\.value === option\.value \? '' : option\.value/);
 });
