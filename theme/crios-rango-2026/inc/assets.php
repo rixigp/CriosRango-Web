@@ -77,5 +77,15 @@ function cr2026_enqueue_assets() {
         'menuLabelOpen'  => __( 'Abrir menú', 'crios-rango-2026' ),
         'menuLabelClose' => __( 'Cerrar menú', 'crios-rango-2026' ),
     ) );
+
+    if ( $uses_product_detail_skin ) {
+        wp_enqueue_script(
+            'cr2026-product-ui-enhancements',
+            CR2026_URI . '/assets/js/product-ui-enhancements.js',
+            array( 'jquery' ),
+            cr2026_asset_version( 'assets/js/product-ui-enhancements.js' ),
+            true
+        );
+    }
 }
 add_action( 'wp_enqueue_scripts', 'cr2026_enqueue_assets', 30 );
