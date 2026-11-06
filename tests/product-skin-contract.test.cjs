@@ -228,11 +228,40 @@ test('color chips use the same native-select deselection behavior as size', () =
   assert.ok(productUiJs.includes("granate: '#800020'"));
 });
 
-test('second tap on selected size clears the native select and dispatches WooCommerce change', () => {
+test('shared variation chip toggle contract is limited to size and color and uses the native select', () => {
+  assert.ok(productUiJs.includes("var isColor = /colou?r|tono/.test(label)"));
   assert.ok(productUiJs.includes("var isSize = /talla|size/.test(label)"));
-  assert.ok(productUiJs.includes("select.value = isSize && select.value === option.value ? '' : option.value"));
+  assert.ok(productUiJs.includes("var isToggleAttribute = isSize || isColor"));
+
+  // Selected toggle attribute clears its native select; all other cases select the tapped option.
+  assert.match(productUiJs, /select\.value = isToggleAttribute && select\.value === option\.value \? '' : option\.value/);
   assert.ok(productUiJs.includes("dispatchNativeChange(select)"));
   assert.ok(productUiJs.includes("select.value === option.value ? 'true' : 'false'"));
+  assert.ok(productUiJs.includes("chip.disabled = !!option.disabled"));
+  assert.ok(productUiJs.includes("if (chip.disabled) return"));
+  assert.ok(productUiJs.includes("woocommerce_update_variation_values"));
+
+  // No third attribute can become toggle-enabled, and no custom variation matching is introduced.
+  assert.ok(productUiJs.includes("var isToggleAttribute = isSize || isColor"));
+  assert.equal(productUiJs.includes("isToggleAttribute = isSize || isColor ||"), false);
   assert.equal(productUiJs.includes("variation_id.value ="), false);
   assert.equal(productUiJs.includes("variationId.value ="), false);
+  assert.equal(productUiJs.includes("variation.variation_id"), false);
+});
+
+test('size chip remains independently toggleable through its native select', () => {
+  assert.ok(productUiJs.includes("var isSize = /talla|size/.test(label)"));
+  assert.ok(productUiJs.includes("var isToggleAttribute = isSize || isColor"));
+  assert.match(productUiJs, /select\.value = isToggleAttribute && select\.value === option\.value \? '' : option\.value/);
+  assert.ok(productUiJs.includes("dispatchNativeChange(select)"));
+  assert.ok(productUiJs.includes("select.value === option.value ? 'true' : 'false'"));
+});
+
+test('color chip is independently toggleable through its native select', () => {
+  assert.ok(productUiJs.includes("var isColor = /colou?r|tono/.test(label)"));
+  assert.ok(productUiJs.includes("var isToggleAttribute = isSize || isColor"));
+  assert.match(productUiJs, /select\.value = isToggleAttribute && select\.value === option\.value \? '' : option\.value/);
+  assert.ok(productUiJs.includes("dispatchNativeChange(select)"));
+  assert.ok(productUiJs.includes("select.value === option.value ? 'true' : 'false'"));
+  assert.ok(productUiJs.includes("COLOR_OPTIONS_AUDIT"));
 });
