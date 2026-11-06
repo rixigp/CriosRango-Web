@@ -154,11 +154,8 @@
         input.parentNode.insertBefore(stepper, input);
         stepper.appendChild(minus); stepper.appendChild(input); stepper.appendChild(plus);
         function sync() {
-          var value = Number(input.value || 0);
-          var min = input.min === '' ? -Infinity : Number(input.min);
-          var max = input.max === '' ? Infinity : Number(input.max);
-          minus.disabled = input.disabled || value <= min;
-          plus.disabled = input.disabled || value >= max;
+          minus.disabled = !!input.disabled;
+          plus.disabled = !!input.disabled;
         }
         minus.addEventListener('click', function () { if (input.stepDown) input.stepDown(); dispatchNativeChange(input); sync(); });
         plus.addEventListener('click', function () { if (input.stepUp) input.stepUp(); dispatchNativeChange(input); sync(); });
