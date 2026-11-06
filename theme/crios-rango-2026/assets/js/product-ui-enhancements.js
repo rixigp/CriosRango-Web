@@ -144,7 +144,8 @@
             chip.addEventListener('click', function () {
               if (chip.disabled) return;
               var isSize = /talla|size/.test(label);
-              select.value = isSize && select.value === option.value ? '' : option.value;
+              var isToggleAttribute = isSize || isColor;
+              select.value = isToggleAttribute && select.value === option.value ? '' : option.value;
               dispatchNativeChange(select);
               window.requestAnimationFrame(function () {
                 render();

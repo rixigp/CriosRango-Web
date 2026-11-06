@@ -127,7 +127,8 @@ test('share and WhatsApp reservation use product permalink and native selected a
 
 test('variation chips are native select proxies and do not implement variation matching', () => {
   assert.ok(productUiJs.includes('table.variations select'));
-  assert.ok(productUiJs.includes("select.value = isSize && select.value === option.value ? '' : option.value"));
+  assert.ok(productUiJs.includes("var isToggleAttribute = isSize || isColor"));
+  assert.ok(productUiJs.includes("select.value = isToggleAttribute && select.value === option.value ? '' : option.value"));
   assert.ok(productUiJs.includes('dispatchNativeChange(select)'));
   assert.ok(productUiJs.includes('woocommerce_update_variation_values'));
   assert.ok(productUiJs.includes('option.disabled'));
@@ -207,6 +208,24 @@ test('color chips render every non-empty native select option and audit counts',
   assert.ok(productUiJs.includes("COLOR_OPTIONS_AUDIT"));
   assert.ok(productUiJs.includes("nativeNonempty: nativeColorOptions.length"));
   assert.ok(productUiJs.includes("renderedChips: renderedColorCount"));
+});
+
+test('color chips use the same native-select deselection behavior as size', () => {
+  assert.ok(productUiJs.includes("var isColor = /colou?r|tono/.test(label)"));
+  assert.ok(productUiJs.includes("var isSize = /talla|size/.test(label)"));
+  assert.ok(productUiJs.includes("var isToggleAttribute = isSize || isColor"));
+  assert.ok(productUiJs.includes("select.value = isToggleAttribute && select.value === option.value ? '' : option.value"));
+  assert.ok(productUiJs.includes("dispatchNativeChange(select)"));
+  assert.match(productUiJs, /dispatchNativeChange\(input\)\s*\{[\s\S]*?new Event\('change', \{ bubbles: true \}\)/);
+  assert.ok(productUiJs.includes("chip.disabled = !!option.disabled"));
+  assert.ok(productUiJs.includes("chip.disabled = !option || !!option.disabled"));
+  assert.ok(productUiJs.includes("select.value === option.value ? 'true' : 'false'"));
+  assert.ok(productUiJs.includes("selects.forEach(function (select)"));
+  assert.ok(productUiJs.includes("woocommerce_update_variation_values"));
+  assert.equal(productUiJs.includes("variationId.value ="), false);
+  assert.equal(productUiJs.includes("variation_id.value ="), false);
+  assert.ok(productUiJs.includes("COLOR_OPTIONS_AUDIT"));
+  assert.ok(productUiJs.includes("granate: '#800020'"));
 });
 
 test('second tap on selected size clears the native select and dispatches WooCommerce change', () => {
