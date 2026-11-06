@@ -8,9 +8,11 @@ on:
       - fix/category-grid-app-parity
       - feat/outlet-bubbles
       - feat/wp-login-branding
+      - feat/product-detail-app-parity
     paths:
       - "theme/**"
       - "tests/catalog-contract.test.cjs"
+      - "tests/product-detail-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
 
@@ -18,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/wp-login-branding') && 'crios-rango-staging' || 'crios-rango-production' }}
+  group: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/product-detail-app-parity') && 'crios-rango-staging' || 'crios-rango-production' }}
   cancel-in-progress: false
 
 jobs:
@@ -365,9 +367,10 @@ jobs:
 
       - name: Validate JavaScript syntax
         run: node --check theme/crios-rango-2026/assets/js/main.js
+          node --check theme/crios-rango-2026/assets/js/product-detail.js
 
       - name: Run catalog contract tests
-        run: node --test tests/catalog-contract.test.cjs
+        run: node --test tests/catalog-contract.test.cjs tests/product-detail-contract.test.cjs
 
       - name: Install validation and FTP tools
         shell: bash
@@ -430,12 +433,12 @@ jobs:
               echo "current=false" >> "$GITHUB_OUTPUT"
               echo "Skipping stale staging deploy SHA=$GITHUB_SHA; branch HEAD=$REMOTE_SHA"
             fi
-          elif [ "$GITHUB_REF" = "refs/heads/feat/wp-login-branding" ]; then
+          elif [ "$GITHUB_REF" = "refs/heads/feat/wp-login-branding" ] || [ "$GITHUB_REF" = "refs/heads/feat/product-detail-app-parity" ]; then
             git fetch origin feat/wp-login-branding
             REMOTE_SHA="$(git rev-parse FETCH_HEAD)"
             if [ "$REMOTE_SHA" = "$GITHUB_SHA" ]; then
               echo "current=true" >> "$GITHUB_OUTPUT"
-              echo "Staging deploy HEAD matches WordPress login branding branch: $GITHUB_SHA"
+              echo "Staging deploy HEAD matches feature branch: $GITHUB_SHA"
             else
               echo "current=false" >> "$GITHUB_OUTPUT"
               echo "Skipping stale staging deploy SHA=$GITHUB_SHA; branch HEAD=$REMOTE_SHA"
@@ -445,12 +448,12 @@ jobs:
           fi
 
       - name: Generate staging build manifest
-        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && steps.staging-head.outputs.current == 'true'
+        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/product-detail-app-parity') && steps.staging-head.outputs.current == 'true'
         env:
           BUILD_SHA: ${{ github.sha }}
           BUILD_BRANCH: ${{ github.ref_name }}
         run: |
-          node -e 'const fs=require("fs");const manifest={sha:process.env.BUILD_SHA,branch:process.env.BUILD_BRANCH,pr:process.env.BUILD_BRANCH==="feat/wp-login-branding"?16:15};fs.writeFileSync("theme/crios-rango-2026/build.json",JSON.stringify(manifest,null,2)+"\n");'
+          node -e 'const fs=require("fs");const manifest={sha:process.env.BUILD_SHA,branch:process.env.BUILD_BRANCH,pr:process.env.BUILD_BRANCH==="feat/wp-login-branding"?16:(process.env.BUILD_BRANCH==="feat/product-detail-app-parity"?17:15)};fs.writeFileSync("theme/crios-rango-2026/build.json",JSON.stringify(manifest,null,2)+"\n");'
 
       - name: Validate FTP configuration
         if: steps.staging-head.outputs.current == 'true'
@@ -460,7 +463,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/product-detail-app-parity') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
@@ -497,7 +500,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/product-detail-app-parity') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
@@ -529,7 +532,7 @@ jobs:
           done
 
       - name: Verify remote staging build.json SHA
-        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && steps.staging-head.outputs.current == 'true'
+        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/product-detail-app-parity') && steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
