@@ -43,12 +43,19 @@ if ( ! $product instanceof WC_Product ) {
         $variation_attributes = $product->is_type( 'variable' ) ? $product->get_variation_attributes() : array();
         $variation_json = wp_json_encode( $available_variations );
         $product_attributes = $product->get_attributes();
+        $cart_quantities = array();
+        if ( WC()->cart ) {
+            foreach ( WC()->cart->get_cart() as $cart_line ) {
+                $cart_key = ! empty( $cart_line['variation_id'] ) ? (int) $cart_line['variation_id'] : (int) $cart_line['product_id'];
+                $cart_quantities[ $cart_key ] = isset( $cart_quantities[ $cart_key ] ) ? $cart_quantities[ $cart_key ] + (int) $cart_line['quantity'] : (int) $cart_line['quantity'];
+            }
+        }
       ?>
       <article id="product-<?php the_ID(); ?>" <?php wc_product_class( 'cr-product-detail__product', $product ); ?>
         data-cr-product-detail data-product-id="<?php echo esc_attr( $product_id ); ?>"
         data-product-name="<?php echo esc_attr( $product->get_name() ); ?>"
         data-product-url="<?php echo esc_url( $product_url ); ?>"
-        data-product-type="<?php echo esc_attr( $product->get_type() ); ?>">
+        data-product-type="<?php echo esc_attr( $product->get_type() ); ?>" data-cart-quantities="<?php echo esc_attr( wp_json_encode( $cart_quantities ) ); ?>">
         <header class="cr-product-toolbar">
           <button class="cr-product-toolbar__back" type="button" data-cr-product-back aria-label="<?php esc_attr_e( 'Volver', 'crios-rango-2026' ); ?>">←</button>
           <span class="cr-product-toolbar__title"><?php echo esc_html( $product->get_name() ); ?></span>
