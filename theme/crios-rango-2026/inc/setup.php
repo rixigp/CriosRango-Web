@@ -40,6 +40,17 @@ function cr2026_setup() {
 }
 add_action( 'after_setup_theme', 'cr2026_setup' );
 
+/**
+ * The new 2026 shell must not inherit WooCommerce's legacy site-wide Store
+ * Notice. Remove its core output callback at the source; no CSS suppression.
+ */
+function cr2026_remove_legacy_woocommerce_store_notice() {
+    if ( function_exists( 'woocommerce_demo_store' ) ) {
+        remove_action( 'wp_body_open', 'woocommerce_demo_store', 10 );
+    }
+}
+add_action( 'wp', 'cr2026_remove_legacy_woocommerce_store_notice', 0 );
+
 function cr2026_content_width() {
     $GLOBALS['content_width'] = 1280;
 }
