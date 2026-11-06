@@ -13,7 +13,19 @@ function cr2026_enqueue_assets() {
         || ( function_exists( 'is_shop' ) && is_shop() )
         || ( function_exists( 'is_product_category' ) && is_product_category() );
 
+    $uses_product_detail_skin = function_exists( 'is_product' ) && is_product();
+
     $main_style_dependencies = array();
+
+    if ( $uses_product_detail_skin ) {
+        wp_enqueue_style(
+            'cr2026-roboto',
+            'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
+            array(),
+            null
+        );
+        $main_style_dependencies[] = 'cr2026-roboto';
+    }
 
     if ( $uses_app_category_components ) {
         wp_enqueue_style(
@@ -31,6 +43,15 @@ function cr2026_enqueue_assets() {
         $main_style_dependencies,
         cr2026_asset_version( 'assets/css/main.css' )
     );
+
+    if ( $uses_product_detail_skin ) {
+        wp_enqueue_style(
+            'cr2026-product-detail-skin',
+            CR2026_URI . '/assets/css/product-detail-skin.css',
+            array( 'cr2026-main', 'cr2026-roboto' ),
+            cr2026_asset_version( 'assets/css/product-detail-skin.css' )
+        );
+    }
 
     if ( function_exists( 'is_product_category' ) && is_product_category() ) {
         $outlet_term = get_queried_object();
