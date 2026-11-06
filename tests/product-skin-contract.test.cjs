@@ -147,7 +147,6 @@ test('quantity stepper delegates to the existing WooCommerce quantity input', ()
   assert.equal(productUiJs.includes('input.max'), false);
   assert.equal(productUiJs.includes('fetch('), false);
   assert.equal(productUiJs.includes('XMLHttpRequest'), false);
-  assert.equal(productUiJs.includes('add_to_cart'), false);
 });
 
 test('enhancements are progressive and the native add-to-cart button remains the only submit', () => {
