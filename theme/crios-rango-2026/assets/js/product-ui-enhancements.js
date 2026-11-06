@@ -1,6 +1,26 @@
 (function () {
   'use strict';
 
+  var COLOR_SWATCH_MAP = {
+    granate: '#800020',
+    rosa: '#E7A3B5',
+    rojo: '#C83D45',
+    azul: '#477DAA',
+    marino: '#263B5B',
+    verde: '#64856A',
+    kaki: '#8B8960',
+    beige: '#D8C7A5',
+    blanco: '#F5F3ED',
+    negro: '#292929',
+    gris: '#969A9B',
+    marron: '#805B43',
+    camel: '#B78A58',
+    crudo: '#E8E0CF',
+    amarillo: '#E3C34F',
+    naranja: '#D9823B',
+    lila: '#B7A1C8'
+  };
+
   function ready(fn) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn, { once: true });
     else fn();
@@ -114,7 +134,7 @@
               var swatch = document.createElement('span');
               swatch.className = 'cr-product-choice-chip__swatch';
               swatch.setAttribute('aria-hidden', 'true');
-              var swatchKey = option.textContent.trim().toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z]/g, '');
+              var swatchKey = option.textContent.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
               if (COLOR_SWATCH_MAP[swatchKey]) swatch.style.backgroundColor = COLOR_SWATCH_MAP[swatchKey];
               chip.appendChild(swatch);
             }
