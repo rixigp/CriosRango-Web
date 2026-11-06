@@ -42,6 +42,14 @@ body.cr-product-detail-app .cr-product-detail-toolbar .cr-parent-category__title
   white-space: nowrap;
   font: 300 18px/24px "Roboto",Arial,sans-serif;
 }
+
+/* Logged-in Product Detail: html already reserves the WordPress admin bar height. */
+body.admin-bar.cr-product-detail-app .cr-product-detail-toolbar {
+  top: calc(var(--cr-app-topbar-height, 64px) + 32px);
+}
+body.admin-bar.cr-product-detail-app.cr-global-app-header:not(.home) {
+  padding-top: var(--cr-app-topbar-height, 64px);
+}
 body.cr-product-detail-app .cr-main--woocommerce div.product {
   display: flex;
   flex-wrap: wrap;
