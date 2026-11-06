@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - fix/catalog-runtime-parity
+      - fix/category-grid-app-parity
     paths:
       - "theme/**"
       - "tests/catalog-contract.test.cjs"
@@ -15,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ github.ref == 'refs/heads/fix/catalog-runtime-parity' && 'crios-rango-staging' || 'crios-rango-production' }}
+  group: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity') && 'crios-rango-staging' || 'crios-rango-production' }}
   cancel-in-progress: false
 
 jobs:
@@ -38,7 +39,7 @@ jobs:
             exit 0
           fi
 
-          if [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ]; then
+          if [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ] || [ "$GITHUB_REF" = "refs/heads/fix/category-grid-app-parity" ]; then
             echo "ERROR: staging deploy must not bootstrap or push to main."
             exit 1
           fi
@@ -392,12 +393,22 @@ jobs:
           find theme/crios-rango-2026 -type f -name "*.php" -print0 \
             | xargs -0 -r -n1 php -l
 
-      - name: Check exact PR13 staging HEAD
+      - name: Check exact PR13 staging HEAD compatibility and PR14 staging HEAD
         id: staging-head
         shell: bash
         run: |
           set -euo pipefail
-          if [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ]; then
+          if [ "$GITHUB_REF" = "refs/heads/fix/category-grid-app-parity" ]; then
+            git fetch origin fix/category-grid-app-parity
+            REMOTE_SHA="$(git rev-parse FETCH_HEAD)"
+            if [ "$REMOTE_SHA" = "$GITHUB_SHA" ]; then
+              echo "current=true" >> "$GITHUB_OUTPUT"
+              echo "Staging deploy HEAD matches PR14 branch: $GITHUB_SHA"
+            else
+              echo "current=false" >> "$GITHUB_OUTPUT"
+              echo "Skipping stale staging deploy SHA=$GITHUB_SHA; branch HEAD=$REMOTE_SHA"
+            fi
+          elif [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ]; then
             git fetch origin fix/catalog-runtime-parity
             REMOTE_SHA="$(git rev-parse FETCH_HEAD)"
             if [ "$REMOTE_SHA" = "$GITHUB_SHA" ]; then
@@ -412,12 +423,12 @@ jobs:
           fi
 
       - name: Generate staging build manifest
-        if: github.ref == 'refs/heads/fix/catalog-runtime-parity' && steps.staging-head.outputs.current == 'true'
+        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity') && steps.staging-head.outputs.current == 'true'
         env:
           BUILD_SHA: ${{ github.sha }}
           BUILD_BRANCH: ${{ github.ref_name }}
         run: |
-          node -e 'const fs=require("fs");const manifest={sha:process.env.BUILD_SHA,branch:process.env.BUILD_BRANCH,pr:13};fs.writeFileSync("theme/crios-rango-2026/build.json",JSON.stringify(manifest,null,2)+"\n");'
+          node -e 'const fs=require("fs");const manifest={sha:process.env.BUILD_SHA,branch:process.env.BUILD_BRANCH,pr:14};fs.writeFileSync("theme/crios-rango-2026/build.json",JSON.stringify(manifest,null,2)+"\n");'
 
       - name: Validate FTP configuration
         if: steps.staging-head.outputs.current == 'true'
@@ -427,7 +438,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ github.ref == 'refs/heads/fix/catalog-runtime-parity' && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
@@ -464,7 +475,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ github.ref == 'refs/heads/fix/catalog-runtime-parity' && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
@@ -496,7 +507,7 @@ jobs:
           done
 
       - name: Verify remote staging build.json SHA
-        if: github.ref == 'refs/heads/fix/catalog-runtime-parity' && steps.staging-head.outputs.current == 'true'
+        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity') && steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}

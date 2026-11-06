@@ -27,12 +27,6 @@ $GLOBALS['cr2026_parent_category_view'] = true;
 $display_title = cr2026_product_cat_display_name( $current_term );
 $back_url = cr2026_category_back_url( $current_term );
 
-wp_enqueue_style(
-    'cr2026-category-roboto',
-    'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
-    array(),
-    null
-);
 get_header();
 ?>
 
