@@ -139,7 +139,7 @@ if ( ! $product instanceof WC_Product ) {
                           $term = taxonomy_exists( $attribute_name ) ? get_term_by( 'slug', $option_value, $attribute_name ) : false;
                           $label = $term && ! is_wp_error( $term ) ? $term->name : $option;
                           ?>
-                          <button type="button" class="cr-product-variation-chip<?php echo $is_color ? ' is-color' : ''; ?>" data-cr-variation-option data-attribute="<?php echo esc_attr( $attribute_name ); ?>" data-value="<?php echo esc_attr( $slug ); ?>" data-label="<?php echo esc_attr( $label ); ?>" aria-pressed="false"><?php echo esc_html( $label ); ?></button>
+                          <button type="button" class="cr-product-variation-chip<?php echo $is_color ? ' is-color' : ''; ?>" data-cr-variation-option data-attribute="<?php echo esc_attr( $attribute_name ); ?>" data-value="<?php echo esc_attr( $option_value ); ?>" data-label="<?php echo esc_attr( $label ); ?>" aria-pressed="false"><?php echo esc_html( $label ); ?></button>
                         <?php endforeach; ?>
                       </div>
                     </fieldset>
