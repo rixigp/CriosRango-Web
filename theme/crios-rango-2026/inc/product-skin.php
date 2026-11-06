@@ -38,6 +38,12 @@ function cr2026_product_skin_remove_legacy_presentation() {
     }
 
     remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
+    remove_action( 'woocommerce_sidebar', 'woocommerce_get_sidebar', 10 );
+
+    // Move the native sale flash after the native gallery output (priority 20).
+    remove_action( 'woocommerce_before_single_product_summary', 'woocommerce_show_product_sale_flash', 10 );
+    add_action( 'woocommerce_before_single_product_summary', 'woocommerce_show_product_sale_flash', 30 );
+
     remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_meta', 40 );
     remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_upsell_display', 15 );
     remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_output_related_products', 20 );
