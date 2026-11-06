@@ -44,6 +44,15 @@ function cr2026_enqueue_assets() {
         }
     }
 
+    if ( function_exists( 'is_product' ) && is_product() ) {
+        wp_enqueue_style(
+            'cr2026-product-detail',
+            CR2026_URI . '/assets/css/product-detail.css',
+            array( 'cr2026-main' ),
+            cr2026_asset_version( 'assets/css/product-detail.css' )
+        );
+    }
+
     wp_enqueue_script(
         'cr2026-main',
         CR2026_URI . '/assets/js/main.js',
