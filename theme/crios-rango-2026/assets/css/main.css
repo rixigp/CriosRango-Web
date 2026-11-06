@@ -2444,7 +2444,7 @@ body.cr-category-filter-open{overflow:hidden}
 
 /* Shop is the app category hub: fixed app topbar, one rail/bottom-nav shell. */
 body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-app-header {
-  position:fixed;top:0;left:0;right:0;width:auto;z-index:var(--cr-app-topbar-z-index,1150);
+  position:fixed;top:var(--cr-admin-bar-offset, 0px);left:0;right:0;width:auto;z-index:var(--cr-app-topbar-z-index,1150);
   background:#FCFAF7;border:0;outline:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;
 }
 body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-app-header::before,
@@ -2549,18 +2549,12 @@ body.cr-global-app-header:not(.home) {
   --cr-app-topbar-height: 64px;
   padding-top: var(--cr-app-topbar-height);
 }
-body.admin-bar.cr-global-app-header:not(.home) {
-  padding-top: var(--cr-app-topbar-height);
-}
 body.cr-parent-category-view .cr-parent-category__canvas,
 body.cr-app-nav-shell .cr-category-hub {
   padding-top: 0 !important;
 }
 @media (max-width: 782px) {
   body.admin-bar .cr-app-header { top: var(--cr-admin-bar-offset, 0px); }
-  body.admin-bar.cr-global-app-header:not(.home) {
-    padding-top: var(--cr-app-topbar-height);
-  }
 }
 @media (min-width: 768px) {
   body.cr-global-app-header:not(.home) { --cr-app-topbar-height: 82px; }
