@@ -162,3 +162,58 @@ test('enhancements are progressive and the native add-to-cart button remains the
   assert.ok(skinCss.includes('cr-product-ui-enhanced form.cart table.variations select'));
   assert.ok(skinCss.includes('cr-product-quantity-stepper'));
 });
+
+
+test('dots are centered relative to the gallery content and keep native slider delegation', () => {
+  assert.match(skinCss, /\.cr-product-gallery-dots\s*\{[^}]*display:\s*flex;[^}]*width:\s*100%;[^}]*justify-content:\s*center;[^}]*align-items:\s*center;/s);
+  assert.ok(productUiJs.includes('flexslider(index)'));
+  assert.ok(productUiJs.includes('flex-control-thumbs'));
+});
+
+test('share and reserve actions are one equal-width capsule with real SVG share and chat icons', () => {
+  assert.match(skin, /cr2026_icon\( 'share', 'cr-product-actions__icon' \)/);
+  assert.match(skin, /cr2026_icon\( 'message', 'cr-product-actions__icon' \)/);
+  assert.match(skinCss, /\.cr-product-actions\s*\{[^}]*display:\s*flex;[^}]*width:\s*100%;[^}]*min-height:\s*46px;/s);
+  assert.match(skinCss, /\.cr-product-actions__button\s*\{[^}]*flex:\s*1 1 0;[^}]*width:\s*50%;[^}]*justify-content:\s*center;/s);
+  assert.match(skinCss, /\.cr-product-actions__button \+ \.cr-product-actions__button::before/);
+  assert.match(skinCss, /\.cr-product-reserve:disabled\s*\{[^}]*color:\s*#AEB2AD;/s);
+  assert.doesNotMatch(skin, /↗|◉/);
+});
+
+test('mobile WooCommerce attribute rows always stack labels above full-width option areas', () => {
+  assert.match(skinCss, /@media \(max-width: 767px\)[\s\S]*?table\.variations tr\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;/s);
+  assert.match(skinCss, /table\.variations th\.label,[\s\S]*?table\.variations td\.value\s*\{[^}]*display:\s*block !important;[^}]*width:\s*100% !important;/s);
+  assert.match(skinCss, /table\.variations th\.label label\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;/s);
+  assert.match(skinCss, /td\.value \.cr-product-choice-chips\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*flex-start;[^}]*flex-wrap:\s*wrap;/s);
+});
+
+test('touch tap delegates to WooCommerce native lightbox while swipe remains native', () => {
+  assert.ok(productUiJs.includes("pointerdown"));
+  assert.ok(productUiJs.includes("pointerup"));
+  assert.ok(productUiJs.includes("moved > 10"));
+  assert.ok(productUiJs.includes(".woocommerce-product-gallery__trigger"));
+  assert.ok(productUiJs.includes("nativeTrigger.click()"));
+  assert.ok(setup.includes("wc-product-gallery-lightbox"));
+  assert.ok(setup.includes("wc-product-gallery-slider"));
+  assert.equal(productUiJs.includes("PhotoSwipe("), false);
+  assert.equal(productUiJs.includes("new Lightbox"), false);
+});
+
+test('color chips render every non-empty native select option and audit counts', () => {
+  assert.ok(productUiJs.includes("Array.prototype.slice.call(select.options)"));
+  assert.ok(productUiJs.includes("if (!option.value) return;"));
+  assert.ok(productUiJs.includes("select.dataset.crNativeOptionCount"));
+  assert.ok(productUiJs.includes("select.dataset.crChipCount"));
+  assert.ok(productUiJs.includes("COLOR_OPTIONS_AUDIT"));
+  assert.ok(productUiJs.includes("nativeNonempty: nativeColorOptions.length"));
+  assert.ok(productUiJs.includes("renderedChips: renderedColorCount"));
+});
+
+test('second tap on selected size clears the native select and dispatches WooCommerce change', () => {
+  assert.ok(productUiJs.includes("var isSize = /talla|size/.test(label)"));
+  assert.ok(productUiJs.includes("select.value = isSize && select.value === option.value ? '' : option.value"));
+  assert.ok(productUiJs.includes("dispatchNativeChange(select)"));
+  assert.ok(productUiJs.includes("select.value === option.value ? 'true' : 'false'"));
+  assert.equal(productUiJs.includes("variation_id.value ="), false);
+  assert.equal(productUiJs.includes("variationId.value ="), false);
+});
