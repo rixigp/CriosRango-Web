@@ -8,9 +8,11 @@ on:
       - fix/category-grid-app-parity
       - feat/outlet-bubbles
       - feat/wp-login-branding
+      - style/product-detail-app-skin
     paths:
       - "theme/**"
       - "tests/catalog-contract.test.cjs"
+      - "tests/product-skin-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
 
@@ -18,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/wp-login-branding') && 'crios-rango-staging' || 'crios-rango-production' }}
+  group: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && 'crios-rango-staging' || 'crios-rango-production' }}
   cancel-in-progress: false
 
 jobs:
@@ -41,7 +43,7 @@ jobs:
             exit 0
           fi
 
-          if [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ] || [ "$GITHUB_REF" = "refs/heads/fix/category-grid-app-parity" ] || [ "$GITHUB_REF" = "refs/heads/feat/wp-login-branding" ]; then
+          if [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ] || [ "$GITHUB_REF" = "refs/heads/fix/category-grid-app-parity" ] || [ "$GITHUB_REF" = "refs/heads/feat/wp-login-branding" ] || [ "$GITHUB_REF" = "refs/heads/style/product-detail-app-skin" ]; then
             echo "ERROR: staging deploy must not bootstrap or push to main."
             exit 1
           fi
@@ -369,6 +371,9 @@ jobs:
       - name: Run catalog contract tests
         run: node --test tests/catalog-contract.test.cjs
 
+      - name: Run product skin contract tests
+        run: node --test tests/product-skin-contract.test.cjs
+
       - name: Install validation and FTP tools
         shell: bash
         run: |
@@ -440,17 +445,27 @@ jobs:
               echo "current=false" >> "$GITHUB_OUTPUT"
               echo "Skipping stale staging deploy SHA=$GITHUB_SHA; branch HEAD=$REMOTE_SHA"
             fi
+          elif [ "$GITHUB_REF" = "refs/heads/style/product-detail-app-skin" ]; then
+            git fetch origin style/product-detail-app-skin
+            REMOTE_SHA="$(git rev-parse FETCH_HEAD)"
+            if [ "$REMOTE_SHA" = "$GITHUB_SHA" ]; then
+              echo "current=true" >> "$GITHUB_OUTPUT"
+              echo "Staging deploy HEAD matches Product Detail App Skin branch: $GITHUB_SHA"
+            else
+              echo "current=false" >> "$GITHUB_OUTPUT"
+              echo "Skipping stale staging deploy SHA=$GITHUB_SHA; branch HEAD=$REMOTE_SHA"
+            fi
           else
             echo "current=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Generate staging build manifest
-        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && steps.staging-head.outputs.current == 'true'
+        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && steps.staging-head.outputs.current == 'true'
         env:
           BUILD_SHA: ${{ github.sha }}
           BUILD_BRANCH: ${{ github.ref_name }}
         run: |
-          node -e 'const fs=require("fs");const manifest={sha:process.env.BUILD_SHA,branch:process.env.BUILD_BRANCH,pr:process.env.BUILD_BRANCH==="feat/wp-login-branding"?16:15};fs.writeFileSync("theme/crios-rango-2026/build.json",JSON.stringify(manifest,null,2)+"\n");'
+          node -e 'const fs=require("fs");const manifest={sha:process.env.BUILD_SHA,branch:process.env.BUILD_BRANCH,pr:process.env.BUILD_BRANCH==="feat/wp-login-branding"?16:process.env.BUILD_BRANCH==="style/product-detail-app-skin"?null:15};fs.writeFileSync("theme/crios-rango-2026/build.json",JSON.stringify(manifest,null,2)+"\n");'
 
       - name: Validate FTP configuration
         if: steps.staging-head.outputs.current == 'true'
@@ -460,7 +475,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
@@ -497,7 +512,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
         run: |
           set -euo pipefail
 
@@ -529,7 +544,7 @@ jobs:
           done
 
       - name: Verify remote staging build.json SHA
-        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && steps.staging-head.outputs.current == 'true'
+        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
