@@ -771,3 +771,106 @@ function cr2026_subcategory_image_url( $term ) {
 
     return '';
 }
+
+
+/**
+ * Normalize WooCommerce's native product-gallery rendition URLs to the public
+ * uploads origin used by the existing catalogue attachment helper.
+ *
+ * Keeps the requested rendition filename (single, gallery thumbnail, full-size,
+ * zoom) while replacing only the staging uploads directory prefix.
+ */
+function cr2026_normalize_product_attachment_rendition_url( $url, $attachment_id ) {
+    if ( ! function_exists( 'is_product' ) || ! is_product() || ! $attachment_id || ! is_string( $url ) || '' === $url ) {
+        return $url;
+    }
+
+    $attachment_source_url = wp_get_attachment_url( absint( $attachment_id ) );
+    $canonical_source_url = cr2026_attachment_public_url( absint( $attachment_id ) );
+    if ( ! $attachment_source_url || ! $canonical_source_url ) {
+        return $url;
+    }
+
+    $source_path = wp_parse_url( $attachment_source_url, PHP_URL_PATH );
+    $canonical_path = wp_parse_url( $canonical_source_url, PHP_URL_PATH );
+    $candidate = wp_parse_url( $url );
+    $candidate_path = isset( $candidate['path'] ) ? $candidate['path'] : '';
+
+    if ( ! $source_path || ! $canonical_path || ! $candidate_path ) {
+        return $url;
+    }
+
+    $source_directory = trailingslashit( dirname( $source_path ) );
+    if ( 0 !== strpos( $candidate_path, $source_directory ) ) {
+        return $url;
+    }
+
+    $canonical_directory = trailingslashit( dirname( $canonical_path ) );
+    $normalized_path = $canonical_directory . substr( $candidate_path, strlen( $source_directory ) );
+    $canonical_parts = wp_parse_url( $canonical_source_url );
+    if ( empty( $canonical_parts['scheme'] ) || empty( $canonical_parts['host'] ) ) {
+        return $url;
+    }
+
+    $normalized_url = $canonical_parts['scheme'] . '://' . $canonical_parts['host'];
+    if ( isset( $canonical_parts['port'] ) ) {
+        $normalized_url .= ':' . (int) $canonical_parts['port'];
+    }
+    $normalized_url .= $normalized_path;
+
+    if ( isset( $candidate['query'] ) ) {
+        $normalized_url .= '?' . $candidate['query'];
+    }
+    if ( isset( $candidate['fragment'] ) ) {
+        $normalized_url .= '#' . $candidate['fragment'];
+    }
+
+    return $normalized_url;
+}
+
+/** Normalize native WooCommerce gallery main, thumbnail, full-size and zoom URLs. */
+function cr2026_product_gallery_attachment_image_src( $image, $attachment_id, $size, $icon ) {
+    if ( is_array( $image ) && isset( $image[0] ) && is_string( $image[0] ) ) {
+        $image[0] = cr2026_normalize_product_attachment_rendition_url( $image[0], $attachment_id );
+    }
+    return $image;
+}
+add_filter( 'wp_get_attachment_image_src', 'cr2026_product_gallery_attachment_image_src', 20, 4 );
+
+/** Normalize each native responsive image candidate without changing descriptors. */
+function cr2026_product_gallery_srcset_sources( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
+    if ( ! is_product() || ! is_array( $sources ) || ! $attachment_id ) {
+        return $sources;
+    }
+    foreach ( $sources as $width => $source ) {
+        if ( isset( $source['url'] ) && is_string( $source['url'] ) ) {
+            $sources[ $width ]['url'] = cr2026_normalize_product_attachment_rendition_url( $source['url'], $attachment_id );
+        }
+    }
+    return $sources;
+}
+add_filter( 'wp_calculate_image_srcset', 'cr2026_product_gallery_srcset_sources', 20, 5 );
+
+/** Keep the generated img src/srcset attributes aligned with the same helper. */
+function cr2026_product_gallery_attachment_image_attributes( $attr, $attachment, $size ) {
+    if ( ! is_product() || empty( $attachment->ID ) ) {
+        return $attr;
+    }
+    if ( isset( $attr['src'] ) ) {
+        $attr['src'] = cr2026_normalize_product_attachment_rendition_url( $attr['src'], $attachment->ID );
+    }
+    if ( ! empty( $attr['srcset'] ) && is_string( $attr['srcset'] ) ) {
+        $parts = explode( ',', $attr['srcset'] );
+        foreach ( $parts as &$part ) {
+            $candidate = preg_split( '/\\s+/', trim( $part ), 2 );
+            if ( ! empty( $candidate[0] ) ) {
+                $normalized = cr2026_normalize_product_attachment_rendition_url( $candidate[0], $attachment->ID );
+                $part = $normalized . ( isset( $candidate[1] ) ? ' ' . $candidate[1] : '' );
+            }
+        }
+        unset( $part );
+        $attr['srcset'] = implode( ', ', $parts );
+    }
+    return $attr;
+}
+add_filter( 'wp_get_attachment_image_attributes', 'cr2026_product_gallery_attachment_image_attributes', 30, 3 );

@@ -254,3 +254,13 @@ test('Outlet bubbles are positioned between toolbar and active filter chips',()=
   assert.ok(outletCss.includes('overflow-x:auto'));
   assert.ok(outletCss.includes('.cr-outlet-bubbles__pill.is-selected{background:#163B35;color:#FFFFFF}'));
 });
+
+
+test('native WooCommerce product gallery rendition URLs use the public attachment normalizer', () => {
+  assert.ok(helpers.includes('function cr2026_normalize_product_attachment_rendition_url( $url, $attachment_id )'));
+  assert.ok(helpers.includes('cr2026_attachment_public_url( absint( $attachment_id ) )'));
+  assert.ok(helpers.includes("add_filter( 'wp_get_attachment_image_src', 'cr2026_product_gallery_attachment_image_src', 20, 4 )"));
+  assert.ok(helpers.includes("add_filter( 'wp_calculate_image_srcset', 'cr2026_product_gallery_srcset_sources', 20, 5 )"));
+  assert.ok(helpers.includes("add_filter( 'wp_get_attachment_image_attributes', 'cr2026_product_gallery_attachment_image_attributes', 30, 3 )"));
+  assert.ok(helpers.includes('if ( ! is_product()'));
+});
