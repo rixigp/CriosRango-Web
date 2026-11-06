@@ -144,3 +144,16 @@ test('variation reset restores the captured parent price, offer, stock and image
   assert.match(js, /parentSale\.hidden=parentSaleHidden/);
   assert.match(js, /price\.innerHTML=parentPriceHtml/);
 });
+
+test('variation chip selection is synchronized from the native select after WooCommerce change dispatch', () => {
+  const js = read('assets/js/product-detail.js');
+  const handler = js.match(/root\.querySelectorAll\('\[data-cr-variation-option\]'\)\.forEach\(chip=>chip\.addEventListener\('click',\(\)=>\{[\s\S]*?requestAnimationFrame\(refresh\);\}\)\);/);
+  assert.ok(handler, 'variation option click handler must exist');
+  assert.match(handler[0], /const nextValue=s\.value===chip\.dataset\.value\?'':chip\.dataset\.value/);
+  assert.match(handler[0], /s\.value=nextValue/);
+  assert.match(handler[0], /\.trigger\('change'\)/);
+  assert.match(handler[0], /requestAnimationFrame\(refresh\)/);
+  assert.doesNotMatch(handler[0], /classList\.(?:add|toggle)\(['"]is-selected/);
+  assert.match(js, /const chosen=select\.value===val/);
+  assert.match(js, /chip\.classList\.toggle\('is-selected',chosen\)/);
+});
