@@ -75,19 +75,22 @@ test('sale badge, price, notices and native controls receive presentation-only C
 
 test('logged-in Product Detail applies the admin offset in the winning global header rule', () => {
   const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
-  const winningHeaderRule = mainCss.match(/body\\.cr-app-nav-shell:not\\(\\.home\\):not\\(\\.cr-parent-category-view\\) \\.cr-app-header \\{([^}]*)\\}/);
-  assert.ok(winningHeaderRule, 'the global app-nav header rule must exist');
-  assert.match(winningHeaderRule[1], /top:\\s*var\\(--cr-admin-bar-offset, 0px\\)/);
-  assert.doesNotMatch(winningHeaderRule[1], /top:\\s*0(?:px)?/);
+  const selector = 'body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-app-header {';
+  const start = mainCss.indexOf(selector);
+  const end = mainCss.indexOf('}', start);
+  assert.ok(start >= 0 && end > start, 'the global app-nav header rule must exist');
+  const winningHeaderRule = mainCss.slice(start, end);
+  assert.match(winningHeaderRule, /top:\s*var\(--cr-admin-bar-offset, 0px\)/);
+  assert.doesNotMatch(winningHeaderRule, /top:\s*0(?:px)?/);
   assert.ok(mainCss.includes('--cr-admin-bar-offset: 0px;'));
   assert.ok(mainCss.includes('body.admin-bar { --cr-admin-bar-offset: 32px; }'));
   assert.ok(mainCss.includes('body.admin-bar { --cr-admin-bar-offset: 46px; }'));
   assert.ok(mainCss.includes('body.cr-global-app-header:not(.home) {\n  --cr-app-topbar-height: 64px;\n  padding-top: var(--cr-app-topbar-height);'));
-  assert.doesNotMatch(mainCss, /body\\.admin-bar\\.cr-global-app-header:not\\(\\.home\\)\\s*\\{[^}]*padding-top/s);
-  assert.doesNotMatch(skinCss, /body\\.admin-bar\\.cr-product-detail-app \\.cr-app-header/);
-  assert.doesNotMatch(skinCss, /body\\.admin-bar\\.cr-product-detail-app\\.cr-global-app-header[^}]*padding-top/s);
-  assert.match(skinCss, /body\\.admin-bar\\.cr-product-detail-app \\.cr-product-detail-toolbar\\s*\\{\\s*top:\\s*calc\\(var\\(--cr-admin-bar-offset, 0px\\) \\+ var\\(--cr-app-topbar-height, 64px\\)\\);/);
-  assert.match(skinCss, /body\\.cr-product-detail-app \\.cr-product-detail-toolbar\\s*\\{\\s*position:\\s*sticky;/);
+  assert.doesNotMatch(mainCss, /body\.admin-bar\.cr-global-app-header:not\(\.home\)\s*\{[^}]*padding-top/s);
+  assert.doesNotMatch(skinCss, /body\.admin-bar\.cr-product-detail-app \.cr-app-header/);
+  assert.doesNotMatch(skinCss, /body\.admin-bar\.cr-product-detail-app\.cr-global-app-header[^}]*padding-top/s);
+  assert.match(skinCss, /body\.admin-bar\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{\s*top:\s*calc\(var\(--cr-admin-bar-offset, 0px\) \+ var\(--cr-app-topbar-height, 64px\)\);/);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{\s*position:\s*sticky;/);
   assert.doesNotMatch(skinCss, /#wpadminbar|show_admin_bar/);
 });
 
