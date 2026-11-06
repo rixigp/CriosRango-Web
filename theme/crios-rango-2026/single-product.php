@@ -166,7 +166,7 @@ if ( ! $product instanceof WC_Product ) {
                       <?php woocommerce_quantity_input( array( 'min_value' => 1, 'input_value' => 1 ), $product, false ); ?>
                       <button type="button" data-cr-quantity-plus aria-label="<?php esc_attr_e( 'Aumentar cantidad', 'crios-rango-2026' ); ?>">+</button>
                     </div>
-                    <button type="submit" class="single_add_to_cart_button button alt" disabled><?php echo esc_html( $product->single_add_to_cart_text() ); ?></button>
+                    <button type="submit" class="single_add_to_cart_button button alt" disabled><span class="cr-product-cta__icon" data-cr-product-cta-icon aria-hidden="true" hidden><?php echo cr2026_icon( 'bag' ); ?></span><span data-cr-product-cta-label><?php esc_html_e( 'Elige una combinación', 'crios-rango-2026' ); ?></span></button>
                     <input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product_id ); ?>" />
                     <input type="hidden" name="product_id" value="<?php echo esc_attr( $product_id ); ?>" />
                     <input type="hidden" name="variation_id" class="variation_id" value="0" />
@@ -181,7 +181,7 @@ if ( ! $product instanceof WC_Product ) {
                     <?php woocommerce_quantity_input( array( 'min_value' => $product->get_min_purchase_quantity(), 'max_value' => $product->get_max_purchase_quantity(), 'input_value' => 1 ), $product, false ); ?>
                     <button type="button" data-cr-quantity-plus aria-label="<?php esc_attr_e( 'Aumentar cantidad', 'crios-rango-2026' ); ?>">+</button>
                   </div>
-                  <button type="submit" name="add-to-cart" value="<?php echo esc_attr( $product_id ); ?>" class="single_add_to_cart_button button alt"><?php echo esc_html( $product->single_add_to_cart_text() ); ?></button>
+                  <button type="submit" name="add-to-cart" value="<?php echo esc_attr( $product_id ); ?>" class="single_add_to_cart_button button alt"><span class="cr-product-cta__icon" data-cr-product-cta-icon aria-hidden="true"><?php echo cr2026_icon( 'bag' ); ?></span><span data-cr-product-cta-label><?php echo esc_html( $product->single_add_to_cart_text() ); ?></span></button>
                 </div>
               </form>
             <?php else : ?>

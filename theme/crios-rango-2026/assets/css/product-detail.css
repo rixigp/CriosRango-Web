@@ -70,3 +70,25 @@
 .cr-product-detail__sale[hidden] { display:none!important; }
 
 .cr-product-variation-chip.is-disabled { opacity:.48; cursor:not-allowed; }
+
+
+/* Product Detail only: keep its light back/title toolbar below the fixed global app header. */
+body.single-product .cr-parent-category__toolbar {
+  position: sticky;
+  top: calc(var(--cr-app-topbar-height, 64px) + var(--cr-product-adminbar-offset, 0px));
+  z-index: 1140;
+  background: #FCFAF7;
+}
+body.admin-bar.single-product { --cr-product-adminbar-offset: 32px; }
+@media (max-width: 782px) {
+  body.admin-bar.single-product { --cr-product-adminbar-offset: 46px; }
+}
+.cr-product-detail__cart-controls .single_add_to_cart_button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+.cr-product-cta__icon { display: inline-flex; width: 19px; height: 19px; flex: 0 0 19px; }
+.cr-product-cta__icon .cr-icon { width: 100%; height: 100%; }
+.cr-product-cta__icon[hidden] { display: none !important; }

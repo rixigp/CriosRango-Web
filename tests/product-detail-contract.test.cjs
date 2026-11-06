@@ -157,3 +157,28 @@ test('variation chip selection is synchronized from the native select after WooC
   assert.match(js, /const chosen=select\.value===val/);
   assert.match(js, /chip\.classList\.toggle\('is-selected',chosen\)/);
 });
+
+
+test('product toolbar sticks below the real global header only on Product Detail', () => {
+  const css = read('assets/css/product-detail.css');
+  assert.match(css, /body\.single-product \.cr-parent-category__toolbar\s*\{[^}]*position:\s*sticky/);
+  assert.match(css, /top:\s*calc\(var\(--cr-app-topbar-height,\s*64px\)\s*\+\s*var\(--cr-product-adminbar-offset,\s*0px\)\)/);
+  assert.match(css, /z-index:\s*1140/);
+  assert.match(css, /background:\s*#FCFAF7/);
+  assert.match(css, /body\.admin-bar\.single-product\s*\{\s*--cr-product-adminbar-offset:\s*32px/);
+  assert.match(css, /@media\s*\(max-width:\s*782px\)\s*\{\s*body\.admin-bar\.single-product\s*\{\s*--cr-product-adminbar-offset:\s*46px/);
+  assert.doesNotMatch(css, /body\.cr-parent-category-view \.cr-parent-category__toolbar\s*\{/);
+});
+
+test('variable CTA uses exact empty/valid copy and preserves the bag icon independently', () => {
+  const php = read('single-product.php');
+  const js = read('assets/js/product-detail.js');
+  assert.match(php, /data-cr-product-cta-label>\s*<\?php esc_html_e\( 'Elige una combinación'/);
+  assert.match(php, /data-cr-product-cta-icon[^>]*hidden/);
+  assert.match(php, /cr2026_icon\( 'bag' \)/);
+  assert.match(js, /setButton\('Añadir al carrito'\)/);
+  assert.match(js, /setButton\('Elige una combinación'\)/);
+  assert.match(js, /label\.textContent=t/);
+  assert.match(js, /icon\.hidden=t!=='Añadir al carrito'/);
+  assert.doesNotMatch(js, /add\.textContent=t/);
+});
