@@ -311,6 +311,84 @@ function cr2026_category_filter_term_labels() {
     }
     return $labels;
 }
+/**
+ * Temporary Outlet bubbles runtime diagnostic, restricted to the /prueba/ staging path.
+ * Request: /prueba/wp-json/cr2026/v1/outlet-bubbles-debug?branch_id=475
+ */
+function cr2026_outlet_bubbles_debug_permission() {
+    $environment = function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : 'production';
+    $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    return in_array( $environment, array( 'staging', 'development', 'local' ), true )
+        && 0 === strpos( $request_uri, '/prueba/' );
+}
+function cr2026_outlet_bubbles_debug( WP_REST_Request $request ) {
+    if ( ! cr2026_outlet_bubbles_debug_permission() ) {
+        return new WP_Error( 'cr2026_outlet_debug_staging_only', 'Diagnostic is restricted to /prueba/ staging.', array( 'status' => 404 ) );
+    }
+    $branch_id = absint( $request->get_param( 'branch_id' ) );
+    if ( 475 !== $branch_id ) {
+        return new WP_Error( 'cr2026_outlet_debug_branch', 'Diagnostic accepts only canonical branch 475.', array( 'status' => 400 ) );
+    }
+    $candidates = cr2026_fixed_outlet_bubbles( $branch_id );
+    $availability_request = new WP_REST_Request( 'GET', '/criosrango/v1/outlet-availability' );
+    $availability_response = rest_do_request( $availability_request );
+    if ( is_wp_error( $availability_response ) ) {
+        return rest_ensure_response( array(
+            'branch_id' => $branch_id,
+            'candidate_bubbles' => $candidates,
+            'candidate_origin_ids' => array_values( array_unique( array_merge( ...array_map( static function ( $candidate ) { return $candidate['category_ids']; }, $candidates ) ) ) ),
+            'availability_dispatch' => 'WP_ERROR',
+            'availability_status' => null,
+            'availability_payload' => array( 'code' => $availability_response->get_error_code(), 'message' => $availability_response->get_error_message() ),
+            'availability_counts' => array(),
+            'visible_bubbles' => array(),
+        ) );
+    }
+    $payload = $availability_response->get_data();
+    $status = $availability_response->get_status();
+    $schema = is_array( $payload ) && isset( $payload['schema_version'] ) ? $payload['schema_version'] : null;
+    $counts = array();
+    if ( is_array( $payload ) && isset( $payload['outlets'] ) && is_array( $payload['outlets'] ) ) {
+        foreach ( $payload['outlets'] as $outlet ) {
+            if ( isset( $outlet['outlet_category_id'], $outlet['counts'] ) && 475 === (int) $outlet['outlet_category_id'] && is_array( $outlet['counts'] ) ) {
+                foreach ( $outlet['counts'] as $row ) {
+                    if ( isset( $row['category_id'], $row['count'] ) ) {
+                        $counts[(string) absint( $row['category_id'] )] = absint( $row['count'] );
+                    }
+                }
+            }
+        }
+    }
+    $visible = array();
+    foreach ( $candidates as $candidate ) {
+        foreach ( $candidate['category_ids'] as $origin_id ) {
+            if ( isset( $counts[(string) $origin_id] ) && $counts[(string) $origin_id] > 0 ) {
+                $visible[] = array( 'key' => $candidate['key'], 'label' => $candidate['label'], 'origin_category_ids' => $candidate['category_ids'] );
+                break;
+            }
+        }
+    }
+    return rest_ensure_response( array(
+        'branch_id' => $branch_id,
+        'candidate_bubbles' => $candidates,
+        'candidate_origin_ids' => array_values( array_unique( array_merge( ...array_map( static function ( $candidate ) { return $candidate['category_ids']; }, $candidates ) ) ) ),
+        'availability_dispatch' => 'rest_do_request',
+        'availability_status' => $status,
+        'availability_schema' => $schema,
+        'availability_payload' => $payload,
+        'availability_counts' => $counts,
+        'visible_bubbles' => $visible,
+    ) );
+}
+add_action( 'rest_api_init', static function () {
+    register_rest_route( 'cr2026/v1', '/outlet-bubbles-debug', array(
+        'methods' => WP_REST_Server::READABLE,
+        'callback' => 'cr2026_outlet_bubbles_debug',
+        'permission_callback' => 'cr2026_outlet_bubbles_debug_permission',
+        'args' => array( 'branch_id' => array( 'required' => true, 'sanitize_callback' => 'absint' ) ),
+    ) );
+} );
+
 /** Render the contextual filter dialog; its trigger lives in the category toolbar. */
 /** APP-parity Outlet candidates copied from OutletCatalog.kt. */
 function cr2026_outlet_branch_ids(){return array(446,475,447,476,449,478,448,477);}
