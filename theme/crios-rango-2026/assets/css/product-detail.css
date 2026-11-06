@@ -57,3 +57,5 @@
 .cr-product-stock { margin:8px 0 0; color:var(--cr-muted,#777); font-size:.82rem; }
 .cr-product-stock:empty { display:none; }
 .cr-product-detail__sale[hidden] { display:none!important; }
+
+.cr-product-variation-chip.is-disabled { opacity:.48; cursor:not-allowed; }
