@@ -312,10 +312,84 @@ function cr2026_category_filter_term_labels() {
     return $labels;
 }
 /** Render the contextual filter dialog; its trigger lives in the category toolbar. */
+/** APP-parity Outlet candidates copied from OutletCatalog.kt. */
+function cr2026_outlet_branch_ids(){return array(446,475,447,476,449,478,448,477);}
+function cr2026_fixed_outlet_bubbles($outlet_category_id){$definitions=array(
+446 => array(
+            array('key'=>'abrigos y cazadoras','label'=>'Abrigos y cazadoras','category_ids'=>array(430)),
+            array('key'=>'americanas y trajes','label'=>'Americanas y trajes','category_ids'=>array(320)),
+            array('key'=>'camisas','label'=>'Camisas','category_ids'=>array(318)),
+            array('key'=>'camisetas y polos','label'=>'Camisetas y polos','category_ids'=>array(319)),
+            array('key'=>'complementos y bano','label'=>'Complementos y baño','category_ids'=>array(317)),
+            array('key'=>'jerseis y chaquetas','label'=>'Jerseis y Chaquetas','category_ids'=>array(459)),
+            array('key'=>'pantalones y bermudas','label'=>'Pantalones y bermudas','category_ids'=>array(321)),
+            array('key'=>'sudaderas','label'=>'Sudaderas','category_ids'=>array(471)),
+        ),
+447 => array(
+            array('key'=>'abrigos y cazadoras','label'=>'Abrigos y cazadoras','category_ids'=>array(431)),
+            array('key'=>'camisas y camisetas','label'=>'Camisas y camisetas','category_ids'=>array(324)),
+            array('key'=>'chaquetas y chalecos','label'=>'Chaquetas y chalecos','category_ids'=>array(326)),
+            array('key'=>'complementos','label'=>'Complementos','category_ids'=>array(468)),
+            array('key'=>'jerseis','label'=>'Jerséis','category_ids'=>array(461)),
+            array('key'=>'pantalones y faldas','label'=>'Pantalones y faldas','category_ids'=>array(325)),
+            array('key'=>'ropa de fiesta','label'=>'Ropa de fiesta','category_ids'=>array(323)),
+            array('key'=>'vestidos conjuntos y monos casual','label'=>'Vestidos, conjuntos y monos casual','category_ids'=>array(322)),
+        ),
+448 => array(
+            array('key'=>'abrigos y cazadoras','label'=>'Abrigos y cazadoras','category_ids'=>array(434,429)),
+            array('key'=>'ropa de bano','label'=>'Ropa de baño','category_ids'=>array(78,287)),
+            array('key'=>'ropa de sport','label'=>'Ropa de sport','category_ids'=>array(314,290)),
+            array('key'=>'ropa de vestir','label'=>'Ropa de vestir','category_ids'=>array(315,312)),
+        ),
+449 => array(
+            array('key'=>'abrigos y cazadoras','label'=>'Abrigos y cazadoras','category_ids'=>array(433,428)),
+            array('key'=>'calzado','label'=>'Calzado','category_ids'=>array(421)),
+            array('key'=>'ropa de bano','label'=>'Ropa de baño','category_ids'=>array(80,286)),
+            array('key'=>'ropa de sport','label'=>'Ropa de sport','category_ids'=>array(313,289)),
+            array('key'=>'ropa de vestir','label'=>'Ropa de vestir','category_ids'=>array(316,311)),
+        ),
+475 => array(
+            array('key'=>'abrigos y cazadoras','label'=>'Abrigos y cazadoras','category_ids'=>array(430)),
+            array('key'=>'americanas y trajes','label'=>'Americanas y trajes','category_ids'=>array(320)),
+            array('key'=>'camisas','label'=>'Camisas','category_ids'=>array(318)),
+            array('key'=>'camisetas y polos','label'=>'Camisetas y polos','category_ids'=>array(319)),
+            array('key'=>'complementos y bano','label'=>'Complementos y baño','category_ids'=>array(317)),
+            array('key'=>'jerseis y chaquetas','label'=>'Jerseis y Chaquetas','category_ids'=>array(459)),
+            array('key'=>'pantalones y bermudas','label'=>'Pantalones y bermudas','category_ids'=>array(321)),
+            array('key'=>'sudaderas','label'=>'Sudaderas','category_ids'=>array(471)),
+        ),
+476 => array(
+            array('key'=>'abrigos y cazadoras','label'=>'Abrigos y cazadoras','category_ids'=>array(431)),
+            array('key'=>'camisas y camisetas','label'=>'Camisas y camisetas','category_ids'=>array(324)),
+            array('key'=>'chaquetas y chalecos','label'=>'Chaquetas y chalecos','category_ids'=>array(326)),
+            array('key'=>'complementos','label'=>'Complementos','category_ids'=>array(468)),
+            array('key'=>'jerseis','label'=>'Jerséis','category_ids'=>array(461)),
+            array('key'=>'pantalones y faldas','label'=>'Pantalones y faldas','category_ids'=>array(325)),
+            array('key'=>'ropa de fiesta','label'=>'Ropa de fiesta','category_ids'=>array(323)),
+            array('key'=>'vestidos conjuntos y monos casual','label'=>'Vestidos, conjuntos y monos casual','category_ids'=>array(322)),
+        ),
+477 => array(
+            array('key'=>'abrigos y cazadoras','label'=>'Abrigos y cazadoras','category_ids'=>array(434,429)),
+            array('key'=>'ropa de bano','label'=>'Ropa de baño','category_ids'=>array(78,287)),
+            array('key'=>'ropa de sport','label'=>'Ropa de sport','category_ids'=>array(314,290)),
+            array('key'=>'ropa de vestir','label'=>'Ropa de vestir','category_ids'=>array(315,312)),
+        ),
+478 => array(
+            array('key'=>'abrigos y cazadoras','label'=>'Abrigos y cazadoras','category_ids'=>array(433,428)),
+            array('key'=>'calzado','label'=>'Calzado','category_ids'=>array(421)),
+            array('key'=>'ropa de bano','label'=>'Ropa de baño','category_ids'=>array(80,286)),
+            array('key'=>'ropa de sport','label'=>'Ropa de sport','category_ids'=>array(313,289)),
+            array('key'=>'ropa de vestir','label'=>'Ropa de vestir','category_ids'=>array(316,311)),
+        ),
+);return isset($definitions[(int)$outlet_category_id])?$definitions[(int)$outlet_category_id]:array();}
+function cr2026_render_outlet_bubbles($outlet_category_id){$candidates=cr2026_fixed_outlet_bubbles($outlet_category_id);if(empty($candidates))return;echo '<div class="cr-outlet-bubbles" data-cr-outlet-bubbles hidden data-outlet-category-id="'.esc_attr((int)$outlet_category_id).'" data-availability-url="'.esc_url(rest_url('criosrango/v1/outlet-availability')).'" data-candidates="'.esc_attr(wp_json_encode($candidates)).'" aria-label="'.esc_attr__('Categorías Outlet','crios-rango-2026').'"></div>';}
+
 function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
     $is_root_catalog = 'root' === $context;
     if ( ! $is_root_catalog && ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) ) { return; }
     $filter_category_id = $is_root_catalog ? '' : (string) (int) $term->term_id;
+    $outlet_category_id = ( ! $is_root_catalog && in_array((int)$term->term_id,cr2026_outlet_branch_ids(),true) ) ? (int)$term->term_id : 0;
+    $filter_scope = $outlet_category_id ? 'outlet' : 'catalog';
     $labels = cr2026_category_filter_term_labels();
     $debug = function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), array( 'staging', 'development', 'local' ), true );
     $selected = array(
@@ -323,7 +397,7 @@ function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
         'colors' => cr2026_category_filter_selected_values( 'color_ids' ),
         'brands' => cr2026_category_filter_selected_values( 'brand_ids' ),
     );
-    echo '<div class="cr-category-filter-sheet" data-cr-filter-sheet data-debug="' . ( $debug ? '1' : '0' ) . '" hidden data-category-id="' . esc_attr( $filter_category_id ) . '" data-api-url="' . esc_url( rest_url( 'criosrango-filter/v1/query' ) ) . '" data-term-labels="' . esc_attr( wp_json_encode( $labels ) ) . '" data-initial-sizes="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-initial-colors="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-initial-brands="' . esc_attr( implode( ',', $selected['brands'] ) ) . '">';
+    echo '<div class="cr-category-filter-sheet" data-cr-filter-sheet data-debug="' . ( $debug ? '1' : '0' ) . '" hidden data-category-id="' . esc_attr( $filter_category_id ) . '" data-scope="' . esc_attr( $filter_scope ) . '" data-outlet-category-id="' . esc_attr( $outlet_category_id ) . '" data-api-url="' . esc_url( rest_url( 'criosrango-filter/v1/query' ) ) . '" data-term-labels="' . esc_attr( wp_json_encode( $labels ) ) . '" data-initial-sizes="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-initial-colors="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-initial-brands="' . esc_attr( implode( ',', $selected['brands'] ) ) . '">';
     echo '<div class="cr-category-filter-sheet__backdrop" data-cr-filter-close></div><section class="cr-category-filter-sheet__dialog" role="dialog" aria-modal="true" aria-labelledby="cr-category-filter-title" tabindex="-1">';
     echo '<div class="cr-category-filter-sheet__header"><h2 id="cr-category-filter-title">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</h2></div>';
     echo '<div class="cr-category-filter-sheet__tabs" role="tablist" aria-label="' . esc_attr__( 'Tipo de filtro', 'crios-rango-2026' ) . '">';
