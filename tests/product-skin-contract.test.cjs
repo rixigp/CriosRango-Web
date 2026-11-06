@@ -141,7 +141,9 @@ test('quantity stepper delegates to the existing WooCommerce quantity input', ()
   assert.ok(productUiJs.includes('input.stepDown()'));
   assert.ok(productUiJs.includes('input.stepUp()'));
   assert.ok(productUiJs.includes('dispatchNativeChange(input)'));
-  assert.equal(/fetch\\s*\\(|XMLHttpRequest|add_to_cart/.test(productUiJs), false);
+  assert.equal(productUiJs.includes('fetch('), false);
+  assert.equal(productUiJs.includes('XMLHttpRequest'), false);
+  assert.equal(productUiJs.includes('add_to_cart'), false);
 });
 
 test('enhancements are progressive and the native add-to-cart button remains the only submit', () => {
@@ -152,7 +154,8 @@ test('enhancements are progressive and the native add-to-cart button remains the
   assert.ok(productUiJs.includes("form.querySelector('button.single_add_to_cart_button')"));
   assert.equal(productUiJs.includes("addEventListener('submit'"), false);
   assert.equal(productUiJs.includes('requestSubmit'), false);
-  assert.equal(/fetch\\s*\\(|XMLHttpRequest/.test(productUiJs), false);
+  assert.equal(productUiJs.includes('fetch('), false);
+  assert.equal(productUiJs.includes('XMLHttpRequest'), false);
   assert.ok(skinCss.includes('cr-product-ui-enhanced form.cart table.variations select'));
   assert.ok(skinCss.includes('cr-product-quantity-stepper'));
 });
