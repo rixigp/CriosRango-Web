@@ -95,7 +95,7 @@ test('web catalog page size is sourced from the audited app paginator contract',
 
 test('category filter selection is live, chips are actionable, and Apply only closes', () => {
   assert.match(js, /publishLiveFilters\(\);scheduleDependentRefresh\(dimension\)/);
-  assert.match(js, /window\.CR2026CatalogListing=\{applyFilters,getFilters,renderActiveFilterChips,pageSize\}/);
+  assert.match(js, /window\.CR2026CatalogListing=\{applyFilters,getFilters,renderActiveFilterChips,pageSize,getOutletContext\}/);
   assert.ok(js.includes("filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',closeSheet)"));
   assert.match(js, /data-cr-active-filter-chips/);
   assert.match(js, /cr-product-listing__clear-filters/);
@@ -221,7 +221,7 @@ test('facet refresh keeps existing availability in-flight and removes visible up
 });
 
 test('staging sort diagnostics record category, exact sort/page size, filters, totals and all ID layers', () => {
-  assert.ok(js.includes("category_id:categoryId,sort:sortMap[orderby],page,per_page:pageSize,filters:getFilters()"));
+  assert.ok(js.includes("category_id:categoryId,outlet_category_id:outletCategoryId,origin_category_ids:activeOutletOriginIds.slice(),selected_bubble_key:selectedOutletBubbleKey,sort:sortMap[orderby],page,per_page:pageSize,filters:getFilters()"));
   assert.ok(js.includes("api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds"));
   assert.ok(js.includes("returned_total:responseData.total"));
 });
