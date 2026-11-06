@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/product-detail-app-parity') && 'crios-rango-staging' || 'crios-rango-production' }}
+  group: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/feat/product-detail-app-parity') && 'crios-rango-staging' || 'crios-rango-production' }}
   cancel-in-progress: false
 
 jobs:
@@ -43,7 +43,7 @@ jobs:
             exit 0
           fi
 
-          if [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ] || [ "$GITHUB_REF" = "refs/heads/fix/category-grid-app-parity" ] || [ "$GITHUB_REF" = "refs/heads/feat/wp-login-branding" ]; then
+          if [ "$GITHUB_REF" = "refs/heads/fix/catalog-runtime-parity" ] || [ "$GITHUB_REF" = "refs/heads/fix/category-grid-app-parity" ] || [ "$GITHUB_REF" = "refs/heads/feat/wp-login-branding" ] || [ "$GITHUB_REF" = "refs/heads/feat/product-detail-app-parity" ]; then
             echo "ERROR: staging deploy must not bootstrap or push to main."
             exit 1
           fi
@@ -434,7 +434,7 @@ jobs:
               echo "Skipping stale staging deploy SHA=$GITHUB_SHA; branch HEAD=$REMOTE_SHA"
             fi
           elif [ "$GITHUB_REF" = "refs/heads/feat/wp-login-branding" ] || [ "$GITHUB_REF" = "refs/heads/feat/product-detail-app-parity" ]; then
-            git fetch origin feat/wp-login-branding
+            git fetch origin "${GITHUB_REF#refs/heads/}"
             REMOTE_SHA="$(git rev-parse FETCH_HEAD)"
             if [ "$REMOTE_SHA" = "$GITHUB_SHA" ]; then
               echo "current=true" >> "$GITHUB_OUTPUT"
