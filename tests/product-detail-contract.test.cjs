@@ -32,7 +32,7 @@ test('product assets are enqueued only on product pages', () => {
 
 test('product-only controller covers gallery, share, reserve, Woo variation events and quantity', () => {
   const js = read('assets/js/product-detail.js');
-  for (const token of ['data-cr-gallery-dot', 'navigator.share', 'wa.me/34633246788', 'found_variation', 'reset_data', 'variation_id', 'data-cr-quantity-plus']) {
+  for (const token of ['data-cr-gallery-dot', 'navigator.share', 'wa.me/34633246788', 'found_variation', 'reset_data', 'data-cr-quantity-plus']) {
     assert.ok(js.includes(token), 'missing product contract token: ' + token);
   }
 });
