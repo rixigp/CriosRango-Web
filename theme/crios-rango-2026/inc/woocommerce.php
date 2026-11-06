@@ -131,12 +131,38 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $page = max( 1, absint( $request->get_param( 'page' ) ) );
     $per_page = CR2026_CATALOG_PAGE_SIZE;
     $category_id = absint( $request->get_param( 'catalog_category_id' ) );
+    $scope = sanitize_key( (string) $request->get_param( 'scope' ) );
+    if ( '' === $scope ) { $scope = 'catalog'; }
+    $is_outlet_scope = 'outlet' === $scope;
+    if ( ! in_array( $scope, array( 'catalog', 'outlet' ), true ) ) {
+        return new WP_Error( 'cr2026_catalog_scope', __( 'Ámbito de catálogo no válido.', 'crios-rango-2026' ), array( 'status' => 400 ) );
+    }
+    $outlet_category_id = absint( $request->get_param( 'outlet_category_id' ) );
+    $raw_origin_ids = trim( (string) $request->get_param( 'origin_category_ids' ) );
+    $origin_category_ids = array();
+    if ( '' !== $raw_origin_ids ) {
+        foreach ( explode( ',', $raw_origin_ids ) as $raw_id ) {
+            $origin_id = absint( $raw_id );
+            if ( $origin_id < 1 || (string) $origin_id !== trim( $raw_id ) ) {
+                return new WP_Error( 'cr2026_catalog_origin_ids', __( 'Categorías de origen no válidas.', 'crios-rango-2026' ), array( 'status' => 400 ) );
+            }
+            $origin_category_ids[] = $origin_id;
+        }
+        $origin_category_ids = array_values( array_unique( $origin_category_ids ) );
+        sort( $origin_category_ids, SORT_NUMERIC );
+    }
+    if ( $is_outlet_scope && ! in_array( $outlet_category_id, cr2026_outlet_branch_ids(), true ) ) {
+        return new WP_Error( 'cr2026_catalog_outlet_category', __( 'Rama Outlet no válida.', 'crios-rango-2026' ), array( 'status' => 400 ) );
+    }
+    if ( ! $is_outlet_scope && ( $outlet_category_id > 0 || ! empty( $origin_category_ids ) ) ) {
+        return new WP_Error( 'cr2026_catalog_outlet_context', __( 'Contexto Outlet no válido para catálogo general.', 'crios-rango-2026' ), array( 'status' => 400 ) );
+    }
     $sort = sanitize_key( (string) $request->get_param( 'sort' ) );
     if ( ! in_array( $sort, array( 'newest', 'oldest', 'price_asc', 'price_desc', 'title_asc', 'title_desc', 'default' ), true ) ) {
         $sort = 'newest';
     }
     $filter_keys = array( 'size_ids', 'color_ids', 'brand_ids' );
-    $has_filters = false;
+    $has_filters = $is_outlet_scope;
     foreach ( $filter_keys as $filter_key ) {
         if ( '' !== trim( (string) $request->get_param( $filter_key ) ) ) {
             $has_filters = true;
@@ -153,13 +179,18 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     if ( $has_filters ) {
         $filter_request = new WP_REST_Request( 'GET', '/criosrango-filter/v1/query' );
         $filter_params = array(
-            'scope' => 'catalog',
+            'scope' => $is_outlet_scope ? 'outlet' : 'catalog',
             'facet' => 'none',
             'page' => $page,
             'per_page' => $per_page,
             'sort' => $sort,
         );
-        if ( $category_id > 0 ) {
+        if ( $is_outlet_scope ) {
+            $filter_params['outlet_category_id'] = $outlet_category_id;
+            if ( ! empty( $origin_category_ids ) ) {
+                $filter_params['origin_category_ids'] = implode( ',', $origin_category_ids );
+            }
+        } elseif ( $category_id > 0 ) {
             $filter_params['catalog_category_id'] = $category_id;
         }
         foreach ( $filter_keys as $filter_key ) {
