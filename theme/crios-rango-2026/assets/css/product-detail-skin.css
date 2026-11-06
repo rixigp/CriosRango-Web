@@ -160,13 +160,8 @@ body.cr-product-detail-app .cr-main--woocommerce div.product .woocommerce-produc
 body.cr-product-detail-app .cr-main--woocommerce div.product .woocommerce-product-details__short-description {
   margin: 0 0 20px;
 }
-body.cr-product-detail-app .cr-main--woocommerce div.product .summary .woocommerce-product-details__short-description a,
-body.cr-product-detail-app .cr-main--woocommerce div.product .summary .woocommerce-product-details__short-description a:visited,
-body.cr-product-detail-app .cr-main--woocommerce div.product .summary .woocommerce-product-details__short-description a:hover,
-body.cr-product-detail-app .cr-main--woocommerce div.product .summary .woocommerce-product-details__short-description a:focus {
-  color: var(--cr-product-green);
-  font-weight: 300;
-  text-decoration: none !important;
+body.cr-product-detail-app .cr-main--woocommerce div.product .woocommerce-product-details__short-description u {
+  text-decoration: none;
 }
 body.cr-product-detail-app .cr-main--woocommerce div.product form.cart {
   display: block;
