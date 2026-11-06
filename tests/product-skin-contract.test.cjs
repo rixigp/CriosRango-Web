@@ -226,7 +226,7 @@ test('color chips use the same native-select deselection behavior as size', () =
   assert.equal(productUiJs.includes("variationId.value ="), false);
   assert.equal(productUiJs.includes("variation_id.value ="), false);
   assert.ok(productUiJs.includes("COLOR_OPTIONS_AUDIT"));
-  assert.ok(productUiJs.includes("granate: '#800020'"));
+  assert.ok(productUiJs.includes("'granate': '#800020'"));
 });
 
 test('shared variation chip toggle contract is limited to size and color and uses the native select', () => {
