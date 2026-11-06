@@ -10,8 +10,9 @@ const functions = fs.readFileSync(path.join(theme, 'functions.php'), 'utf8');
 const assets = fs.readFileSync(path.join(theme, 'inc/assets.php'), 'utf8');
 const skin = fs.readFileSync(path.join(theme, 'inc/product-skin.php'), 'utf8');
 const skinCss = fs.readFileSync(path.join(theme, 'assets/css/product-detail-skin.css'), 'utf8');
+const productUiJs = fs.readFileSync(path.join(theme, 'assets/js/product-ui-enhancements.js'), 'utf8');
 
-test('no custom single-product template or Product Detail JavaScript exists', () => {
+test('no custom single-product template or replacement Product Detail engine exists', () => {
   assert.equal(fs.existsSync(path.join(theme, 'single-product.php')), false);
   assert.equal(fs.existsSync(path.join(theme, 'assets/js/product-detail.js')), false);
   assert.doesNotMatch(functions, /product-detail\.js/);
@@ -73,7 +74,7 @@ test('sale badge, price, notices and native controls receive presentation-only C
   assert.match(skinCss, /single_add_to_cart_button/);
 });
 
-test('native description HTML remains intact and Product Detail custom JS is not introduced', () => {
+test('native description HTML remains intact and is only styled', () => {
   assert.doesNotMatch(skin, /the_content\s*\(|get_description\s*\(|wp_kses|DOMDocument/);
   assert.doesNotMatch(skin, /add_action\([^\n]*woocommerce_single_product_summary[^\n]*(?:quantity|cart|variation)/i);
   assert.match(skinCss, /woocommerce-product-details__short-description/);
@@ -98,4 +99,57 @@ test('logged-out mobile Product Detail uses the approved header and toolbar base
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-app-header\s*\{[^}]*position: sticky !important;[^}]*top: 0 !important;/s);
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{\s*position: sticky;\s*top: var\(--cr-app-topbar-height, 64px\);/);
   // KNOWN_ADMIN_SESSION_UI_BUG=ACCEPTED; admin offsets are deliberately not asserted.
+});
+
+
+test('gallery dots delegate to native FlexSlider and never replace the WooCommerce gallery', () => {
+  assert.match(productUiJs, /woocommerce-product-gallery/);
+  assert.match(productUiJs, /flexslider\\(index\\)/);
+  assert.match(productUiJs, /flex-control-thumbs/);
+  assert.match(skinCss, /cr-product-gallery-dots/);
+  assert.match(skinCss, /cr-product-ui-enhanced \\.woocommerce-product-gallery \\.flex-control-thumbs/);
+  assert.match(setup, /wc-product-gallery-zoom/);
+  assert.match(setup, /wc-product-gallery-lightbox/);
+  assert.match(setup, /wc-product-gallery-slider/);
+});
+
+test('share and WhatsApp reservation use the product permalink and native selected attributes', () => {
+  assert.match(skin, /cr-product-share/);
+  assert.match(skin, /cr-product-reserve/);
+  assert.match(skin, /get_permalink/);
+  assert.match(productUiJs, /navigator\\.share/);
+  assert.match(productUiJs, /navigator\\.clipboard/);
+  assert.match(productUiJs, /wa\\.me\\/34633246788/);
+  assert.match(productUiJs, /variationId\\.value/);
+  assert.match(productUiJs, /select\\.value/);
+  assert.match(productUiJs, /select\\.options\\[select\\.selectedIndex\\]/);
+});
+
+test('variation chips are native select proxies and do not implement variation matching', () => {
+  assert.match(productUiJs, /table\\.variations select/);
+  assert.match(productUiJs, /select\\.value = option\\.value/);
+  assert.match(productUiJs, /dispatchNativeChange\\(select\\)/);
+  assert.match(productUiJs, /woocommerce_update_variation_values/);
+  assert.match(productUiJs, /option\\.disabled/);
+  assert.doesNotMatch(productUiJs, /variation_id\\s*\\.value\\s*=/);
+  assert.doesNotMatch(productUiJs, /variation\\.attributes|variation\\.variation_id/);
+});
+
+test('quantity stepper delegates to the existing WooCommerce quantity input', () => {
+  assert.match(productUiJs, /form\\.cart \\.quantity input\\.qty/);
+  assert.match(productUiJs, /input\\.stepDown\\(\\)/);
+  assert.match(productUiJs, /input\\.stepUp\\(\\)/);
+  assert.match(productUiJs, /dispatchNativeChange\\(input\\)/);
+  assert.doesNotMatch(productUiJs, /fetch\\s*\\(|XMLHttpRequest|add_to_cart/);
+});
+
+test('enhancements are progressive and the native add-to-cart button remains the only submit', () => {
+  assert.match(assets, /cr2026-product-ui-enhancements/);
+  assert.match(assets, /if \\( \\$uses_product_detail_skin \\)/);
+  assert.match(productUiJs, /body\\.classList\\.add\\('cr-product-ui-enhanced'\\)/);
+  assert.match(productUiJs, /body\\.classList\\.remove\\('cr-product-ui-enhanced'\\)/);
+  assert.match(productUiJs, /nativeButton = form\\.querySelector\\('button\\.single_add_to_cart_button'\\)/);
+  assert.doesNotMatch(productUiJs, /addEventListener\\('submit'|requestSubmit|fetch\\s*\\(|XMLHttpRequest/);
+  assert.match(skinCss, /cr-product-ui-enhanced form\\.cart table\\.variations select/);
+  assert.match(skinCss, /cr-product-quantity-stepper/);
 });
