@@ -11,7 +11,6 @@
     if (!body || !body.classList.contains('cr-product-detail-app')) return;
 
     var added = [];
-    var enhanced = false;
     var form = document.querySelector('form.variations_form');
     var actions = document.querySelector('.cr-product-actions');
     var reserve = actions && actions.querySelector('.cr-product-reserve');
@@ -83,6 +82,7 @@
             var chip = document.createElement('button');
             chip.type = 'button';
             chip.className = 'cr-product-choice-chip';
+            chip.dataset.value = option.value;
             chip.disabled = !!option.disabled;
             chip.setAttribute('aria-pressed', select.value === option.value ? 'true' : 'false');
             if (isColor) {
@@ -121,7 +121,7 @@
           if (!chips || !chips.classList.contains('cr-product-choice-chips')) return;
           chips.querySelectorAll('button').forEach(function (chip) {
             var option = Array.prototype.find.call(select.options, function (item) {
-              return item.textContent.trim() === chip.textContent.trim() && item.value;
+              return item.value === chip.dataset.value;
             });
             chip.disabled = !option || !!option.disabled;
             chip.setAttribute('aria-pressed', option && select.value === option.value ? 'true' : 'false');
@@ -223,7 +223,6 @@
       initQuantityStepper();
       initActions();
       body.classList.add('cr-product-ui-enhanced');
-      enhanced = true;
     } catch (error) {
       added.forEach(function (node) {
         if (node && typeof node.cleanup === 'function') node.cleanup();
