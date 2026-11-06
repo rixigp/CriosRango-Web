@@ -53,3 +53,7 @@
  .cr-product-quantity button { width:36px; }
  .cr-product-quantity input.qty { width:32px!important; min-width:32px; }
 }
+.cr-product-detail .single_variation { display:none!important; }
+.cr-product-stock { margin:8px 0 0; color:var(--cr-muted,#777); font-size:.82rem; }
+.cr-product-stock:empty { display:none; }
+.cr-product-detail__sale[hidden] { display:none!important; }
