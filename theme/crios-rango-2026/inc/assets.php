@@ -53,6 +53,16 @@ function cr2026_enqueue_assets() {
         );
     }
 
+    if ( function_exists( 'is_product' ) && is_product() ) {
+        wp_enqueue_script(
+            'cr2026-product-detail',
+            CR2026_URI . '/assets/js/product-detail.js',
+            array( 'jquery', 'wc-add-to-cart-variation' ),
+            cr2026_asset_version( 'assets/js/product-detail.js' ),
+            true
+        );
+    }
+
     wp_enqueue_script(
         'cr2026-main',
         CR2026_URI . '/assets/js/main.js',
