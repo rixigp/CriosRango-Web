@@ -337,3 +337,23 @@ body.cr-product-detail-app .cr-main--woocommerce div.product .additional_informa
 body.cr-product-detail-app .cr-main--woocommerce div.product #tab-additional_information {
   display: none !important;
 }
+
+
+/*
+ * WordPress core changes #wpadminbar to position:absolute at <=600px.
+ * Let the global header use the document's native admin-bar scroll space:
+ * it starts below the bar, then sticks at viewport top after the bar scrolls away.
+ * The negative margin consumes the existing global-header body reservation without
+ * changing body padding; the product toolbar then sticks directly below the header.
+ */
+@media screen and (max-width: 600px) {
+  body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-app-header {
+    position: sticky !important;
+    top: 0 !important;
+    margin-top: calc(-1 * var(--cr-app-topbar-height, 64px));
+  }
+
+  body.admin-bar.cr-product-detail-app .cr-product-detail-toolbar {
+    top: var(--cr-app-topbar-height, 64px);
+  }
+}
