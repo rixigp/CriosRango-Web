@@ -43,15 +43,9 @@ body.cr-product-detail-app .cr-product-detail-toolbar .cr-parent-category__title
   font: 300 18px/24px "Roboto",Arial,sans-serif;
 }
 
-/* WordPress reserves the admin bar in html; theme layers use one shared offset. */
-body.admin-bar.cr-product-detail-app .cr-app-header {
-  top: var(--cr-admin-bar-offset, 0px);
-}
+/* The global header owns its admin offset; the sticky toolbar follows that header. */
 body.admin-bar.cr-product-detail-app .cr-product-detail-toolbar {
   top: calc(var(--cr-admin-bar-offset, 0px) + var(--cr-app-topbar-height, 64px));
-}
-body.admin-bar.cr-product-detail-app.cr-global-app-header:not(.home) {
-  padding-top: var(--cr-app-topbar-height, 64px);
 }
 body.cr-product-detail-app .cr-main--woocommerce div.product {
   display: flex;
