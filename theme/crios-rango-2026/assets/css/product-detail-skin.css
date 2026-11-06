@@ -340,7 +340,7 @@ body.cr-product-detail-app .cr-main--woocommerce div.product #tab-additional_inf
 
 
 /*
- * WordPress core changes #wpadminbar to position:absolute at <=600px.
+ * WordPress core changes the admin bar to position:absolute at <=600px.
  * Let the global header use the document's native admin-bar scroll space:
  * it starts below the bar, then sticks at viewport top after the bar scrolls away.
  * The negative margin consumes the existing global-header body reservation without
