@@ -21,6 +21,31 @@
       input.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
+    function initNativeTouchLightbox() {
+      var gallery = document.querySelector('.woocommerce-product-gallery');
+      if (!gallery || !window.PointerEvent) return;
+      var start = null;
+      gallery.addEventListener('pointerdown', function (event) {
+        if (event.pointerType !== 'touch') return;
+        var slide = event.target.closest('.woocommerce-product-gallery__image');
+        if (!slide || !slide.querySelector('a')) return;
+        start = { x: event.clientX, y: event.clientY, slide: slide, pointerId: event.pointerId };
+      }, true);
+      gallery.addEventListener('pointerup', function (event) {
+        if (!start || event.pointerType !== 'touch' || event.pointerId !== start.pointerId) return;
+        var moved = Math.hypot(event.clientX - start.x, event.clientY - start.y);
+        var tappedSlide = start.slide;
+        start = null;
+        if (moved > 10 || !tappedSlide.classList.contains('flex-active-slide')) return;
+        var nativeTrigger = gallery.querySelector('.woocommerce-product-gallery__trigger');
+        if (!nativeTrigger) return;
+        event.preventDefault();
+        event.stopPropagation();
+        nativeTrigger.click();
+      }, true);
+      gallery.addEventListener('pointercancel', function () { start = null; }, true);
+    }
+
     function initGalleryDots() {
       var gallery = document.querySelector('.woocommerce-product-gallery');
       if (!gallery) return;
@@ -96,15 +121,34 @@
             chip.appendChild(text);
             chip.addEventListener('click', function () {
               if (chip.disabled) return;
-              select.value = option.value;
+              var isSize = /talla|size/.test(label);
+              select.value = isSize && select.value === option.value ? '' : option.value;
               dispatchNativeChange(select);
-              window.requestAnimationFrame(render);
+              window.requestAnimationFrame(function () {
+                render();
+                syncVariationState();
+              });
             });
             chips.appendChild(chip);
           });
         }
         select.addEventListener('change', render);
         render();
+        if (isColor) {
+          var nativeColorOptions = Array.prototype.filter.call(select.options, function (option) { return option.value !== ''; });
+          var renderedColorCount = chips.querySelectorAll('.cr-product-choice-chip').length;
+          select.dataset.crNativeOptionCount = String(nativeColorOptions.length);
+          select.dataset.crChipCount = String(renderedColorCount);
+          if (window.console && console.info) {
+            console.info('[CR Product UI] COLOR_OPTIONS_AUDIT', {
+              nativeNonempty: nativeColorOptions.length,
+              renderedChips: renderedColorCount,
+              values: nativeColorOptions.map(function (option) { return option.value; }),
+              disabled: nativeColorOptions.filter(function (option) { return option.disabled; }).length,
+              selected: select.value
+            });
+          }
+        }
         if (window.MutationObserver) {
           var optionObserver = new MutationObserver(render);
           optionObserver.observe(select, { subtree: true, childList: true, attributes: true, attributeFilter: ['disabled'] });
@@ -215,6 +259,7 @@
     }
 
     try {
+      initNativeTouchLightbox();
       initGalleryDots();
       initVariationProxies();
       initQuantityStepper();
