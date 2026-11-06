@@ -133,6 +133,11 @@
             });
             chips.appendChild(chip);
           });
+          if (isColor) {
+            var nativeOptions = Array.prototype.filter.call(select.options, function (option) { return option.value !== ''; });
+            select.dataset.crNativeOptionCount = String(nativeOptions.length);
+            select.dataset.crChipCount = String(chips.querySelectorAll('.cr-product-choice-chip').length);
+          }
         }
         select.addEventListener('change', render);
         render();
