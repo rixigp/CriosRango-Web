@@ -50,6 +50,26 @@ function cr2026_product_skin_remove_legacy_presentation() {
 }
 add_action( 'wp', 'cr2026_product_skin_remove_legacy_presentation', 100 );
 
+
+/** Additive APP actions; product/cart behavior remains native WooCommerce. */
+function cr2026_product_skin_actions() {
+    if ( ! is_product() ) {
+        return;
+    }
+    $product = wc_get_product( get_queried_object_id() );
+    if ( ! $product instanceof WC_Product ) {
+        return;
+    }
+    $reserve_enabled = $product->is_type( 'variable' )
+        ? false
+        : ( $product->is_purchasable() && $product->is_in_stock() );
+    echo '<div class="cr-product-actions" data-product-name="' . esc_attr( $product->get_name() ) . '" data-product-url="' . esc_url( get_permalink( $product->get_id() ) ) . '">';
+    echo '<button type="button" class="cr-product-actions__button cr-product-share" aria-label="' . esc_attr__( 'Compartir producto', 'crios-rango-2026' ) . '"><span aria-hidden="true">↗</span><span>Compartir</span></button>';
+    echo '<button type="button" class="cr-product-actions__button cr-product-reserve" data-variable="' . ( $product->is_type( 'variable' ) ? '1' : '0' ) . '" ' . disabled( ! $reserve_enabled, true, false ) . '><span aria-hidden="true">◉</span><span>Reservarlo</span></button>';
+    echo '</div>';
+}
+add_action( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_actions', 25 );
+
 /** Replace the translated WooCommerce sale label only on product detail pages. */
 function cr2026_product_skin_sale_label( $translation, $text, $domain ) {
     if ( is_product() && 'woocommerce' === $domain && in_array( $text, array( 'Sale!', '¡Oferta!' ), true ) ) {
