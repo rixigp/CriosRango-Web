@@ -73,11 +73,20 @@ test('sale badge, price, notices and native controls receive presentation-only C
   assert.match(skinCss, /single_add_to_cart_button/);
 });
 
-test('logged-in Product Detail sticky offset and duplicate header reservation are corrected', () => {
-  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-detail-toolbar \{[\s\S]*?position: sticky;[\s\S]*?top: var\(--cr-app-topbar-height, 64px\);/);
-  assert.match(skinCss, /body\.admin-bar\.cr-product-detail-app \.cr-product-detail-toolbar \{\s*top: calc\(var\(--cr-app-topbar-height, 64px\) \+ 32px\);\s*\}/);
-  assert.match(skinCss, /body\.admin-bar\.cr-product-detail-app\.cr-global-app-header:not\(\.home\) \{\s*padding-top: var\(--cr-app-topbar-height, 64px\);\s*\}/);
-  assert.match(skinCss, /@media \(max-width: 782px\)[\s\S]*?body\.admin-bar\.cr-product-detail-app \.cr-product-detail-toolbar \{\s*top: calc\(var\(--cr-app-topbar-height, 64px\) \+ 46px\);/);
+test('logged-in Product Detail uses one WordPress admin offset for header, toolbar and body reservation', () => {
+  const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
+  assert.ok(mainCss.includes('--cr-admin-bar-offset: 0px;'));
+  assert.ok(mainCss.includes('body.admin-bar { --cr-admin-bar-offset: 32px; }'));
+  assert.ok(mainCss.includes('body.admin-bar { --cr-admin-bar-offset: 46px; }'));
+  assert.ok(mainCss.includes('body.admin-bar .cr-app-header { top: var(--cr-admin-bar-offset, 0px); }'));
+  assert.ok(mainCss.includes('body.admin-bar.cr-global-app-header:not(.home)'));
+  assert.ok(!mainCss.includes('body.admin-bar.cr-global-app-header:not(.home) {\n  padding-top: calc('));
+  assert.ok(skinCss.includes('body.admin-bar.cr-product-detail-app .cr-app-header'));
+  assert.ok(skinCss.includes('top: var(--cr-admin-bar-offset, 0px);'));
+  assert.ok(skinCss.includes('top: calc(var(--cr-admin-bar-offset, 0px) + var(--cr-app-topbar-height, 64px));'));
+  assert.ok(skinCss.includes('padding-top: var(--cr-app-topbar-height, 64px);'));
+  assert.ok(!skinCss.includes('top: calc(var(--cr-app-topbar-height, 64px) + 32px)'));
+  assert.ok(!skinCss.includes('top: calc(var(--cr-app-topbar-height, 64px) + 46px)'));
   assert.doesNotMatch(skinCss, /#wpadminbar|show_admin_bar/);
 });
 
