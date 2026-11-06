@@ -102,54 +102,57 @@ test('logged-out mobile Product Detail uses the approved header and toolbar base
 });
 
 
-test('gallery dots delegate to native FlexSlider and never replace the WooCommerce gallery', () => {
-  assert.match(productUiJs, /woocommerce-product-gallery/);
-  assert.match(productUiJs, /flexslider\\(index\\)/);
-  assert.match(productUiJs, /flex-control-thumbs/);
-  assert.match(skinCss, /cr-product-gallery-dots/);
-  assert.match(skinCss, /cr-product-ui-enhanced \\.woocommerce-product-gallery \\.flex-control-thumbs/);
-  assert.match(setup, /wc-product-gallery-zoom/);
-  assert.match(setup, /wc-product-gallery-lightbox/);
-  assert.match(setup, /wc-product-gallery-slider/);
+test('gallery dots delegate to native FlexSlider and preserve WooCommerce gallery features', () => {
+  assert.ok(productUiJs.includes('woocommerce-product-gallery'));
+  assert.ok(productUiJs.includes('flexslider(index)'));
+  assert.ok(productUiJs.includes('flex-control-thumbs'));
+  assert.ok(skinCss.includes('cr-product-gallery-dots'));
+  assert.ok(skinCss.includes('cr-product-ui-enhanced .woocommerce-product-gallery .flex-control-thumbs'));
+  assert.ok(setup.includes('wc-product-gallery-zoom'));
+  assert.ok(setup.includes('wc-product-gallery-lightbox'));
+  assert.ok(setup.includes('wc-product-gallery-slider'));
 });
 
-test('share and WhatsApp reservation use the product permalink and native selected attributes', () => {
-  assert.match(skin, /cr-product-share/);
-  assert.match(skin, /cr-product-reserve/);
-  assert.match(skin, /get_permalink/);
-  assert.match(productUiJs, /navigator\\.share/);
-  assert.match(productUiJs, /navigator\\.clipboard/);
-  assert.match(productUiJs, /wa\\.me\\/34633246788/);
-  assert.match(productUiJs, /variationId\\.value/);
-  assert.match(productUiJs, /select\\.value/);
-  assert.match(productUiJs, /select\\.options\\[select\\.selectedIndex\\]/);
+test('share and WhatsApp reservation use product permalink and native selected attributes', () => {
+  assert.ok(skin.includes('cr-product-share'));
+  assert.ok(skin.includes('cr-product-reserve'));
+  assert.ok(skin.includes('get_permalink'));
+  assert.ok(productUiJs.includes('navigator.share'));
+  assert.ok(productUiJs.includes('navigator.clipboard'));
+  assert.ok(productUiJs.includes('wa.me/34633246788'));
+  assert.ok(productUiJs.includes('variationId.value'));
+  assert.ok(productUiJs.includes('select.value'));
+  assert.ok(productUiJs.includes('select.options[select.selectedIndex]'));
 });
 
 test('variation chips are native select proxies and do not implement variation matching', () => {
-  assert.match(productUiJs, /table\\.variations select/);
-  assert.match(productUiJs, /select\\.value = option\\.value/);
-  assert.match(productUiJs, /dispatchNativeChange\\(select\\)/);
-  assert.match(productUiJs, /woocommerce_update_variation_values/);
-  assert.match(productUiJs, /option\\.disabled/);
-  assert.doesNotMatch(productUiJs, /variation_id\\s*\\.value\\s*=/);
-  assert.doesNotMatch(productUiJs, /variation\\.attributes|variation\\.variation_id/);
+  assert.ok(productUiJs.includes('table.variations select'));
+  assert.ok(productUiJs.includes('select.value = option.value'));
+  assert.ok(productUiJs.includes('dispatchNativeChange(select)'));
+  assert.ok(productUiJs.includes('woocommerce_update_variation_values'));
+  assert.ok(productUiJs.includes('option.disabled'));
+  assert.equal(productUiJs.includes('variation_id.value ='), false);
+  assert.equal(productUiJs.includes('variation.variation_id'), false);
+  assert.equal(productUiJs.includes('variation.attributes'), false);
 });
 
 test('quantity stepper delegates to the existing WooCommerce quantity input', () => {
-  assert.match(productUiJs, /form\\.cart \\.quantity input\\.qty/);
-  assert.match(productUiJs, /input\\.stepDown\\(\\)/);
-  assert.match(productUiJs, /input\\.stepUp\\(\\)/);
-  assert.match(productUiJs, /dispatchNativeChange\\(input\\)/);
-  assert.doesNotMatch(productUiJs, /fetch\\s*\\(|XMLHttpRequest|add_to_cart/);
+  assert.ok(productUiJs.includes('form.cart .quantity input.qty'));
+  assert.ok(productUiJs.includes('input.stepDown()'));
+  assert.ok(productUiJs.includes('input.stepUp()'));
+  assert.ok(productUiJs.includes('dispatchNativeChange(input)'));
+  assert.equal(/fetch\\s*\\(|XMLHttpRequest|add_to_cart/.test(productUiJs), false);
 });
 
 test('enhancements are progressive and the native add-to-cart button remains the only submit', () => {
-  assert.match(assets, /cr2026-product-ui-enhancements/);
-  assert.match(assets, /if \\( \\$uses_product_detail_skin \\)/);
-  assert.match(productUiJs, /body\\.classList\\.add\\('cr-product-ui-enhanced'\\)/);
-  assert.match(productUiJs, /body\\.classList\\.remove\\('cr-product-ui-enhanced'\\)/);
-  assert.match(productUiJs, /nativeButton = form\\.querySelector\\('button\\.single_add_to_cart_button'\\)/);
-  assert.doesNotMatch(productUiJs, /addEventListener\\('submit'|requestSubmit|fetch\\s*\\(|XMLHttpRequest/);
-  assert.match(skinCss, /cr-product-ui-enhanced form\\.cart table\\.variations select/);
-  assert.match(skinCss, /cr-product-quantity-stepper/);
+  assert.ok(assets.includes('cr2026-product-ui-enhancements'));
+  assert.ok(assets.includes('if ( $uses_product_detail_skin )'));
+  assert.ok(productUiJs.includes("body.classList.add('cr-product-ui-enhanced')"));
+  assert.ok(productUiJs.includes("body.classList.remove('cr-product-ui-enhanced')"));
+  assert.ok(productUiJs.includes("form.querySelector('button.single_add_to_cart_button')"));
+  assert.equal(productUiJs.includes("addEventListener('submit'"), false);
+  assert.equal(productUiJs.includes('requestSubmit'), false);
+  assert.equal(/fetch\\s*\\(|XMLHttpRequest/.test(productUiJs), false);
+  assert.ok(skinCss.includes('cr-product-ui-enhanced form.cart table.variations select'));
+  assert.ok(skinCss.includes('cr-product-quantity-stepper'));
 });
