@@ -104,7 +104,9 @@
     const collator = new Intl.Collator('es',{sensitivity:'base'});
     const normalize = value => String(value||'').trim().normalize('NFC').toLocaleLowerCase('es');
     const sortIds = values => Array.from(new Set((values||[]).map(String).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'en',{numeric:true}));
-    const cacheKey = (facet,state) => [categoryId,facet,...dimensions.filter(d=>d!==facet).map(d=>d+':'+sortIds(state[d]).join(','))].join('|');
+    const outletScope=filterSheet.dataset.scope==='outlet';
+    const outletContext=()=>window.CR2026CatalogListing&&window.CR2026CatalogListing.getOutletContext?window.CR2026CatalogListing.getOutletContext():{categoryId:Number(filterSheet.dataset.outletCategoryId||0),originCategoryIds:[]};
+    const cacheKey=(facet,state)=>{const context=outletScope?outletContext():null;return [categoryId,filterSheet.dataset.scope||'catalog',context?context.categoryId:0,context?context.originCategoryIds.join(','):'',facet,...dimensions.filter(d=>d!==facet).map(d=>d+':'+sortIds(state[d]).join(','))].join('|');};
     const isValid = value => value && Number(value.timestamp)>0 && Date.now()-Number(value.timestamp)<ttl;
     const readStore = key => {try{const value=JSON.parse(sessionStorage.getItem(key)||'null');return isValid(value)?value:null;}catch(error){return null;}};
     const writeStore = (key,value) => {memoryCache[key]=value;try{sessionStorage.setItem(key,JSON.stringify(value));}catch(error){}};
@@ -115,10 +117,13 @@
     const optionsNode=filterSheet.querySelector('[data-cr-filter-options]');
     const dialog=filterSheet.querySelector('.cr-category-filter-sheet__dialog');
     const openButtons=Array.from(document.querySelectorAll('[data-cr-filter-open]'));
+    window.CR2026CatalogFacetContextChanged=()=>{if(outletScope&&!filterSheet.hidden)scheduleDependentRefresh(null);};
     const facetEndpoint = async (facet,state,signal) => {
       const key=cacheKey(facet,state), cached=memoryCache[key]||readStore(storageKey+'|'+key);
       if(cached){memoryCache[key]=cached;if(debug)console.debug('[CR2026 facets] cache-hit',{facet,selectedState:state,responseTermIds:cached.rows.flatMap(row=>row.term_ids)});return cached.rows;}
-      const params=new URLSearchParams({scope:'catalog',facet,page:'1',per_page:'1'});if(categoryId!=='root')params.set('catalog_category_id',categoryId);
+      const params=new URLSearchParams({scope:filterSheet.dataset.scope||'catalog',facet,page:'1',per_page:'1'});
+      if(outletScope){const context=outletContext();if(!context.categoryId)throw new Error('Outlet facet context has no active branch.');params.set('outlet_category_id',String(context.categoryId));if(context.originCategoryIds.length)params.set('origin_category_ids',context.originCategoryIds.join(','));}
+      else if(categoryId!=='root')params.set('catalog_category_id',categoryId);
       dimensions.forEach(d=>{if(d!==facet&&state[d].length)params.set(apiKeys[d],sortIds(state[d]).join(','));});
       if(debug)console.debug('[CR2026 facets] request',{facet,selectedState:state,params:Object.fromEntries(params.entries())});
       const response=await fetch(apiUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'},signal});
@@ -293,6 +298,8 @@
     const sentinel = productListing.querySelector('[data-cr-product-sentinel]');
     const filterSheetNode = document.querySelector('[data-cr-filter-sheet]');
     const categoryId = String(productListing.dataset.categoryId || '0');
+    const outletCategoryId = Number(productListing.dataset.outletCategoryId || 0);
+    const outletNode = productListing.querySelector('[data-cr-outlet-bubbles]');
     const debug = productListing.dataset.debug === '1';
     const productsUrl = productListing.dataset.productsUrl;
     const pageSize = Number(productListing.dataset.pageSize || 0);
@@ -304,7 +311,8 @@
     const taxonomyByKey = {size_ids:'pa_tallas',color_ids:'pa_color',brand_ids:'product_tag'};
     const labelByKey = {size_ids:'Talla',color_ids:'',brand_ids:''};
     let currentPage = 0, hasMore = false, loading = false, requestGeneration = 0, activeRequest = null;
-    let totalProducts = null;
+    let totalProducts = null, selectedOutletBubbleKey = null, activeOutletOriginIds = [];
+    const getOutletContext=()=>({categoryId:outletCategoryId,originCategoryIds:activeOutletOriginIds.slice(),selectedBubbleKey:selectedOutletBubbleKey});
     const normalizeIds = values => Array.from(new Set((values||[]).map(String).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'en',{numeric:true}));
     const getFilters = () => Object.fromEntries(filterKeys.map(key=>[key,(currentUrl.searchParams.get(key)||'').split(',').filter(Boolean)]));
     const filterCount = filters => filterKeys.reduce((sum,key)=>sum+(filters[key]||[]).length,0);
@@ -350,8 +358,9 @@
       const controller=new AbortController();
       activeRequest=controller;loading=true;
       try {
-        const params = new URLSearchParams({page:String(page),per_page:String(pageSize),scope:'catalog',facet:'none',sort:sortMap[orderby]});
-        if (categoryId !== '0') params.set('catalog_category_id',categoryId);
+        const params=new URLSearchParams({page:String(page),per_page:String(pageSize),scope:outletCategoryId?'outlet':'catalog',facet:'none',sort:sortMap[orderby]});
+        if(outletCategoryId){params.set('outlet_category_id',String(outletCategoryId));if(activeOutletOriginIds.length)params.set('origin_category_ids',activeOutletOriginIds.join(','));}
+        else if(categoryId!=='0')params.set('catalog_category_id',categoryId);
         filterKeys.forEach(key=>{const value=currentUrl.searchParams.get(key);if(value)params.set(key,value);});
         const response = await fetch(productsUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'},signal:controller.signal});
         if (!response.ok) throw new Error('Catalog page HTTP '+response.status);
@@ -382,7 +391,7 @@
           const normalized=String(text).replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:,|$))/g,'').replace(',','.');
           return Number(normalized);
         });
-        if(debug)console.debug('[CR2026 catalog] page',{category_id:categoryId,sort:sortMap[orderby],page,per_page:pageSize,filters:getFilters(),source:responseData.source,api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds,prices,returned_total:responseData.total,total:responseData.total,has_more:responseData.has_more});
+        if(debug)console.debug('[CR2026 catalog] page',{category_id:categoryId,outlet_category_id:outletCategoryId,origin_category_ids:activeOutletOriginIds.slice(),selected_bubble_key:selectedOutletBubbleKey,sort:sortMap[orderby],page,per_page:pageSize,filters:getFilters(),source:responseData.source,api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds,prices,returned_total:responseData.total,total:responseData.total,has_more:responseData.has_more});
         if(orderby==='price'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_ASC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
         if(orderby==='price'&&prices.some((price,index)=>index>0&&prices[index-1]>price))throw new Error('PRICE_ASC=FAIL within concatenated page sequence: '+JSON.stringify(prices));
         if(orderby==='price-desc'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_DESC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
@@ -434,8 +443,54 @@
       renderActiveFilterChips();
       resetAndLoad();
     };
-    window.CR2026CatalogListing={applyFilters,getFilters,renderActiveFilterChips,pageSize};
+    window.CR2026CatalogListing={applyFilters,getFilters,renderActiveFilterChips,pageSize,getOutletContext};
+    const renderOutletBubbleSelection=()=>{if(!outletNode)return;outletNode.querySelectorAll('[data-outlet-bubble-key]').forEach(button=>{const selected=button.dataset.outletBubbleKey===(selectedOutletBubbleKey||'');button.classList.toggle('is-selected',selected);button.setAttribute('aria-pressed',String(selected));});};
+    const failClosedOutletBubbles=error=>{if(outletNode){outletNode.replaceChildren();outletNode.hidden=true;}if(debug)console.warn('[Outlet bubbles] Availability unavailable; bubbles hidden.',error);};
+    const initializeOutletBubbles=async()=>{
+      if(!outletNode||!outletCategoryId)return;
+      try{
+        const candidates=JSON.parse(outletNode.dataset.candidates||'null');
+        if(!Array.isArray(candidates)||!candidates.length||candidates.some(item=>!item||typeof item.key!=='string'||typeof item.label!=='string'||!Array.isArray(item.category_ids)||!item.category_ids.length||item.category_ids.some(id=>!Number.isInteger(Number(id))||Number(id)<1)))throw new Error('Invalid Outlet candidate schema.');
+        const response=await fetch(outletNode.dataset.availabilityUrl,{credentials:'same-origin',headers:{Accept:'application/json'}});
+        if(!response.ok)throw new Error('Outlet availability HTTP '+response.status);
+        const payload=await response.json();
+        if(!payload||payload.schema_version!==1||!Array.isArray(payload.outlets))throw new Error('Unsupported Outlet availability schema.');
+        if(payload.version!==undefined&&(!Number.isInteger(payload.version)||payload.version<0))throw new Error('Invalid Outlet availability version.');
+        const seenBranches=new Set();
+        payload.outlets.forEach(bucket=>{
+          if(!bucket||!Number.isInteger(bucket.outlet_category_id)||!Array.isArray(bucket.counts)||seenBranches.has(bucket.outlet_category_id))throw new Error('Invalid Outlet availability branch payload.');
+          seenBranches.add(bucket.outlet_category_id);const seenCategories=new Set();
+          bucket.counts.forEach(row=>{
+            if(!row||!Number.isInteger(row.category_id)||row.category_id<1||!Number.isInteger(row.count)||row.count<0||seenCategories.has(row.category_id))throw new Error('Invalid Outlet availability count payload.');
+            seenCategories.add(row.category_id);
+          });
+        });
+        const branches=payload.outlets.filter(bucket=>bucket.outlet_category_id===outletCategoryId);
+        if(branches.length!==1)throw new Error('Outlet availability missing active branch '+outletCategoryId+'.');
+        const countByCategory=new Map(branches[0].counts.map(row=>[row.category_id,row.count]));
+        const visible=candidates.filter(candidate=>candidate.category_ids.some(id=>(countByCategory.get(Number(id))||0)>0));
+        const labels={'Abrigos y cazadoras':'Abrigos','Camisas y camisetas':'Camisas','Chaquetas y chalecos':'Chaquetas','Jerséis':'Jerséis','Pantalones y faldas':'Pantalones','Ropa de fiesta':'Fiesta','Vestidos, conjuntos y monos casual':'Vestidos y conjuntos','Americanas y trajes':'Americanas','Camisetas y polos':'Camisetas','Complementos y baño':'Complementos','Jerseis y Chaquetas':'Jerséis','Pantalones y bermudas':'Pantalones','Ropa de baño':'Baño','Ropa de sport':'Sport','Ropa de vestir':'Vestir'};
+        const addBubble=(key,label,originIds)=>{
+          const button=document.createElement('button');button.type='button';button.className='cr-outlet-bubbles__pill';button.textContent=label;
+          button.dataset.outletBubbleKey=key===null?'':key;button.setAttribute('aria-pressed',String(selectedOutletBubbleKey===key));
+          if(selectedOutletBubbleKey===key)button.classList.add('is-selected');
+          button.addEventListener('click',()=>{
+            if(selectedOutletBubbleKey===key)return;
+            selectedOutletBubbleKey=key;activeOutletOriginIds=originIds.slice().sort((left,right)=>left-right);
+            renderOutletBubbleSelection();
+            if(window.CR2026CatalogFacetContextChanged)window.CR2026CatalogFacetContextChanged();
+            resetAndLoad();
+          });
+          outletNode.appendChild(button);
+        };
+        outletNode.replaceChildren();addBubble(null,'Todas',[]);
+        visible.forEach(candidate=>addBubble(candidate.key,labels[candidate.label]||candidate.label,Array.from(new Set(candidate.category_ids.map(Number)))));
+        outletNode.hidden=false;
+        if(debug)console.debug('[Outlet bubbles] runtime',{branch:outletCategoryId,candidates,counts:branches[0].counts,visible:visible.map(item=>item.key)});
+      }catch(error){failClosedOutletBubbles(error);}
+    };
     renderActiveFilterChips();
+    if(outletCategoryId)initializeOutletBubbles();
     resetAndLoad();
     if (sentinel && 'IntersectionObserver' in window) {
       const catalogObserver=new IntersectionObserver(entries=>{

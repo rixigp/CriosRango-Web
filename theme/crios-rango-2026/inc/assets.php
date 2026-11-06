@@ -32,6 +32,18 @@ function cr2026_enqueue_assets() {
         cr2026_asset_version( 'assets/css/main.css' )
     );
 
+    if ( function_exists( 'is_product_category' ) && is_product_category() ) {
+        $outlet_term = get_queried_object();
+        if ( $outlet_term instanceof WP_Term && in_array( (int) $outlet_term->term_id, array( 446, 475, 447, 476, 449, 478, 448, 477 ), true ) ) {
+            wp_enqueue_style(
+                'cr2026-outlet-bubbles',
+                CR2026_URI . '/assets/css/outlet-bubbles.css',
+                array( 'cr2026-main' ),
+                cr2026_asset_version( 'assets/css/outlet-bubbles.css' )
+            );
+        }
+    }
+
     wp_enqueue_script(
         'cr2026-main',
         CR2026_URI . '/assets/js/main.js',

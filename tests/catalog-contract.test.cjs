@@ -95,7 +95,7 @@ test('web catalog page size is sourced from the audited app paginator contract',
 
 test('category filter selection is live, chips are actionable, and Apply only closes', () => {
   assert.match(js, /publishLiveFilters\(\);scheduleDependentRefresh\(dimension\)/);
-  assert.match(js, /window\.CR2026CatalogListing=\{applyFilters,getFilters,renderActiveFilterChips,pageSize\}/);
+  assert.match(js, /window\.CR2026CatalogListing=\{applyFilters,getFilters,renderActiveFilterChips,pageSize,getOutletContext\}/);
   assert.ok(js.includes("filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',closeSheet)"));
   assert.match(js, /data-cr-active-filter-chips/);
   assert.match(js, /cr-product-listing__clear-filters/);
@@ -221,7 +221,36 @@ test('facet refresh keeps existing availability in-flight and removes visible up
 });
 
 test('staging sort diagnostics record category, exact sort/page size, filters, totals and all ID layers', () => {
-  assert.ok(js.includes("category_id:categoryId,sort:sortMap[orderby],page,per_page:pageSize,filters:getFilters()"));
+  assert.ok(js.includes("category_id:categoryId,outlet_category_id:outletCategoryId,origin_category_ids:activeOutletOriginIds.slice(),selected_bubble_key:selectedOutletBubbleKey,sort:sortMap[orderby],page,per_page:pageSize,filters:getFilters()"));
   assert.ok(js.includes("api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds"));
   assert.ok(js.includes("returned_total:responseData.total"));
+});
+
+test('Outlet candidates copy APP mapping IDs, keys and branch order',()=>{
+  assert.ok(helpers.includes('function cr2026_fixed_outlet_bubbles'));
+  assert.ok(helpers.includes("'key'=>'camisas','label'=>'Camisas','category_ids'=>array(318)"));
+  assert.ok(helpers.includes("'key'=>'camisetas y polos','label'=>'Camisetas y polos','category_ids'=>array(319)"));
+  assert.ok(helpers.includes("'key'=>'ropa de bano','label'=>'Ropa de baño','category_ids'=>array(80,286)"));
+  assert.ok(helpers.includes("'key'=>'ropa de vestir','label'=>'Ropa de vestir','category_ids'=>array(315,312)"));
+});
+test('Outlet availability is resolved at runtime and fails closed',()=>{
+  assert.ok(helpers.includes('criosrango/v1/outlet-availability'));
+  assert.ok(js.includes('payload.schema_version!==1'));
+  assert.ok(js.includes('failClosedOutletBubbles'));
+  assert.ok(js.includes('const countByCategory=new Map'));
+});
+test('Outlet selection keeps the active branch and sends APP origin IDs to results and facets',()=>{
+  assert.ok(js.includes("scope:outletCategoryId?'outlet':'catalog'"));
+  assert.ok(js.includes("params.set('outlet_category_id',String(outletCategoryId))"));
+  assert.ok(js.includes("params.set('origin_category_ids',activeOutletOriginIds.join(','))"));
+  assert.ok(js.includes("params.set('origin_category_ids',context.originCategoryIds.join(','))"));
+  assert.ok(php.includes("$filter_params['outlet_category_id']"));
+  assert.ok(php.includes("$filter_params['origin_category_ids']"));
+});
+test('Outlet bubbles are positioned between toolbar and active filter chips',()=>{
+  assert.ok(archive.indexOf('cr2026_render_outlet_bubbles')>archive.indexOf('cr2026_render_category_toolbar'));
+  assert.ok(archive.indexOf('cr2026_render_outlet_bubbles')<archive.indexOf('data-cr-active-filter-chips'));
+  const outletCss=fs.readFileSync(path.join(root,'theme/crios-rango-2026/assets/css/outlet-bubbles.css'),'utf8');
+  assert.ok(outletCss.includes('overflow-x:auto'));
+  assert.ok(outletCss.includes('.cr-outlet-bubbles__pill.is-selected{background:#163B35;color:#FFFFFF}'));
 });

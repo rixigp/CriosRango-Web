@@ -33,6 +33,7 @@ $listing_context = $listing_term ? 'archive' : 'root';
 $listing_title = $listing_term ? cr2026_product_cat_display_name( $listing_term ) : __( 'Categorías', 'crios-rango-2026' );
 $listing_back_url = $listing_term ? cr2026_category_back_url( $listing_term ) : home_url( '/' );
 $listing_category_id = $listing_term ? (int) $listing_term->term_id : 0;
+$listing_outlet_category_id = in_array($listing_category_id,cr2026_outlet_branch_ids(),true)?$listing_category_id:0;
 $listing_filtered = cr2026_category_filters_selected();
 $listing_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
 if ( ! in_array( $listing_orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $listing_orderby = 'date'; }
@@ -45,11 +46,13 @@ get_header( 'shop' );
     data-filtered="<?php echo $listing_filtered ? '1' : '0'; ?>"
     data-debug="<?php echo $listing_debug ? '1' : '0'; ?>"
     data-category-id="<?php echo esc_attr( $listing_category_id ); ?>"
+    data-outlet-category-id="<?php echo esc_attr( $listing_outlet_category_id ); ?>"
     data-page-size="<?php echo esc_attr( CR2026_CATALOG_PAGE_SIZE ); ?>"
     data-filter-api-url="<?php echo esc_url( rest_url( 'criosrango-filter/v1/query' ) ); ?>"
     data-products-url="<?php echo esc_url( rest_url( 'cr2026/v1/catalog-page' ) ); ?>">
     <div class="cr-product-listing__shell">
         <?php cr2026_render_category_toolbar( $listing_title, $listing_back_url, $listing_context, true ); ?>
+        <?php if ( $listing_outlet_category_id ) { cr2026_render_outlet_bubbles( $listing_outlet_category_id ); } ?>
         <div class="cr-product-listing__active-filters" data-cr-active-filter-chips hidden aria-live="polite"></div>
         <?php cr2026_render_category_filter_sheet( $listing_term, $listing_context ); ?>
         <div class="cr-product-listing__ordering">
