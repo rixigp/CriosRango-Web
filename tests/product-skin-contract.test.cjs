@@ -77,7 +77,9 @@ test('native description HTML remains intact and Product Detail custom JS is not
   assert.doesNotMatch(skin, /the_content\s*\(|get_description\s*\(|wp_kses|DOMDocument/);
   assert.doesNotMatch(skin, /add_action\([^\n]*woocommerce_single_product_summary[^\n]*(?:quantity|cart|variation)/i);
   assert.match(skinCss, /woocommerce-product-details__short-description/);
-  assert.match(skinCss, /woocommerce-product-details__short-description a \{[^}]*text-decoration: none/s);
+  assert.match(skinCss, /summary \.woocommerce-product-details__short-description a:visited[\s\S]*?text-decoration: none !important/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce \{[^}]*padding: 0;/s);
+  assert.doesNotMatch(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce \{[^}]*padding: 0 0 calc\(var\(--cr-bottom-nav/s);
   assert.match(skinCss, /woocommerce-Tabs-panel/);
   assert.match(skinCss, /--cr-bottom-nav[\s\S]*?env\(safe-area-inset-bottom\)/);
 });
