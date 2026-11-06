@@ -505,3 +505,136 @@ body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_a
 }
 
 body.cr-product-detail-app .cr-main--woocommerce div.product .woocommerce-product-rating { display: none !important; }
+
+
+/* Final mobile APP alignment: centered native gallery dots and one equal-split action capsule. */
+body.cr-product-detail-app .cr-product-gallery-dots {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-inline: 0;
+}
+body.cr-product-detail-app .cr-product-actions {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  box-sizing: border-box;
+  border: 1px solid var(--cr-product-border);
+  border-radius: 23px;
+  background: transparent;
+}
+body.cr-product-detail-app .cr-product-actions__button {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  width: 50%;
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 10px;
+  color: var(--cr-product-green);
+  white-space: nowrap;
+}
+body.cr-product-detail-app .cr-product-actions__button + .cr-product-actions__button {
+  border-left: 0;
+}
+body.cr-product-detail-app .cr-product-actions__button + .cr-product-actions__button::before {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  width: 1px;
+  background: var(--cr-product-border);
+  content: "";
+}
+body.cr-product-detail-app .cr-product-actions__icon {
+  display: inline-flex;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  color: currentColor;
+}
+body.cr-product-detail-app .cr-product-actions__icon svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+body.cr-product-detail-app .cr-product-share {
+  color: var(--cr-product-green);
+}
+body.cr-product-detail-app .cr-product-reserve:disabled {
+  color: #AEB2AD;
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart table.variations {
+    display: block;
+    width: 100%;
+    margin: 0 0 16px;
+    border-spacing: 0;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart table.variations tbody {
+    display: block;
+    width: 100%;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart table.variations tr {
+    display: block;
+    width: 100%;
+    margin: 0 0 22px;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart table.variations th.label,
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart table.variations td.value {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0 !important;
+    text-align: left !important;
+    vertical-align: top;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart table.variations th.label {
+    margin: 0 0 7px;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart table.variations th.label label {
+    display: block;
+    width: 100%;
+    margin: 0;
+    text-align: left;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart table.variations td.value .cr-product-choice-chips {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin: 0;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart table.variations td.value .cr-product-choice-chip {
+    flex: 0 0 auto;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart table.variations tr + tr {
+    margin-top: 0;
+  }
+}
+body.cr-product-detail-app .cr-product-choice-chip[aria-pressed="true"] {
+  border-color: var(--cr-product-green);
+  background: var(--cr-product-green);
+  color: #fff;
+  box-shadow: none;
+}
+body.cr-product-detail-app .cr-product-choice-chip__swatch {
+  background-color: #D8D9D5;
+}
