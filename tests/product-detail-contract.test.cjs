@@ -89,3 +89,58 @@ test('product-only controller retains existing gallery, share, reserve and Woo h
     assert.ok(js.includes(token), 'missing product contract token: ' + token);
   }
 });
+
+
+test('APP sale label is plain coral text rather than a badge or pill', () => {
+  const css = read('assets/css/product-detail.css');
+  assert.match(css, /\.cr-product-detail__sale\s*\{[^}]*background:transparent[^}]*\}/s);
+  assert.match(css, /\.cr-product-detail__sale\s*\{[^}]*border-radius:0/s);
+  assert.doesNotMatch(css, /\.cr-product-detail__sale\s*\{[^}]*border-radius:999px/s);
+});
+
+test('product title uses a light Roboto weight and prices render current before regular', () => {
+  const css = read('assets/css/product-detail.css');
+  const php = read('single-product.php');
+  const detail = read('inc/product-detail.php');
+  assert.match(css, /\.cr-product-detail__name\s*\{[^}]*font-family:Roboto[^}]*font-weight:300/s);
+  assert.match(php, /cr2026_product_detail_price_html\s*\(\s*\$product\s*\)/);
+  assert.match(detail, /\$current_html = wc_price\( \$current \)/);
+  assert.match(detail, /return '<ins>' \.[\s\S]*?\$current_html[\s\S]*?'<\/ins> <del>'[\s\S]*?wc_price\( \$regular \)/);
+  const js = read('assets/js/product-detail.js');
+  assert.match(js, /renderPrice\(v\.display_price,v\.display_regular_price\)/);
+  assert.ok(js.indexOf('amountMarkup(current)') < js.indexOf('amountMarkup(regular)'));
+});
+
+test('color choices render a swatch and retain their readable color label', () => {
+  const php = read('single-product.php');
+  const js = read('assets/js/product-detail.js');
+  const css = read('assets/css/product-detail.css');
+  assert.match(php, /cr-product-variation-swatch/);
+  assert.match(php, /cr-product-variation-label/);
+  assert.match(js, /swatchColor\(chip\.dataset\.label\)/);
+  assert.match(css, /cr-product-variation-swatch[^}]*border-radius:50%/);
+});
+
+test('all native variation options stay represented and incompatible or globally unavailable chips are disabled', () => {
+  const php = read('single-product.php');
+  const js = read('assets/js/product-detail.js');
+  assert.match(php, /foreach \( \$options as \$option \)/);
+  assert.match(php, /wc_dropdown_variation_attribute_options/);
+  assert.match(php, /name="variation_id" class="variation_id"/);
+  assert.match(js, /chip\.disabled=!global\|\|!compatible/);
+  assert.match(js, /\.trigger\('change'\)/);
+  assert.match(js, /woocommerce_update_variation_values/);
+  assert.match(js, /is-unavailable/);
+  assert.match(js, /is-incompatible/);
+});
+
+test('variation reset restores the captured parent price, offer, stock and image state', () => {
+  const js = read('assets/js/product-detail.js');
+  assert.match(js, /parentPriceHtml=price\?\.innerHTML/);
+  assert.match(js, /parentSaleHidden=parentSale\?parentSale\.hidden/);
+  assert.match(js, /parentStockHtml=stock\?\.innerHTML/);
+  assert.match(js, /parentImageState=parentImage\?/);
+  assert.match(js, /reset_data hide_variation',restoreParentState/);
+  assert.match(js, /parentSale\.hidden=parentSaleHidden/);
+  assert.match(js, /price\.innerHTML=parentPriceHtml/);
+});

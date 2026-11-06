@@ -71,3 +71,21 @@ function cr2026_disable_classic_product_gallery_support() {
     }
 }
 add_action( 'wp', 'cr2026_disable_classic_product_gallery_support', 1 );
+
+/** Render parent prices in APP order: current price first, regular price second. */
+function cr2026_product_detail_price_html( $product ) {
+    if ( ! $product instanceof WC_Product ) { return ''; }
+    if ( $product->is_type( 'variable' ) ) {
+        $current = (float) $product->get_variation_price( 'min', true );
+        $regular = (float) $product->get_variation_regular_price( 'min', true );
+    } else {
+        $current = (float) wc_get_price_to_display( $product );
+        $regular_raw = $product->get_regular_price();
+        $regular = '' !== $regular_raw ? (float) wc_get_price_to_display( $product, array( 'price' => $regular_raw ) ) : $current;
+    }
+    $current_html = wc_price( $current );
+    if ( $regular > $current ) {
+        return '<ins>' . $current_html . '</ins> <del>' . wc_price( $regular ) . '</del>';
+    }
+    return $current_html;
+}

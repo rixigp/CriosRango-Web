@@ -56,7 +56,7 @@ if ( ! $product instanceof WC_Product ) {
         data-cr-product-detail data-product-id="<?php echo esc_attr( $product_id ); ?>"
         data-product-name="<?php echo esc_attr( $product->get_name() ); ?>"
         data-product-url="<?php echo esc_url( $product_url ); ?>"
-        data-product-type="<?php echo esc_attr( $product->get_type() ); ?>" data-cart-quantities="<?php echo esc_attr( wp_json_encode( $cart_quantities ) ); ?>">
+        data-product-type="<?php echo esc_attr( $product->get_type() ); ?>" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>" data-cart-quantities="<?php echo esc_attr( wp_json_encode( $cart_quantities ) ); ?>">
         <?php
         $product_back_url = wp_get_referer();
         if ( ! $product_back_url ) { $product_back_url = cr2026_shop_url(); }
@@ -104,7 +104,7 @@ if ( ! $product instanceof WC_Product ) {
             <span class="cr-product-detail__sale"<?php echo $product->is_on_sale() ? '' : ' hidden'; ?>><?php esc_html_e( 'OFERTA', 'crios-rango-2026' ); ?></span>
           </div>
           <h2 class="cr-product-detail__name"><?php echo esc_html( $product->get_name() ); ?></h2>
-          <div class="cr-product-detail__price" data-cr-product-price><?php echo wp_kses_post( $product->get_price_html() ); ?></div>
+          <div class="cr-product-detail__price" data-cr-product-price><?php echo wp_kses_post( cr2026_product_detail_price_html( $product ) ); ?></div>
           <?php $availability = $product->get_availability(); ?>
           <p class="cr-product-stock" data-cr-product-stock><?php echo wp_kses_post( $availability['availability'] ); ?></p>
 
@@ -144,7 +144,7 @@ if ( ! $product instanceof WC_Product ) {
                           $term = taxonomy_exists( $attribute_name ) ? get_term_by( 'slug', $option_value, $attribute_name ) : false;
                           $label = $term && ! is_wp_error( $term ) ? $term->name : $option;
                           ?>
-                          <button type="button" class="cr-product-variation-chip<?php echo $is_color ? ' is-color' : ''; ?>" data-cr-variation-option data-attribute="<?php echo esc_attr( $attribute_name ); ?>" data-value="<?php echo esc_attr( $option_value ); ?>" data-label="<?php echo esc_attr( $label ); ?>" aria-pressed="false"><?php echo esc_html( $label ); ?></button>
+                          <button type="button" class="cr-product-variation-chip<?php echo $is_color ? ' is-color' : ''; ?>" data-cr-variation-option data-attribute="<?php echo esc_attr( $attribute_name ); ?>" data-value="<?php echo esc_attr( $option_value ); ?>" data-label="<?php echo esc_attr( $label ); ?>" aria-pressed="false"><?php if ( $is_color ) : ?><span class="cr-product-variation-swatch" aria-hidden="true"></span><?php endif; ?><span class="cr-product-variation-label"><?php echo esc_html( $label ); ?></span></button>
                         <?php endforeach; ?>
                       </div>
                     </fieldset>
