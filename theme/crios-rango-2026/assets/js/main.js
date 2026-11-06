@@ -475,6 +475,7 @@
           button.dataset.outletBubbleKey=key===null?'':key;button.setAttribute('aria-pressed',String(selectedOutletBubbleKey===key));
           if(selectedOutletBubbleKey===key)button.classList.add('is-selected');
           button.addEventListener('click',()=>{
+            if(selectedOutletBubbleKey===key)return;
             selectedOutletBubbleKey=key;activeOutletOriginIds=originIds.slice().sort((left,right)=>left-right);
             renderOutletBubbleSelection();
             if(window.CR2026CatalogFacetContextChanged)window.CR2026CatalogFacetContextChanged();
