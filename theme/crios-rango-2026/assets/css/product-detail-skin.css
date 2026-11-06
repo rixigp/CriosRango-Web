@@ -503,3 +503,5 @@ body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_a
 body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.disabled {
   opacity: .55;
 }
+
+body.cr-product-detail-app .cr-main--woocommerce div.product .woocommerce-product-rating { display: none !important; }
