@@ -1,0 +1,8 @@
+/* APP StoreOutletBubbles parity. */
+.cr-outlet-bubbles{display:flex;align-items:center;gap:7px;width:100%;max-width:100%;margin:0 0 10px;padding:4px 20px;box-sizing:border-box;overflow-x:auto;overflow-y:hidden;white-space:nowrap;flex-wrap:nowrap;scrollbar-width:none;-ms-overflow-style:none}
+.cr-outlet-bubbles[hidden]{display:none!important}
+.cr-outlet-bubbles::-webkit-scrollbar{display:none;width:0;height:0}
+.cr-outlet-bubbles__pill{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;height:34px;min-height:34px;margin:0;padding:0 12px;border:0;border-radius:17px;background:#E4EFEA;color:#3F3A3D;font:400 13px/16px "Roboto",Arial,sans-serif;white-space:nowrap;cursor:pointer;box-shadow:none}
+.cr-outlet-bubbles__pill.is-selected{background:#163B35;color:#FFFFFF}
+.cr-outlet-bubbles__pill:focus{outline:none}
+.cr-outlet-bubbles__pill:focus-visible{outline:2px solid #315D50;outline-offset:2px}
