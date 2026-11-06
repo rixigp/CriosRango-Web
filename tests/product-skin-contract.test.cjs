@@ -73,6 +73,14 @@ test('sale badge, price, notices and native controls receive presentation-only C
   assert.match(skinCss, /single_add_to_cart_button/);
 });
 
+test('logged-in Product Detail sticky offset and duplicate header reservation are corrected', () => {
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-detail-toolbar \{[\s\S]*?position: sticky;[\s\S]*?top: var\(--cr-app-topbar-height, 64px\);/);
+  assert.match(skinCss, /body\.admin-bar\.cr-product-detail-app \.cr-product-detail-toolbar \{\s*top: calc\(var\(--cr-app-topbar-height, 64px\) \+ 32px\);\s*\}/);
+  assert.match(skinCss, /body\.admin-bar\.cr-product-detail-app\.cr-global-app-header:not\(\.home\) \{\s*padding-top: var\(--cr-app-topbar-height, 64px\);\s*\}/);
+  assert.match(skinCss, /@media \(max-width: 782px\)[\s\S]*?body\.admin-bar\.cr-product-detail-app \.cr-product-detail-toolbar \{\s*top: calc\(var\(--cr-app-topbar-height, 64px\) \+ 46px\);/);
+  assert.doesNotMatch(skinCss, /#wpadminbar|show_admin_bar/);
+});
+
 test('native description HTML remains intact and Product Detail custom JS is not introduced', () => {
   assert.doesNotMatch(skin, /the_content\s*\(|get_description\s*\(|wp_kses|DOMDocument/);
   assert.doesNotMatch(skin, /add_action\([^\n]*woocommerce_single_product_summary[^\n]*(?:quantity|cart|variation)/i);
