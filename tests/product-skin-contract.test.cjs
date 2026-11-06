@@ -116,6 +116,7 @@ test('WPLoyalty promotional output is hidden by scoped wrapper CSS only', () => 
 test('mobile logged-in Product Detail follows the native WordPress admin-bar scroll breakpoint', () => {
   const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
   assert.match(mainCss, /body\.admin-bar \{ --cr-admin-bar-offset: 46px; \}/);
+  assert.match(skinCss, /body\.admin-bar\.cr-app-nav-shell:not\(\.home\):not\(\.cr-parent-category-view\) \.cr-app-header\s*\{\s*top:\s*var\(--cr-app-topbar-height, 64px\) !important;/);
   assert.match(skinCss, /@media screen and \(max-width: 600px\)/);
   assert.match(skinCss, /body\.cr-app-nav-shell:not\(\.home\):not\(\.cr-parent-category-view\) \.cr-app-header\s*\{[^}]*position:\s*sticky !important;[^}]*top:\s*0 !important;[^}]*margin-top:\s*calc\(-1 \* var\(--cr-app-topbar-height, 64px\)\)/s);
   assert.match(skinCss, /@media screen and \(max-width: 600px\)[\s\S]*?body\.admin-bar\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{\s*top:\s*var\(--cr-app-topbar-height, 64px\);/);

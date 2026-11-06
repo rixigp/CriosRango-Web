@@ -353,6 +353,15 @@ body.cr-product-detail-app .cr-main--woocommerce div.product #tab-additional_inf
     margin-top: calc(-1 * var(--cr-app-topbar-height, 64px));
   }
 
+  /*
+   * Sticky constrains the margin box. Compensate for the negative top margin
+   * so the visible header border box sticks at viewport y=0.
+   * Logged-out mobile keeps its already-approved rule unchanged.
+   */
+  body.admin-bar.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-app-header {
+    top: var(--cr-app-topbar-height, 64px) !important;
+  }
+
   body.admin-bar.cr-product-detail-app .cr-product-detail-toolbar {
     top: var(--cr-app-topbar-height, 64px);
   }
