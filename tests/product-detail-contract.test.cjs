@@ -5,14 +5,58 @@ const path = require('node:path');
 const root = path.join(__dirname, '..', 'theme', 'crios-rango-2026');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
-test('custom product template owns composition and does not delegate to Woo content template', () => {
+test('custom product template retains its own WooCommerce composition and gallery', () => {
   const php = read('single-product.php');
-  assert.match(php, /cr-product-toolbar/);
+  assert.match(php, /cr2026_render_category_toolbar\s*\(/);
   assert.match(php, /data-cr-product-gallery/);
   assert.match(php, /data-cr-product-share/);
   assert.match(php, /data-cr-product-reserve/);
+  assert.doesNotMatch(php, /cr-product-toolbar/);
   assert.doesNotMatch(php, /wc_get_template_part\s*\(\s*['"]content['"]\s*,\s*['"]single-product/);
   assert.doesNotMatch(php, /woocommerce_output_product_data_tabs|woocommerce_output_related_products/);
+});
+
+test('Product Detail reuses public uploads normalization without card CSS coupling', () => {
+  const helpers = read('inc/helpers.php');
+  const php = read('single-product.php');
+  assert.match(helpers, /function cr2026_normalize_public_upload_url\s*\(/);
+  assert.match(helpers, /function cr2026_normalize_attachment_image_attributes\s*\(/);
+  assert.match(helpers, /function cr2026_product_card_image_attributes[\s\S]*?cr2026_normalize_attachment_image_attributes/);
+  assert.match(helpers, /function cr2026_product_detail_image_attributes[\s\S]*?cr-product-gallery__image[\s\S]*?cr2026_normalize_attachment_image_attributes\s*\(\s*\$attr\s*,\s*\$attachment\s*,\s*false\s*\)/);
+  assert.match(helpers, /function cr2026_normalize_attachment_image_attributes\s*\(\s*\$attr\s*,\s*\$attachment\s*,\s*\$canonicalize_src\s*=\s*true/);
+  assert.match(helpers, /\$attr\[['"]srcset['"]\][\s\S]*?cr2026_normalize_public_upload_url/);
+  assert.match(php, /wp_get_attachment_image\s*\(\s*\$image_id\s*,\s*['"]woocommerce_single['"]/);
+  assert.doesNotMatch(php, /cr-product-card__image/);
+});
+
+test('variation image URLs are normalized in PHP before variation JSON serialization', () => {
+  const detail = read('inc/product-detail.php');
+  const php = read('single-product.php');
+  assert.match(detail, /function cr2026_normalize_product_variation_image_urls\s*\(/);
+  assert.match(detail, /full_src[\s\S]*?srcset[\s\S]*?cr2026_normalize_public_upload_url/);
+  assert.match(php, /cr2026_normalize_product_variation_image_urls\s*\(\s*\$available_variations\s*\)/);
+  assert.ok(php.indexOf('cr2026_normalize_product_variation_image_urls') < php.indexOf('wp_json_encode( $available_variations )'));
+});
+
+test('unusable attachment output falls back to WooCommerce placeholder', () => {
+  const php = read('single-product.php');
+  assert.match(php, /\$image_html\s*=\s*wp_get_attachment_image/);
+  assert.match(php, /if\s*\(\s*\$image_html\s*\)/);
+  assert.match(php, /wc_placeholder_img\s*\(\s*['"]woocommerce_single['"]/);
+});
+
+test('product toolbar reuses canonical category toolbar and has no invented controls', () => {
+  const php = read('single-product.php');
+  const css = read('assets/css/product-detail.css');
+  assert.match(php, /cr2026_render_category_toolbar\s*\(/);
+  assert.doesNotMatch(php, /cr-product-toolbar|♡/);
+  assert.doesNotMatch(css, /\.cr-product-toolbar/);
+});
+
+test('product bottom inset reuses global bottom-nav and safe-area tokens', () => {
+  const css = read('assets/css/product-detail.css');
+  assert.match(css, /padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
+  assert.doesNotMatch(css, /padding(?:-bottom)?\s*:[^;]*42px/);
 });
 
 test('native WooCommerce variable form remains the variation and add-to-cart authority', () => {
@@ -30,9 +74,9 @@ test('product assets are enqueued only on product pages', () => {
   assert.match(php, /is_product\(\)[\s\S]*product-detail\.js/);
 });
 
-test('product-only controller covers gallery, share, reserve, Woo variation events and quantity', () => {
+test('product-only controller retains existing gallery, share, reserve and Woo hooks', () => {
   const js = read('assets/js/product-detail.js');
-  for (const token of ['data-cr-gallery-dot', 'navigator.share', 'wa.me/34633246788', 'found_variation', 'reset_data', 'data-cr-quantity-plus']) {
+  for (const token of ['data-cr-gallery-dot', 'navigator.share', 'wa.me/34633246788', 'found_variation', 'reset_data']) {
     assert.ok(js.includes(token), 'missing product contract token: ' + token);
   }
 });

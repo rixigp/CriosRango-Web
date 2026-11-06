@@ -40,6 +40,7 @@ if ( ! $product instanceof WC_Product ) {
         }
         $product_url = get_permalink( $product_id );
         $available_variations = $product->is_type( 'variable' ) ? $product->get_available_variations() : array();
+        $available_variations = cr2026_normalize_product_variation_image_urls( $available_variations );
         $variation_attributes = $product->is_type( 'variable' ) ? $product->get_variation_attributes() : array();
         $variation_json = wp_json_encode( $available_variations );
         $product_attributes = $product->get_attributes();
@@ -56,23 +57,27 @@ if ( ! $product instanceof WC_Product ) {
         data-product-name="<?php echo esc_attr( $product->get_name() ); ?>"
         data-product-url="<?php echo esc_url( $product_url ); ?>"
         data-product-type="<?php echo esc_attr( $product->get_type() ); ?>" data-cart-quantities="<?php echo esc_attr( wp_json_encode( $cart_quantities ) ); ?>">
-        <header class="cr-product-toolbar">
-          <button class="cr-product-toolbar__back" type="button" data-cr-product-back aria-label="<?php esc_attr_e( 'Volver', 'crios-rango-2026' ); ?>">←</button>
-          <span class="cr-product-toolbar__title"><?php echo esc_html( $product->get_name() ); ?></span>
-          <a class="cr-product-toolbar__cart" href="<?php echo esc_url( wc_get_cart_url() ); ?>" aria-label="<?php esc_attr_e( 'Carrito', 'crios-rango-2026' ); ?>">♡</a>
-        </header>
+        <?php
+        $product_back_url = wp_get_referer();
+        if ( ! $product_back_url ) { $product_back_url = cr2026_shop_url(); }
+        cr2026_render_category_toolbar( $product->get_name(), $product_back_url, 'parent', false );
+        ?>
 
         <section class="cr-product-gallery" aria-label="<?php esc_attr_e( 'Imágenes del producto', 'crios-rango-2026' ); ?>" data-cr-product-gallery>
           <div class="cr-product-gallery__track" data-cr-gallery-track>
             <?php foreach ( $gallery_ids as $index => $image_id ) : ?>
               <figure class="cr-product-gallery__slide" data-cr-gallery-slide="<?php echo esc_attr( $index ); ?>">
                 <?php
+                $image_html = '';
                 if ( $image_id ) {
-                    echo wp_get_attachment_image( $image_id, 'woocommerce_single', false, array(
+                    $image_html = wp_get_attachment_image( $image_id, 'woocommerce_single', false, array(
                         'class' => 'cr-product-gallery__image',
                         'loading' => 0 === $index ? 'eager' : 'lazy',
                         'alt' => esc_attr( $product->get_name() ),
                     ) );
+                }
+                if ( $image_html ) {
+                    echo $image_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                 } else {
                     echo wc_placeholder_img( 'woocommerce_single', array( 'class' => 'cr-product-gallery__image' ) );
                 }
@@ -98,7 +103,7 @@ if ( ! $product instanceof WC_Product ) {
           <div class="cr-product-detail__eyebrow">
             <span class="cr-product-detail__sale"<?php echo $product->is_on_sale() ? '' : ' hidden'; ?>><?php esc_html_e( 'OFERTA', 'crios-rango-2026' ); ?></span>
           </div>
-          <h1 class="cr-product-detail__name"><?php echo esc_html( $product->get_name() ); ?></h1>
+          <h2 class="cr-product-detail__name"><?php echo esc_html( $product->get_name() ); ?></h2>
           <div class="cr-product-detail__price" data-cr-product-price><?php echo wp_kses_post( $product->get_price_html() ); ?></div>
           <?php $availability = $product->get_availability(); ?>
           <p class="cr-product-stock" data-cr-product-stock><?php echo wp_kses_post( $availability['availability'] ); ?></p>

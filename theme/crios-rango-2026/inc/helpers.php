@@ -135,23 +135,47 @@ function cr2026_category_back_url( $term = null ) {
  * Keep product-card attachment URLs on the public uploads origin while
  * preserving WordPress-generated responsive srcset candidates and widths.
  */
+function cr2026_normalize_public_upload_url( $url ) {
+    if ( ! is_string( $url ) || '' === $url ) { return $url; }
+    $uploads = wp_upload_dir();
+    $home = wp_parse_url( home_url( '/' ) );
+    if ( empty( $uploads['baseurl'] ) || empty( $home['scheme'] ) || empty( $home['host'] ) ) { return $url; }
+    $uploads_base = untrailingslashit( $uploads['baseurl'] );
+    $public_base = $home['scheme'] . '://' . $home['host'] . '/wp-content/uploads';
+    return str_replace( $uploads_base, $public_base, $url );
+}
+
+/** Shared URL normalization; image retrieval and presentation remain separate. */
+function cr2026_normalize_attachment_image_attributes( $attr, $attachment, $canonicalize_src = true ) {
+    $attachment_id = isset( $attachment->ID ) ? absint( $attachment->ID ) : 0;
+    if ( $canonicalize_src && $attachment_id ) {
+        $canonical_url = cr2026_attachment_public_url( $attachment_id );
+        if ( $canonical_url ) { $attr['src'] = $canonical_url; }
+    } elseif ( ! empty( $attr['src'] ) ) {
+        // Product Detail keeps WooCommerce's requested image size and only
+        // canonicalizes the URL origin/path prefix.
+        $attr['src'] = cr2026_normalize_public_upload_url( $attr['src'] );
+    }
+    if ( ! empty( $attr['srcset'] ) ) {
+        $attr['srcset'] = cr2026_normalize_public_upload_url( $attr['srcset'] );
+    }
+    return $attr;
+}
+
 function cr2026_product_card_image_attributes( $attr, $attachment, $size ) {
     if ( empty( $attr['class'] ) || false === strpos( $attr['class'], 'cr-product-card__image' ) ) {
         return $attr;
     }
-    $attachment_id = isset( $attachment->ID ) ? absint( $attachment->ID ) : 0;
-    if ( ! $attachment_id ) { return $attr; }
-    $canonical_url = cr2026_attachment_public_url( $attachment_id );
-    if ( $canonical_url ) { $attr['src'] = $canonical_url; }
-    $uploads = wp_upload_dir();
-    $home = wp_parse_url( home_url( '/' ) );
-    if ( ! empty( $attr['srcset'] ) && ! empty( $uploads['baseurl'] ) && ! empty( $home['scheme'] ) && ! empty( $home['host'] ) ) {
-        $canonical_base = $home['scheme'] . '://' . $home['host'] . '/wp-content/uploads';
-        $attr['srcset'] = str_replace( untrailingslashit( $uploads['baseurl'] ), $canonical_base, $attr['srcset'] );
-    }
-    return $attr;
+    return cr2026_normalize_attachment_image_attributes( $attr, $attachment );
 }
 add_filter( 'wp_get_attachment_image_attributes', 'cr2026_product_card_image_attributes', 20, 3 );
+
+function cr2026_product_detail_image_attributes( $attr, $attachment, $size ) {
+    if ( ! function_exists( 'is_product' ) || ! is_product() ) { return $attr; }
+    if ( empty( $attr['class'] ) || false === strpos( $attr['class'], 'cr-product-gallery__image' ) ) { return $attr; }
+    return cr2026_normalize_attachment_image_attributes( $attr, $attachment, false );
+}
+add_filter( 'wp_get_attachment_image_attributes', 'cr2026_product_detail_image_attributes', 20, 3 );
 
 /** Render the one shared toolbar markup for shop hub and category landings. */
 function cr2026_render_category_toolbar( $title, $back_url, $filter_context = 'parent', $show_filters = true ) {

@@ -1,6 +1,19 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+function cr2026_normalize_product_variation_image_urls( $variations ) {
+    foreach ( $variations as &$variation ) {
+        if ( empty( $variation['image'] ) || ! is_array( $variation['image'] ) ) { continue; }
+        foreach ( array( 'src', 'full_src', 'gallery_thumbnail_src', 'thumb_src', 'srcset', 'data_src', 'data_large_image' ) as $key ) {
+            if ( ! empty( $variation['image'][ $key ] ) && is_string( $variation['image'][ $key ] ) ) {
+                $variation['image'][ $key ] = cr2026_normalize_public_upload_url( $variation['image'][ $key ] );
+            }
+        }
+    }
+    unset( $variation );
+    return $variations;
+}
+
 function cr2026_product_size_sort_key( $value ) {
     $clean = strtoupper( preg_replace( '/\s+/', '', trim( (string) $value ) ) );
     if ( preg_match( '/M$/', $clean ) ) {
