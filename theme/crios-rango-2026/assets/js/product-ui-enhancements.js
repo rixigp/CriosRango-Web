@@ -114,6 +114,8 @@
               var swatch = document.createElement('span');
               swatch.className = 'cr-product-choice-chip__swatch';
               swatch.setAttribute('aria-hidden', 'true');
+              var swatchKey = option.textContent.trim().toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z]/g, '');
+              if (COLOR_SWATCH_MAP[swatchKey]) swatch.style.backgroundColor = COLOR_SWATCH_MAP[swatchKey];
               chip.appendChild(swatch);
             }
             var text = document.createElement('span');
