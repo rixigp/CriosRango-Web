@@ -2102,6 +2102,13 @@ body.cr-parent-category-view .cr-parent-category__label,
   -webkit-line-clamp: 2;
   overflow: hidden;
 }
+
+@media (max-width: 368px) {
+  body.cr-parent-category-view .cr-parent-category__label,
+  .cr-category-hub__grid .cr-app-category__label {
+    font-size: 13.5px;
+  }
+}
 body.cr-parent-category-view .cr-mobile-bottom-nav {
   display: block;
   position: fixed;
