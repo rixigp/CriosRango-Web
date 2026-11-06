@@ -39,7 +39,7 @@
         dot.addEventListener('click', function () {
           var $ = window.jQuery;
           var slider = $ ? $(gallery).data('flexslider') : null;
-          if (slider && typeof slider.flexslider === 'function') {
+          if (slider && $ && $.fn && typeof $.fn.flexslider === 'function') {
             $(gallery).flexslider(index);
             return;
           }
