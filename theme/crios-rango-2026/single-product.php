@@ -24,7 +24,8 @@ if ( ! $product instanceof WC_Product ) {
         if ( empty( $gallery_ids ) ) { $gallery_ids = array( 0 ); }
         $description_html = $product->get_description();
         $short_description_html = $product->get_short_description();
-        $description_source = $short_description_html ? $short_description_html : $description_html;
+        $description_source = $description_html ? $description_html : $short_description_html;
+        $description_source = preg_replace( '/<\\s*\\/(?:p|div|li|h[1-6])\\s*>|<\\s*br\\s*\\/?>/i', "\\n", $description_source );
         $description_text = trim( wp_strip_all_tags( $description_source ) );
         $description_lines = preg_split( '/\r\n|\r|\n/', $description_text );
         $brand_line = '';
