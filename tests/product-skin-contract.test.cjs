@@ -127,7 +127,7 @@ test('share and WhatsApp reservation use product permalink and native selected a
 
 test('variation chips are native select proxies and do not implement variation matching', () => {
   assert.ok(productUiJs.includes('table.variations select'));
-  assert.ok(productUiJs.includes('select.value = option.value'));
+  assert.ok(productUiJs.includes("select.value = isSize && select.value === option.value ? '' : option.value"));
   assert.ok(productUiJs.includes('dispatchNativeChange(select)'));
   assert.ok(productUiJs.includes('woocommerce_update_variation_values'));
   assert.ok(productUiJs.includes('option.disabled'));
