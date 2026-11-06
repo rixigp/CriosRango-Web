@@ -134,6 +134,8 @@ test('variation chips are native select proxies and do not implement variation m
   assert.equal(productUiJs.includes('variation_id.value ='), false);
   assert.equal(productUiJs.includes('variation.variation_id'), false);
   assert.equal(productUiJs.includes('variation.attributes'), false);
+  assert.equal(productUiJs.includes('stock'), false);
+  assert.equal(productUiJs.includes('price'), false);
 });
 
 test('quantity stepper delegates to the existing WooCommerce quantity input', () => {
@@ -141,6 +143,8 @@ test('quantity stepper delegates to the existing WooCommerce quantity input', ()
   assert.ok(productUiJs.includes('input.stepDown()'));
   assert.ok(productUiJs.includes('input.stepUp()'));
   assert.ok(productUiJs.includes('dispatchNativeChange(input)'));
+  assert.equal(productUiJs.includes('input.min'), false);
+  assert.equal(productUiJs.includes('input.max'), false);
   assert.equal(productUiJs.includes('fetch('), false);
   assert.equal(productUiJs.includes('XMLHttpRequest'), false);
   assert.equal(productUiJs.includes('add_to_cart'), false);
