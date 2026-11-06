@@ -143,7 +143,9 @@
     function initQuantityStepper() {
       document.querySelectorAll('form.cart .quantity input.qty').forEach(function (input) {
         if (input.closest('.cr-product-quantity-stepper')) return;
-        var stepper = remember(document.createElement('div'));
+        var originalParent = input.parentNode;
+        var originalNext = input.nextSibling;
+        var stepper = document.createElement('div');
         stepper.className = 'cr-product-quantity-stepper';
         var minus = document.createElement('button');
         minus.type = 'button'; minus.textContent = '−'; minus.setAttribute('aria-label', 'Reducir cantidad');
@@ -163,6 +165,11 @@
         input.addEventListener('change', sync);
         input.addEventListener('input', sync);
         sync();
+        added.push({ cleanup: function () {
+          if (originalNext && originalNext.parentNode === originalParent) originalParent.insertBefore(input, originalNext);
+          else originalParent.appendChild(input);
+          if (stepper.parentNode) stepper.remove();
+        } });
       });
     }
 
