@@ -110,21 +110,21 @@ test('WPLoyalty promotional output is hidden by scoped wrapper CSS only', () => 
 
 test('Product Detail header stays in normal flow with one sticky geometry', () => {
   const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
-  assert.match(mainCss, /body\\.admin-bar \\{ --cr-admin-bar-offset: 46px; \\}/);
+  assert.match(mainCss, /body\.admin-bar \{ --cr-admin-bar-offset: 46px; \}/);
 
   // Header: sticky in normal document flow, never offset by a compensating margin or header-height top.
-  assert.match(skinCss, /body\\.cr-product-detail-app \\.cr-app-header\\s*\\{[^}]*position: sticky !important;[^}]*top: 0 !important;[^}]*margin-top: 0 !important;/s);
-  assert.doesNotMatch(skinCss, /margin-top\\s*:\\s*-[^;]*(?:64px|var\\(--cr-app-topbar-height)/i);
-  assert.doesNotMatch(skinCss, /body\\.admin-bar\\.cr-product-detail-app \\.cr-app-header[^}]*top:\\s*var\\(--cr-app-topbar-height/i);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-app-header\s*\{[^}]*position: sticky !important;[^}]*top: 0 !important;[^}]*margin-top: 0 !important;/s);
+  assert.doesNotMatch(skinCss, /margin-top\s*:\s*-[^;]*(?:64px|var\(--cr-app-topbar-height)/i);
+  assert.doesNotMatch(skinCss, /body\.admin-bar\.cr-product-detail-app \.cr-app-header[^}]*top:\s*var\(--cr-app-topbar-height/i);
 
   // Toolbar: sticky directly below the global header, including the logged-in desktop offset.
-  assert.match(skinCss, /body\\.cr-product-detail-app \\.cr-product-detail-toolbar\\s*\\{\\s*position: sticky;\\s*top: var\\(--cr-app-topbar-height, 64px\\);/);
-  assert.match(skinCss, /@media screen and \\(min-width: 601px\\)[\\s\\S]*?body\\.admin-bar\\.cr-product-detail-app \\.cr-product-detail-toolbar\\s*\\{\\s*top: calc\\(var\\(--cr-admin-bar-offset, 0px\\) \\+ var\\(--cr-app-topbar-height, 64px\\)\\);/);
-  assert.match(skinCss, /@media screen and \\(max-width: 600px\\)[\\s\\S]*?body\\.admin-bar\\.cr-product-detail-app \\.cr-app-header\\s*\\{\\s*top: 0 !important;/);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{\s*position: sticky;\s*top: var\(--cr-app-topbar-height, 64px\);/);
+  assert.match(skinCss, /@media screen and \(min-width: 601px\)[\s\S]*?body\.admin-bar\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{\s*top: calc\(var\(--cr-admin-bar-offset, 0px\) \+ var\(--cr-app-topbar-height, 64px\)\);/);
+  assert.match(skinCss, /@media screen and \(max-width: 600px\)[\s\S]*?body\.admin-bar\.cr-product-detail-app \.cr-app-header\s*\{\s*top: 0 !important;/);
 
   // Product Detail body must not reserve the global header height a second time.
-  assert.match(skinCss, /body\\.cr-product-detail-app\\.cr-global-app-header\\s*\\{\\s*padding-top: 0 !important;/);
-  assert.doesNotMatch(skinCss, /body\\.cr-product-detail-app\\.cr-global-app-header[^}]*padding-top:\\s*var\\(--cr-app-topbar-height/i);
-  assert.doesNotMatch(skinCss, /body\\.admin-bar\\.cr-product-detail-app[^}]*padding-top/i);
+  assert.match(skinCss, /body\.cr-product-detail-app\.cr-global-app-header\s*\{\s*padding-top: 0 !important;/);
+  assert.doesNotMatch(skinCss, /body\.cr-product-detail-app\.cr-global-app-header[^}]*padding-top:\s*var\(--cr-app-topbar-height/i);
+  assert.doesNotMatch(skinCss, /body\.admin-bar\.cr-product-detail-app[^}]*padding-top/i);
   assert.doesNotMatch(skinCss, /#wpadminbar|show_admin_bar/);
 });
