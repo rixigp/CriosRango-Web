@@ -353,3 +353,38 @@ function cr2026_product_skin_global_size_help() {
 }
 add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 );
 
+/** Remove the native lower description tab; its content is rendered once in the summary accordion. */
+function cr2026_product_skin_remove_description_tab( $tabs ) {
+    if ( is_product() && is_array( $tabs ) ) {
+        unset( $tabs['description'] );
+    }
+    return $tabs;
+}
+add_filter( 'woocommerce_product_tabs', 'cr2026_product_skin_remove_description_tab', 99 );
+
+/** Render the existing WooCommerce long description inline, after size help and before variations. */
+function cr2026_product_skin_description_accordion() {
+    if ( ! is_product() ) { return; }
+    $product = wc_get_product( get_queried_object_id() );
+    if ( ! $product instanceof WC_Product ) { return; }
+
+    $description = $product->get_description();
+    if ( ! is_string( $description ) || '' === trim( $description ) ) { return; }
+    $plain_description = html_entity_decode( wp_strip_all_tags( $description ), ENT_QUOTES, get_bloginfo( 'charset' ) );
+    $plain_description = preg_replace( '/[\s\x{00a0}]+/u', '', $plain_description );
+    if ( ! is_string( $plain_description ) || '' === $plain_description ) { return; }
+
+    $panel_id = 'cr-product-description-panel-' . absint( $product->get_id() );
+    $toggle_id = $panel_id . '-toggle';
+    echo '<section class="cr-product-description">';
+    echo '<button type="button" class="cr-product-description__toggle" id="' . esc_attr( $toggle_id ) . '" aria-expanded="false" aria-controls="' . esc_attr( $panel_id ) . '">';
+    echo '<span class="cr-product-description__title">Descripción</span>';
+    echo '<span class="cr-product-description__chevron" aria-hidden="true"></span>';
+    echo '</button>';
+    echo '<div class="cr-product-description__panel" id="' . esc_attr( $panel_id ) . '" role="region" aria-labelledby="' . esc_attr( $toggle_id ) . '" hidden>';
+    echo apply_filters( 'the_content', $description );
+    echo '</div>';
+    echo '</section>';
+}
+add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 );
+

@@ -528,6 +528,20 @@
       });
     }
 
+    function initProductDescriptionAccordion() {
+      var toggle = document.querySelector('.cr-product-description__toggle');
+      if (!toggle) return;
+      var panelId = toggle.getAttribute('aria-controls');
+      var panel = panelId ? document.getElementById(panelId) : null;
+      if (!panel) return;
+
+      toggle.addEventListener('click', function () {
+        var isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+        panel.hidden = isExpanded;
+      });
+    }
+
     function productPayload() {
       var name = actions ? actions.dataset.productName || document.title : document.title;
       var url = actions ? actions.dataset.productUrl || window.location.href : window.location.href;
@@ -573,7 +587,7 @@
     }
 
     try {
-      initNativeTouchLightbox();
+      initProductDescriptionAccordion();\n      initNativeTouchLightbox();
       initGalleryDots();
       initVariationProxies();
       initQuantityStepper();

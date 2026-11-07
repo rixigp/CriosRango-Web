@@ -1434,3 +1434,66 @@ body.cr-product-detail-app .cr-product-title-brand-row__brand .cr-product-brand-
   outline-offset:3px;
   border-radius:4px;
 }
+
+
+/* Inline WooCommerce long-description accordion, positioned between size help and variations. */
+body.cr-product-detail-app .cr-product-description {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 18px;
+  overflow: hidden;
+  border: 1px solid var(--cr-product-border);
+  border-radius: 14px;
+  background: #fff;
+}
+body.cr-product-detail-app .cr-product-description__toggle {
+  display: flex;
+  width: 100%;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 0;
+  background: #fff;
+  color: var(--cr-product-green);
+  text-align: left;
+  font: 600 15px/22px "Roboto",Arial,sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+body.cr-product-detail-app .cr-product-description__toggle:focus-visible {
+  outline: 2px solid var(--cr-product-green);
+  outline-offset: -3px;
+  border-radius: 12px;
+}
+body.cr-product-detail-app .cr-product-description__chevron {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  margin: -4px 3px 0 0;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 160ms ease, margin 160ms ease;
+}
+body.cr-product-detail-app .cr-product-description__toggle[aria-expanded="true"] .cr-product-description__chevron {
+  margin-top: 4px;
+  transform: rotate(225deg);
+}
+body.cr-product-detail-app .cr-product-description__panel {
+  padding: 0 16px 16px;
+  color: #555B56;
+  font: 400 14px/1.55 "Roboto",Arial,sans-serif;
+  overflow-wrap: anywhere;
+}
+body.cr-product-detail-app .cr-product-description__panel[hidden] {
+  display: none !important;
+}
+body.cr-product-detail-app .cr-product-description__panel > :first-child { margin-top: 0; }
+body.cr-product-detail-app .cr-product-description__panel > :last-child { margin-bottom: 0; }
+body.cr-product-detail-app .cr-product-description__panel a {
+  color: var(--cr-product-green);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

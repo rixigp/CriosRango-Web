@@ -94,7 +94,7 @@ test('short description is sanitized and balanced only at the WooCommerce excerp
   assert.ok(skin.includes('return force_balance_tags( $short_description );'));
   assert.match(skin, /add_filter\( 'woocommerce_short_description', 'cr2026_product_skin_sanitize_short_description', 20 \)/);
   assert.match(skin, /! is_product\(\)/);
-  assert.doesNotMatch(skin, /the_content\s*\(|get_description\s*\(|DOMDocument/);
+  assert.doesNotMatch(skin, /DOMDocument/);
   assert.doesNotMatch(skin, /add_action\([^\n]*woocommerce_single_product_summary[^\n]*(?:quantity|cart|variation)/i);
   assert.match(skinCss, /woocommerce-product-details__short-description/);
   assert.match(skinCss, /\.woocommerce-product-details__short-description u \{\s*text-decoration: none;\s*\}/s);
@@ -103,6 +103,40 @@ test('short description is sanitized and balanced only at the WooCommerce excerp
   assert.doesNotMatch(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce \{[^}]*padding: 0 0 calc\(var\(--cr-bottom-nav/s);
   assert.match(skinCss, /woocommerce-Tabs-panel/);
   assert.match(skinCss, /--cr-bottom-nav[\s\S]*?env\(safe-area-inset-bottom\)/);
+});
+
+test('long product description is a single accessible collapsed accordion after size help and before variations', () => {
+  assert.ok(skin.includes("function cr2026_product_skin_remove_description_tab( $tabs )"));
+  assert.ok(skin.includes("unset( $tabs['description'] )"));
+  assert.ok(skin.includes("function cr2026_product_skin_description_accordion()"));
+  assert.ok(skin.includes("$product->get_description()"));
+  assert.ok(skin.includes("apply_filters( 'the_content', $description )"));
+  assert.ok(skin.includes("preg_replace( '/[\\s\\x{00a0}]+/u'"));
+  assert.ok(skin.includes('aria-expanded="false"'));
+  assert.ok(skin.includes('aria-controls='));
+  assert.ok(skin.includes('role="region"'));
+  assert.ok(skin.includes('class="cr-product-description__panel"') && skin.includes('hidden>'));
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 )"));
+  assert.ok(skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )") < skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 )"));
+  assert.ok(skin.includes("add_filter( 'woocommerce_product_tabs', 'cr2026_product_skin_remove_description_tab', 99 )"));
+  assert.ok(productUiJs.includes('function initProductDescriptionAccordion()'));
+  assert.ok(productUiJs.includes("toggle.addEventListener('click'"));
+  assert.ok(productUiJs.includes("toggle.setAttribute('aria-expanded'"));
+  assert.ok(productUiJs.includes('panel.hidden = isExpanded'));
+  assert.ok(productUiJs.includes('initProductDescriptionAccordion();'));
+  assert.ok(skinCss.includes('body.cr-product-detail-app .cr-product-description {'));
+  assert.ok(skinCss.includes('background: #fff;'));
+  assert.ok(skinCss.includes('.cr-product-description__toggle[aria-expanded="true"]'));
+  assert.ok(skinCss.includes('.cr-product-description__panel[hidden]'));
+});
+
+test('empty descriptions omit the accordion and native variation/cart behavior stays intact', () => {
+  assert.ok(skin.includes("if ( ! is_string( $description ) || '' === trim( $description ) ) { return; }"));
+  assert.ok(skin.includes("if ( ! is_string( $plain_description ) || '' === $plain_description ) { return; }"));
+  assert.doesNotMatch(skin, /remove_action\\(\\s*'woocommerce_single_product_summary',\\s*'woocommerce_template_single_add_to_cart'/);
+  assert.doesNotMatch(skin, /remove_action\\(\\s*'woocommerce_single_product_summary',\\s*'woocommerce_single_variation'/);
+  assert.ok(skin.includes("add_filter( 'woocommerce_product_tabs', 'cr2026_product_skin_remove_description_tab', 99 )"));
+  assert.ok(productUiJs.includes("toggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true')"));
 });
 
 test('WPLoyalty promotional output is hidden by scoped wrapper CSS only', () => {
