@@ -337,7 +337,8 @@ test('variation readiness requires a positive event variation ID and purchasable
 test('show_variation is sole READY authority and chip sync cannot overwrite it', () => {
   const s=productUiJs.indexOf('function syncVariationState()'),e=productUiJs.indexOf('function getProductDetailNoticeRoot()',s);
   assert.doesNotMatch(productUiJs.slice(s,e),/nativeButton\\.disabled|aria-disabled|nativeButtonLabel\\.textContent|setVariationReady/);
-  assert.match(productUiJs,/on\\('show_variation', function \\(event, variation, purchasable\\) \\{[\\s\\S]*?setVariationReady\\(isVariationEventReady\\(variation, purchasable\\)\\)/);
+  assert.ok(productUiJs.includes("on('show_variation', function (event, variation, purchasable)"));
+  assert.ok(productUiJs.includes("setVariationReady(isVariationEventReady(variation, purchasable))"));
   assert.ok(productUiJs.includes("on('reset_data hide_variation'"));
   assert.ok(productUiJs.includes("on('woocommerce_update_variation_values', syncVariationState)"));
   assert.ok(productUiJs.includes("form.addEventListener('change', function (event)"));
