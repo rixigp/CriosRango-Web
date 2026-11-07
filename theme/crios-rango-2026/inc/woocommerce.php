@@ -216,6 +216,135 @@ function cr2026_catalog_timing_add( $stage, $started_at ) {
     }
 }
 
+
+/** Public catalogue response cache; session-dependent prices bypass sharing. */
+function cr2026_catalog_cache_generation() {
+    $generation = get_option( 'cr2026_catalog_cache_generation', false );
+    if ( false === $generation ) {
+        add_option( 'cr2026_catalog_cache_generation', 1, '', false );
+        $generation = get_option( 'cr2026_catalog_cache_generation', 1 );
+    }
+    return max( 1, absint( $generation ) );
+}
+function cr2026_catalog_cache_invalidate() {
+    static $invalidated_this_request = false;
+    if ( $invalidated_this_request ) { return; }
+    $invalidated_this_request = true;
+    update_option( 'cr2026_catalog_cache_generation', cr2026_catalog_cache_generation() + 1, false );
+}
+function cr2026_catalog_cache_invalidate_product_save( $post_id ) {
+    if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) { return; }
+    if ( in_array( get_post_type( $post_id ), array( 'product', 'product_variation' ), true ) ) {
+        cr2026_catalog_cache_invalidate();
+    }
+}
+function cr2026_catalog_cache_invalidate_product_delete( $post_id, $post = null ) {
+    $post_type = $post instanceof WP_Post ? $post->post_type : get_post_type( $post_id );
+    if ( in_array( $post_type, array( 'product', 'product_variation' ), true ) ) { cr2026_catalog_cache_invalidate(); }
+}
+function cr2026_catalog_cache_invalidate_product_object( $product_id ) {
+    if ( $product_id instanceof WC_Product ) { $product_id = $product_id->get_id(); }
+    cr2026_catalog_cache_invalidate_product_save( absint( $product_id ) );
+}
+function cr2026_catalog_cache_invalidate_term( $term_id, $tt_id = 0, $taxonomy = '' ) {
+    if ( 'product_cat' === $taxonomy || 'product_brand' === $taxonomy || 0 === strpos( (string) $taxonomy, 'pa_' ) ) {
+        cr2026_catalog_cache_invalidate();
+    }
+}
+add_action( 'save_post_product', 'cr2026_catalog_cache_invalidate_product_save', 20, 1 );
+add_action( 'save_post_product_variation', 'cr2026_catalog_cache_invalidate_product_save', 20, 1 );
+add_action( 'woocommerce_update_product', 'cr2026_catalog_cache_invalidate_product_object', 20, 1 );
+add_action( 'woocommerce_update_product_variation', 'cr2026_catalog_cache_invalidate_product_object', 20, 1 );
+add_action( 'before_delete_post', 'cr2026_catalog_cache_invalidate_product_delete', 20, 2 );
+add_action( 'woocommerce_product_set_stock', 'cr2026_catalog_cache_invalidate_product_object', 20, 1 );
+add_action( 'woocommerce_variation_set_stock', 'cr2026_catalog_cache_invalidate_product_object', 20, 1 );
+add_action( 'created_term', 'cr2026_catalog_cache_invalidate_term', 20, 3 );
+add_action( 'edited_term', 'cr2026_catalog_cache_invalidate_term', 20, 3 );
+add_action( 'delete_term', 'cr2026_catalog_cache_invalidate_term', 20, 3 );
+function cr2026_catalog_cache_normalize_ids( $value ) {
+    $parts = is_array( $value ) ? $value : explode( ',', (string) $value );
+    $ids = array();
+    foreach ( $parts as $part ) { $part = absint( $part ); if ( $part > 0 ) { $ids[] = $part; } }
+    $ids = array_values( array_unique( $ids ) );
+    sort( $ids, SORT_NUMERIC );
+    return $ids;
+}
+function cr2026_catalog_cache_session_sensitive() {
+    if ( is_user_logged_in() ) { return true; }
+    if ( function_exists( 'WC' ) && WC() && isset( WC()->session ) && WC()->session
+        && is_callable( array( WC()->session, 'has_session' ) ) && WC()->session->has_session() ) { return true; }
+    return false;
+}
+function cr2026_catalog_cache_key( $generation, $scope, $category_id, $brand_id, $outlet_category_id, $origin_category_ids, $filters, $sort, $page, $per_page ) {
+    $state = array(
+        'schema' => 1, 'generation' => (int) $generation, 'scope' => (string) $scope,
+        'category_id' => (int) $category_id, 'brand_id' => (int) $brand_id,
+        'outlet_category_id' => (int) $outlet_category_id,
+        'origin_category_ids' => cr2026_catalog_cache_normalize_ids( $origin_category_ids ),
+        'size_ids' => cr2026_catalog_cache_normalize_ids( $filters['size_ids'] ),
+        'color_ids' => cr2026_catalog_cache_normalize_ids( $filters['color_ids'] ),
+        'brand_ids' => cr2026_catalog_cache_normalize_ids( $filters['brand_ids'] ),
+        'sort' => (string) $sort, 'page' => (int) $page, 'per_page' => (int) $per_page,
+        'locale' => function_exists( 'determine_locale' ) ? determine_locale() : get_locale(),
+        'currency' => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '',
+        'tax_display' => get_option( 'woocommerce_tax_display_shop', 'excl' ),
+        'prices_include_tax' => get_option( 'woocommerce_prices_include_tax', 'no' ),
+        'price_decimals' => wc_get_price_decimals(),
+        'price_decimal_separator' => wc_get_price_decimal_separator(),
+        'price_thousand_separator' => wc_get_price_thousand_separator(),
+    );
+    return 'cr2026_catalog_v1_' . (int) $generation . '_' . md5( wp_json_encode( $state ) );
+}
+function cr2026_catalog_cache_payload_valid( $payload ) {
+    if ( ! is_array( $payload ) || ! isset( $payload['html'], $payload['source'], $payload['product_ids'], $payload['filter_api_product_ids'], $payload['rendered_product_ids'], $payload['page'], $payload['per_page'], $payload['has_more'] ) ) { return false; }
+    if ( ! is_string( $payload['html'] ) || ! in_array( $payload['source'], array( 'filter_api', 'woocommerce' ), true )
+        || ! is_array( $payload['product_ids'] ) || ! is_array( $payload['filter_api_product_ids'] )
+        || ! is_array( $payload['rendered_product_ids'] ) || ! is_bool( $payload['has_more'] )
+        || ! is_numeric( $payload['page'] ) || ! is_numeric( $payload['per_page'] )
+        || ( null !== $payload['total'] && ! is_numeric( $payload['total'] ) ) ) { return false; }
+    return ! $payload['product_ids'] || '' !== trim( $payload['html'] );
+}
+function cr2026_catalog_cache_lookup( $cache_key ) {
+    $started_at = cr2026_catalog_timer_now();
+    $fresh = get_transient( $cache_key );
+    if ( cr2026_catalog_cache_payload_valid( $fresh ) ) {
+        cr2026_catalog_timing_add( 'cache', $started_at );
+        $GLOBALS['cr2026_catalog_cache_status'] = 'HIT';
+        return array( 'state' => 'hit', 'payload' => $fresh );
+    }
+    if ( false !== $fresh ) { delete_transient( $cache_key ); }
+    $stale_key = $cache_key . '_stale';
+    $stale = get_transient( $stale_key );
+    if ( ! cr2026_catalog_cache_payload_valid( $stale ) ) {
+        $stale = false;
+        if ( false !== get_transient( $stale_key ) ) { delete_transient( $stale_key ); }
+    }
+    $lock_key = $cache_key . '_lock';
+    // Atomic option insert with transient-compatible storage and a 30s expiry.
+    $lock_acquired = add_option( '_transient_' . $lock_key, time(), '', false );
+    if ( $lock_acquired ) {
+        add_option( '_transient_timeout_' . $lock_key, time() + 30, '', false );
+        register_shutdown_function( static function () use ( $lock_key ) { delete_transient( $lock_key ); } );
+        $GLOBALS['cr2026_catalog_cache_lock'] = $lock_key;
+        $GLOBALS['cr2026_catalog_cache_status'] = 'MISS';
+        cr2026_catalog_timing_add( 'cache', $started_at );
+        return array( 'state' => 'miss', 'payload' => false );
+    }
+    cr2026_catalog_timing_add( 'cache', $started_at );
+    if ( false !== $stale ) {
+        $GLOBALS['cr2026_catalog_cache_status'] = 'STALE';
+        return array( 'state' => 'stale', 'payload' => $stale );
+    }
+    $GLOBALS['cr2026_catalog_cache_status'] = 'MISS';
+    return array( 'state' => 'locked', 'payload' => false );
+}
+function cr2026_catalog_cache_store( $cache_key, $payload ) {
+    if ( ! cr2026_catalog_cache_payload_valid( $payload ) ) { return false; }
+    set_transient( $cache_key, $payload, 300 );
+    set_transient( $cache_key . '_stale', $payload, 1800 );
+    return true;
+}
+
 /** Add Server-Timing headers immediately before the REST response is served. */
 function cr2026_catalog_timing_headers( $response, $server, $request ) {
     if ( ! $request instanceof WP_REST_Request || '/cr2026/v1/catalog-page' !== $request->get_route() ) {
@@ -246,7 +375,7 @@ function cr2026_catalog_timing_headers( $response, $server, $request ) {
 
     if ( $response instanceof WP_REST_Response ) {
         $response->header( 'Server-Timing', $server_timing );
-        $response->header( 'X-CriosRango-Catalog-Cache', 'BYPASS' );
+        $response->header( 'X-CriosRango-Catalog-Cache', isset( $GLOBALS['cr2026_catalog_cache_status'] ) ? $GLOBALS['cr2026_catalog_cache_status'] : 'BYPASS' );
         $response->header( 'X-CriosRango-Persistent-Object-Cache', function_exists( 'wp_using_ext_object_cache' ) && wp_using_ext_object_cache() ? 'YES' : 'NO' );
     }
 
@@ -306,7 +435,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     // product_cat term. Route it through the same Filter API as filtered
     // catalogues, but never send catalog_category_id for this context.
     $is_root_catalog_context = 'catalog' === $scope && 0 === $category_id && ! $is_brand_context;
-    $has_filters = $is_outlet_scope || $is_brand_context || $is_root_catalog_context;
+    $has_filters = $is_outlet_scope || $is_brand_context;
     foreach ( $filter_keys as $filter_key ) {
         if ( '' !== trim( (string) $request->get_param( $filter_key ) ) ) {
             $has_filters = true;
@@ -317,6 +446,26 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $products = array();
     $product_ids = array();
     $filter_api_product_ids = array();
+
+    $cache_bypass = cr2026_catalog_cache_session_sensitive();
+    if ( $cache_bypass ) {
+        $GLOBALS['cr2026_catalog_cache_status'] = 'BYPASS';
+    } else {
+        $generation = cr2026_catalog_cache_generation();
+        $cache_filters = array();
+        foreach ( $filter_keys as $filter_key ) { $cache_filters[ $filter_key ] = $request->get_param( $filter_key ); }
+        $catalog_cache_key = cr2026_catalog_cache_key(
+            $generation, $scope, $category_id, $brand_id, $outlet_category_id,
+            $origin_category_ids, $cache_filters, $sort, $page, $per_page
+        );
+        $cache_result = cr2026_catalog_cache_lookup( $catalog_cache_key );
+        if ( 'hit' === $cache_result['state'] || 'stale' === $cache_result['state'] ) {
+            return rest_ensure_response( $cache_result['payload'] );
+        }
+        if ( 'locked' === $cache_result['state'] ) {
+            return new WP_Error( 'cr2026_catalog_cache_building', __( 'El catálogo se está actualizando. Inténtalo de nuevo.', 'crios-rango-2026' ), array( 'status' => 503 ) );
+        }
+    }
     $has_more = false;
     $total = null;
 
@@ -411,24 +560,22 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         }
     } else {
         $term = $category_id ? get_term( $category_id, 'product_cat' ) : null;
-        if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) {
+        if ( $category_id > 0 && ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) ) {
             return new WP_Error( 'cr2026_catalog_category', __( 'Categoría no válida.', 'crios-rango-2026' ), array( 'status' => 400 ) );
         }
         $sort_args = cr2026_catalog_sort_query_vars( $sort );
         $orderby = $sort_args['orderby'];
         $order = $sort_args['order'];
+        $products_query = array(
+            'status' => 'publish', 'visibility' => 'visible', 'limit' => $per_page,
+            'page' => $page, 'paginate' => true, 'return' => 'objects',
+            'orderby' => $orderby, 'order' => $order,
+        );
+        // Reuse the category query; root Novedades omits only product_cat.
+        // No purchasable/price predicate: intentionally priceless products remain.
+        if ( $term instanceof WP_Term ) { $products_query['category'] = array( $term->slug ); }
         $products_started_at = cr2026_catalog_timer_now();
-        $catalog_result = wc_get_products( array(
-            'status' => 'publish',
-            'visibility' => 'visible',
-            'category' => array( $term->slug ),
-            'limit' => $per_page,
-            'page' => $page,
-            'paginate' => true,
-            'return' => 'objects',
-            'orderby' => $orderby,
-            'order' => $order,
-        ) );
+        $catalog_result = wc_get_products( $products_query );
         cr2026_catalog_timing_add( 'products', $products_started_at );
         $products = isset( $catalog_result->products ) && is_array( $catalog_result->products ) ? $catalog_result->products : array();
         $total = isset( $catalog_result->total ) ? absint( $catalog_result->total ) : null;
@@ -444,17 +591,22 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     }
     $rendered_html = ob_get_clean();
     cr2026_catalog_timing_add( 'render', $render_started_at );
-    return rest_ensure_response( array(
+    $payload = array(
         'html' => $rendered_html,
         'source' => $has_filters ? 'filter_api' : 'woocommerce',
         'product_ids' => $product_ids,
         'filter_api_product_ids' => $filter_api_product_ids,
         'rendered_product_ids' => array_map( static function ( $product ) { return $product->get_id(); }, $products ),
-        'page' => $page,
-        'per_page' => $per_page,
-        'total' => $total,
-        'has_more' => $has_more,
-    ) );
+        'page' => $page, 'per_page' => $per_page, 'total' => $total, 'has_more' => $has_more,
+    );
+    if ( ! $cache_bypass ) {
+        cr2026_catalog_cache_store( $catalog_cache_key, $payload );
+        if ( ! empty( $GLOBALS['cr2026_catalog_cache_lock'] ) ) {
+            delete_transient( $GLOBALS['cr2026_catalog_cache_lock'] );
+            unset( $GLOBALS['cr2026_catalog_cache_lock'] );
+        }
+    }
+    return rest_ensure_response( $payload );
 }
 
 function cr2026_woocommerce_wrappers() {

@@ -694,13 +694,40 @@ test('category and Outlet contexts remain separate from brand context', () => {
 });
 
 
-test('root catalog context uses Filter API without requiring product_cat or sending catalog_category_id', () => {
-  assert.match(php, /\$is_root_catalog_context = 'catalog' === \$scope && 0 === \$category_id && ! \$is_brand_context/);
-  assert.match(php, /\$has_filters = \$is_outlet_scope \|\| \$is_brand_context \|\| \$is_root_catalog_context/);
-  assert.match(php, /if \( \$has_filters \) \{[\s\S]*?\$filter_request = new WP_REST_Request/);
-  assert.match(php, /'scope' => \$is_outlet_scope \? 'outlet' : 'catalog'/);
+test('unfiltered root Novedades reuses direct WooCommerce while filtered contexts retain Filter API', () => {
+  assert.match(php, /\$has_filters = \$is_outlet_scope \|\| \$is_brand_context/);
+  assert.match(php, /if \( \$has_filters \) \{\s*\$filter_request = new WP_REST_Request/);
+  assert.match(php, /if \( \$category_id > 0 && \( ! \$term instanceof WP_Term/);
+  assert.match(php, /if \( \$term instanceof WP_Term \) \{ \$products_query\['category'\] = array\( \$term->slug \)/);
+  assert.match(php, /'status' => 'publish'/);
+  assert.match(php, /'visibility' => 'visible'/);
+  assert.doesNotMatch(php, /is_purchasable\(\)/);
   assert.match(php, /elseif \( \$category_id > 0 \) \{\s*\$filter_params\['catalog_category_id'\] = \$category_id;/);
   assert.match(js, /else if\(categoryId!=='0'\)params\.set\('catalog_category_id',categoryId\)/);
+});
+test('server catalog cache uses fresh/stale transients and generation-complete keys', () => {
+  assert.match(php, /set_transient\( \$cache_key, \$payload, 300 \)/);
+  assert.match(php, /set_transient\( \$cache_key \. '_stale', \$payload, 1800 \)/);
+  assert.match(php, /cr2026_catalog_cache_generation/);
+  assert.match(php, /cr2026_catalog_v1_/);
+  assert.match(php, /wp_json_encode\( \$state \)/);
+  for (const key of ['scope','category_id','brand_id','outlet_category_id','origin_category_ids','size_ids','color_ids','brand_ids','sort','page','per_page','locale','currency','tax_display']) assert.ok(php.includes("'" + key + "' =>"), 'cache key missing ' + key);
+  assert.match(php, /update_option\( 'cr2026_catalog_cache_generation', cr2026_catalog_cache_generation\(\) \+ 1, false \)/);
+});
+test('server cache HIT skips the catalog pipeline; MISS validates and stores; locks serve same-generation stale', () => {
+  assert.match(php, /'hit' === \$cache_result\['state'\] \|\| 'stale' === \$cache_result\['state'\]\) \{\s*return rest_ensure_response\( \$cache_result\['payload'\] \)/);
+  assert.match(php, /function cr2026_catalog_cache_payload_valid/);
+  assert.match(php, /cr2026_catalog_cache_payload_valid\( \$payload \)/);
+  assert.match(php, /'locked' === \$cache_result\['state'\]/);
+  assert.match(php, /add_option\( '_transient_' \. \$lock_key/);
+  assert.match(php, /time\(\) \+ 30/);
+  for (const status of ['STALE','HIT','MISS','BYPASS']) assert.ok(php.includes("'" + status + "'"));
+});
+test('catalog generation invalidates product, variation, stock, category, brand and attributes once per request', () => {
+  for (const hook of ['save_post_product','save_post_product_variation','woocommerce_update_product','woocommerce_update_product_variation','before_delete_post','woocommerce_product_set_stock','woocommerce_variation_set_stock','created_term','edited_term','delete_term']) assert.ok(php.includes("add_action( '" + hook + "'"), 'missing hook ' + hook);
+  assert.match(php, /static \$invalidated_this_request = false/);
+  assert.match(php, /strpos\( \(string\) \$taxonomy, 'pa_' \)/);
+  assert.match(php, /cr2026_catalog_cache_session_sensitive/);
 });
 
 test('Novedades route renders all products through the shared catalog listing with recent-first default', () => {
