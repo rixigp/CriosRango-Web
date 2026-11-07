@@ -153,6 +153,9 @@ test('quantity row matches the APP without replacing WooCommerce quantity author
   assert.ok(productUiJs.includes('input.stepUp()'));
   assert.ok(productUiJs.includes('dispatchNativeChange(input)'));
   assert.ok(skinCss.includes('.quantity.cr-product-quantity-row'));
+  assert.match(skinCss, /\.quantity\.cr-product-quantity-row\s*\{[^}]*justify-content:\s*flex-start;/s);
+  assert.match(skinCss, /\.cr-product-quantity-label\s*\{[^}]*flex:\s*0 0 auto;/s);
+  assert.match(skinCss, /\.cr-product-quantity-stepper button\s*\{[^}]*min-width:\s*44px;/s);
   assert.ok(skinCss.includes('border: 0;'));
   assert.ok(skinCss.includes('background: transparent;'));
   assert.equal(productUiJs.includes('input.min'), false);
@@ -511,6 +514,15 @@ test('CTA keeps its native added_to_cart listener without creating a replacement
   assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
   assert.doesNotMatch(productUiJs, /jQuery\.ajax\s*\(|fetch\s*\(/);
 });
+
+test('Product Detail hides only its WooCommerce cart link and duplicate added-state check', () => {
+  assert.ok(skinCss.includes('body.cr-product-detail-app .cr-main--woocommerce div.product form.cart a.added_to_cart.wc-forward {'));
+  assert.ok(skinCss.includes('body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.added::after {'));
+  assert.ok(skinCss.includes('content: none !important;'));
+  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
+  assert.ok(productUiJs.includes("setCartIcon('check')"));
+});
+
 
 test('Product Detail clears only its own notices when WooCommerce resolves a variation', () => {
   assert.ok(productUiJs.includes('function clearProductDetailNotices()'));

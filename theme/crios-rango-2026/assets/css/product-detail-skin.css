@@ -255,6 +255,16 @@ body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_a
   background: #244D44;
   color: #fff;
 }
+
+/* Product Detail owns the add-to-cart success feedback; suppress WooCommerce's
+   adjacent cart link and native added-state glyph only inside this CTA. */
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart a.added_to_cart.wc-forward {
+  display: none !important;
+}
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.added::after {
+  display: none !important;
+  content: none !important;
+}
 body.cr-product-detail-app .woocommerce-notices-wrapper .woocommerce-message,
 body.cr-product-detail-app .woocommerce-notices-wrapper .woocommerce-info,
 body.cr-product-detail-app .woocommerce-notices-wrapper .woocommerce-error {
@@ -710,8 +720,8 @@ body.cr-product-detail-app .cr-product-cart-label {
     min-height: 44px;
     box-sizing: border-box;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    justify-content: flex-start;
+    gap: 18px;
     margin: 0 0 14px !important;
     padding: 0;
     border: 0;
@@ -721,7 +731,7 @@ body.cr-product-detail-app .cr-product-cart-label {
   }
   body.cr-product-detail-app .cr-product-quantity-label {
     display: inline-block;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-width: 0;
     color: #183B35;
     font: 400 14px/20px "Roboto",Arial,sans-serif;
