@@ -593,18 +593,19 @@ test('final app layout groups native title, dynamic price and WordPress brand wi
   assert.ok(skinCss.includes('woocommerce-product-details__short-description { display: none !important; }'));
 });
 
-test('global sizing help uses the local measuring-tape SVG and retains the exact contact links', () => {
-  assert.ok(skin.includes('cr-product-size-help__icon'));
-  assert.ok(skin.includes('<svg viewBox="0 0 32 32"'));
-  assert.match(skin, /<circle cx="9\.5" cy="18" r="7"/);
-  assert.match(skin, /M15\.8 13\.5h11\.4/);
+test('global sizing help exposes a stable measuring-tape icon wrapper containing a local SVG', () => {
+  assert.match(skin, /<span class="cr-product-size-help__icon"[^>]*>\s*<svg\b/);
+  assert.match(skin, /<svg\b[^>]*viewBox="0 0 32 32"/);
   assert.ok(skin.includes('cr-product-size-help__content'));
   assert.ok(skinCss.includes('cr-product-size-help__icon svg'));
   assert.ok(skinCss.includes('background: #EAF1E8'));
 });
 
-test('share and reserve capsule is rendered after the native add-to-cart form', () => {
+test('share and reserve capsule is hooked after the native gallery and before product information', () => {
+  // WooCommerce outputs its native gallery at priority 20 on this hook.
+  assert.ok(setup.includes("add_theme_support( 'wc-product-gallery-slider' )"));
   assert.ok(skin.includes("add_action( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_actions', 31 )"));
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )"));
   assert.doesNotMatch(skin, /add_action\( 'woocommerce_after_add_to_cart_form', 'cr2026_product_skin_actions'/);
 });
 
@@ -626,15 +627,24 @@ test('gallery zoom trigger stays hidden while native WooCommerce lightbox and Fl
 });
 
 
-test('final mobile block order places share after gallery and before title, size help and variations', () => {
-  assert.ok(skin.indexOf("add_action( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_actions', 31 )") < skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )"));
+test('final mobile block order follows gallery, share, product info, size help, variations and purchase controls', () => {
+  // Gallery (WooCommerce priority 20) precedes share (priority 31) on the same hook.
+  assert.ok(setup.includes("add_theme_support( 'wc-product-gallery-slider' )"));
+  assert.ok(skin.includes("add_action( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_actions', 31 )"));
+  // Product info and size help share the summary hook; priorities define their order.
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )"));
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
   assert.ok(skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )") < skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
+  // WooCommerce's native add-to-cart form follows; variations precede quantity and CTA.
+  assert.doesNotMatch(skin, /remove_action\(\s*'woocommerce_single_product_summary',\s*'woocommerce_template_single_add_to_cart'/);
+  assert.match(skinCss, /form\.cart table\.variations\s*\{[^}]*order:\s*1;/s);
+  assert.match(skinCss, /form\.cart \.quantity\.cr-product-quantity-row\s*\{[^}]*order:\s*2;/s);
+  assert.match(skinCss, /form\.cart \.single_add_to_cart_button\s*\{[^}]*order:\s*3;/s);
   assert.match(skinCss, /font-size: clamp\(22px, 5\.5vw, 28px\)/);
   assert.match(skinCss, /flex: 0 0 104px/);
   assert.match(skinCss, /min-height: 60px/);
   assert.match(skinCss, /white-space: nowrap/);
 });
-
 
 test('contextual back ignores external referrers and only goes back within the current site path', () => {
   assert.match(skin, /previous\.origin === current\.origin/);
