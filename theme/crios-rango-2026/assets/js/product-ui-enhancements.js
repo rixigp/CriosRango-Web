@@ -66,11 +66,31 @@
   }
 
 
+  function isNativeVariationReady(selects, variationIdValue, button, addToCartWrapper) {
+    var variationId = Number(variationIdValue);
+    if (!Array.isArray(selects) || !selects.length || !Number.isFinite(variationId) || variationId <= 0) return false;
+
+    var allAttributesSelected = selects.every(function (select) {
+      if (!select || !select.value) return false;
+      var selectedOption = select.options && select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null;
+      return !!selectedOption && !selectedOption.disabled;
+    });
+    var buttonReady = !!button &&
+      !button.classList.contains('disabled') &&
+      !button.classList.contains('wc-variation-selection-needed') &&
+      !button.classList.contains('wc-variation-is-unavailable');
+    var wooVariationReady = !!addToCartWrapper &&
+      addToCartWrapper.classList.contains('woocommerce-variation-add-to-cart-enabled');
+
+    return allAttributesSelected && buttonReady && wooVariationReady;
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       COLOR_SWATCH_MAP: COLOR_SWATCH_MAP,
       normalizeColorKey: normalizeColorKey,
-      resolveColorSwatch: resolveColorSwatch
+      resolveColorSwatch: resolveColorSwatch,
+      isNativeVariationReady: isNativeVariationReady
     };
   }
 
@@ -257,6 +277,7 @@
 
       var variationId = form.querySelector('input.variation_id');
       var nativeButton = form.querySelector('button.single_add_to_cart_button');
+      var addToCartWrapper = form.querySelector('.woocommerce-variation-add-to-cart');
       var nativeButtonLabel = null;
       var cartIcon = null;
       var bagIconTemplate = null;
@@ -324,9 +345,13 @@
             chip.setAttribute('aria-pressed', option && select.value === option.value ? 'true' : 'false');
           });
         });
-        var validNativeVariation = !!(variationId && Number(variationId.value) > 0);
+        var validNativeVariation = isNativeVariationReady(selects, variationId && variationId.value, nativeButton, addToCartWrapper);
+        if (nativeButton) {
+          nativeButton.disabled = !validNativeVariation;
+          nativeButton.setAttribute('aria-disabled', validNativeVariation ? 'false' : 'true');
+        }
         if (reserve && reserve.dataset.variable === '1') reserve.disabled = !validNativeVariation;
-        if (nativeButtonLabel && variationId && !hasAddedFeedback) {
+        if (nativeButtonLabel && !hasAddedFeedback) {
           nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige opciones';
         }
       }
