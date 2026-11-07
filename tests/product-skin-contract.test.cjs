@@ -335,8 +335,10 @@ test('variable CTA is disabled until every native attribute and WooCommerce-conf
 });
 
 test('incomplete variation CTA has no alert, warning, notice or scroll behavior', () => {
-  assert.doesNotMatch(productUiJs, /window\\.alert\\s*\\(/);
-  assert.doesNotMatch(productUiJs, /cr-product-variation-warning|scrollIntoView|scrollTo\\s*\\(/);
+  assert.equal(productUiJs.includes('window.alert('), false);
+  assert.equal(productUiJs.includes('cr-product-variation-warning'), false);
+  assert.equal(productUiJs.includes('scrollIntoView'), false);
+  assert.equal(productUiJs.includes('scrollTo('), false);
   assert.ok(productUiJs.includes("nativeButton.disabled = !validNativeVariation;"));
   assert.ok(productUiJs.includes("nativeButton.setAttribute('aria-disabled', validNativeVariation ? 'false' : 'true')"));
   assert.ok(productUiJs.includes("nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige opciones'"));
@@ -664,6 +666,21 @@ test('mobile variable purchase wrapper follows the native variation table and la
   assert.match(skinCss, /@media \(max-width: 340px\)[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\)/);
   assert.ok(productUiJs.includes("quantityLabel.textContent = 'Cantidad'"));
   assert.ok(productUiJs.includes('cr-product-quantity-stepper'));
+});
+
+test('empty native variation template contributes no gap or margin before the purchase row', () => {
+  const selector = 'single_variation:has(> .woocommerce-variation-description:empty):has(> .woocommerce-variation-price:empty):has(> .woocommerce-variation-availability:empty)';
+  assert.ok(skinCss.includes(selector));
+  const ruleStart = skinCss.indexOf(selector);
+  const ruleEnd = skinCss.indexOf('}', ruleStart);
+  const emptyRule = skinCss.slice(ruleStart, ruleEnd + 1);
+  assert.match(emptyRule, /display:\s*none !important;/);
+  assert.match(emptyRule, /margin:\s*0 !important;/);
+  assert.match(emptyRule, /padding:\s*0 !important;/);
+  assert.match(emptyRule, /min-height:\s*0 !important;/);
+  assert.match(skinCss, /\.single_variation_wrap\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*gap:\s*8px;/s);
+  assert.doesNotMatch(skinCss, /margin-top:\s*-16px/);
+  assert.doesNotMatch(skinCss, /\.single_variation\s*\{\s*display:\s*none/s);
 });
 
 test('mobile title and brand columns are balanced and title scale is reduced', () => {

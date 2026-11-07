@@ -1180,6 +1180,17 @@ body.cr-product-detail-app .woocommerce-product-gallery .flex-direction-nav .fle
     flex-direction: column;
     gap: 8px;
   }
+  /*
+   * WooCommerce reveals .single_variation even when all three template fields
+   * are empty. Keep that empty flex item out of flow so its parent gap/margins
+   * cannot move Quantity + CTA. Real price, stock or description stays visible.
+   */
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_variation_wrap > .single_variation:has(> .woocommerce-variation-description:empty):has(> .woocommerce-variation-price:empty):has(> .woocommerce-variation-availability:empty) {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+  }
   body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_variation_wrap .woocommerce-variation-add-to-cart {
     display: grid;
     grid-template-columns: max-content 116px minmax(0, 1fr);
