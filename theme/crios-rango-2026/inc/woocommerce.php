@@ -61,62 +61,6 @@ function cr2026_product_listing_short_circuit_query( $posts, $query ) {
 }
 add_filter( 'posts_pre_query', 'cr2026_product_listing_short_circuit_query', 20, 2 );
 
-/**
- * Keep brand archive filtering and sorting on the native product_brand query.
- * The brand clause stays intact; selected catalogue facets are appended with AND.
- */
-function cr2026_brand_archive_query_context( $query ) {
-    if ( is_admin() || ! $query->is_main_query() || ! $query->is_tax( 'product_brand' ) ) { return; }
-
-    $orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
-    if ( ! in_array( $orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $orderby = 'date'; }
-    if ( 'price' === $orderby ) {
-        $query->set( 'orderby', 'cr2026_price_asc' );
-        $query->set( 'order', 'ASC' );
-    } elseif ( 'price-desc' === $orderby ) {
-        $query->set( 'orderby', 'cr2026_price_desc' );
-        $query->set( 'order', 'DESC' );
-    } else {
-        $query->set( 'orderby', 'title' === $orderby ? 'title' : 'date' );
-        $query->set( 'order', 'DESC' );
-    }
-
-    $filter_taxonomies = array(
-        'size_ids' => 'pa_tallas',
-        'color_ids' => 'pa_color',
-        'brand_ids' => 'product_tag',
-    );
-    $tax_query = $query->get( 'tax_query' );
-    if ( ! is_array( $tax_query ) ) { $tax_query = array(); }
-    if ( ! isset( $tax_query['relation'] ) ) { $tax_query['relation'] = 'AND'; }
-
-    foreach ( $filter_taxonomies as $query_key => $taxonomy ) {
-        if ( ! isset( $_GET[ $query_key ] ) ) { continue; }
-        $raw = wp_unslash( $_GET[ $query_key ] );
-        $values = is_array( $raw ) ? $raw : explode( ',', (string) $raw );
-        $term_ids = array();
-        foreach ( $values as $value ) {
-            if ( ! is_scalar( $value ) ) { continue; }
-            foreach ( explode( ',', (string) $value ) as $candidate ) {
-                $term_id = absint( $candidate );
-                if ( $term_id && (string) $term_id === trim( $candidate ) ) { $term_ids[] = $term_id; }
-            }
-        }
-        $term_ids = array_values( array_unique( $term_ids ) );
-        if ( $term_ids && taxonomy_exists( $taxonomy ) ) {
-            $tax_query[] = array(
-                'taxonomy' => $taxonomy,
-                'field' => 'term_id',
-                'terms' => $term_ids,
-                'operator' => 'IN',
-                'include_children' => false,
-            );
-        }
-    }
-    $query->set( 'tax_query', $tax_query );
-}
-add_action( 'pre_get_posts', 'cr2026_brand_archive_query_context', 100 );
-
 /** Public read-only endpoint used by the app-like Load more control. */
 function cr2026_register_product_list_route() {
     register_rest_route( 'criosrango/v1', '/product-list', array(

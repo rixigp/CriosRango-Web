@@ -165,29 +165,9 @@ function cr2026_render_category_toolbar( $title, $back_url, $filter_context = 'p
     echo '<a class="cr-parent-category__back" href="' . esc_url( $back_url ) . '" aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
     echo '<h1 class="cr-parent-category__title">' . esc_html( $title ) . '</h1>';
     if ( $show_filters ) {
-        cr2026_render_category_filter_trigger();
+        echo '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
     }
     echo '</div>';
-}
-
-function cr2026_render_category_filter_trigger() {
-    echo '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
-}
-
-/** Shared ordering control used by category, Outlet and brand listings. */
-function cr2026_render_category_ordering( $orderby = 'date' ) {
-    ?>
-    <div class="cr-product-listing__ordering">
-        <label for="cr-product-order"><?php esc_html_e( 'Ordenar por', 'crios-rango-2026' ); ?></label>
-        <span class="cr-product-listing__select-wrap">
-            <select id="cr-product-order" name="orderby" data-cr-product-order aria-label="<?php esc_attr_e( 'Ordenar productos', 'crios-rango-2026' ); ?>">
-                <option value="date"<?php selected( 'date', $orderby ); ?>><?php esc_html_e( 'Más recientes', 'crios-rango-2026' ); ?></option>
-                <option value="price"<?php selected( 'price', $orderby ); ?>><?php esc_html_e( 'Precio: menor a mayor', 'crios-rango-2026' ); ?></option>
-                <option value="price-desc"<?php selected( 'price-desc', $orderby ); ?>><?php esc_html_e( 'Precio: mayor a menor', 'crios-rango-2026' ); ?></option>
-                <option value="title"<?php selected( 'title', $orderby ); ?>><?php esc_html_e( 'Nombre A-Z', 'crios-rango-2026' ); ?></option>
-            </select>
-        </span>
-    </div>
 }
 
 /**

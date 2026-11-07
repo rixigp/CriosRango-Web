@@ -96,8 +96,7 @@ test('web catalog page size is sourced from the audited app paginator contract',
 test('category filter selection is live, chips are actionable, and Apply only closes', () => {
   assert.match(js, /publishLiveFilters\(\);scheduleDependentRefresh\(dimension\)/);
   assert.match(js, /window\.CR2026CatalogListing=\{applyFilters,getFilters,renderActiveFilterChips,pageSize,getOutletContext\}/);
-  assert.match(js, /filterSheet\.querySelector\('\[data-cr-filter-apply\]'\)\.addEventListener\('click',\(\)=>\{/);
-  assert.match(js, /if\(brandArchive\)\{window\.location\.assign\(window\.location\.href\);return;\}[\s\S]*?closeSheet\(\)/);
+  assert.ok(js.includes("filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',closeSheet)"));
   assert.match(js, /data-cr-active-filter-chips/);
   assert.match(js, /cr-product-listing__clear-filters/);
   assert.doesNotMatch(js, /window\.location\.assign\(url\.toString\(\)\)/);
@@ -160,7 +159,7 @@ test('staging deploy is exact-HEAD guarded, incremental and verifies the deploye
 });
 
 test('web sort options reproduce app enum mapping including Name A-Z', () => {
-  assert.match(helpers, /value="title".*Nombre A-Z/s);
+  assert.match(archive, /value="title".*Nombre A-Z/s);
   assert.match(js, /title:'title_asc'/);
   assert.match(js, /orderby=\['date','price','price-desc','title'\]/);
   assert.match(php, /'title_asc' === \$sort/);
@@ -405,15 +404,12 @@ test('product_brand archives render the native main query with shared product ca
   assert.match(brandArchive, /the_posts_pagination\(/);
   assert.match(brandArchive, /data-brand-term-id=/);
   assert.match(brandArchive, /data-brand-term-slug=/);
-  assert.match(brandArchive, /cr2026_render_category_filter_trigger\(\)/);
-  assert.match(brandArchive, /cr2026_render_category_filter_sheet\( null, 'root' \)/);
-  assert.match(brandArchive, /cr2026_render_category_ordering\( \$brand_orderby \)/);
-  assert.doesNotMatch(brandArchive, /new WP_Query|cr2026_home_categories|Categorías/);
+  assert.doesNotMatch(brandArchive, /new WP_Query|cr2026_render_category_toolbar|cr2026_render_category_filter_sheet|cr2026_home_categories|Categorías/);
   assert.match(helpers, /is_tax\( 'product_brand' \)/);
   assert.match(helpers, /function cr2026_home_brand_image_url\( \$term \)/);
   assert.match(helpers, /array\( 'thumbnail_id', 'image_id' \)/);
   assert.match(php, /\$is_category_query = \$query->is_tax\( 'product_cat' \)/);
-  assert.match(php, /function cr2026_brand_archive_query_context\( \$query \)/);
+  assert.doesNotMatch(php, /\$is_brand_query\s*=/);
 });
 
 
@@ -466,28 +462,6 @@ test('Global header search hides only the native input[type=search] clear decora
   assert.doesNotMatch(clearHandler, /headerSearchClose|closeButton|\.click\(\)/);
 });
 
-
-test('brand archives reuse catalogue filters and sorting while preserving product_brand context', () => {
-  const brandArchive = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
-  const helpers = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/helpers.php'), 'utf8');
-  const woocommerce = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/woocommerce.php'), 'utf8');
-  assert.match(helpers, /function cr2026_render_category_filter_trigger\(\)/);
-  assert.match(helpers, /function cr2026_render_category_ordering\( \$orderby = 'date' \)/);
-  assert.match(brandArchive, /cr2026_render_category_filter_trigger\(\)/);
-  assert.match(brandArchive, /cr2026_render_category_filter_sheet\( null, 'root' \)/);
-  assert.match(brandArchive, /data-cr-brand-sort/);
-  assert.match(helpers, /<select id="cr-product-order" name="orderby" data-cr-product-order/);
-  assert.match(brandArchive, /cr2026_render_category_ordering\( \$brand_orderby \)/);
-  assert.match(woocommerce, /\$query->is_tax\( 'product_brand' \)/);
-  assert.match(woocommerce, /'size_ids' => 'pa_tallas'/);
-  assert.match(woocommerce, /'color_ids' => 'pa_color'/);
-  assert.match(woocommerce, /'brand_ids' => 'product_tag'/);
-  assert.match(woocommerce, /\$tax_query\[\] = array\([\s\S]*?'operator' => 'IN'/);
-  assert.match(js, /window\.CR2026CatalogListing = \{[\s\S]*?brandUrl\.searchParams\.set\(key, values\.join\(','\)\)/);
-  assert.match(js, /if\(brandArchive\)\{window\.location\.assign\(window\.location\.href\);return;\}/);
-  assert.match(js, /brandSortForm\.requestSubmit\(\)/);
-  assert.match(js, /if\(pagination\)pagination\.hidden=true;[\s\S]*?if\(!button\|\|!grid\|\|!button\.dataset\.nextUrl\)return/);
-});
 
 test('brand archive uses the shared contextual back control and shows either logo or text, never both', () => {
   const brandArchive = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');

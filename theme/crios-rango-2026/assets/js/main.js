@@ -140,29 +140,6 @@
   }
 
 
-  // Brand archives reuse the shared filter dialog; Apply reloads the same native brand query.
-  const brandArchive = document.querySelector('[data-cr-brand-archive]');
-  if (brandArchive) {
-    const brandUrl = new URL(window.location.href);
-    const brandFilterKeys = ['size_ids','color_ids','brand_ids'];
-    window.CR2026CatalogListing = {
-      applyFilters(filters) {
-        brandFilterKeys.forEach(key => {
-          const values = Array.from(new Set((filters && filters[key] || []).map(String).filter(Boolean)));
-          if (values.length) brandUrl.searchParams.set(key, values.join(','));
-          else brandUrl.searchParams.delete(key);
-        });
-        window.history.replaceState({}, '', brandUrl.toString());
-        const trigger = document.querySelector('[data-cr-filter-open]');
-        const count = brandFilterKeys.reduce((total,key)=>total+(filters&&filters[key]?filters[key].length:0),0);
-        if (trigger) trigger.textContent = count ? 'Filtros ('+count+')' : 'Filtros';
-      },
-      getFilters() {
-        return Object.fromEntries(brandFilterKeys.map(key=>[key,(brandUrl.searchParams.get(key)||'').split(',').filter(Boolean)]));
-      }
-    };
-  }
-
   // Dependent facets: one parallel base prefetch and contextual, cached recalculations.
   const filterSheet = document.querySelector('[data-cr-filter-sheet]');
   if (filterSheet) {
@@ -331,10 +308,7 @@
       generation++;activeControllers.forEach(c=>c.abort());activeControllers=[];
       render(activeDimension);publishLiveFilters();
     });
-    filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',()=>{
-      if(brandArchive){window.location.assign(window.location.href);return;}
-      closeSheet();
-    });
+    filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',closeSheet);
     document.addEventListener('keydown',event=>{if(!filterSheet.hidden&&event.key==='Escape')closeSheet();});
     window.CR2026CatalogFilterState={
       remove:(key,id)=>{const dimension=key==='size_ids'?'sizes':key==='color_ids'?'colors':'brands';draft[dimension]=draft[dimension].filter(value=>value!==String(id));render(activeDimension);publishLiveFilters();scheduleDependentRefresh(dimension);},
@@ -604,20 +578,14 @@
     }
   }
 
-  const brandSortForm=document.querySelector('[data-cr-brand-sort]');
-  if(brandSortForm){
-    const brandSort=brandSortForm.querySelector('[data-cr-product-order]');
-    if(brandSort)brandSort.addEventListener('change',()=>brandSortForm.requestSubmit());
-  }
-
   // Brand and product-search archives use WordPress's real next-page URL and server-rendered cards.
   const htmlListingPaginators=document.querySelectorAll('[data-cr-html-pagination]');
   htmlListingPaginators.forEach(container=>{
     const button=container.querySelector('[data-cr-html-load-more]');
     const grid=document.querySelector('[data-cr-brand-product-grid], [data-cr-search-product-grid]');
+    if(!button||!grid||!button.dataset.nextUrl)return;
     const pagination=container.querySelector('.navigation.pagination');
     if(pagination)pagination.hidden=true;
-    if(!button||!grid||!button.dataset.nextUrl)return;
     button.hidden=false;
     let nextUrl=button.dataset.nextUrl,loading=false;
     button.addEventListener('click',async()=>{
