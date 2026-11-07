@@ -584,7 +584,7 @@ test('brand sort SQL diagnostics are gated to explicit administrator requests an
   assert.match(php, /! \$query->is_tax\( 'product_brand' \)/);
   assert.match(php, /! is_user_logged_in\(\)/);
   assert.match(php, /! current_user_can\( 'manage_options' \)/);
-  assert.match(php, /'crsortdebug'\s*\)/);
+    assert.match(php, /\\$_GET\\['crsortdebug'\\]/);
   assert.match(php, /\$query->request/);
   assert.match(php, /sql_order_by/);
   assert.match(php, /wc_product_meta_lookup/);
