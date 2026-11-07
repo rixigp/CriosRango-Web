@@ -290,15 +290,15 @@ function cr2026_product_skin_display_title( $original_title = null, $brand_name 
         $brand_name = $brand instanceof WP_Term ? $brand->name : '';
     }
     if ( ! is_string( $brand_name ) ) { return $original_title; }
-    $brand_name = preg_replace( '/^\\\\s+|\\\\s+$/u', '', $brand_name );
+    $brand_name = preg_replace( '/^\s+|\s+$/u', '', $brand_name );
     if ( '' === $brand_name ) { return $original_title; }
 
-    $pattern = '~^(.*?)(?:\\\\s*[-–—|]\\\\s*)' . preg_quote( $brand_name, '~' ) . '\\\\s*$~iu';
+    $pattern = '~^(.*?)(?:\s*[-–—|]\s*)' . preg_quote( $brand_name, '~' ) . '\s*$~iu';
     if ( ! preg_match( $pattern, $original_title, $matches ) ) {
         return $original_title;
     }
 
-    $display_title = preg_replace( '~[\\\\s\\\\-–—|]+$~u', '', $matches[1] );
+    $display_title = preg_replace( '~[\s\-–—|]+$~u', '', $matches[1] );
     return is_string( $display_title ) && '' !== $display_title ? $display_title : $original_title;
 }
 

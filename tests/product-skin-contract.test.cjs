@@ -690,6 +690,10 @@ test('display title removes only a final product_brand suffix and leaves the sti
   assert.match(skin, /function cr2026_product_skin_display_title\( \$original_title = null, \$brand_name = null \)/);
   assert.ok(skin.includes("get_the_terms( absint( get_queried_object_id() ), 'product_brand' )"));
   assert.ok(skin.includes("preg_quote( $brand_name, '~' )"));
+  assert.ok(skin.includes(String.raw`$brand_name = preg_replace( '/^\s+|\s+$/u', '', $brand_name );`));
+  assert.ok(skin.includes(String.raw`$pattern = '~^(.*?)(?:\s*[-–—|]\s*)' . preg_quote( $brand_name, '~' ) . '\s*$~iu';`));
+  assert.ok(skin.includes(String.raw`$display_title = preg_replace( '~[\s\-–—|]+$~u', '', $matches[1] );`));
+
   assert.ok(skin.includes("$~iu"));
   assert.ok(skin.includes("$display_title = cr2026_product_skin_display_title();"));
   assert.ok(skin.includes("esc_html( $display_title )"));
