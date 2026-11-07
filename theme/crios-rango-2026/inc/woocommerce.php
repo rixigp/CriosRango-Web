@@ -301,7 +301,7 @@ function cr2026_catalog_cache_payload_valid( $payload ) {
         || ! is_array( $payload['product_ids'] ) || ! is_array( $payload['filter_api_product_ids'] )
         || ! is_array( $payload['rendered_product_ids'] ) || ! is_bool( $payload['has_more'] )
         || ! is_numeric( $payload['page'] ) || ! is_numeric( $payload['per_page'] )
-        || ( null !== $payload['total'] && ! is_numeric( $payload['total'] ) ) ) { return false; }
+        || ! array_key_exists( 'total', $payload ) || ( null !== $payload['total'] && ! is_numeric( $payload['total'] ) ) ) { return false; }
     return ! $payload['product_ids'] || '' !== trim( $payload['html'] );
 }
 function cr2026_catalog_cache_lookup( $cache_key ) {
@@ -320,8 +320,14 @@ function cr2026_catalog_cache_lookup( $cache_key ) {
         if ( false !== get_transient( $stale_key ) ) { delete_transient( $stale_key ); }
     }
     $lock_key = $cache_key . '_lock';
+    // Read first to purge expired transient rows, including after an abrupt PHP exit.
+    $existing_lock = get_transient( $lock_key );
+    if ( false !== $existing_lock && time() - absint( $existing_lock ) >= 30 ) {
+        delete_transient( $lock_key );
+        $existing_lock = false;
+    }
     // Atomic option insert with transient-compatible storage and a 30s expiry.
-    $lock_acquired = add_option( '_transient_' . $lock_key, time(), '', false );
+    $lock_acquired = false === $existing_lock && add_option( '_transient_' . $lock_key, time(), '', false );
     if ( $lock_acquired ) {
         add_option( '_transient_timeout_' . $lock_key, time() + 30, '', false );
         register_shutdown_function( static function () use ( $lock_key ) { delete_transient( $lock_key ); } );
@@ -431,10 +437,6 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         $sort = 'newest';
     }
     $filter_keys = array( 'size_ids', 'color_ids', 'brand_ids' );
-    // The root catalogue (Novedades) is a valid global context without a
-    // product_cat term. Route it through the same Filter API as filtered
-    // catalogues, but never send catalog_category_id for this context.
-    $is_root_catalog_context = 'catalog' === $scope && 0 === $category_id && ! $is_brand_context;
     $has_filters = $is_outlet_scope || $is_brand_context;
     foreach ( $filter_keys as $filter_key ) {
         if ( '' !== trim( (string) $request->get_param( $filter_key ) ) ) {

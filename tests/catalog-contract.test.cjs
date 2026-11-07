@@ -797,7 +797,7 @@ test('catalog-page exposes monotonic Server-Timing diagnostics without changing 
   assert.match(php, /function cr2026_catalog_timing_headers\([\s\S]*?rest_post_dispatch/);
   assert.match(php, /catalog-total;dur=/);
   for (const stage of ['filter','products','render','cache','other']) assert.match(php, new RegExp(stage + ';dur='));
-  assert.match(php, /X-CriosRango-Catalog-Cache', 'BYPASS'/);
+  assert.match(php, /X-CriosRango-Catalog-Cache',[\\s\\S]*?cr2026_catalog_cache_status/);
   assert.match(php, /X-CriosRango-Persistent-Object-Cache/);
   assert.match(php, /cr2026_catalog_timing_add\( 'filter'/);
   assert.match(php, /cr2026_catalog_timing_add\( 'products'/);
