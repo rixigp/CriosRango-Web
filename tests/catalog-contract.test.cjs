@@ -681,6 +681,8 @@ test('Nuestras marcas route uses only populated product_brand terms in NAME_ASC 
   assert.match(brandTemplate, /get_term_link\( \$brand, 'product_brand' \)/);
   assert.match(brandTemplate, /if \( \$brand_logo \)[\s\S]*?<img[\s\S]*?<\?php else : \?>[\s\S]*?<span>/);
   assert.match(brandTemplate, /get_footer\( 'shop' \)/);
+  assert.match(helpers, /cr2026_brands_index_view/);
+  assert.match(css, /body\.cr-brands-index-view \.cr-footer \{ display:none!important; \}/);
 });
 
 test('brands index cards are white, clickable, contain logos and use two mobile columns', () => {
