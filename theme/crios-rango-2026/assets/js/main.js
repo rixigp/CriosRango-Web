@@ -578,10 +578,29 @@
     }
   }
 
-  // Brand archive sorting submits the selected catalogue value to the current brand URL.
+  // Size the native brand select to its selected label so the custom chevron stays adjacent.
   const brandOrderControl = document.querySelector('[data-cr-brand-order]');
   if (brandOrderControl) {
+    const fitBrandOrderControl = () => {
+      const selectedOption = brandOrderControl.selectedOptions && brandOrderControl.selectedOptions[0];
+      const selectedText = (selectedOption ? selectedOption.textContent : brandOrderControl.value || '').trim();
+      const computed = window.getComputedStyle(brandOrderControl);
+      let textWidth = selectedText.length * 7;
+      try {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        if (context) {
+          context.font = computed.font;
+          textWidth = context.measureText(selectedText).width;
+        }
+      } catch (error) {}
+      const paddingLeft = parseFloat(computed.paddingLeft) || 2;
+      const paddingRight = parseFloat(computed.paddingRight) || 14;
+      brandOrderControl.style.width = Math.ceil(textWidth + paddingLeft + paddingRight) + 'px';
+    };
+    fitBrandOrderControl();
     brandOrderControl.addEventListener('change', () => {
+      fitBrandOrderControl();
       const form = brandOrderControl.closest('[data-cr-brand-order-form]');
       if (form) form.requestSubmit();
     });

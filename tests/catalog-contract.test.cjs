@@ -559,3 +559,20 @@ test('brand sort maps the four shared values onto the existing product_brand mai
   assert.match(php, /\$query->set\( 'orderby', 'title' \)/);
   assert.match(php, /add_action\( 'pre_get_posts', 'cr2026_brand_archive_native_sort', 100 \)/);
 });
+
+
+test('brand archive order select sizes to the selected option and keeps its native submit behavior', () => {
+  const brandTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
+  assert.match(brandTemplate, /class="cr-product-listing__ordering cr-brand-archive__ordering"[^>]*data-cr-brand-order-form/);
+  assert.match(brandTemplate, /<label for="cr-brand-product-order">/);
+  assert.match(brandTemplate, /<select id="cr-brand-product-order" name="orderby" data-cr-brand-order/);
+  for (const value of ['date', 'price', 'price-desc', 'title']) assert.ok(brandTemplate.includes('value="' + value + '"'));
+  assert.match(css, /\.cr-product-listing__select-wrap::after \{[^}]*right:3px;[^}]*width:7px;/);
+  assert.match(css, /\.cr-brand-archive__ordering select \{ padding-right:14px; \}/);
+  assert.match(js, /const fitBrandOrderControl = \(\) =>/);
+  assert.match(js, /context\.measureText\(selectedText\)\.width/);
+  assert.match(js, /brandOrderControl\.style\.width = Math\.ceil\(textWidth \+ paddingLeft \+ paddingRight\) \+ 'px'/);
+  assert.match(js, /fitBrandOrderControl\(\);[\s\S]*?brandOrderControl\.addEventListener\('change'/);
+  assert.match(js, /form\.requestSubmit\(\)/);
+});
