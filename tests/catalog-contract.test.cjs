@@ -135,11 +135,21 @@ test('catalog endpoint echoes page size and staging debug exposes all ID layers 
   assert.match(js, /prices,returned_total:responseData\.total,total:responseData\.total/);
 });
 
-test('staging deploy is exact-HEAD guarded and verifies remote build.json SHA', () => {
+test('staging deploy is exact-HEAD guarded, incremental and verifies the deployed runtime SHA', () => {
   assert.ok(deploy.includes('Check exact PR13 staging HEAD'));
   assert.ok(deploy.includes('git fetch origin fix/catalog-runtime-parity'));
-  assert.ok(deploy.includes('Generate staging build manifest'));
-  assert.ok(deploy.includes('BUILD_SHA: $' + '{{ github.sha }}'));
+  assert.ok(deploy.includes('fetch-depth: 0'));
+  assert.ok(deploy.includes('git diff --name-status -z --find-renames --find-copies'));
+  assert.ok(deploy.includes('git merge-base --is-ancestor'));
+  assert.ok(deploy.includes('DEPLOY_MODE="INCREMENTAL"'));
+  assert.ok(deploy.includes('DEPLOY_MODE="FULL"'));
+  assert.ok(deploy.includes('DELETE_FILES+=("$OLD_PATH")'));
+  assert.ok(deploy.includes('--quote "-DELE $REL"'));
+  assert.ok(deploy.includes('--ftp-create-dirs'));
+  assert.ok(deploy.includes('THEME_DEPLOY_SHA="$REMOTE_SHA"'));
+  assert.ok(deploy.includes('UPLOAD_FILES+=("$THEME_ROOT/build.json")'));
+  assert.ok(deploy.includes('EXPECTED_THEME_SHA'));
+  assert.ok(deploy.includes('steps.deploy.outputs.theme_deploy_sha'));
   assert.ok(deploy.includes('Verify remote staging build.json SHA'));
   assert.ok(deploy.includes('console.log("STAGING_BUILD_SHA="+manifest.sha)'));
   assert.ok(deploy.includes('/public/prueba/wp-content/themes/crios-rango-2026/'));

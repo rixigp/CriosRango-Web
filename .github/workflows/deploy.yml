@@ -462,14 +462,6 @@ jobs:
             echo "current=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Generate staging build manifest
-        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && steps.staging-head.outputs.current == 'true'
-        env:
-          BUILD_SHA: ${{ github.sha }}
-          BUILD_BRANCH: ${{ github.ref_name }}
-        run: |
-          node -e 'const fs=require("fs");const manifest={sha:process.env.BUILD_SHA,branch:process.env.BUILD_BRANCH,pr:process.env.BUILD_BRANCH==="feat/wp-login-branding"?16:process.env.BUILD_BRANCH==="style/product-detail-app-skin"?null:15};fs.writeFileSync("theme/crios-rango-2026/build.json",JSON.stringify(manifest,null,2)+"\n");'
-
       - name: Validate FTP configuration
         if: steps.staging-head.outputs.current == 'true'
         shell: bash
@@ -508,6 +500,7 @@ jobs:
           echo "Remote theme path validated."
 
       - name: Deploy theme by FTP
+        id: deploy
         if: steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
@@ -516,35 +509,201 @@ jobs:
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
+          HEAD_SHA: ${{ github.sha }}
+          BUILD_BRANCH: ${{ github.ref_name }}
+          GITHUB_REF: ${{ github.ref }}
         run: |
           set -euo pipefail
 
-          LOCAL_ROOT="./theme/crios-rango-2026"
-
+          THEME_ROOT="theme/crios-rango-2026"
+          LOCAL_ROOT="./$THEME_ROOT"
           REMOTE_ROOT="${SFTP_PATH#/}"
           REMOTE_ROOT="${REMOTE_ROOT%/}"
-
           BASE_URL="ftp://${SFTP_HOST}:${SFTP_PORT}/${REMOTE_ROOT}"
+          MANIFEST_URL="${BASE_URL}/build.json"
+          IS_STAGING=false
 
-          find "$LOCAL_ROOT" -type f -print0 |
-          while IFS= read -r -d '' FILE; do
-              RELATIVE="${FILE#"$LOCAL_ROOT"/}"
+          case "$GITHUB_REF" in
+            refs/heads/fix/catalog-runtime-parity|refs/heads/fix/category-grid-app-parity|refs/heads/feat/outlet-bubbles|refs/heads/feat/wp-login-branding|refs/heads/style/product-detail-app-skin)
+              IS_STAGING=true
+              ;;
+          esac
 
-              echo "Uploading: $RELATIVE"
+          # Every path is checked before stripping the repository-only theme prefix.
+          safe_relative_path() {
+            local path="$1"
+            [[ "$path" == "$THEME_ROOT/"* ]] || return 1
+            local relative="${path#"$THEME_ROOT"/}"
+            [[ -n "$relative" && "$relative" != /* ]] || return 1
+            [[ "$relative" != *$'\n'* && "$relative" != *$'\r'* ]] || return 1
+            case "/$relative/" in
+              *"/../"*|*"/./"*) return 1 ;;
+            esac
+            [[ "$relative" != *":"* && "$relative" != *"?"* ]] || return 1
+            return 0
+          }
 
-              curl \
-                --silent \
-                --show-error \
-                --fail \
-                --ssl-reqd \
-                --ftp-pasv \
-                --ftp-create-dirs \
-                --connect-timeout 20 \
-                --retry 2 \
-                --user "${SFTP_USER}:${SFTP_PASSWORD}" \
-                --upload-file "$FILE" \
-                "${BASE_URL}/${RELATIVE}"
+          runtime_file() {
+            local relative="$1"
+            case "$relative" in
+              README.md|*/README.md|*.md|*.markdown|*.log|*.tmp|*.temp|*.swp|*.swo|*~|.DS_Store|*/.DS_Store|.editorconfig|.gitignore|.gitattributes|.npmrc|.prettierrc*|eslint.config.*)
+                return 1 ;;
+              docs/*|*/docs/*|documentation/*|*/documentation/*|tests/*|*/tests/*|test/*|*/test/*|fixtures/*|*/fixtures/*|scripts/*|*/scripts/*|.git/*|.github/*|.vscode/*|.idea/*|__pycache__/*|*/__pycache__/*|node_modules/*|*/node_modules/*|tmp/*|*/tmp/*|temp/*|*/temp/*|logs/*|*/logs/*)
+                return 1 ;;
+            esac
+            return 0
+          }
+
+          UPLOAD_FILES=()
+          DELETE_FILES=()
+          DEPLOY_MODE="FULL"
+          REMOTE_SHA=""
+          THEME_DEPLOY_SHA="$HEAD_SHA"
+          DIFF_FILE="$(mktemp)"
+          MANIFEST_FILE="$(mktemp)"
+          trap 'rm -f "$DIFF_FILE" "$MANIFEST_FILE"' EXIT
+
+          if [ "$IS_STAGING" = true ]; then
+            if curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
+              --connect-timeout 20 --retry 2 \
+              --user "${SFTP_USER}:${SFTP_PASSWORD}" \
+              "$MANIFEST_URL" --output "$MANIFEST_FILE"; then
+              REMOTE_SHA="$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(typeof m.sha!=="string"||!/^([0-9a-f]{40})$/i.test(m.sha))process.exit(2);process.stdout.write(m.sha);' "$MANIFEST_FILE" 2>/dev/null || true)"
+            fi
+
+            if [ -n "$REMOTE_SHA" ]; then
+              if ! git cat-file -e "${REMOTE_SHA}^{commit}" 2>/dev/null; then
+                git fetch --no-tags origin "$REMOTE_SHA" >/dev/null 2>&1 || true
+              fi
+
+              if git cat-file -e "${REMOTE_SHA}^{commit}" 2>/dev/null \
+                && git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"; then
+                if git diff --name-status -z --find-renames --find-copies \
+                  "$REMOTE_SHA" "$HEAD_SHA" -- "$THEME_ROOT" > "$DIFF_FILE"; then
+                  DEPLOY_MODE="INCREMENTAL"
+                fi
+              fi
+            fi
+          fi
+
+          if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then
+            while IFS= read -r -d '' STATUS; do
+              case "$STATUS" in
+                R*|C*)
+                  IFS= read -r -d '' OLD_PATH
+                  IFS= read -r -d '' NEW_PATH
+                  if ! safe_relative_path "$OLD_PATH" || ! safe_relative_path "$NEW_PATH"; then
+                    echo "ERROR: unsafe rename/copy path returned by git diff."
+                    exit 1
+                  fi
+                  OLD_REL="${OLD_PATH#"$THEME_ROOT"/}"
+                  NEW_REL="${NEW_PATH#"$THEME_ROOT"/}"
+                  if [[ "$STATUS" == R* ]] && runtime_file "$OLD_REL"; then
+                    DELETE_FILES+=("$OLD_PATH")
+                  fi
+                  if runtime_file "$NEW_REL"; then
+                    UPLOAD_FILES+=("$NEW_PATH")
+                  fi
+                  ;;
+                D)
+                  IFS= read -r -d '' PATH_NAME
+                  if ! safe_relative_path "$PATH_NAME"; then
+                    echo "ERROR: unsafe delete path returned by git diff."
+                    exit 1
+                  fi
+                  REL="${PATH_NAME#"$THEME_ROOT"/}"
+                  if runtime_file "$REL"; then DELETE_FILES+=("$PATH_NAME"); fi
+                  ;;
+                A|M|T|A*|M*|T*)
+                  IFS= read -r -d '' PATH_NAME
+                  if ! safe_relative_path "$PATH_NAME"; then
+                    echo "ERROR: unsafe upload path returned by git diff."
+                    exit 1
+                  fi
+                  REL="${PATH_NAME#"$THEME_ROOT"/}"
+                  if runtime_file "$REL"; then UPLOAD_FILES+=("$PATH_NAME"); fi
+                  ;;
+                *)
+                  echo "ERROR: unsupported git diff status '$STATUS'; refusing an unsafe incremental deploy."
+                  exit 1
+                  ;;
+              esac
+            done < "$DIFF_FILE"
+          else
+            echo "Incremental baseline unavailable or unsafe; using full runtime fallback."
+            while IFS= read -r -d '' FILE; do
+              PATH_NAME="${FILE#./}"
+              if ! safe_relative_path "$PATH_NAME"; then
+                echo "ERROR: unsafe local theme path: $PATH_NAME"
+                exit 1
+              fi
+              REL="${PATH_NAME#"$THEME_ROOT"/}"
+              if runtime_file "$REL"; then UPLOAD_FILES+=("$PATH_NAME"); fi
+            done < <(find "$LOCAL_ROOT" -type f -print0)
+          fi
+
+          # A build manifest represents deployed runtime, not an arbitrary repository commit.
+          # Preserve it byte-for-byte when the diff contains no runtime changes.
+          if [ "$IS_STAGING" = true ]; then
+            if [ "$DEPLOY_MODE" = "FULL" ] || [ "${#UPLOAD_FILES[@]}" -gt 0 ] || [ "${#DELETE_FILES[@]}" -gt 0 ]; then
+              node -e 'const fs=require("fs");const branch=process.env.BUILD_BRANCH;const pr=branch==="feat/wp-login-branding"?16:branch==="style/product-detail-app-skin"?null:15;fs.writeFileSync(process.argv[1],JSON.stringify({sha:process.env.HEAD_SHA,branch,pr},null,2)+"\n");' "$LOCAL_ROOT/build.json"
+              UPLOAD_FILES+=("$THEME_ROOT/build.json")
+              THEME_DEPLOY_SHA="$HEAD_SHA"
+            else
+              THEME_DEPLOY_SHA="$REMOTE_SHA"
+            fi
+          fi
+
+          # De-duplicate paths while preserving deterministic output.
+          mapfile -t UPLOAD_FILES < <(printf '%s\n' "${UPLOAD_FILES[@]}" | sed '/^$/d' | sort -u)
+          mapfile -t DELETE_FILES < <(printf '%s\n' "${DELETE_FILES[@]}" | sed '/^$/d' | sort -u)
+
+          echo "DEPLOY_MODE=$DEPLOY_MODE"
+          echo "REMOTE_SHA=${REMOTE_SHA:-NONE}"
+          echo "HEAD_SHA=$HEAD_SHA"
+          echo "REPOSITORY_HEAD=$HEAD_SHA"
+          echo "THEME_DEPLOY_SHA=$THEME_DEPLOY_SHA"
+          echo "UPLOAD_FILES:"
+          if [ "${#UPLOAD_FILES[@]}" -eq 0 ]; then echo "NONE"; else
+            for FILE in "${UPLOAD_FILES[@]}"; do echo "${FILE#"$THEME_ROOT"/}"; done
+          fi
+          echo "DELETE_FILES:"
+          if [ "${#DELETE_FILES[@]}" -eq 0 ]; then echo "NONE"; else
+            for FILE in "${DELETE_FILES[@]}"; do echo "${FILE#"$THEME_ROOT"/}"; done
+          fi
+          echo "UPLOAD_COUNT=${#UPLOAD_FILES[@]}"
+          echo "DELETE_COUNT=${#DELETE_FILES[@]}"
+          echo "DEPLOY_THEME_FILES=$(( ${#UPLOAD_FILES[@]} + ${#DELETE_FILES[@]} ))"
+
+          # Delete first so Git renames are always represented as remote delete + upload.
+          for FILE in "${DELETE_FILES[@]}"; do
+            safe_relative_path "$FILE" || { echo "ERROR: unsafe FTP delete path."; exit 1; }
+            REL="${FILE#"$THEME_ROOT"/}"
+            echo "Deleting remote: $REL"
+            curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
+              --connect-timeout 20 --retry 2 \
+              --user "${SFTP_USER}:${SFTP_PASSWORD}" \
+              --quote "-DELE $REL" "${BASE_URL}/"
           done
+
+          for FILE in "${UPLOAD_FILES[@]}"; do
+            safe_relative_path "$FILE" || { echo "ERROR: unsafe FTP upload path."; exit 1; }
+            REL="${FILE#"$THEME_ROOT"/}"
+            ENCODED_REL="$(python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1],safe="/"))' "$REL")"
+            echo "Uploading: $REL"
+            curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
+              --ftp-create-dirs --connect-timeout 20 --retry 2 \
+              --user "${SFTP_USER}:${SFTP_PASSWORD}" \
+              --upload-file "$FILE" "${BASE_URL}/${ENCODED_REL}"
+          done
+
+          echo "theme_deploy_sha=$THEME_DEPLOY_SHA" >> "$GITHUB_OUTPUT"
+          echo "deploy_mode=$DEPLOY_MODE" >> "$GITHUB_OUTPUT"
+          if [ "$IS_STAGING" = true ] && [ "$THEME_DEPLOY_SHA" = "$HEAD_SHA" ]; then
+            echo "BUILD_SHA_UPDATED=YES"
+          elif [ "$IS_STAGING" = true ]; then
+            echo "BUILD_SHA_UPDATED=NO_RUNTIME_CHANGE"
+          fi
 
       - name: Verify remote staging build.json SHA
         if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && steps.staging-head.outputs.current == 'true'
@@ -555,6 +714,7 @@ jobs:
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           SFTP_PATH: /public/prueba/wp-content/themes/crios-rango-2026/
+          EXPECTED_THEME_SHA: ${{ steps.deploy.outputs.theme_deploy_sha }}
         run: |
           set -euo pipefail
           REMOTE_ROOT="${SFTP_PATH#/}"
@@ -562,5 +722,5 @@ jobs:
           BASE_URL="ftp://${SFTP_HOST}:${SFTP_PORT}/${REMOTE_ROOT}"
           curl --silent --show-error --fail --ssl-reqd --ftp-pasv --connect-timeout 20 --retry 2 \
             --user "${SFTP_USER}:${SFTP_PASSWORD}" "${BASE_URL}/build.json" --output /tmp/criosrango-build.json
-          node -e 'const fs=require("fs");const manifest=JSON.parse(fs.readFileSync("/tmp/criosrango-build.json","utf8"));if(manifest.sha!==process.env.GITHUB_SHA){console.error("STAGING_BUILD_SHA mismatch: "+manifest.sha+" != "+process.env.GITHUB_SHA);process.exit(1)}console.log("STAGING_BUILD_SHA="+manifest.sha);'
+          node -e 'const fs=require("fs");const manifest=JSON.parse(fs.readFileSync("/tmp/criosrango-build.json","utf8"));if(manifest.sha!==process.env.EXPECTED_THEME_SHA){console.error("STAGING_BUILD_SHA mismatch: "+manifest.sha+" != "+process.env.EXPECTED_THEME_SHA);process.exit(1)}console.log("STAGING_BUILD_SHA="+manifest.sha);console.log("REPOSITORY_HEAD="+process.env.GITHUB_SHA);console.log("THEME_DEPLOY_SHA="+manifest.sha);'
 
