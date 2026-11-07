@@ -550,7 +550,7 @@ test('Product Detail renders assigned product_brand logo with native metadata pr
   assert.ok(skin.includes('cr-product-brand__name'));
   assert.ok(skinCss.includes('cr-product-brand::before'));
   assert.ok(skinCss.includes('object-fit:contain'));
-  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_brand', 22 )"));
+  assert.ok(skin.includes('cr-product-title-brand-row__brand'));
   const helpers = fs.readFileSync(path.join(theme, 'inc/helpers.php'), 'utf8');
   assert.ok(helpers.includes("foreach ( array( 'thumbnail_id', 'image_id' ) as $meta_key )"));
 });
@@ -570,4 +570,47 @@ test('legacy excerpt brand and size help cleanup leaves the balancing sanitizer 
   assert.ok(skin.includes('return force_balance_tags( $short_description );'));
   assert.ok(skin.includes('criosrango@criosrango.es'));
   assert.ok(skin.includes('633\\s*246\\s*788'));
+});
+
+
+test('final app layout groups native title, dynamic price and WordPress brand without standalone brand dividers', () => {
+  assert.ok(skin.includes('function cr2026_product_skin_title_price_brand()'));
+  assert.ok(skin.includes('woocommerce_template_single_title();'));
+  assert.ok(skin.includes('woocommerce_template_single_price();'));
+  assert.ok(skin.includes('cr2026_product_skin_brand();'));
+  assert.ok(skin.includes('cr-product-title-brand-row__divider'));
+  assert.ok(skin.includes("remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_excerpt', 20 )"));
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )"));
+  assert.ok(skinCss.includes('cr-product-title-brand-row'));
+  assert.ok(skinCss.includes('woocommerce-product-details__short-description { display: none !important; }'));
+});
+
+test('global sizing help uses the local measuring-tape SVG and retains the exact contact links', () => {
+  assert.ok(skin.includes('cr-product-size-help__icon'));
+  assert.ok(skin.includes('<svg viewBox="0 0 32 32"'));
+  assert.ok(skin.includes('cr-product-size-help__content'));
+  assert.ok(skinCss.includes('cr-product-size-help__icon svg'));
+  assert.ok(skinCss.includes('background: #EAF1E8'));
+});
+
+test('share and reserve capsule is rendered after the native add-to-cart form', () => {
+  assert.ok(skin.includes("add_action( 'woocommerce_after_add_to_cart_form', 'cr2026_product_skin_actions', 25 )"));
+  assert.doesNotMatch(skin, /add_action\( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_actions'/);
+});
+
+test('mobile quantity and CTA share a row while preserving native quantity and variation form controls', () => {
+  assert.ok(skinCss.includes('form.cart .quantity.cr-product-quantity-row'));
+  assert.ok(skinCss.includes('flex: 0 0 43%'));
+  assert.ok(skinCss.includes('form.cart .single_add_to_cart_button'));
+  assert.ok(productUiJs.includes('form.cart .quantity input.qty'));
+  assert.ok(productUiJs.includes('cr-product-quantity-stepper'));
+});
+
+test('gallery zoom trigger stays hidden while native WooCommerce lightbox and FlexSlider controls remain', () => {
+  assert.ok(skinCss.includes('.woocommerce-product-gallery__trigger'));
+  assert.ok(skinCss.includes('display: none !important'));
+  assert.ok(productUiJs.includes('initNativeTouchLightbox'));
+  assert.ok(productUiJs.includes('.woocommerce-product-gallery__trigger'));
+  assert.ok(skinCss.includes('.flex-direction-nav'));
+  assert.ok(skinCss.includes('cr-product-gallery-dots'));
 });
