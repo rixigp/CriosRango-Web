@@ -672,6 +672,28 @@ function cr2026_home_brands() {
     return array_slice( $terms, 0, 16 );
 }
 
+
+/** Return every populated product brand in strict alphabetical order for /marcas/. */
+function cr2026_brands_index_terms() {
+    if ( ! taxonomy_exists( 'product_brand' ) ) {
+        return array();
+    }
+    $terms = get_terms( array(
+        'taxonomy'   => 'product_brand',
+        'hide_empty' => true,
+        'number'     => 0,
+        'orderby'    => 'name',
+        'order'      => 'ASC',
+    ) );
+    if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+        return array();
+    }
+    return array_values( array_filter( $terms, static function ( $term ) {
+        return $term instanceof WP_Term && 'product_brand' === $term->taxonomy
+            && $term->term_id > 0 && $term->count > 0 && '' !== trim( $term->name );
+    } ) );
+}
+
 /**
  * Resolve a brand logo from the supported WooCommerce term meta keys.
  */
