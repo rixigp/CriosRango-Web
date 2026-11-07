@@ -349,7 +349,7 @@
         form.addEventListener('submit', function (event) {
           var selectedVariationId = Number(variationId.value);
           var ajaxParams = window.wc_add_to_cart_params;
-          if (!selectedVariationId || !ajaxParams || !ajaxParams.wc_ajax_url) return;
+          if (!Number.isFinite(selectedVariationId) || selectedVariationId <= 0 || !ajaxParams || !ajaxParams.wc_ajax_url) return;
 
           event.preventDefault();
           event.stopPropagation();

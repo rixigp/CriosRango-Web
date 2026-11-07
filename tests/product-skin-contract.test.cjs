@@ -433,7 +433,13 @@ test('valid variable submit is intercepted and posts the WooCommerce variation I
   assert.match(productUiJs, /product_id:\s*selectedVariationId/);
   assert.match(productUiJs, /quantity:\s*quantityInput\s*\?\s*quantityInput\.value\s*:\s*1/);
   assert.doesNotMatch(productUiJs, /product_id:\s*[^,]+,\s*variation_id:/);
-  assert.match(productUiJs, /if \(!selectedVariationId[\s\S]*?return;/);
+  assert.match(productUiJs, /if \(!Number\.isFinite\(selectedVariationId\) \|\| selectedVariationId <= 0[\s\S]*?return;/);
+  assert.match(productUiJs, /var selectedVariationId = Number\(variationId\.value\)/);
+  assert.match(productUiJs, /selectedVariationId <= 0/);
+  assert.match(productUiJs, /Number\.isFinite\(selectedVariationId\)/);
+  assert.match(productUiJs, /product_id:\s*selectedVariationId/);
+  assert.match(productUiJs, /quantity:\s*quantityInput\s*\?\s*quantityInput\.value\s*:\s*1/);
+  assert.doesNotMatch(productUiJs, /product_id:\s*[^,]+,\s*variation_id:/);
   assert.match(productUiJs, /var quantityInput = form\.querySelector\('input\.qty\[name="quantity"\]'\)/);
   assert.match(productUiJs, /var endpoint = String\(ajaxParams\.wc_ajax_url\)\.replace\('%%endpoint%%', 'add_to_cart'\)/);
   assert.match(productUiJs, /\$\.ajax\(\{[\s\S]*?data: data[\s\S]*?dataType: 'json'/);
