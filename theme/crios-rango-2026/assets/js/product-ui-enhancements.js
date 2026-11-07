@@ -66,23 +66,17 @@
   }
 
 
-  function isNativeVariationReady(selects, variationIdValue, button, addToCartWrapper) {
-    var variationId = Number(variationIdValue);
-    if (!Array.isArray(selects) || !selects.length || !Number.isFinite(variationId) || variationId <= 0) return false;
+  function isVariationEventReady(variation, purchasable) {
+    var variationId = Number(variation && variation.variation_id);
+    return purchasable === true && Number.isFinite(variationId) && variationId > 0;
+  }
 
-    var allAttributesSelected = selects.every(function (select) {
-      if (!select || !select.value) return false;
-      var selectedOption = select.options && select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null;
-      return !!selectedOption && !selectedOption.disabled;
-    });
-    var buttonReady = !!button &&
-      !button.classList.contains('disabled') &&
-      !button.classList.contains('wc-variation-selection-needed') &&
-      !button.classList.contains('wc-variation-is-unavailable');
-    var wooVariationReady = !!addToCartWrapper &&
-      addToCartWrapper.classList.contains('woocommerce-variation-add-to-cart-enabled');
-
-    return allAttributesSelected && buttonReady && wooVariationReady;
+  function applyVariationButtonState(button, label, ready) {
+    if (button) {
+      button.disabled = !ready;
+      button.setAttribute('aria-disabled', ready ? 'false' : 'true');
+    }
+    if (label) label.textContent = ready ? 'Añadir al carrito' : 'Elige opciones';
   }
 
   if (typeof module !== 'undefined' && module.exports) {
@@ -90,7 +84,8 @@
       COLOR_SWATCH_MAP: COLOR_SWATCH_MAP,
       normalizeColorKey: normalizeColorKey,
       resolveColorSwatch: resolveColorSwatch,
-      isNativeVariationReady: isNativeVariationReady
+      isVariationEventReady: isVariationEventReady,
+      applyVariationButtonState: applyVariationButtonState
     };
   }
 
@@ -283,6 +278,7 @@
       var bagIconTemplate = null;
       var addedFeedbackTimer = null;
       var hasAddedFeedback = false;
+      var currentVariationReady = false;
       if (nativeButton) {
         nativeButton.textContent = '';
         var bagSource = document.querySelector('.cr-cart-link .cr-icon svg');
@@ -330,10 +326,17 @@
           hasAddedFeedback = false;
           nativeButton.classList.remove('is-added-to-cart');
           setCartIcon('bag');
+          setVariationReady(currentVariationReady);
           syncVariationState();
         }, 2200);
       }
+      function setVariationReady(ready) {
+        currentVariationReady = !!ready;
+        if (!hasAddedFeedback) applyVariationButtonState(nativeButton, nativeButtonLabel, currentVariationReady);
+        if (reserve && reserve.dataset.variable === '1') reserve.disabled = !currentVariationReady;
+      }
       function syncVariationState() {
+        // Chip availability is presentation-only; it must never overwrite show_variation readiness.
         selects.forEach(function (select) {
           var chips = select.nextElementSibling;
           if (!chips || !chips.classList.contains('cr-product-choice-chips')) return;
@@ -345,15 +348,6 @@
             chip.setAttribute('aria-pressed', option && select.value === option.value ? 'true' : 'false');
           });
         });
-        var validNativeVariation = isNativeVariationReady(selects, variationId && variationId.value, nativeButton, addToCartWrapper);
-        if (nativeButton) {
-          nativeButton.disabled = !validNativeVariation;
-          nativeButton.setAttribute('aria-disabled', validNativeVariation ? 'false' : 'true');
-        }
-        if (reserve && reserve.dataset.variable === '1') reserve.disabled = !validNativeVariation;
-        if (nativeButtonLabel && !hasAddedFeedback) {
-          nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige opciones';
-        }
       }
       function getProductDetailNoticeRoot() {
         return document.querySelector('.cr-main--woocommerce') || form.closest('.product') || form.parentNode;
@@ -425,11 +419,23 @@
       }
 
       initVariationAjaxAddToCart();
-      form.addEventListener('change', syncVariationState);
+      form.addEventListener('change', function (event) {
+        if (selects.indexOf(event.target) !== -1) setVariationReady(false);
+        syncVariationState();
+      });
       if (window.jQuery) {
-        window.jQuery(form).on('woocommerce_update_variation_values reset_data hide_variation', syncVariationState);
-        window.jQuery(form).on('found_variation show_variation', function () {
+        window.jQuery(form).on('woocommerce_update_variation_values', syncVariationState);
+        window.jQuery(form).on('reset_data hide_variation', function () {
+          setVariationReady(false);
+          syncVariationState();
+        });
+        window.jQuery(form).on('found_variation', function () {
           clearProductDetailNotices();
+          syncVariationState();
+        });
+        window.jQuery(form).on('show_variation', function (event, variation, purchasable) {
+          clearProductDetailNotices();
+          setVariationReady(isVariationEventReady(variation, purchasable));
           syncVariationState();
         });
         window.jQuery(document.body).on('added_to_cart.crProductDetail', function (event, fragments, cartHash, $button) {
@@ -438,6 +444,7 @@
           if (!hasAddedFeedback) showAddedFeedback();
         });
       }
+      setVariationReady(false);
       syncVariationState();
       if (body.classList.contains('cr-product-added-to-cart')) showAddedFeedback();
     }

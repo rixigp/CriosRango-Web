@@ -178,25 +178,18 @@ test('Limpiar is visually hidden while the native WooCommerce reset link remains
   assert.doesNotMatch(productUiJs, /reset_variations[^\n]*(?:remove|delete)/);
 });
 
-test('variation CTA uses the existing WooCommerce button and native variation ID state', () => {
+test('variation CTA state is written by one event-driven readiness authority', () => {
   assert.ok(productUiJs.includes("form.querySelector('button.single_add_to_cart_button')"));
-  assert.ok(productUiJs.includes("document.createElementNS('http://www.w3.org/2000/svg', 'svg')"));
-  assert.ok(productUiJs.includes("cartBody.setAttribute('d', 'M5 8h14l-1 12H6L5 8Z')"));
-  assert.ok(productUiJs.includes("cartHandle.setAttribute('d', 'M9 9V6a3 3 0 0 1 6 0v3')"));
-  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige opciones'"));
+  assert.ok(productUiJs.includes("function isVariationEventReady(variation, purchasable)"));
+  assert.ok(productUiJs.includes("function applyVariationButtonState(button, label, ready)"));
+  assert.ok(productUiJs.includes("setVariationReady(isVariationEventReady(variation, purchasable))"));
   assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
-  assert.ok(productUiJs.includes("Añadir al carrito"));
-  assert.ok(productUiJs.includes("!Number.isFinite(variationId) || variationId <= 0"));
-  assert.ok(productUiJs.includes('nativeButton.disabled = !validNativeVariation;'));
-  assert.ok(productUiJs.includes("nativeButton.setAttribute('aria-disabled', validNativeVariation ? 'false' : 'true')"));
-  assert.ok(productUiJs.includes("form.querySelector('.woocommerce-variation-add-to-cart')"));
-  assert.ok(productUiJs.includes('isNativeVariationReady(selects, variationId && variationId.value, nativeButton, addToCartWrapper)'));
-  assert.match(skinCss, /\.single_add_to_cart_button\s*\{[^}]*height:\s*52px;[^}]*min-height:\s*52px;/s);
-  assert.match(skinCss, /\.single_add_to_cart_button:disabled[\s\S]*?background:\s*#E4EFEA;/);
-  assert.match(skinCss, /\.single_add_to_cart_button:not\(:disabled\)[\s\S]*?background:\s*#183B35;/);
-  assert.match(skinCss, /\.cr-product-cart-icon\s*\{[^}]*stroke:\s*currentColor;/s);
+  assert.ok(productUiJs.includes("form.querySelector('input.variation_id')"));
+  assert.match(productUiJs,/var selectedVariationId = Number\\(variationId\\.value\\)/);
+  assert.ok(productUiJs.includes("selectedVariationId <= 0"));
+  assert.doesNotMatch(productUiJs,/woocommerce-variation-add-to-cart-enabled/);
+  assert.doesNotMatch(productUiJs,/function isNativeVariationReady/);
 });
-
 test('CTA uses light mint before selection, dark green for a valid variation, and temporary mint success feedback', () => {
   assert.ok(productUiJs.includes("document.querySelector('.cr-cart-link .cr-icon svg')"));
   assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
@@ -305,46 +298,85 @@ test('touch tap delegates to WooCommerce native lightbox while swipe remains nat
   assert.equal(productUiJs.includes("new Lightbox"), false);
 });
 
-test('variable CTA is disabled until every native attribute and WooCommerce-confirmed variation are valid', () => {
-  const sandboxModule = { exports: {} };
-  vm.runInNewContext(productUiJs, {
-    module: sandboxModule,
-    document: { readyState: 'loading', addEventListener() {} }
-  });
-  const { isNativeVariationReady } = sandboxModule.exports;
-  const select = (value, disabled) => ({
-    value,
-    selectedIndex: value ? 1 : 0,
-    options: [{ value: '', disabled: false }, { value, disabled: !!disabled }]
-  });
-  const button = { classList: { contains: () => false } };
-  const wrapper = { classList: { contains: (name) => name === 'woocommerce-variation-add-to-cart-enabled' } };
-
-  assert.equal(isNativeVariationReady([select('', false), select('', false)], '0', button, wrapper), false);
-  assert.equal(isNativeVariationReady([select('azul', false), select('', false)], '0', button, wrapper), false);
-  assert.equal(isNativeVariationReady([select('', false), select('M', false)], '0', button, wrapper), false);
-  assert.equal(isNativeVariationReady([select('azul', false), select('M', false)], '0', button, wrapper), false);
-  assert.equal(isNativeVariationReady([select('azul', false), select('M', false)], 'NaN', button, wrapper), false);
-  assert.equal(isNativeVariationReady([select('azul', true), select('M', false)], '357', button, wrapper), false);
-  assert.equal(isNativeVariationReady([select('azul', false), select('M', false), select('', false)], '357', button, wrapper), false);
-  assert.equal(isNativeVariationReady([select('azul', false), select('M', false)], '357', {
-    classList: { contains: (name) => name === 'wc-variation-is-unavailable' }
-  }, wrapper), false);
-  assert.equal(isNativeVariationReady([select('azul', false), select('M', false)], '357', button, wrapper), true);
-  assert.equal(isNativeVariationReady([select('azul', false), select('', false)], '357', button, wrapper), false);
+test('first valid variation enables CTA on one show_variation event despite stale disabled wrapper class', () => {
+  const sandboxModule={exports:{}};
+  vm.runInNewContext(productUiJs,{module:sandboxModule,document:{readyState:'loading',addEventListener(){}}});
+  const {isVariationEventReady,applyVariationButtonState}=sandboxModule.exports;
+  const button={disabled:true,attrs:{'aria-disabled':'true'},setAttribute(name,value){this.attrs[name]=value;}};
+  const label={textContent:'Elige opciones'};
+  const staleWrapperClass='woocommerce-variation-add-to-cart-disabled';
+  assert.equal(button.disabled,true);
+  assert.equal(label.textContent,'Elige opciones');
+  assert.equal(staleWrapperClass,'woocommerce-variation-add-to-cart-disabled');
+  const ready=isVariationEventReady({variation_id:12345},true);
+  applyVariationButtonState(button,label,ready);
+  assert.equal(ready,true);
+  assert.equal(label.textContent,'Añadir al carrito');
+  assert.equal(button.disabled,false);
+  assert.equal(button.attrs['aria-disabled'],'false');
 });
+
+test('variation readiness requires a positive event variation ID and purchasable=true', () => {
+  const sandboxModule={exports:{}};
+  vm.runInNewContext(productUiJs,{module:sandboxModule,document:{readyState:'loading',addEventListener(){}}});
+  const {isVariationEventReady,applyVariationButtonState}=sandboxModule.exports;
+  assert.equal(isVariationEventReady({variation_id:12345},true),true);
+  assert.equal(isVariationEventReady({variation_id:'12345'},true),true);
+  assert.equal(isVariationEventReady({variation_id:0},true),false);
+  assert.equal(isVariationEventReady({variation_id:'NaN'},true),false);
+  assert.equal(isVariationEventReady({variation_id:12345},false),false);
+  assert.equal(isVariationEventReady(null,true),false);
+  const button={disabled:false,attrs:{},setAttribute(name,value){this.attrs[name]=value;}};
+  const label={textContent:'Añadir al carrito'};
+  applyVariationButtonState(button,label,false);
+  assert.equal(button.disabled,true);
+  assert.equal(button.attrs['aria-disabled'],'true');
+  assert.equal(label.textContent,'Elige opciones');
+});
+
+test('show_variation is sole READY authority and chip sync cannot overwrite it', () => {
+  const s=productUiJs.indexOf('function syncVariationState()'),e=productUiJs.indexOf('function getProductDetailNoticeRoot()',s);
+  assert.doesNotMatch(productUiJs.slice(s,e),/nativeButton\\.disabled|aria-disabled|nativeButtonLabel\\.textContent|setVariationReady/);
+  assert.match(productUiJs,/on\\('show_variation', function \\(event, variation, purchasable\\) \\{[\\s\\S]*?setVariationReady\\(isVariationEventReady\\(variation, purchasable\\)\\)/);
+  assert.ok(productUiJs.includes("on('reset_data hide_variation'"));
+  assert.ok(productUiJs.includes("on('woocommerce_update_variation_values', syncVariationState)"));
+  assert.ok(productUiJs.includes("form.addEventListener('change', function (event)"));
+  assert.ok(productUiJs.includes('if (selects.indexOf(event.target) !== -1) setVariationReady(false)'));
+  assert.doesNotMatch(productUiJs,/woocommerce-variation-add-to-cart-enabled/);
+  assert.doesNotMatch(productUiJs,/woocommerce-variation-add-to-cart-disabled/);
+  assert.ok(productUiJs.includes('setVariationReady(currentVariationReady)'));
+});
+
+test('hide, non-purchasable and READY-to-READY transitions update CTA state', () => {
+  const sandboxModule={exports:{}};
+  vm.runInNewContext(productUiJs,{module:sandboxModule,document:{readyState:'loading',addEventListener(){}}});
+  const {isVariationEventReady,applyVariationButtonState}=sandboxModule.exports;
+  const button={disabled:true,attrs:{},setAttribute(name,value){this.attrs[name]=value;}};
+  const label={textContent:'Elige opciones'};
+  const apply=(variation,purchasable)=>{const ready=isVariationEventReady(variation,purchasable);applyVariationButtonState(button,label,ready);return ready;};
+  assert.equal(apply({variation_id:12345},true),true);
+  assert.equal(button.disabled,false);
+  assert.equal(apply({variation_id:12346},true),true);
+  assert.equal(button.disabled,false);
+  assert.equal(apply({variation_id:12346},false),false);
+  assert.equal(button.disabled,true);
+  assert.equal(label.textContent,'Elige opciones');
+  assert.ok(productUiJs.includes('setVariationReady(currentVariationReady)'));
+  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
+});
+
 
 test('incomplete variation CTA has no alert, warning, notice or scroll behavior', () => {
   assert.equal(productUiJs.includes('window.alert('), false);
   assert.equal(productUiJs.includes('cr-product-variation-warning'), false);
   assert.equal(productUiJs.includes('scrollIntoView'), false);
   assert.equal(productUiJs.includes('scrollTo('), false);
-  assert.ok(productUiJs.includes("nativeButton.disabled = !validNativeVariation;"));
-  assert.ok(productUiJs.includes("nativeButton.setAttribute('aria-disabled', validNativeVariation ? 'false' : 'true')"));
-  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige opciones'"));
+  assert.ok(productUiJs.includes("button.disabled = !ready"));
+  assert.ok(productUiJs.includes("button.setAttribute('aria-disabled', ready ? 'false' : 'true')"));
+  assert.ok(productUiJs.includes("label.textContent = ready ? 'Añadir al carrito' : 'Elige opciones'"));
   assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
-  assert.ok(productUiJs.includes("window.jQuery(form).on('found_variation show_variation'"));
-  assert.ok(productUiJs.includes("window.jQuery(form).on('woocommerce_update_variation_values reset_data hide_variation'"));
+  assert.ok(productUiJs.includes("on('show_variation', function (event, variation, purchasable)"));
+  assert.ok(productUiJs.includes("on('reset_data hide_variation'"));
 });
 
 test('color chips render every non-empty native select option and audit counts', () => {
@@ -393,7 +425,7 @@ test('shared variation chip toggle contract is limited to size and color and use
   assert.equal(productUiJs.includes("isToggleAttribute = isSize || isColor ||"), false);
   assert.equal(productUiJs.includes("variation_id.value ="), false);
   assert.equal(productUiJs.includes("variationId.value ="), false);
-  assert.equal(productUiJs.includes("variation.variation_id"), false);
+  assert.equal(productUiJs.includes("variation.variation_id"), true);
 });
 
 test('size chip remains independently toggleable through its native select', () => {
