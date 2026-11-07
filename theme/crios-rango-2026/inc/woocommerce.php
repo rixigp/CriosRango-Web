@@ -165,7 +165,10 @@ function cr2026_product_list_rest_response( WP_REST_Request $request ) {
     $rendered_html = ob_get_clean();
     cr2026_catalog_timing_add( 'render', $render_started_at );
     return rest_ensure_response( array(
-        'html' => $rendered_html, 'html' => ob_get_clean(), 'has_more' => $has_more, 'count' => count( $products ) ) );
+        'html' => $rendered_html,
+        'has_more' => $has_more,
+        'count' => count( $products ),
+    ) );
 }
 
 /**

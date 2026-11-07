@@ -862,3 +862,62 @@ test('staging benchmark captures transport metrics before JSON validation across
     'X-CriosRango-Persistent-Object-Cache', 'IMAGE_URL='
   ]) assert.ok(deploy.includes(marker), 'missing benchmark marker: ' + marker);
 });
+
+
+function productListResponseSource() {
+  const start = php.indexOf('function cr2026_product_list_rest_response');
+  const end = php.indexOf('/**\n * One browser request', start);
+  assert.ok(start >= 0 && end > start, 'product-list REST callback must exist');
+  return php.slice(start, end);
+}
+
+test('PRODUCT_LIST_BUFFER_START_ONCE=PASS', () => {
+  const fn = productListResponseSource();
+  assert.equal((fn.match(/ob_start\s*\(/g) || []).length, 1);
+});
+
+test('PRODUCT_LIST_BUFFER_CLEAN_ONCE=PASS', () => {
+  const fn = productListResponseSource();
+  assert.equal((fn.match(/ob_get_clean\s*\(/g) || []).length, 1);
+});
+
+test('PRODUCT_LIST_HTML_KEY_ONCE=PASS', () => {
+  const fn = productListResponseSource();
+  const capture = fn.indexOf('$rendered_html = ob_get_clean();');
+  const responseStart = fn.indexOf('return rest_ensure_response( array(', capture);
+  const responseEnd = fn.indexOf(');', responseStart);
+  const normalResponse = fn.slice(responseStart, responseEnd + 2);
+  assert.equal((normalResponse.match(/'html'\s*=>/g) || []).length, 1);
+  assert.match(normalResponse, /'html'\s*=>\s*\$rendered_html/);
+});
+
+test('PRODUCT_LIST_VALID_JSON=PASS and PRODUCT_LIST_NO_LEAKED_HTML=PASS', () => {
+  const fn = productListResponseSource();
+  const startBuffer = fn.indexOf('ob_start();');
+  const cardRender = fn.indexOf('cr2026_render_product_card(');
+  const cleanBuffer = fn.indexOf('$rendered_html = ob_get_clean();');
+  const response = fn.indexOf('return rest_ensure_response( array(', cleanBuffer);
+  assert.ok(startBuffer >= 0 && cardRender > startBuffer && cleanBuffer > cardRender && response > cleanBuffer);
+  assert.match(fn.slice(response), /^return rest_ensure_response\( array\(/);
+  assert.doesNotMatch(fn, /^\s*(?:echo|print)\b/m);
+  assert.doesNotMatch(fn.slice(response), /ob_get_clean\s*\(/);
+});
+
+test('PRODUCT_LIST_RESPONSE_SCHEMA_UNCHANGED=PASS', () => {
+  const fn = productListResponseSource();
+  const capture = fn.indexOf('$rendered_html = ob_get_clean();');
+  const responseStart = fn.indexOf('return rest_ensure_response( array(', capture);
+  const responseEnd = fn.indexOf(');', responseStart);
+  const normalResponse = fn.slice(responseStart, responseEnd + 2);
+  for (const field of ['html', 'has_more', 'count']) {
+    assert.equal((normalResponse.match(new RegExp("'" + field + "'\\s*=>", 'g')) || []).length, 1);
+  }
+  assert.match(fn, /return rest_ensure_response\( array\( 'html' => '', 'has_more' => false, 'count' => 0 \) \)/);
+});
+
+test('PRODUCT_LIST_CARD_HTML_PRESERVED=PASS', () => {
+  const fn = productListResponseSource();
+  assert.match(fn, /foreach \( \$products as \$index => \$product \) \{\s*cr2026_render_product_card\( \$product, \$index \+ \( \$page > 1 \? 4 : 0 \) \);\s*\}/);
+  assert.match(fn, /ob_start\(\);[\s\S]*?foreach \( \$products as \$index => \$product \)/);
+  assert.match(fn, /cr2026_render_product_card\( \$product, \$index \+ \( \$page > 1 \? 4 : 0 \) \)/);
+});
