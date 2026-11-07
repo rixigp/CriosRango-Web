@@ -183,6 +183,25 @@ test('catalog endpoint echoes page size and staging debug exposes all ID layers 
   assert.match(js, /prices,returned_total:responseData\.total,total:responseData\.total/);
 });
 
+test('staging baseline failure is fail-closed and FULL is reserved for confirmed absence', () => {
+  assert.match(deploy, /BASELINE_STATUS="VALID"/);
+  assert.match(deploy, /BASELINE_STATUS="ABSENT"/);
+  assert.match(deploy, /BASELINE_STATUS="UNAVAILABLE"/);
+  assert.match(deploy, /BASELINE_ERROR="curl_exit_\$\{BASELINE_CURL_EXIT\}"/);
+  assert.match(deploy, /BASELINE_CURL_EXIT\] -eq 78 \] && \[ "\$BASELINE_RESPONSE_CODE" = "550"/);
+  assert.match(deploy, /DEPLOY_MODE="ABORTED"/);
+  assert.match(deploy, /DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE/);
+  assert.match(deploy, /--retry 2/);
+  assert.match(deploy, /BASELINE_STATUS=ABSENT; confirmed missing remote manifest/);
+  assert.doesNotMatch(deploy, /Incremental baseline unavailable or unsafe; using full runtime fallback/);
+  const abortAt = deploy.indexOf('DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE');
+  const deleteLoopAt = deploy.indexOf('for FILE in "${DELETE_FILES[@]}"');
+  const uploadLoopAt = deploy.indexOf('for FILE in "${UPLOAD_FILES[@]}"');
+  assert.ok(abortAt >= 0 && deleteLoopAt > abortAt && uploadLoopAt > abortAt,
+    'abort must exit before any FTP delete/upload loop');
+  assert.match(deploy, /if \[ "\$DEPLOY_MODE" = "INCREMENTAL" \]; then/);
+});
+
 test('staging deploy is exact-HEAD guarded, incremental and verifies the deployed runtime SHA', () => {
   assert.ok(deploy.includes('Check exact PR13 staging HEAD'));
   assert.ok(deploy.includes('git fetch origin fix/catalog-runtime-parity'));

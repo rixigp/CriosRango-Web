@@ -564,27 +564,71 @@ jobs:
           MANIFEST_FILE="$(mktemp)"
           trap 'rm -f "$DIFF_FILE" "$MANIFEST_FILE"' EXIT
 
+          BASELINE_STATUS="NOT_APPLICABLE"
+          BASELINE_ERROR=""
           if [ "$IS_STAGING" = true ]; then
-            if curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
+            BASELINE_STATUS="UNAVAILABLE"
+            BASELINE_ERROR_FILE="$(mktemp)"
+            BASELINE_MANIFEST_FILE="$(mktemp)"
+            trap 'rm -f "$DIFF_FILE" "$MANIFEST_FILE" "$BASELINE_ERROR_FILE" "$BASELINE_MANIFEST_FILE"' EXIT
+
+            set +e
+            BASELINE_RESPONSE_CODE="$(curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
               --connect-timeout 20 --retry 2 \
               --user "${SFTP_USER}:${SFTP_PASSWORD}" \
-              "$MANIFEST_URL" --output "$MANIFEST_FILE"; then
-              REMOTE_SHA="$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(typeof m.sha!=="string"||!/^([0-9a-f]{40})$/i.test(m.sha))process.exit(2);process.stdout.write(m.sha);' "$MANIFEST_FILE" 2>/dev/null || true)"
-            fi
+              --output "$BASELINE_MANIFEST_FILE" --write-out '%{response_code}' \
+              "$MANIFEST_URL" 2>"$BASELINE_ERROR_FILE")"
+            BASELINE_CURL_EXIT=$?
+            set -e
 
-            if [ -n "$REMOTE_SHA" ]; then
-              if ! git cat-file -e "${REMOTE_SHA}^{commit}" 2>/dev/null; then
-                git fetch --no-tags origin "$REMOTE_SHA" >/dev/null 2>&1 || true
-              fi
-
-              if git cat-file -e "${REMOTE_SHA}^{commit}" 2>/dev/null \
-                && git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"; then
-                if git diff --name-status -z --find-renames --find-copies \
+            if [ "$BASELINE_CURL_EXIT" -eq 0 ]; then
+              REMOTE_SHA="$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(typeof m.sha!=="string"||!/^([0-9a-f]{40})$/i.test(m.sha))process.exit(2);process.stdout.write(m.sha);' "$BASELINE_MANIFEST_FILE" 2>/dev/null || true)"
+              if [ -z "$REMOTE_SHA" ]; then
+                BASELINE_STATUS="UNAVAILABLE"
+                BASELINE_ERROR="invalid_or_unparseable_manifest"
+              else
+                BASELINE_STATUS="VALID"
+                if ! git cat-file -e "${REMOTE_SHA}^{commit}" 2>/dev/null; then
+                  git fetch --no-tags origin "$REMOTE_SHA" >/dev/null 2>&1 || true
+                fi
+                if ! git cat-file -e "${REMOTE_SHA}^{commit}" 2>/dev/null; then
+                  BASELINE_STATUS="UNAVAILABLE"
+                  BASELINE_ERROR="remote_sha_not_available_in_git"
+                elif ! git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"; then
+                  BASELINE_STATUS="UNAVAILABLE"
+                  BASELINE_ERROR="remote_sha_not_ancestor_of_head"
+                elif ! git diff --name-status -z --find-renames --find-copies \
                   "$REMOTE_SHA" "$HEAD_SHA" -- "$THEME_ROOT" > "$DIFF_FILE"; then
+                  BASELINE_STATUS="UNAVAILABLE"
+                  BASELINE_ERROR="git_diff_failed"
+                else
                   DEPLOY_MODE="INCREMENTAL"
                 fi
               fi
+            elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then
+              BASELINE_STATUS="ABSENT"
+              REMOTE_SHA=""
+              DEPLOY_MODE="FULL"
+            else
+              BASELINE_STATUS="UNAVAILABLE"
+              BASELINE_ERROR="curl_exit_${BASELINE_CURL_EXIT}"
             fi
+
+            echo "BASELINE_STATUS=$BASELINE_STATUS"
+            if [ -n "$REMOTE_SHA" ]; then echo "REMOTE_SHA=$REMOTE_SHA"; else echo "REMOTE_SHA=NONE"; fi
+            if [ -n "$BASELINE_ERROR" ]; then echo "BASELINE_ERROR=$BASELINE_ERROR"; fi
+
+            if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then
+              DEPLOY_MODE="ABORTED"
+              echo "DEPLOY_MODE=$DEPLOY_MODE"
+              echo "DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE"
+              echo "UPLOAD_COUNT=0"
+              echo "DELETE_COUNT=0"
+              exit 1
+            fi
+          else
+            # Production deploys retain the explicitly documented full-deploy policy.
+            DEPLOY_MODE="FULL"
           fi
 
           if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then
@@ -631,7 +675,7 @@ jobs:
               esac
             done < "$DIFF_FILE"
           else
-            echo "Incremental baseline unavailable or unsafe; using full runtime fallback."
+            echo "BASELINE_STATUS=ABSENT; confirmed missing remote manifest, using documented full deploy."
             while IFS= read -r -d '' FILE; do
               PATH_NAME="${FILE#./}"
               if ! safe_relative_path "$PATH_NAME"; then
