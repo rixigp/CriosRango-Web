@@ -72,9 +72,16 @@ function cr2026_product_listing_main_query( $query ) {
     if ( ! $is_shop_query && ! $is_category_query && ! $is_brand_query ) { return; }
 
     if ( $is_brand_query ) {
-        // Keep the existing product_brand main query and its taxonomy clause.
-        // Only share the canonical catalogue sort vars with catalog-page.
-        $sort_args = cr2026_catalog_sort_query_vars( $query->get( 'orderby' ) );
+        // Brand archives render the existing product_brand main query directly.
+        // Read the same public orderby token used by the category selector,
+        // then apply the canonical catalogue mapping and shared SQL clauses.
+        $requested_sort = isset( $_GET['orderby'] )
+            ? sanitize_key( wp_unslash( $_GET['orderby'] ) )
+            : 'date';
+        if ( ! in_array( $requested_sort, array( 'date', 'price', 'price-desc', 'title' ), true ) ) {
+            $requested_sort = 'date';
+        }
+        $sort_args = cr2026_catalog_sort_query_vars( $requested_sort );
         $query->set( 'orderby', $sort_args['orderby'] );
         $query->set( 'order', $sort_args['order'] );
         return;
