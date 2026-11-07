@@ -767,7 +767,7 @@ test('subcategory query order is NAME_ASC and top-level Home editorial order rem
 
 test('catalog-page exposes monotonic Server-Timing diagnostics without changing its JSON payload', () => {
   assert.match(php, /function cr2026_catalog_timer_now\(\)[\s\S]*?hrtime\( true \)/);
-  assert.match(php, /function cr2026_catalog_timing_headers\([\s\S]*?rest_pre_serve_request/);
+  assert.match(php, /function cr2026_catalog_timing_headers\([\s\S]*?rest_post_dispatch/);
   assert.match(php, /catalog-total;dur=/);
   for (const stage of ['filter','products','render','cache','other']) assert.match(php, new RegExp(stage + ';dur='));
   assert.match(php, /X-CriosRango-Catalog-Cache', 'BYPASS'/);

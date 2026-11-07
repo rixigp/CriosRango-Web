@@ -217,9 +217,9 @@ function cr2026_catalog_timing_add( $stage, $started_at ) {
 }
 
 /** Add Server-Timing headers immediately before the REST response is served. */
-function cr2026_catalog_timing_headers( $served, $result, $request, $server ) {
+function cr2026_catalog_timing_headers( $response, $server, $request ) {
     if ( ! $request instanceof WP_REST_Request || '/cr2026/v1/catalog-page' !== $request->get_route() ) {
-        return $served;
+        return $response;
     }
 
     $timing = isset( $GLOBALS['cr2026_catalog_timing'] ) && is_array( $GLOBALS['cr2026_catalog_timing'] )
@@ -244,15 +244,15 @@ function cr2026_catalog_timing_headers( $served, $result, $request, $server ) {
         'other;dur=' . $to_ms( $other_ns ),
     ) );
 
-    if ( $result instanceof WP_REST_Response ) {
-        $result->header( 'Server-Timing', $server_timing );
-        $result->header( 'X-CriosRango-Catalog-Cache', 'BYPASS' );
-        $result->header( 'X-CriosRango-Persistent-Object-Cache', function_exists( 'wp_using_ext_object_cache' ) && wp_using_ext_object_cache() ? 'YES' : 'NO' );
+    if ( $response instanceof WP_REST_Response ) {
+        $response->header( 'Server-Timing', $server_timing );
+        $response->header( 'X-CriosRango-Catalog-Cache', 'BYPASS' );
+        $response->header( 'X-CriosRango-Persistent-Object-Cache', function_exists( 'wp_using_ext_object_cache' ) && wp_using_ext_object_cache() ? 'YES' : 'NO' );
     }
 
-    return $served;
+    return $response;
 }
-add_filter( 'rest_pre_serve_request', 'cr2026_catalog_timing_headers', 10, 4 );
+add_filter( 'rest_post_dispatch', 'cr2026_catalog_timing_headers', 10, 3 );
 
 function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $GLOBALS['cr2026_catalog_timing'] = array(

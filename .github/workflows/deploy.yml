@@ -813,7 +813,8 @@ jobs:
           console.log('OBJECT_CACHE_TYPE=UNKNOWN');
           console.log('CATALOG_CACHE=' + header('X-CriosRango-Catalog-Cache'));
           console.log('PAGE_CACHE_PRESENT=' + pageCache);
-          if (!valid || first !== '{' || header('X-CriosRango-Persistent-Object-Cache') === 'UNKNOWN') process.exitCode = 1;
+          // Missing optional diagnostics are reported as UNKNOWN, never allowed to discard the remaining samples.
+          if (!valid || first !== '{') process.exitCode = 1;
           NODE
               if [ "$HTTP_STATUS" != "200" ]; then
                 echo "BENCHMARK_HTTP_FAILURE=$LABEL/$SAMPLE/$INDEX"
