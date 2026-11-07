@@ -629,7 +629,7 @@ test('gallery zoom trigger stays hidden while native WooCommerce lightbox and Fl
 test('final mobile block order places share after gallery and before title, size help and variations', () => {
   assert.ok(skin.indexOf("add_action( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_actions', 31 )") < skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )"));
   assert.ok(skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )") < skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
-  assert.match(skinCss, /font-size: clamp\\(22px, 5\\.5vw, 28px\\)/);
+  assert.match(skinCss, /font-size: clamp\(22px, 5\.5vw, 28px\)/);
   assert.match(skinCss, /flex: 0 0 104px/);
   assert.match(skinCss, /min-height: 60px/);
   assert.match(skinCss, /white-space: nowrap/);
