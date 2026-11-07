@@ -8,12 +8,14 @@ const root = path.resolve(__dirname, '..');
 const jsPath = path.join(root, 'theme/crios-rango-2026/assets/js/main.js');
 const phpPath = path.join(root, 'theme/crios-rango-2026/inc/woocommerce.php');
 const helpersPath = path.join(root, 'theme/crios-rango-2026/inc/helpers.php');
+const cssPath = path.join(root, 'theme/crios-rango-2026/assets/css/main.css');
 const archivePath = path.join(root, 'theme/crios-rango-2026/archive-product.php');
 const deployPath = path.join(root, '.github/workflows/deploy.yml');
 
 const js = fs.readFileSync(jsPath, 'utf8');
 const php = fs.readFileSync(phpPath, 'utf8');
 const helpers = fs.readFileSync(helpersPath, 'utf8');
+const css = fs.readFileSync(cssPath, 'utf8');
 const archive = fs.readFileSync(archivePath, 'utf8');
 const deploy = fs.readFileSync(deployPath, 'utf8');
 
