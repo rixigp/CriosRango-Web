@@ -646,3 +646,63 @@ test('category and Outlet contexts remain separate from brand context', () => {
   assert.match(php, /\$filter_params\['outlet_category_id'\] = \$outlet_category_id/);
   assert.match(php, /'outlet' === \$scope/);
 });
+
+
+test('Novedades route renders all products through the shared catalog listing with recent-first default', () => {
+  const routes = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/catalog-routes.php'), 'utf8');
+  assert.match(routes, /\^novedades\/\?\$.*cr2026_novelties=1/s);
+  assert.match(routes, /cr2026_novelties.*archive-product\.php/s);
+  assert.match(archive, /! get_query_var\( 'cr2026_novelties' \)/);
+  assert.match(archive, /\$listing_category_id = \$listing_term \? \(int\) \$listing_term->term_id : 0/);
+  assert.match(archive, /\$is_novelties_view \? __\( 'Novedades'/);
+  assert.match(archive, /\$listing_orderby = isset\( \$_GET\['orderby'\] \).*: 'date'/s);
+  assert.match(archive, /cr2026_render_category_filter_sheet\( \$listing_term, \$listing_context \)/);
+  assert.match(js, /scope:outletCategoryId\?'outlet':'catalog'/);
+  assert.match(archive, /data-cr-product-load-more/);
+});
+
+test('Nuestras marcas route uses only populated product_brand terms in NAME_ASC order', () => {
+  const routes = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/catalog-routes.php'), 'utf8');
+  const brandTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/page-marcas.php'), 'utf8');
+  const indexFn = helpers.slice(helpers.indexOf('function cr2026_brands_index_terms'), helpers.indexOf('function cr2026_home_brand_image_url'));
+  assert.match(routes, /\^marcas\/\?\$.*cr2026_brands_index=1/s);
+  assert.match(routes, /cr2026_brands_index.*page-marcas\.php/s);
+  assert.match(indexFn, /'taxonomy'\s*=>\s*'product_brand'/);
+  assert.match(indexFn, /'hide_empty'\s*=>\s*true/);
+  assert.match(indexFn, /'orderby'\s*=>\s*'name'/);
+  assert.match(indexFn, /'order'\s*=>\s*'ASC'/);
+  assert.doesNotMatch(indexFn, /product_tag/);
+  assert.match(brandTemplate, /cr2026_brands_index_terms\(\)/);
+  assert.match(brandTemplate, /data-brand-term-id=/);
+  assert.match(brandTemplate, /data-brand-term-name=/);
+  assert.match(brandTemplate, /data-brand-term-slug=/);
+  assert.match(brandTemplate, /get_term_link\( \$brand, 'product_brand' \)/);
+  assert.match(brandTemplate, /if \( \$brand_logo \)[\s\S]*?<img[\s\S]*?<\?php else : \?>[\s\S]*?<span>/);
+  assert.match(brandTemplate, /get_footer\( 'shop' \)/);
+});
+
+test('brands index cards are white, clickable, contain logos and use two mobile columns', () => {
+  const brandTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/page-marcas.php'), 'utf8');
+  assert.match(brandTemplate, /<a class="cr-brands-index__card"/);
+  assert.match(css, /\.cr-brands-index__grid\s*\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/s);
+  assert.match(css, /\.cr-brands-index__card\s*\{[^}]*background:#fff/s);
+  assert.match(css, /\.cr-brands-index__card img\s*\{[^}]*object-fit:contain/s);
+  assert.match(css, /\.cr-brands-index__card span\s*\{/);
+  assert.match(css, /@media \(min-width:768px\)[\s\S]*?\.cr-brands-index__grid\s*\{[^}]*repeat\(4,/s);
+});
+
+test('product listing canvas uses the canonical global app background token', () => {
+  assert.match(css, /--cr-app-canvas:\s*#FCFAF7/i);
+  assert.match(css, /body\.cr-product-listing-view\s*\{\s*background:var\(--cr-app-canvas\)/);
+  assert.match(css, /body\.cr-product-listing-view \.cr-product-listing\s*\{[^}]*background:var\(--cr-app-canvas\)/s);
+});
+
+test('subcategory query order is NAME_ASC and top-level Home editorial order remains untouched', () => {
+  const childFn = helpers.slice(helpers.indexOf('function cr2026_product_cat_children'), helpers.indexOf('function cr2026_product_cat_display_name'));
+  assert.match(childFn, /'orderby'\s*=>\s*'name'/);
+  assert.match(childFn, /'order'\s*=>\s*'ASC'/);
+  assert.doesNotMatch(childFn, /usort\s*\(/);
+  const homeCategories = helpers.slice(helpers.indexOf('function cr2026_home_categories'), helpers.indexOf('function cr2026_app_nav_urls'));
+  const ids = Array.from(homeCategories.matchAll(/'id'\s*=>\s*(\d+)/g), match => Number(match[1]));
+  assert.deepEqual(ids, [560, 292, 294, 420, 504, 509, 70, 71, 68, 310, 67, 445]);
+});
