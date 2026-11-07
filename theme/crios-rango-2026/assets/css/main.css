@@ -621,12 +621,6 @@ body.home {
   color: #23473e;
 }
 
-body.home .cr-app-header .cr-cart-count,
-body.home .cr-mobile-bottom-nav .cr-cart-count {
-  background: #b3261e;
-  color: #fff;
-}
-
 /* App dock. Other pages keep their existing styles; Home uses these exact labels/order. */
 .cr-app-bottom-nav .is-active {
   color: #111 !important;
@@ -2719,7 +2713,16 @@ body.search .cr-search-form input[type="search"] {
   min-width:0; min-height:44px; flex:1 1 auto; padding:6px 0; border:0; outline:0;
   background:transparent; color:#183B35; font:400 16px/22px "Roboto",Arial,sans-serif;
 }
-body.search .cr-search-form input[type="search"]::-webkit-search-cancel-button { display:none; }
+body.search .cr-search-form input[type="search"]::-webkit-search-cancel-button,
+body.search .cr-search-form input[type="search"]::-webkit-search-decoration,
+body.search .cr-search-form input[type="search"]::-webkit-search-results-button,
+body.search .cr-search-form input[type="search"]::-webkit-search-results-decoration,
+body.search .cr-search-form input[type="search"]::-ms-clear,
+body.search .cr-search-form input[type="search"]::-ms-reveal {
+  -webkit-appearance:none;
+  appearance:none;
+  display:none!important;
+}
 body.search .cr-search-form__clear {
   display:grid; place-items:center; flex:0 0 34px; width:34px; height:34px; min-height:34px;
   padding:0; border:0; border-radius:50%; background:transparent; color:#183B35;
@@ -2736,7 +2739,26 @@ body.search .cr-search-suggestions ul { display:flex; flex-direction:column; gap
 body.search .cr-search-suggestions a { display:block; overflow:hidden; color:#555B56; font:300 13px/19px "Roboto",Arial,sans-serif; text-decoration:none; text-overflow:ellipsis; white-space:nowrap; }
 body.search .cr-search-suggestions a span:first-child { color:#183B35; font-weight:400; }
 body.search .cr-search-results-page .cr-product-grid { margin-top:4px; }
-body.search .cr-search-no-products { width:calc(100% - 40px); margin:28px auto 10px; color:#555B56; font:300 14px/22px "Roboto",Arial,sans-serif; }
+body.search .cr-search-empty { width:calc(100% - 40px); max-width:760px; margin:14px auto 0; }
+body.search .cr-search-empty__message { margin:0 0 14px; color:#555B56; font:300 14px/22px "Roboto",Arial,sans-serif; }
+body.search .cr-search-empty__cta {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  min-height:44px;
+  padding:0 18px;
+  border:1px solid #AFC8BC;
+  border-radius:999px;
+  background:#E3EFEB;
+  color:#183B35;
+  font:400 14px/20px "Roboto",Arial,sans-serif;
+  text-decoration:none!important;
+  cursor:pointer;
+}
+body.search .cr-search-empty__cta:hover,
+body.search .cr-search-empty__cta:focus-visible { border-color:#183B35; background:#D8E9E2; color:#183B35; text-decoration:none!important; }
+
 body.search .cr-search-results-page .navigation.pagination { display:flex; justify-content:center; width:calc(100% - 40px); margin:30px auto 0; }
 body.search .cr-search-results-page .navigation.pagination .nav-links { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:7px; }
 body.search .cr-search-results-page .page-numbers {
@@ -2751,6 +2773,7 @@ body.search .cr-search-results-page .page-numbers.dots { border-color:transparen
   body.search .cr-search-form { width:calc(100% - 32px); min-height:56px; margin-bottom:16px; padding-left:14px; gap:6px; }
   body.search .cr-search-form__submit { display:none; }
   body.search .cr-search-suggestions { width:calc(100% - 32px); margin-bottom:16px; }
+  body.search .cr-search-empty { width:calc(100% - 32px); margin-top:10px; }
   body.search .cr-search-results-page .cr-product-grid { width:calc(100% - 32px); grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px 10px; }
   body.search .cr-search-results-page .navigation.pagination .page-numbers:not(.next) { display:none; }
   body.search .cr-search-results-page .navigation.pagination .page-numbers.next {

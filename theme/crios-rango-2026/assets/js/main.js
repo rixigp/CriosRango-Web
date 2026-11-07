@@ -69,18 +69,10 @@
     syncClearState();
     input.addEventListener('input', syncClearState);
     clearButton.addEventListener('click', () => {
-      if (input.value.trim() !== '') {
-        input.value = '';
-        syncClearState();
-        input.focus({ preventScroll: true });
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        return;
-      }
-      const headerPanel = clearButton.closest('[data-cr-header-search-panel]');
-      if (headerPanel) {
-        const closeButton = headerPanel.querySelector('[data-cr-header-search-close]');
-        if (closeButton) closeButton.click();
-      }
+      input.value = '';
+      syncClearState();
+      input.focus({ preventScroll: true });
+      input.dispatchEvent(new Event('input', { bubbles: true }));
     });
   });
 

@@ -409,3 +409,34 @@ test('product_brand archives render the native main query with shared product ca
   assert.match(php, /\$is_category_query = \$query->is_tax\( 'product_cat' \)/);
   assert.doesNotMatch(php, /\$is_brand_query\s*=/);
 });
+
+
+test('Search exposes exactly two app controls and the custom clear never closes the panel', () => {
+  const searchForm = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/searchform.php'), 'utf8');
+  const helpers = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/helpers.php'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
+  const clearHandler = js.slice(js.indexOf("// Search field clear control"), js.indexOf("const slides"));
+  assert.match(searchForm, /data-cr-search-clear/);
+  assert.match(helpers, /data-cr-header-search-close/);
+  assert.match(clearHandler, /input\.value = ''/);
+  assert.match(clearHandler, /input\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(clearHandler, /dispatchEvent\(new Event\('input'/);
+  assert.doesNotMatch(clearHandler, /headerSearchClose|closeButton|\.click\(\)/);
+  assert.match(styles, /::-webkit-search-cancel-button[\s\S]*?display:none!important;/);
+  assert.match(styles, /::-webkit-search-decoration/);
+  assert.match(styles, /::-ms-clear/);
+  assert.match(styles, /::-ms-reveal/);
+  assert.doesNotMatch(styles, /body\.home \.cr-app-header \.cr-cart-count,[\s\S]*?background:\s*#b3261e/);
+  assert.match(styles, /\.cr-cart-count\s*\{[\s\S]*?background:\s*var\(--cr-green\)/);
+});
+
+test('Search empty state has the compact requested copy and canonical WooCommerce Shop destination', () => {
+  const searchTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/search.php'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
+  assert.match(searchTemplate, /No encontramos productos para “%s”/);
+  assert.match(searchTemplate, /class="cr-search-empty__cta"/);
+  assert.match(searchTemplate, /Explorar catálogo/);
+  assert.match(searchTemplate, /href="<\?php echo esc_url\( cr2026_shop_url\(\) \); \?>"/);
+  assert.match(helpers, /function cr2026_shop_url\(\)[\s\S]*?wc_get_page_permalink\( 'shop' \)/);
+  assert.match(styles, /\.cr-search-empty__cta\s*\{[\s\S]*?min-height:44px[\s\S]*?border-radius:999px[\s\S]*?background:#E3EFEB[\s\S]*?text-decoration:none!important/s);
+});

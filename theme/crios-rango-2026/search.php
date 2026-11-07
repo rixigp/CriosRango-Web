@@ -83,8 +83,10 @@ if ( $is_product_search && ! empty( $GLOBALS['wp_query']->posts ) ) {
             ?>
         <?php else : ?>
             <?php if ( $is_product_search ) : ?>
-                <p class="cr-search-no-products"><?php printf( esc_html__( 'No hemos encontrado productos para “%s”.', 'crios-rango-2026' ), esc_html( $search_query ) ); ?></p>
-                <p><a href="<?php echo esc_url( cr2026_shop_url() ); ?>"><?php esc_html_e( 'Ver todos los productos', 'crios-rango-2026' ); ?></a></p>
+                <div class="cr-search-empty" role="status">
+                    <p class="cr-search-empty__message"><?php printf( esc_html__( 'No encontramos productos para “%s”', 'crios-rango-2026' ), esc_html( $search_query ) ); ?></p>
+                    <a class="cr-search-empty__cta" href="<?php echo esc_url( cr2026_shop_url() ); ?>"><?php esc_html_e( 'Explorar catálogo', 'crios-rango-2026' ); ?></a>
+                </div>
             <?php else : ?>
                 <p><?php esc_html_e( 'No hemos encontrado resultados.', 'crios-rango-2026' ); ?></p>
             <?php endif; ?>
