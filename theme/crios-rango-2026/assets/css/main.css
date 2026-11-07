@@ -2820,7 +2820,9 @@ body.search .cr-app-header {
 /* Product brand taxonomy archives use the main taxonomy query and shared product cards. */
 body.cr-product-listing-view .cr-brand-archive { width:100%; max-width:1360px; min-height:60vh; margin-inline:auto; padding:0 0 calc(88px + env(safe-area-inset-bottom)); box-sizing:border-box; background:#FCFAF7; }
 .cr-brand-archive__shell { width:100%; }
-.cr-brand-archive__heading { display:flex; flex-direction:column; align-items:center; gap:10px; margin:0 20px 20px; padding-top:16px; text-align:center; }
+.cr-brand-archive__back-row { min-height:64px; margin:0 20px; display:flex; align-items:center; }
+.cr-brand-archive__back-row .cr-parent-category__back { flex:0 0 48px; }
+.cr-brand-archive__heading { display:flex; flex-direction:column; align-items:center; gap:0; margin:0 20px 20px; padding-top:0; text-align:center; }
 .cr-brand-archive__heading h1 { margin:0; color:#183B35; font:400 clamp(22px,4vw,30px)/1.2 "Roboto",Arial,sans-serif; }
 .cr-brand-archive__heading img { display:block; width:auto; max-width:min(48vw,180px); max-height:60px; object-fit:contain; object-position:center; }
 body.cr-product-listing-view .cr-brand-archive .cr-product-grid { margin-top:0; }

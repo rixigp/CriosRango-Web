@@ -146,11 +146,11 @@ function cr2026_product_skin_back_fallback_url( $product_id ) {
 
 /** Only use browser history when the previous document is a real same-origin site page. */
 function cr2026_product_skin_contextual_back_script() {
-    if ( ! is_product() ) { return; }
+    if ( ! is_product() && ! is_tax( 'product_brand' ) ) { return; }
     ?>
-    <script id="cr-product-contextual-back">
+    <script id="cr-contextual-back">
     (function () {
-      var link = document.querySelector('.cr-product-detail-toolbar .cr-parent-category__back[data-fallback-url]');
+      var link = document.querySelector('.cr-parent-category__back[data-fallback-url]');
       if (!link) return;
       link.addEventListener('click', function (event) {
         var referrer = document.referrer;
@@ -167,7 +167,7 @@ function cr2026_product_skin_contextual_back_script() {
             window.history.back();
           }
         } catch (error) {
-          // The server-rendered category fallback remains available if referrer parsing fails.
+          // The server-rendered page fallback remains available if referrer parsing fails.
         }
       });
     }());

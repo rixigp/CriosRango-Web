@@ -11,6 +11,7 @@ if ( ! $brand_term instanceof WP_Term || 'product_brand' !== $brand_term->taxono
 
 $GLOBALS['cr2026_product_listing_view'] = true;
 $brand_logo_url = function_exists( 'cr2026_home_brand_image_url' ) ? cr2026_home_brand_image_url( $brand_term ) : '';
+$brands_index_url = function_exists( 'cr2026_home_brands_url' ) ? cr2026_home_brands_url() : home_url( '/' );
 $brand_query = isset( $GLOBALS['wp_query'] ) && $GLOBALS['wp_query'] instanceof WP_Query ? $GLOBALS['wp_query'] : null;
 $brand_found_posts = $brand_query ? (int) $brand_query->found_posts : (int) $brand_term->count;
 
@@ -24,10 +25,19 @@ get_header( 'shop' );
     data-brand-term-count="<?php echo esc_attr( (int) $brand_term->count ); ?>"
     data-brand-main-query-found="<?php echo esc_attr( $brand_found_posts ); ?>">
     <div class="cr-product-listing__shell cr-brand-archive__shell">
+        <div class="cr-brand-archive__back-row">
+            <a class="cr-parent-category__back" href="<?php echo esc_url( $brands_index_url ); ?>"
+                data-fallback-url="<?php echo esc_url( $brands_index_url ); ?>"
+                data-site-path="<?php echo esc_attr( wp_parse_url( home_url( '/' ), PHP_URL_PATH ) ); ?>"
+                aria-label="<?php esc_attr_e( 'Volver a marcas', 'crios-rango-2026' ); ?>">
+                <?php echo cr2026_icon( 'arrow' ); ?>
+            </a>
+        </div>
         <header class="cr-brand-archive__heading">
-            <h1><?php echo esc_html( $brand_term->name ); ?></h1>
             <?php if ( $brand_logo_url ) : ?>
                 <img src="<?php echo esc_url( $brand_logo_url ); ?>" alt="<?php echo esc_attr( $brand_term->name ); ?>" loading="eager" decoding="async">
+            <?php else : ?>
+                <h1><?php echo esc_html( $brand_term->name ); ?></h1>
             <?php endif; ?>
         </header>
         <?php if ( have_posts() ) : ?>

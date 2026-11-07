@@ -459,3 +459,26 @@ test('Global header search hides only the native input[type=search] clear decora
   assert.match(clearHandler, /input\.focus\(\{ preventScroll: true \}\)/);
   assert.doesNotMatch(clearHandler, /headerSearchClose|closeButton|\.click\(\)/);
 });
+
+
+test('brand archive uses the shared contextual back control and shows either logo or text, never both', () => {
+  const brandArchive = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
+  const productSkin = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/product-skin.php'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
+  assert.match(brandArchive, /function_exists\( 'cr2026_home_brands_url' \) \? cr2026_home_brands_url\(\)/);
+  assert.match(brandArchive, /class="cr-brand-archive__back-row"/);
+  assert.match(brandArchive, /class="cr-parent-category__back"/);
+  assert.match(brandArchive, /cr2026_icon\( 'arrow' \)/);
+  assert.match(brandArchive, /data-fallback-url=/);
+  assert.match(brandArchive, /data-site-path=/);
+  assert.match(brandArchive, /if \( \$brand_logo_url \)[\s\S]*?<img[\s\S]*?<\?php else : \?>[\s\S]*?<h1>/);
+  assert.doesNotMatch(brandArchive, /<h1>[\s\S]*?<img/);
+  assert.match(productSkin, /if \( ! is_product\(\) && ! is_tax\( 'product_brand' \) \) \{ return; \}/);
+  assert.match(productSkin, /document\.querySelector\('\.cr-parent-category__back\[data-fallback-url\]'\)/);
+  assert.match(productSkin, /previous\.origin === current\.origin/);
+  assert.match(productSkin, /insideSite && isDifferentPage/);
+  assert.match(styles, /\.cr-brand-archive__back-row \.cr-parent-category__back/);
+  assert.match(styles, /object-fit:contain/);
+  assert.match(brandArchive, /cr2026_render_product_card\( \$brand_product, \$brand_card_index \)/);
+  assert.match(brandArchive, /while \( have_posts\(\) \)/);
+});
