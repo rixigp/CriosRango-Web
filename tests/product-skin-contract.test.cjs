@@ -474,7 +474,7 @@ test('short-description fixtures preserve valid formatting and contain malformed
     const balanced = fixture.input + (fixture.name.startsWith('malformed') ? '</u>' : '');
     assert.equal(balanced, fixture.expected, fixture.name);
     assertBalancedMarkup(balanced);
-    assert.match(balanced, /<\/u>/);
+    assert.match(balanced, /<u>/);
     assert.match(balanced, /<\/u>/);
   }
 
