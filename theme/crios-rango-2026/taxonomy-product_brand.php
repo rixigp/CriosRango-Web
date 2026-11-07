@@ -41,6 +41,29 @@ get_header( 'shop' );
             </header>
             <span class="cr-brand-archive__back-spacer" aria-hidden="true"></span>
         </div>
+        <?php
+        $brand_archive_url = get_term_link( $brand_term );
+        if ( is_wp_error( $brand_archive_url ) ) { $brand_archive_url = home_url( '/' ); }
+        $brand_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
+        if ( ! in_array( $brand_orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $brand_orderby = 'date'; }
+        $brand_filter_values = array(
+            'size_ids' => cr2026_category_filter_selected_values( 'size_ids' ),
+            'color_ids' => cr2026_category_filter_selected_values( 'color_ids' ),
+            'brand_ids' => cr2026_category_filter_selected_values( 'brand_ids' ),
+        );
+        ?>
+        <div class="cr-brand-archive__filters">
+            <?php cr2026_render_category_filter_trigger(); ?>
+        </div>
+        <?php cr2026_render_category_filter_sheet( null, 'root' ); ?>
+        <form class="cr-brand-archive__sort-form" method="get" action="<?php echo esc_url( $brand_archive_url ); ?>" data-cr-brand-sort>
+            <?php foreach ( $brand_filter_values as $filter_key => $filter_values ) : ?>
+                <?php if ( ! empty( $filter_values ) ) : ?>
+                    <input type="hidden" name="<?php echo esc_attr( $filter_key ); ?>" value="<?php echo esc_attr( implode( ',', $filter_values ) ); ?>">
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <?php cr2026_render_category_ordering( $brand_orderby ); ?>
+        </form>
         <?php if ( have_posts() ) : ?>
             <div class="cr-product-grid" data-cr-brand-product-grid aria-live="polite">
                 <?php

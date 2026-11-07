@@ -55,17 +55,7 @@ get_header( 'shop' );
         <?php if ( $listing_outlet_category_id ) { cr2026_render_outlet_bubbles( $listing_outlet_category_id ); } ?>
         <div class="cr-product-listing__active-filters" data-cr-active-filter-chips hidden aria-live="polite"></div>
         <?php cr2026_render_category_filter_sheet( $listing_term, $listing_context ); ?>
-        <div class="cr-product-listing__ordering">
-            <label for="cr-product-order"><?php esc_html_e( 'Ordenar por', 'crios-rango-2026' ); ?></label>
-            <span class="cr-product-listing__select-wrap">
-                <select id="cr-product-order" data-cr-product-order aria-label="<?php esc_attr_e( 'Ordenar productos', 'crios-rango-2026' ); ?>">
-                    <option value="date"<?php selected( 'date', $listing_orderby ); ?>><?php esc_html_e( 'Más recientes', 'crios-rango-2026' ); ?></option>
-                    <option value="price"<?php selected( 'price', $listing_orderby ); ?>><?php esc_html_e( 'Precio: menor a mayor', 'crios-rango-2026' ); ?></option>
-                    <option value="price-desc"<?php selected( 'price-desc', $listing_orderby ); ?>><?php esc_html_e( 'Precio: mayor a menor', 'crios-rango-2026' ); ?></option>
-                    <option value="title"<?php selected( 'title', $listing_orderby ); ?>><?php esc_html_e( 'Nombre A-Z', 'crios-rango-2026' ); ?></option>
-                </select>
-            </span>
-        </div>
+        <?php cr2026_render_category_ordering( $listing_orderby ); ?>
         <div class="cr-product-grid" data-cr-product-grid aria-live="polite">
             <?php for ( $skeleton_index = 0; $skeleton_index < 4; $skeleton_index++ ) : ?>
                 <div class="cr-product-skeleton" aria-hidden="true"><span></span><i></i><b></b></div>
