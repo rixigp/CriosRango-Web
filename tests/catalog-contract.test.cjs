@@ -326,3 +326,23 @@ test('main product searches bypass Shop/category archive query mutators',()=>{
   assert.match(php, /add_action\( 'pre_get_posts', 'cr2026_product_listing_main_query', 99 \)/);
   assert.match(php, /add_filter\( 'posts_pre_query', 'cr2026_product_listing_short_circuit_query', 20, 2 \)/);
 });
+
+
+test('product search uses compact app-like search field, preserves query, and keeps product suggestions linked to detail',()=>{
+  const searchTemplate=fs.readFileSync(path.join(root,'theme/crios-rango-2026/search.php'),'utf8');
+  const searchForm=fs.readFileSync(path.join(root,'theme/crios-rango-2026/searchform.php'),'utf8');
+  const styles=fs.readFileSync(path.join(root,'theme/crios-rango-2026/assets/css/main.css'),'utf8');
+  assert.match(searchTemplate,/get_search_query\(\)/);
+  assert.match(searchForm,/name="s" value="<\?php echo esc_attr\( get_search_query\(\) \); \?>"/);
+  assert.match(searchForm,/name="post_type" value="product"/);
+  assert.match(searchTemplate,/cr2026_render_product_card\( \$search_product, \$card_index \)/);
+  assert.match(searchTemplate,/cr-search-suggestions/);
+  assert.match(searchTemplate,/get_permalink\( \$suggestion_product->get_id\(\) \)/);
+  assert.match(styles,/body\.search \.cr-search-form__submit \{ display:none; \}/);
+  assert.match(styles,/background:#FCFAF7/);
+  assert.match(styles,/\.cr-search-results-page \.page-numbers/);
+  assert.match(styles,/scroll-padding-top:var\(--cr-app-topbar-height,64px\)/);
+  assert.match(searchForm,/data-cr-search-clear/);
+  assert.match(js,/data-cr-search-clear/);
+  assert.match(js,/input\.dispatchEvent\(new Event\('input'/);
+});

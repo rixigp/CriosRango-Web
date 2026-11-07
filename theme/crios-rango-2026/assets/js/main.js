@@ -60,6 +60,30 @@
     });
   }
 
+  // Search field clear control: clear the current query without submitting an empty search.
+  document.querySelectorAll('form.cr-search-form [data-cr-search-clear]').forEach((clearButton) => {
+    const form = clearButton.closest('form');
+    const input = form ? form.querySelector('input[type="search"][name="s"]') : null;
+    if (!input) return;
+    const syncClearState = () => clearButton.hidden = input.value.length === 0;
+    syncClearState();
+    input.addEventListener('input', syncClearState);
+    clearButton.addEventListener('click', () => {
+      if (input.value.trim() !== '') {
+        input.value = '';
+        syncClearState();
+        input.focus({ preventScroll: true });
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        return;
+      }
+      const headerPanel = clearButton.closest('[data-cr-header-search-panel]');
+      if (headerPanel) {
+        const closeButton = headerPanel.querySelector('[data-cr-header-search-close]');
+        if (closeButton) closeButton.click();
+      }
+    });
+  });
+
   const slides = Array.from(document.querySelectorAll('[data-cr-hero-slide]'));
   if (slides.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     let index = 0;
