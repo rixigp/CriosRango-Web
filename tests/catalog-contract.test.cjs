@@ -160,7 +160,7 @@ test('staging deploy is exact-HEAD guarded, incremental and verifies the deploye
 });
 
 test('web sort options reproduce app enum mapping including Name A-Z', () => {
-  assert.match(archive, /value="title".*Nombre A-Z/s);
+  assert.match(helpers, /value="title".*Nombre A-Z/s);
   assert.match(js, /title:'title_asc'/);
   assert.match(js, /orderby=\['date','price','price-desc','title'\]/);
   assert.match(php, /'title_asc' === \$sort/);
