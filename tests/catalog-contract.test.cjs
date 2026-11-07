@@ -921,3 +921,142 @@ test('PRODUCT_LIST_CARD_HTML_PRESERVED=PASS', () => {
   assert.match(fn, /ob_start\(\);[\s\S]*?foreach \( \$products as \$index => \$product \)/);
   assert.match(fn, /cr2026_render_product_card\( \$product, \$index \+ \( \$page > 1 \? 4 : 0 \) \)/);
 });
+
+
+const cartTemplatePath = path.join(root, 'theme/crios-rango-2026/woocommerce/cart/cart.php');
+const cartPhpPath = path.join(root, 'theme/crios-rango-2026/inc/cart.php');
+const cartAssetsPath = path.join(root, 'theme/crios-rango-2026/inc/assets.php');
+const cartJsPath = path.join(root, 'theme/crios-rango-2026/assets/js/cart-ui.js');
+const cartCssPath = path.join(root, 'theme/crios-rango-2026/assets/css/cart.css');
+const cartTemplate = fs.readFileSync(cartTemplatePath, 'utf8');
+const cartPhp = fs.readFileSync(cartPhpPath, 'utf8');
+const cartAssets = fs.readFileSync(cartAssetsPath, 'utf8');
+const cartJs = fs.readFileSync(cartJsPath, 'utf8');
+const cartCss = fs.readFileSync(cartCssPath, 'utf8');
+
+test('CART_APP_STYLE_LAYOUT=PASS', () => {
+  assert.match(cartTemplate, /class="cr-cart-page"/);
+  assert.match(cartTemplate, /class="cr-cart-item"/);
+  assert.match(cartTemplate, /class="cr-cart-promotions"/);
+  assert.match(cartTemplate, /class="cr-cart-summary"/);
+  assert.match(cartCss, /grid-template-columns:minmax\(0,1fr\) minmax\(290px,360px\)/);
+  assert.match(cartCss, /@media \(max-width:767px\)[\s\S]*?grid-template-columns:minmax\(0,1fr\)/);
+});
+
+test('CART_NATIVE_CALCULATIONS_PRESERVED=PASS', () => {
+  assert.match(cartTemplate, /WC\(\)->cart->get_cart\(\)/);
+  assert.match(cartTemplate, /woocommerce_cart_collaterals/);
+  assert.match(cartTemplate, /woocommerce_before_cart_table/);
+  assert.match(cartTemplate, /woocommerce_after_cart_table/);
+  assert.doesNotMatch(cartTemplate, /total_items|total_price|calculate_totals/);
+});
+
+test('CART_QUANTITY_SOURCE_SINGLE=PASS', () => {
+  assert.equal((cartTemplate.match(/woocommerce_quantity_input\s*\(/g) || []).length, 1);
+  assert.match(cartTemplate, /get_min_purchase_quantity/);
+  assert.match(cartTemplate, /get_max_purchase_quantity/);
+  assert.match(cartTemplate, /woocommerce_cart_item_quantity/);
+  assert.match(cartJs, /input\.closest\('form\.woocommerce-cart-form'\)/);
+  assert.match(cartJs, /requestSubmit\(submit/);
+});
+
+test('CART_REMOVE_SECURE=PASS', () => {
+  assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
+  assert.match(cartTemplate, /cr-cart-remove/);
+  assert.match(cartTemplate, /<svg viewBox="0 0 24 24"/);
+});
+
+test('CART_EMPTY_NONCE=PASS', () => {
+  assert.match(cartTemplate, /wp_nonce_field\( 'cr2026_empty_cart', 'cr2026_empty_cart_nonce' \)/);
+  assert.match(cartPhp, /wp_verify_nonce\( \$nonce, 'cr2026_empty_cart' \)/);
+  assert.match(cartPhp, /WC\(\)->cart->empty_cart\(\)/);
+  assert.match(cartPhp, /wp_safe_redirect\( wc_get_cart_url\(\) \)/);
+  assert.doesNotMatch(cartTemplate, /href="[^"]*empty_cart/);
+});
+
+test('CART_PROMOTIONS_ENDPOINT=PASS', () => {
+  assert.match(cartAssets, /rest_url\( 'criosrango\/v1\/promotions' \)/);
+  assert.match(cartJs, /config\.promotionsUrl/);
+  assert.match(cartJs, /guestPromotionVisible/);
+});
+
+test('CART_LOYALTY_ENDPOINT=PASS', () => {
+  assert.match(cartAssets, /rest_url\( 'criosrango\/v1\/loyalty' \)/);
+  assert.match(cartJs, /config\.loyaltyUrl/);
+  assert.match(cartJs, /if \(!config\.authenticated\) return/);
+});
+
+test('CART_WP_REST_NONCE=PASS', () => {
+  assert.match(cartAssets, /wp_create_nonce\( 'wp_rest' \)/);
+  assert.match(cartJs, /headers\.set\('X-WP-Nonce', config\.wpRestNonce\)/);
+});
+
+test('CART_STORE_API_NONCE=PASS', () => {
+  assert.match(cartAssets, /wp_create_nonce\( 'wc_store_api' \)/);
+  assert.match(cartJs, /headers\.set\('Nonce', storeNonce\)/);
+  assert.match(cartJs, /response\.headers\.get\('Nonce'\)/);
+});
+
+test('CART_PENDING_REWARD_USES_CODE=PASS', () => {
+  assert.match(cartJs, /wallet\.pending_rewards/);
+  assert.match(cartJs, /applyCoupon\(reward\.code, 'Crédito'\)/);
+});
+
+test('CART_PROMOTION_USES_CODE=PASS', () => {
+  assert.match(cartJs, /promotion\.code/);
+  assert.match(cartJs, /applyCoupon\(promotion\.code, 'Promoción'\)/);
+});
+
+test('CART_MANUAL_COUPON_USES_STORE_API=PASS', () => {
+  assert.match(cartJs, /manualForm\.addEventListener\('submit'/);
+  assert.match(cartJs, /applyCoupon\(input\.value, 'Cupón'\)/);
+  assert.match(cartJs, /config\.applyCouponUrl/);
+});
+
+test('CART_COUPON_CONFIRMED_IN_RESPONSE=PASS', () => {
+  assert.match(cartJs, /const hasCoupon = \(cart, code\)/);
+  assert.match(cartJs, /if \(!hasCoupon\(cart, normalized\)\)/);
+  assert.match(cartJs, /if \(hasCoupon\(cart, code\)\)/);
+  assert.match(cartJs, /config\.removeCouponUrl/);
+});
+
+test('CART_REDEEM_IDEMPOTENCY=PASS', () => {
+  assert.match(cartJs, /crypto\.randomUUID/);
+  assert.match(cartJs, /pendingRedemption\.requestId/);
+  assert.match(cartJs, /request_id: pendingRedemption\.requestId/);
+  assert.match(cartJs, /Keep pendingRedemption\.requestId unchanged/);
+  assert.match(cartJs, /redeemableOptions/);
+  assert.match(cartJs, /minimum_redeem_points/);
+  assert.match(cartJs, /maximum_redeem_points/);
+  assert.match(cartJs, /conversion_points/);
+  assert.match(cartJs, /conversion_value/);
+});
+
+test('CART_TOTALS_WOOCOMMERCE_AUTHORITY=PASS', () => {
+  assert.match(cartTemplate, /woocommerce_cart_collaterals/);
+  assert.match(cartTemplate, /cart-collaterals/);
+  assert.match(cartCss, /\.cart_totals/);
+  assert.doesNotMatch(cartJs, /querySelector\([^)]*total_price/);
+});
+
+test('CART_SHIPPING_NOT_HARDCODED=PASS', () => {
+  assert.match(cartTemplate, /woocommerce_cart_collaterals/);
+  assert.doesNotMatch(cartTemplate, /5,00|5\.00|gratis/i);
+  assert.doesNotMatch(cartJs, /shipping.*5,00|shipping.*5\.00/i);
+});
+
+test('CART_GUEST_WALLET_HIDDEN=PASS', () => {
+  assert.match(cartTemplate, /data-cr-cart-wallet hidden/);
+  assert.match(cartJs, /if \(!config\.authenticated\) return/);
+  assert.match(cartJs, /else walletPanel\.hidden = true/);
+  assert.match(cartJs, /personal \|\| promotion\.requires_login/);
+  assert.match(cartJs, /bienvenida/);
+  assert.match(cartJs, /birthday/);
+  assert.match(cartJs, /cr-monedero/);
+});
+
+test('PRODUCT_DETAIL_UNCHANGED=PASS and BOTTOM_NAV_UNCHANGED=PASS', () => {
+  assert.match(cartAssets, /if \( \$uses_product_detail_skin \)/);
+  assert.doesNotMatch(cartCss, /product-detail-skin/);
+  assert.doesNotMatch(cartCss, /\.cr-mobile-bottom-nav|\.cr-app-header/);
+});

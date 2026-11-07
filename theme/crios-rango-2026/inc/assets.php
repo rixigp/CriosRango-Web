@@ -78,6 +78,34 @@ function cr2026_enqueue_assets() {
         'menuLabelClose' => __( 'Cerrar menú', 'crios-rango-2026' ),
     ) );
 
+    if ( function_exists( 'is_cart' ) && is_cart() ) {
+        wp_enqueue_style(
+            'cr2026-cart',
+            CR2026_URI . '/assets/css/cart.css',
+            array( 'cr2026-main' ),
+            cr2026_asset_version( 'assets/css/cart.css' )
+        );
+        wp_enqueue_script(
+            'cr2026-cart-ui',
+            CR2026_URI . '/assets/js/cart-ui.js',
+            array(),
+            cr2026_asset_version( 'assets/js/cart-ui.js' ),
+            true
+        );
+        wp_localize_script( 'cr2026-cart-ui', 'CR2026Cart', array(
+            'promotionsUrl' => rest_url( 'criosrango/v1/promotions' ),
+            'loyaltyUrl' => rest_url( 'criosrango/v1/loyalty' ),
+            'redeemUrl' => rest_url( 'criosrango/v1/loyalty/redeem' ),
+            'storeCartUrl' => rest_url( 'wc/store/v1/cart' ),
+            'applyCouponUrl' => rest_url( 'wc/store/v1/cart/apply-coupon' ),
+            'removeCouponUrl' => rest_url( 'wc/store/v1/cart/remove-coupon' ),
+            'storeNonce' => wp_create_nonce( 'wc_store_api' ),
+            'wpRestNonce' => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
+            'authenticated' => is_user_logged_in(),
+            'currency' => get_woocommerce_currency(),
+        ) );
+    }
+
     if ( $uses_product_detail_skin ) {
         wp_enqueue_script(
             'cr2026-product-ui-enhancements',
