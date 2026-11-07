@@ -220,7 +220,7 @@ test('Color and Size cards render only real native options and preserve WooComme
   assert.ok(productUiJs.includes("select.value = isToggleAttribute && select.value === option.value ? '' : option.value"));
   assert.ok(productUiJs.includes('dispatchNativeChange(select)'));
   assert.ok(productUiJs.includes('woocommerce_update_variation_values'));
-  assert.match(skinCss, /\.cr-product-variation-card\s*\{[^}]*background:\s*#fff;[^}]*border-radius:\s*21px;/s);
+  assert.match(skinCss, /\.cr-product-variation-card\s*\{[^}]*border-radius:\s*21px;[^}]*background:\s*#fff;/s);
   assert.match(skinCss, /\.cr-product-choice-chips--color[\s\S]*?border-radius:\s*50%;/);
   assert.match(skinCss, /\.cr-product-choice-chips--size[\s\S]*?min-height:\s*50px;/);
   assert.match(skinCss, /\.cr-product-choice-chips--size[\s\S]*?background:\s*var\(--cr-product-green\);[\s\S]*?color:\s*#fff;/);
