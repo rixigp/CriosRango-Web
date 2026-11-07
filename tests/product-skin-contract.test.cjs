@@ -699,36 +699,15 @@ test('display title removes only a final product_brand suffix and leaves the sti
 
   function expectedDisplayTitle(title, brand) {
     if (!brand || !brand.trim()) return title;
-    const escaped = brand.trim();
-    const suffix = new RegExp('^(.*?)(?:\\s*[-–—|]\\s*)' + escaped + '\\s*' + '$', 'iu');
+    const escaped = Array.from(brand.trim(), (ch) =>
+      ('.+*?^${}()|[]'.includes(ch) || ch.charCodeAt(0) === 92) ? String.fromCharCode(92) + ch : ch
+    ).join('');
+    const whitespace = String.fromCharCode(92) + 's';
+    const suffix = new RegExp('^(.*?)(?:' + whitespace + '*[-–—|]' + whitespace + '*)' + escaped + whitespace + '*$', 'iu');
     const match = title.match(suffix);
     if (!match) return title;
-    return match[1].replace(/[\s\-–—|]+$/u, '') || title;
-  }
-
-  const cases = [
-    ['Jersey - 194000146P - Spagnolo', 'Spagnolo', 'Jersey - 194000146P'],
-    ['Chaqueta - 6516 - Ragussa', 'Ragussa', 'Chaqueta - 6516'],
-    ['Vestido - Mayoral', 'Mayoral', 'Vestido'],
-    ['Vestido especial', 'Mayoral', 'Vestido especial'],
-    ['Producto – Spagnolo', 'spagnolo', 'Producto'],
-    ['Producto — Spagnolo  ', 'Spagnolo', 'Producto'],
-    ['Producto | Spagnolo', 'Spagnolo', 'Producto'],
-    ['Producto - - Spagnolo', 'Spagnolo', 'Producto'],
-    ['Vestido Spagnolo edición especial', 'Spagnolo', 'Vestido Spagnolo edición especial'],
-    ['Producto - Spagnolo - especial', 'Spagnolo', 'Producto - Spagnolo - especial'],
-    ['Cárdigan - MARCA Ñandú', 'marca ñANDÚ', 'Cárdigan'],
-    ['Producto - Marca.+', 'Marca.+', 'Producto']
-  ];
-  for (const [title, brand, expected] of cases) {
-    assert.equal(expectedDisplayTitle(title, brand), expected, title);
-  }
-  assert.equal(expectedDisplayTitle('Vestido - Mayoral', ''), 'Vestido - Mayoral');
-});
-, 'iu');
-    const match = title.match(suffix);
-    if (!match) return title;
-    return match[1].replace(/[\s\-–—|]+$/u, '') || title;
+    const trailingSeparators = new RegExp('[' + whitespace + '–—|-]+$', 'u');
+    return match[1].replace(trailingSeparators, '') || title;
   }
 
   const cases = [
