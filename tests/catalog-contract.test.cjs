@@ -314,3 +314,15 @@ test('product search routing overrides WooCommerce Shop template and keeps the p
   assert.match(searchTemplate,/get_search_query\(\)/);
   assert.match(searchTemplate,/No hemos encontrado productos para/);
 });
+
+
+test('main product searches bypass Shop/category archive query mutators',()=>{
+  const mainQueryMutator=php.match(/function cr2026_product_listing_main_query\( \$query \)[\\s\\S]*?\\n\\}/);
+  const shortCircuitMutator=php.match(/function cr2026_product_listing_short_circuit_query\( \$posts, \$query \)[\\s\\S]*?\\n\\}/);
+  assert.ok(mainQueryMutator, 'pre_get_posts catalog mutator must be present');
+  assert.ok(shortCircuitMutator, 'posts_pre_query catalog mutator must be present');
+  assert.match(mainQueryMutator[0], /\\$query->is_search\\(\\)/, 'main search must bypass catalog pre_get_posts mutation');
+  assert.match(shortCircuitMutator[0], /\\$query->is_search\\(\\)/, 'main search must bypass catalog posts_pre_query short circuit');
+  assert.match(php, /add_action\\( 'pre_get_posts', 'cr2026_product_listing_main_query', 99 \\)/);
+  assert.match(php, /add_filter\\( 'posts_pre_query', 'cr2026_product_listing_short_circuit_query', 20, 2 \\)/);
+});

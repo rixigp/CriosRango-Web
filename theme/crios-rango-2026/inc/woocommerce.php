@@ -36,7 +36,7 @@ if ( ! defined( 'CR2026_CATALOG_PAGE_SIZE' ) ) {
  * unfiltered Shop hub are shell-only requests resolved asynchronously in JS.
  */
 function cr2026_product_listing_main_query( $query ) {
-    if ( is_admin() || ! $query->is_main_query() ) { return; }
+    if ( is_admin() || ! $query->is_main_query() || $query->is_search() ) { return; }
     $is_shop_query = function_exists( 'is_shop' ) && is_shop();
     $is_category_query = $query->is_tax( 'product_cat' );
     if ( ! $is_shop_query && ! $is_category_query ) { return; }
@@ -50,7 +50,7 @@ add_action( 'pre_get_posts', 'cr2026_product_listing_main_query', 99 );
 
 /** Skip SQL for the Shop hub and for filtered category/root result shells. */
 function cr2026_product_listing_short_circuit_query( $posts, $query ) {
-    if ( null !== $posts || is_admin() || ! $query->is_main_query() ) { return $posts; }
+    if ( null !== $posts || is_admin() || ! $query->is_main_query() || $query->is_search() ) { return $posts; }
     $is_shop_query = function_exists( 'is_shop' ) && is_shop();
     $is_category_query = $query->is_tax( 'product_cat' );
     if ( ! $is_shop_query && ! $is_category_query ) { return $posts; }
