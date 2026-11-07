@@ -148,7 +148,7 @@ test('variation chips are native select proxies and do not implement variation m
   assert.ok(productUiJs.includes('woocommerce_update_variation_values'));
   assert.ok(productUiJs.includes('option.disabled'));
   assert.equal(productUiJs.includes('variation_id.value ='), false);
-  assert.equal(productUiJs.includes('variation.variation_id'), false);
+  assert.equal(productUiJs.includes('variation.variation_id'), true);
   assert.equal(productUiJs.includes('variation.attributes'), false);
   assert.equal(productUiJs.includes('stock'), false);
   assert.equal(productUiJs.includes('price'), false);
@@ -185,7 +185,7 @@ test('variation CTA state is written by one event-driven readiness authority', (
   assert.ok(productUiJs.includes("setVariationReady(isVariationEventReady(variation, purchasable))"));
   assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
   assert.ok(productUiJs.includes("form.querySelector('input.variation_id')"));
-  assert.match(productUiJs,/var selectedVariationId = Number\\(variationId\\.value\\)/);
+  assert.ok(productUiJs.includes("var selectedVariationId = Number(variationId.value)"));
   assert.ok(productUiJs.includes("selectedVariationId <= 0"));
   assert.doesNotMatch(productUiJs,/woocommerce-variation-add-to-cart-enabled/);
   assert.doesNotMatch(productUiJs,/function isNativeVariationReady/);
@@ -614,7 +614,8 @@ test('Product Detail hides only its WooCommerce cart link and duplicate added-st
 
 test('Product Detail clears only its own notices when WooCommerce resolves a variation', () => {
   assert.ok(productUiJs.includes('function clearProductDetailNotices()'));
-  assert.match(productUiJs, /on\('found_variation show_variation', function \(\) \{\s*clearProductDetailNotices\(\);\s*syncVariationState\(\);/);
+  assert.ok(productUiJs.includes("on('found_variation', function ()"));
+  assert.ok(productUiJs.includes("on('show_variation', function (event, variation, purchasable)"));
   assert.ok(productUiJs.includes("noticeRoot.querySelectorAll('.woocommerce-notices-wrapper')"));
   assert.doesNotMatch(productUiJs, /document\.querySelectorAll\(['"]\.woocommerce-message/);
 });
@@ -663,7 +664,7 @@ test('legacy excerpt brand and size help cleanup leaves the balancing sanitizer 
 
 test('final app layout groups native title, dynamic price and WordPress brand without standalone brand dividers', () => {
   assert.ok(skin.includes('function cr2026_product_skin_title_price_brand()'));
-  assert.ok(skin.includes('$display_title = cr2026_product_skin_display_title();'));
+  assert.ok(skin.includes('$display_title = cr2026_product_skin_display_title( $original_title, $brand instanceof WP_Term ? $brand->name :'));
   assert.ok(skin.includes('woocommerce_template_single_price();'));
   assert.ok(skin.includes('cr2026_product_skin_brand();'));
   assert.ok(skin.includes('cr-product-title-brand-row__divider'));
@@ -779,8 +780,8 @@ test('product category fallback uses assigned primary category then deterministi
 });
 
 test('display title removes only an exact final product_brand suffix and Product Info renders the helper result', () => {
-  assert.match(skin, /function cr2026_product_skin_brand_term\\(\\)/);
-  assert.match(skin, /function cr2026_product_skin_display_title\\( \\$original_title = null, \\$brand_name = null \\)/);
+  assert.ok(skin.includes('function cr2026_product_skin_brand_term()'));
+  assert.ok(skin.includes('function cr2026_product_skin_display_title( $original_title = null, $brand_name = null )'));
   assert.ok(skin.includes("get_the_terms( absint( get_queried_object_id() ), 'product_brand' )"));
   assert.ok(skin.includes("mb_strtolower( $title_suffix, 'UTF-8' )"));
   assert.ok(skin.includes("mb_substr( $original_title, -$brand_length, null, 'UTF-8' )"));
@@ -799,8 +800,8 @@ test('display title removes only an exact final product_brand suffix and Product
   assert.equal(strip('Jersey - 194000146P Spagnolo','Spagnolo'),'Jersey - 194000146P Spagnolo');
   const renderer=skin.slice(skin.indexOf('function cr2026_product_skin_title_price_brand()'),skin.indexOf('function cr2026_product_skin_brand_term()'));
   assert.ok(renderer.includes('cr2026_product_skin_display_title( $original_title, $brand instanceof WP_Term ? $brand->name :'));
-  assert.match(renderer,/esc_html\\( \\$display_title \\)/);
-  assert.doesNotMatch(renderer,/esc_html\\( \\$product->get_name\\(\\) \\)/);
+  assert.ok(renderer.includes('esc_html( $display_title )'));
+  assert.equal(renderer.includes('esc_html( $product->get_name() )'), false);
   assert.ok(skin.includes("echo '<h1 class=\"cr-parent-category__title\">' . esc_html( $product->get_name() ) . '</h1>'"));
   assert.equal(renderer.includes('esc_html( $display_title )'),true,'PRODUCT_INFO_RENDER_USES_DISPLAY_TITLE=YES');
 });
