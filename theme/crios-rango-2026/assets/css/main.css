@@ -254,7 +254,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .woocommerce ul.products li.product a img { aspect-ratio: 4 / 5; object-fit: cover; margin: 0 0 12px; border-radius: var(--cr-radius-m); background: #f1f0eb; }
 .woocommerce ul.products li.product .woocommerce-loop-product__title { font-size: .94rem; line-height: 1.32; padding: 0; margin: 0 0 5px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .woocommerce ul.products li.product .price { color: var(--cr-ink); font-size: .92rem; font-weight: 750; margin: 0; }
-.woocommerce ul.products li.product .onsale, .woocommerce span.onsale { min-width: auto; min-height: auto; line-height: 1; padding: 8px 10px; border-radius: 999px; background: var(--cr-green); }
+.woocommerce ul.products li.product .onsale, .woocommerce span.onsale { min-width: auto; min-height: auto; line-height: 1.2; padding: 7px 10px; border-radius: 999px; background: var(--cr-sale-coral); color: #fff; font: 800 .72rem/1.2 "Roboto",Arial,sans-serif; text-transform: uppercase; }
 .woocommerce ul.products li.product .button { margin-top: 8px; border-radius: 999px; background: transparent; color: var(--cr-green); border: 1px solid var(--cr-green); font-weight: 750; }
 .woocommerce ul.products li.product [class*="wlr"], .woocommerce ul.products li.product [class*="wployalty"] { display: none !important; }
 

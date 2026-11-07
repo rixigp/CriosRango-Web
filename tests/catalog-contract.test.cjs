@@ -503,6 +503,7 @@ test('sale badge is centralized and rendered by every theme product-card path', 
   assert.match(searchTemplate, /cr2026_render_product_card\( \$search_product/);
   assert.match(css, /\.cr-product-card__badge \{\s*position:\s*absolute;\s*top:\s*10px;\s*left:\s*10px;\s*padding:\s*7px 10px;\s*border-radius:\s*999px;\s*background:\s*var\(--cr-sale-coral\)/);
   assert.match(css, /\.cr-home-product__image \{\s*position: relative;/);
+  assert.match(css, /\.woocommerce ul\.products li\.product \.onsale, \.woocommerce span\.onsale \{[^}]*background:\s*var\(--cr-sale-coral\);[^}]*color:\s*#fff;[^}]*text-transform:\s*uppercase;/);
   assert.match(helpers, /\$price_html = \$product->get_price_html\(\)/);
 });
 
