@@ -440,3 +440,22 @@ test('Search empty state has the compact requested copy and canonical WooCommerc
   assert.match(helpers, /function cr2026_shop_url\(\)[\s\S]*?wc_get_page_permalink\( 'shop' \)/);
   assert.match(styles, /\.cr-search-empty__cta\s*\{[\s\S]*?min-height:44px[\s\S]*?border-radius:999px[\s\S]*?background:#E3EFEB[\s\S]*?text-decoration:none!important/s);
 });
+
+
+test('Global header search hides only the native input[type=search] clear decoration', () => {
+  const searchForm = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/searchform.php'), 'utf8');
+  const helpers = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/helpers.php'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
+  assert.match(searchForm, /type="search" name="s"/);
+  assert.match(styles, /\.cr-app-header \.cr-header-search-panel \.cr-search-form input\[type="search"\]::-webkit-search-cancel-button/);
+  assert.match(styles, /\.cr-app-header \.cr-header-search-panel \.cr-search-form input\[type="search"\]::-webkit-search-decoration/);
+  assert.match(styles, /\.cr-app-header \.cr-header-search-panel \.cr-search-form input\[type="search"\]::-ms-clear/);
+  assert.match(styles, /\.cr-app-header \.cr-header-search-panel \.cr-search-form input\[type="search"\]::-ms-reveal/);
+  const nativeClearRule = styles.slice(styles.indexOf('/* Hide only browser-provided search decorations in the global header search field. */'));
+  assert.match(nativeClearRule, /display:none!important/);
+  assert.match(helpers, /data-cr-header-search-close/);
+  const clearHandler = js.slice(js.indexOf("// Search field clear control"), js.indexOf("const slides"));
+  assert.match(clearHandler, /input\.value = ''/);
+  assert.match(clearHandler, /input\.focus\(\{ preventScroll: true \}\)/);
+  assert.doesNotMatch(clearHandler, /headerSearchClose|closeButton|\.click\(\)/);
+});

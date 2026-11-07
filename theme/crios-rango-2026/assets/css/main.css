@@ -2677,6 +2677,20 @@ body.admin-bar.home .cr-app-header {
   flex:1 1 auto; min-width:0; width:100%; min-height:44px; padding:8px 4px;
   border:0; outline:none; background:transparent; color:#183B35; font:400 16px/22px "Roboto",Arial,sans-serif;
 }
+/* Hide only browser-provided search decorations in the global header search field. */
+.cr-app-header .cr-header-search-panel .cr-search-form input[type="search"]::-webkit-search-cancel-button,
+.cr-app-header .cr-header-search-panel .cr-search-form input[type="search"]::-webkit-search-decoration,
+.cr-app-header .cr-header-search-panel .cr-search-form input[type="search"]::-webkit-search-results-button,
+.cr-app-header .cr-header-search-panel .cr-search-form input[type="search"]::-webkit-search-results-decoration,
+.cr-app-header .cr-header-search-panel .cr-search-form input[type="search"]::-ms-clear,
+.cr-app-header .cr-header-search-panel .cr-search-form input[type="search"]::-ms-reveal {
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  display:none!important;
+  width:0!important;
+  height:0!important;
+  margin:0!important;
+}
 .cr-app-header .cr-header-search-panel .cr-search-form button[type="submit"] {
   flex:0 0 auto; min-height:40px; padding:0 12px; border:0; border-radius:10px;
   background:#183B35; color:#fff; font:400 14px/20px "Roboto",Arial,sans-serif; cursor:pointer;
