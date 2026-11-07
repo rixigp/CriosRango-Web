@@ -49,7 +49,7 @@ test('toolbar back prefers validated same-origin history and has a server-render
   assert.match(skin, /previous\.origin === current\.origin/);
   assert.match(skin, /window\.history\.length < 2/);
   assert.match(skin, /function cr2026_product_skin_back_fallback_url/);
-  assert.match(skin, /get_ancestors\(\$term->term_id, 'product_cat', 'taxonomy'\)/);
+  assert.match(skin, /get_ancestors\(\s*\$term->term_id,\s*'product_cat',\s*'taxonomy'\s*\)/);
   assert.match(skin, /_yoast_wpseo_primary_product_cat/);
   assert.match(skin, /_rank_math_primary_product_cat/);
   assert.match(skin, /return cr2026_shop_url\(\)/);
@@ -656,7 +656,7 @@ test('contextual back ignores external referrers and only goes back within the c
 test('product category fallback uses assigned primary category then deterministic deepest category', () => {
   assert.match(skin, /_yoast_wpseo_primary_product_cat/);
   assert.match(skin, /_rank_math_primary_product_cat/);
-  assert.match(skin, /get_ancestors\(\$term->term_id, 'product_cat', 'taxonomy'\)/);
+  assert.match(skin, /get_ancestors\(\s*\$term->term_id,\s*'product_cat',\s*'taxonomy'\s*\)/);
   assert.match(skin, /\$right\['depth'\] <=> \$left\['depth'\]/);
   assert.match(skin, /\$left\['term'\]->term_id <=> \$right\['term'\]->term_id/);
   assert.match(skin, /return cr2026_shop_url\(\)/);
