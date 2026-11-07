@@ -659,7 +659,8 @@ test('variation AJAX flow is single-request, guarded, and emits WooCommerce adde
   assert.match(productUiJs, /\$\(document\.body\)\.trigger\('added_to_cart', \[[\s\S]*?response\.fragments[\s\S]*?response\.cart_hash[\s\S]*?\$button/);
   assert.match(productUiJs, /\.fail\(function \(xhr, status, error\)[\s\S]*?variation add-to-cart request failed/);
   assert.match(productUiJs, /!response \|\| response\.error \|\| response\.success === false/);
-  assert.match(productUiJs, /\.always\(function \(\)[\s\S]*?isAddingToCart = false[\s\S]*?removeAttribute\('aria-busy'\)/);
+  assert.match(productUiJs, /\.always\(function \(\)[\s\S]*?isAddingToCart = false[\s\S]*?clearCartSubmittingState\(nativeButton, nativeButtonLabel, loadingSpinner, currentVariationReady, hasAddedFeedback\)/);
+  assert.ok(productUiJs.includes("button.setAttribute('aria-busy', 'false')"));
   assert.ok(productUiJs.includes("added_to_cart.crProductDetail"));
   assert.ok(productUiJs.includes('showAddedFeedback()'));
   assert.doesNotMatch(productUiJs, /submitProductDetailAddToCart/);
