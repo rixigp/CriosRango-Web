@@ -392,7 +392,7 @@
     const taxonomyByKey = {size_ids:'pa_tallas',color_ids:'pa_color',brand_ids:'product_tag'};
     const labelByKey = {size_ids:'Talla',color_ids:'',brand_ids:''};
     let currentPage = 0, hasMore = false, loading = false, requestGeneration = 0, activeRequest = null;
-    let totalProducts = null, selectedOutletBubbleKey = null, activeOutletOriginIds = [];
+    let totalProducts = null, selectedOutletBubbleKey = null, activeOutletOriginIds = [], outletContextInitialized = !outletCategoryId;
     const getOutletContext=()=>({categoryId:outletCategoryId,originCategoryIds:activeOutletOriginIds.slice(),selectedBubbleKey:selectedOutletBubbleKey});
     const normalizeIds = values => Array.from(new Set((values||[]).map(String).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'en',{numeric:true}));
     const getFilters = () => Object.fromEntries(filterKeys.map(key=>[key,(currentUrl.searchParams.get(key)||'').split(',').filter(Boolean)]));
@@ -464,14 +464,12 @@
       try {
         const entry = JSON.parse(sessionStorage.getItem(cacheStorageKey()) || 'null');
         if (!entry || entry.baseKey !== cacheStorageKey() || entry.key !== cacheFullKey(entry.state) ||
-            !isValidCatalogCacheEntry(entry, entry.key)) return null;
-        const requested = cacheState();
-        const comparable = { ...entry.state, outletBubbleKey: requested.outletBubbleKey, outletOriginIds: requested.outletOriginIds };
-        if (outletCategoryId && entry.baseKey === cacheStorageKey()) {
-          // Outlet bubble selection is restored from the snapshot before validating its full state key.
-          return entry;
+            !isValidCatalogCacheEntry(entry, entry.key)) {
+          try { sessionStorage.removeItem(cacheStorageKey()); } catch (error) {}
+          return null;
         }
-        return entry.key === cacheFullKey(requested) ? entry : null;
+        if (outletCategoryId && !outletContextInitialized) return entry;
+        return entry.key === cacheFullKey(cacheState()) ? entry : null;
       } catch (error) { return null; }
     };
     const writeCatalogCache = (scrollY = window.scrollY) => {
@@ -516,6 +514,7 @@
       if (outletCategoryId) {
         selectedOutletBubbleKey = entry.state.outletBubbleKey || null;
         activeOutletOriginIds = Array.isArray(entry.state.outletOriginIds) ? entry.state.outletOriginIds.slice() : [];
+        outletContextInitialized = true;
       }
       if (!validateCachedPages(entry.pages)) {
         try { sessionStorage.removeItem(entry.baseKey); } catch (error) {}
@@ -629,23 +628,20 @@
           currentPage = page;
           totalProducts = responseData.total === null || responseData.total === undefined ? null : Number(responseData.total);
           if (responseData.total !== null && responseData.total !== undefined && Number(responseData.total) !== completeIds.length) throw new Error('Catalog total mismatch: loaded='+completeIds.length+' total='+responseData.total);
-          if (!background && Number(responseData.total) === 0) { cachedCatalogPages = [responseData]; writeCatalogCache(); }
+          if (Number(responseData.total) === 0) { cachedCatalogPages = [responseData]; writeCatalogCache(); }
           if(debug)console.debug('[CR2026 catalog] complete',{sort:sortMap[orderby],loaded_ids:completeIds,total:responseData.total,duplicates});
           return;
         }
         if (append) grid.appendChild(template.content);
         else grid.replaceChildren(template.content);
         emptyState.hidden = true;
-        if (!background) {
-          if (append) cachedCatalogPages[page - 1] = responseData;
-          else cachedCatalogPages = [responseData];
-          writeCatalogCache();
-        }
+        if (append) cachedCatalogPages[page - 1] = responseData;
+        else cachedCatalogPages = [responseData];
         currentPage = page;
         hasMore = Boolean(responseData.has_more);
         totalProducts=responseData.total===null||responseData.total===undefined?null:Number(responseData.total);
         if(!hasMore&&totalProducts!==null&&totalProducts!==completeIds.length)throw new Error('Catalog total mismatch: loaded='+completeIds.length+' total='+totalProducts);
-        if (!background) writeCatalogCache();
+        writeCatalogCache();
         if(debug&&!hasMore)console.debug('[CR2026 catalog] complete',{sort:sortMap[orderby],loaded_ids:completeIds,total:totalProducts,duplicates,missing:totalProducts===null?null:totalProducts-completeIds.length});
       } catch (error) {
         if(token!==requestGeneration||(error&&error.name==='AbortError'))return;
@@ -730,6 +726,7 @@
         };
         outletNode.replaceChildren();addBubble(null,'Todas',[]);
         visible.forEach(candidate=>addBubble(candidate.key,labels[candidate.label]||candidate.label,Array.from(new Set(candidate.category_ids.map(Number)))));
+        outletContextInitialized = true;
         outletNode.hidden=false;
         renderOutletBubbleSelection();
         if(debug)console.debug('[Outlet bubbles] runtime',{branch:outletCategoryId,candidates,counts:branches[0].counts,visible:visible.map(item=>item.key)});

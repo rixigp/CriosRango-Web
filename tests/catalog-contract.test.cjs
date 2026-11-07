@@ -156,7 +156,7 @@ test('catalog uses an explicit inline Load more button with retryable append sta
   assert.match(js, /updateLoadMoreButton\(true\)/);
   assert.match(js, /updateLoadMoreButton\(false\)/);
   assert.doesNotMatch(js, /catalogObserver|data-cr-product-sentinel/);
-  assert.match(js, /if \(!append\) \{ showEmpty\(\); hasMore = false; \}/);
+  assert.match(js, /if \(!append && !background\) \{ showEmpty\(\); hasMore = false; \}/);
 });
 
 test('product card image source and crop match app responsive source selection and ContentScale.Crop', () => {
@@ -666,7 +666,7 @@ test('brand requests always carry catalog scope and catalog_brand_id, never fake
   assert.match(php, /\$brand_id = absint\( \$request->get_param\( 'catalog_brand_id' \) \)/);
   assert.match(php, /\$filter_params\['catalog_brand_id'\] = \$brand_id/);
   assert.match(php, /\$has_filters = \$is_outlet_scope \|\| \$is_brand_context/);
-  const brandRequest = js.slice(js.indexOf('const loadPage = async'), js.indexOf('const response = await fetch(productsUrl'));
+  const brandRequest = js.slice(js.indexOf('const buildCatalogPageUrl'), js.indexOf('const revalidateCatalogCache'));
   const fixedBrandRequest = brandRequest.slice(brandRequest.indexOf('if(brandContext)'), brandRequest.indexOf('else if(outletCategoryId)'));
   assert.match(fixedBrandRequest, /catalog_brand_id/);
   assert.doesNotMatch(fixedBrandRequest, /catalog_category_id|brand_ids/);
