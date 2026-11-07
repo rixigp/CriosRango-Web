@@ -322,6 +322,11 @@ function cr2026_product_skin_brand() {
     $brand = cr2026_product_skin_brand_term();
     if ( ! $brand instanceof WP_Term ) { return; }
     $logo_url = function_exists( 'cr2026_home_brand_image_url' ) ? cr2026_home_brand_image_url( $brand ) : '';
+    $brand_url = get_term_link( $brand );
+    $brand_linked = ! is_wp_error( $brand_url ) && is_string( $brand_url ) && '' !== $brand_url;
+    if ( $brand_linked ) {
+        echo '<a class="cr-product-brand-link" href="' . esc_url( $brand_url ) . '" aria-label="' . esc_attr( sprintf( __( 'Ver productos de %s', 'crios-rango-2026' ), $brand->name ) ) . '">';
+    }
     echo '<div class="cr-product-brand" aria-label="' . esc_attr__( 'Marca', 'crios-rango-2026' ) . '">';
     if ( $logo_url ) {
         echo '<img class="cr-product-brand__logo" src="' . esc_url( $logo_url ) . '" alt="' . esc_attr( $brand->name ) . '" loading="lazy" decoding="async">';
@@ -329,6 +334,9 @@ function cr2026_product_skin_brand() {
         echo '<span class="cr-product-brand__name">' . esc_html( $brand->name ) . '</span>';
     }
     echo '</div>';
+    if ( $brand_linked ) {
+        echo '</a>';
+    }
 }
 
 

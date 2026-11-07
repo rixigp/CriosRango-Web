@@ -877,3 +877,19 @@ test('display title removes only an exact final product_brand suffix and Product
   assert.ok(skin.includes("echo '<h1 class=\"cr-parent-category__title\">' . esc_html( $product->get_name() ) . '</h1>'"));
   assert.equal(renderer.includes('esc_html( $display_title )'),true,'PRODUCT_INFO_RENDER_USES_DISPLAY_TITLE=YES');
 });
+
+test('Product Detail makes the complete brand logo or text fallback a safe same-tab archive link', () => {
+  const brandRenderer = skin.slice(skin.indexOf('function cr2026_product_skin_brand()'), skin.indexOf('function cr2026_product_skin_global_size_help()'));
+  assert.match(brandRenderer, /\$brand_url = get_term_link\( \$brand \)/);
+  assert.match(brandRenderer, /! is_wp_error\( \$brand_url \)/);
+  assert.match(brandRenderer, /class="cr-product-brand-link"/);
+  assert.match(brandRenderer, /Ver productos de %s/);
+  assert.match(brandRenderer, /if \( \$logo_url \)/);
+  assert.match(brandRenderer, /cr-product-brand__logo/);
+  assert.match(brandRenderer, /cr-product-brand__name/);
+  assert.match(brandRenderer, /if \( \$brand_linked \) \{\s*echo '<a/s);
+  assert.match(brandRenderer, /echo '<\/a>'/);
+  assert.doesNotMatch(brandRenderer, /target="_blank"/);
+  assert.match(skinCss, /\.cr-product-title-brand-row__brand \.cr-product-brand-link\s*\{[^}]*width:\s*100%;[^}]*text-decoration:\s*none;/s);
+  assert.match(skin, /if \( ! \$brand instanceof WP_Term \) \{ return; \}/);
+});
