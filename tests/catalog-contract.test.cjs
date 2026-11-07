@@ -788,3 +788,29 @@ test('staging benchmark records three cold and three warm requests for the same 
   assert.match(deploy, /SERVER_TIMING=/);
   assert.match(deploy, /catalog_category_id=560/);
 });
+
+test('catalog-page preserves its exact frontend JSON schema and captures card HTML', () => {
+  const catalogStart = php.indexOf('function cr2026_catalog_page_rest_response');
+  const catalogEnd = php.indexOf('function cr2026_woocommerce_wrappers', catalogStart);
+  const catalog = php.slice(catalogStart, catalogEnd);
+  const expectedFields = ['html', 'source', 'product_ids', 'filter_api_product_ids', 'rendered_product_ids', 'page', 'per_page', 'total', 'has_more'];
+  for (const field of expectedFields) assert.ok(catalog.includes("'" + field + "' =>"), 'missing response field: ' + field);
+  assert.ok(catalog.includes('ob_start();'));
+  assert.ok(catalog.includes('cr2026_render_product_card( $product'));
+  assert.ok(catalog.includes('$rendered_html = ob_get_clean();'));
+  assert.ok(catalog.includes("'html' => $rendered_html"));
+  assert.ok(catalog.includes("cr2026_catalog_timing_add( 'render'"));
+  assert.ok(js.includes("typeof responseData.html !== 'string'"));
+  assert.ok(js.includes("template.innerHTML=responseData.html||''"));
+  assert.equal(fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/js/main.js'), 'utf8'), js);
+});
+
+test('staging benchmark captures transport metrics before JSON validation across all four catalogue contexts', () => {
+  for (const marker of [
+    'Benchmark staging catalog endpoint (3 cold + 3 warm requests)',
+    '--dump-header', '--output', '--write-out',
+    'CATEGORY_PLAIN', 'NOVEDADES', 'BRAND', 'OUTLET_OR_FILTERED',
+    'CATALOG_ENDPOINT_VALID_JSON', 'CATALOG_ENDPOINT_NO_LEAKED_HTML',
+    'X-CriosRango-Persistent-Object-Cache', 'IMAGE_URL='
+  ]) assert.ok(deploy.includes(marker), 'missing benchmark marker: ' + marker);
+});

@@ -726,37 +726,115 @@ jobs:
           node -e 'const fs=require("fs");const manifest=JSON.parse(fs.readFileSync("/tmp/criosrango-build.json","utf8"));if(manifest.sha!==process.env.EXPECTED_THEME_SHA){console.error("STAGING_BUILD_SHA mismatch: "+manifest.sha+" != "+process.env.EXPECTED_THEME_SHA);process.exit(1)}console.log("STAGING_BUILD_SHA="+manifest.sha);console.log("REPOSITORY_HEAD="+process.env.GITHUB_SHA);console.log("THEME_DEPLOY_SHA="+manifest.sha);'
       - name: Benchmark staging catalog endpoint (3 cold + 3 warm requests)
         if: github.ref == 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
-        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
-          ENDPOINT="https://criosrango.es/prueba/wp-json/cr2026/v1/catalog-page"
-          HEADERS_FILE="$(mktemp)"
-          BODY_FILE="$(mktemp)"
-          trap 'rm -f "$HEADERS_FILE" "$BODY_FILE"' EXIT
-          for INDEX in 1 2 3 4 5 6; do
-            if [ "$INDEX" -le 3 ]; then LABEL="COLD"; else LABEL="WARM"; fi
-            CURL_RESULT="$(curl --silent --show-error --get --connect-timeout 15 --max-time 90 \
-              --dump-header "$HEADERS_FILE" --output "$BODY_FILE" \
-              --write-out '%{http_code} %{time_total}' \
-              --data-urlencode 'scope=catalog' \
-              --data-urlencode 'catalog_category_id=560' \
-              --data-urlencode 'page=1' \
-              --data-urlencode 'per_page=12' \
-              --data-urlencode 'sort=newest' "$ENDPOINT")"
-            HTTP_STATUS="${CURL_RESULT%% *}"
-            CURL_SECONDS="${CURL_RESULT#* }"
-            node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(!d||d.page!==1||d.per_page!==12||!Array.isArray(d.product_ids)||!Array.isArray(d.rendered_product_ids)||typeof d.html!=="string")process.exit(2)' "$BODY_FILE"
-            SERVER_TIMING="$(grep -i '^Server-Timing:' "$HEADERS_FILE" | tail -1 | tr -d '\r' | cut -d: -f2- | xargs || true)"
-            CACHE_STATE="$(grep -i '^X-CriosRango-Catalog-Cache:' "$HEADERS_FILE" | tail -1 | tr -d '\r' | cut -d: -f2- | xargs || true)"
-            OBJECT_CACHE="$(grep -i '^X-CriosRango-Persistent-Object-Cache:' "$HEADERS_FILE" | tail -1 | tr -d '\r' | cut -d: -f2- | xargs || true)"
-            echo "${LABEL}_REQUEST_${INDEX} HTTP=${HTTP_STATUS} CURL_TOTAL_S=${CURL_SECONDS} CACHE=${CACHE_STATE:-MISSING} OBJECT_CACHE=${OBJECT_CACHE:-UNKNOWN} SERVER_TIMING=${SERVER_TIMING:-MISSING}"
-            if [ "$HTTP_STATUS" != "200" ] || [ -z "$SERVER_TIMING" ]; then
-              echo "CATALOG_BENCHMARK_FAILED=YES"
-              exit 1
-            fi
+          BASE_URL="https://criosrango.es/prueba"
+          ENDPOINT="$BASE_URL/wp-json/cr2026/v1/catalog-page"
+          WORK_DIR="$(mktemp -d)"
+          trap 'rm -rf "$WORK_DIR"' EXIT
+
+          # Resolve a real brand ID from the theme's own public brands index.
+          curl --silent --show-error --connect-timeout 15 --max-time 60 "$BASE_URL/marcas/" --output "$WORK_DIR/brands.html"
+          BRAND_ID="$(node -e 'const fs=require("fs");const s=fs.readFileSync(process.argv[1],"utf8");const m=s.match(/data-brand-term-id="([0-9]+)"/);if(!m)process.exit(2);process.stdout.write(m[1]);' "$WORK_DIR/brands.html")"
+          test -n "$BRAND_ID"
+          echo "BENCHMARK_BRAND_TERM_ID=$BRAND_ID"
+
+          declare -a CONTEXTS=(
+            "CATEGORY_PLAIN|scope=catalog&catalog_category_id=560"
+            "NOVEDADES|scope=catalog"
+            "BRAND|scope=catalog&catalog_brand_id=$BRAND_ID"
+            "OUTLET_OR_FILTERED|scope=outlet&outlet_category_id=446"
+          )
+
+          for CONTEXT in "${CONTEXTS[@]}"; do
+            LABEL="${CONTEXT%%|*}"
+            QUERY="${CONTEXT#*|}"
+            IFS='&' read -r -a PARAMS <<< "$QUERY"
+            CURL_ARGS=()
+            for PARAM in "${PARAMS[@]}"; do CURL_ARGS+=(--data-urlencode "$PARAM"); done
+            echo "===== $LABEL ====="
+            for INDEX in 1 2 3 4 5 6; do
+              if [ "$INDEX" -le 3 ]; then SAMPLE="COLD"; else SAMPLE="WARM"; fi
+              HEADERS="$WORK_DIR/$LABEL-$INDEX.headers"
+              BODY="$WORK_DIR/$LABEL-$INDEX.body"
+              CURL_RESULT="$(curl --silent --show-error --get --connect-timeout 15 --max-time 90 \
+                --dump-header "$HEADERS" --output "$BODY" \
+                --write-out '%{http_code}|%{time_total}|%{size_download}' \
+                --data-urlencode 'page=1' --data-urlencode 'per_page=12' \
+                --data-urlencode 'sort=newest' "${CURL_ARGS[@]}" "$ENDPOINT")"
+              HTTP_STATUS="${CURL_RESULT%%|*}"
+              REMAINDER="${CURL_RESULT#*|}"
+              CURL_SECONDS="${REMAINDER%%|*}"
+              RESPONSE_BYTES="${REMAINDER#*|}"
+              TOTAL_MS="$(awk -v s="$CURL_SECONDS" 'BEGIN {printf "%.3f", s*1000}')"
+              echo "${LABEL}_${SAMPLE}_${INDEX} HTTP_STATUS=$HTTP_STATUS TOTAL_MS=$TOTAL_MS RESPONSE_BYTES=$RESPONSE_BYTES"
+
+              # Preserve transport headers/timing before parsing the response body.
+              grep -iE '^(Server-Timing|X-CriosRango-Persistent-Object-Cache|X-CriosRango-Catalog-Cache|Cache-Control|Age|Via|Server|X-Cache|CF-Cache-Status|X-LiteSpeed-Cache):' "$HEADERS" | tr -d '\r' || true
+              node - "$BODY" "$HEADERS" <<'NODE'
+          const fs = require('fs');
+          const body = fs.readFileSync(process.argv[2], 'utf8');
+          const headers = fs.readFileSync(process.argv[3], 'utf8');
+          const first = body.trimStart()[0] || '';
+          let data = null, valid = false;
+          try {
+            data = JSON.parse(body);
+            const expected = ['filter_api_product_ids','has_more','html','page','per_page','product_ids','rendered_product_ids','source','total'].sort();
+            valid = Boolean(data && typeof data === 'object' && !Array.isArray(data)
+              && typeof data.html === 'string' && Array.isArray(data.product_ids)
+              && Array.isArray(data.rendered_product_ids)
+              && expected.join('|') === Object.keys(data).sort().join('|'));
+          } catch (_) {}
+          const header = name => {
+            const line = headers.split('\n').find(item => item.trim().toLowerCase().startsWith(name.toLowerCase() + ':'));
+            return line ? line.slice(line.indexOf(':') + 1).trim() : 'UNKNOWN';
+          };
+          const timing = header('Server-Timing');
+          const phase = key => {
+            const entry = timing.split(',').map(item => item.trim()).find(item => item.toLowerCase().startsWith(key.toLowerCase() + ';dur='));
+            return entry ? entry.slice(entry.indexOf('=') + 1).trim() : 'UNKNOWN';
+          };
+          const cacheHeaders = ['X-Cache','CF-Cache-Status','X-LiteSpeed-Cache','X-Proxy-Cache'];
+          const cacheValues = cacheHeaders.map(header).filter(value => value !== 'UNKNOWN');
+          const pageCache = cacheValues.some(value => /HIT/i.test(value)) ? 'YES'
+            : cacheValues.some(value => /MISS|BYPASS|DYNAMIC/i.test(value)) ? 'NO' : 'UNKNOWN';
+          console.log('BODY_VALID_JSON=' + (valid ? 'YES' : 'NO'));
+          console.log('CATALOG_ENDPOINT_VALID_JSON=' + (valid && first === '{' ? 'PASS' : 'FAIL'));
+          console.log('CATALOG_ENDPOINT_NO_LEAKED_HTML=' + (first === '<' ? 'FAIL' : 'PASS'));
+          console.log('CATALOG_RESPONSE_SCHEMA_UNCHANGED=' + (valid ? 'PASS' : 'FAIL'));
+          console.log('CATALOG_CARD_HTML_PRESERVED=' + (valid && (data.product_ids.length === 0 || data.html.includes('<article')) ? 'PASS' : 'FAIL'));
+          console.log('PHP_TOTAL_MS=' + phase('catalog-total'));
+          console.log('FILTER_MS=' + phase('filter'));
+          console.log('PRODUCTS_MS=' + phase('products'));
+          console.log('RENDER_MS=' + phase('render'));
+          console.log('OTHER_MS=' + phase('other'));
+          console.log('PERSISTENT_OBJECT_CACHE=' + header('X-CriosRango-Persistent-Object-Cache'));
+          console.log('OBJECT_CACHE_TYPE=UNKNOWN');
+          console.log('CATALOG_CACHE=' + header('X-CriosRango-Catalog-Cache'));
+          console.log('PAGE_CACHE_PRESENT=' + pageCache);
+          if (!valid || first !== '{' || header('X-CriosRango-Persistent-Object-Cache') === 'UNKNOWN') process.exitCode = 1;
+          NODE
+              if [ "$HTTP_STATUS" != "200" ]; then
+                echo "BENCHMARK_HTTP_FAILURE=$LABEL/$SAMPLE/$INDEX"
+                exit 1
+              fi
+            done
           done
-          echo "CATALOG_BENCHMARK_REQUESTS=6"
-          echo "CATALOG_BENCHMARK_CONTEXT=catalog_category_id:560,page:1,per_page:12,sort:newest"
 
+          IMAGE_URL="$(node - "$WORK_DIR/CATEGORY_PLAIN-1.body" <<'NODE'
+          const fs=require('fs');
+          const data=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const match=String(data.html||'').match(/src="(https?:[^"]+)"/i);
+          if(!match)process.exit(2);
+          process.stdout.write(match[1].replace(/&amp;/g,'&'));
+          NODE
+          )"
+          echo "IMAGE_URL=$IMAGE_URL"
+          curl --silent --show-error --location --head --connect-timeout 15 --max-time 60 "$IMAGE_URL" \
+            --dump-header "$WORK_DIR/image.headers" --output /dev/null --write-out 'IMAGE_HTTP_STATUS=%{http_code}\n'
+          grep -iE '^(Cache-Control|Expires|ETag|Last-Modified|Content-Length|Content-Type|Age|Via|Server):' "$WORK_DIR/image.headers" | tr -d '\r' || true
 
+          echo "CATALOG_BENCHMARK_CONTEXTS=4"
+          echo "CATALOG_BENCHMARK_REQUESTS=24"
+          echo "COLD_WARM_SEMANTICS=initial-vs-repeated-identical-requests-no-new-server-cache"

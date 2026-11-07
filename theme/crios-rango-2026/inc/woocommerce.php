@@ -437,11 +437,15 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         $product_ids = array_map( static function ( $product ) { return $product->get_id(); }, $products );
     }
 
+    $render_started_at = cr2026_catalog_timer_now();
     ob_start();
     foreach ( $products as $index => $product ) {
         cr2026_render_product_card( $product, $index + ( $page > 1 ? 4 : 0 ) );
     }
+    $rendered_html = ob_get_clean();
+    cr2026_catalog_timing_add( 'render', $render_started_at );
     return rest_ensure_response( array(
+        'html' => $rendered_html,
         'source' => $has_filters ? 'filter_api' : 'woocommerce',
         'product_ids' => $product_ids,
         'filter_api_product_ids' => $filter_api_product_ids,
