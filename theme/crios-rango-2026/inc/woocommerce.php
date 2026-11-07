@@ -48,6 +48,34 @@ function cr2026_product_listing_main_query( $query ) {
 }
 add_action( 'pre_get_posts', 'cr2026_product_listing_main_query', 99 );
 
+/**
+ * Apply catalogue ordering to the existing product_brand main query.
+ * The existing brand taxonomy clause and result set remain untouched.
+ */
+function cr2026_brand_archive_native_sort( $query ) {
+    if ( is_admin() || ! $query->is_main_query() || ! $query->is_tax( 'product_brand' ) ) { return; }
+
+    $requested = sanitize_key( (string) $query->get( 'orderby' ) );
+    if ( ! in_array( $requested, array( 'date', 'price', 'price-desc', 'title' ), true ) ) {
+        $requested = 'date';
+    }
+
+    if ( 'price' === $requested ) {
+        $query->set( 'orderby', 'cr2026_price_asc' );
+        $query->set( 'order', 'ASC' );
+    } elseif ( 'price-desc' === $requested ) {
+        $query->set( 'orderby', 'cr2026_price_desc' );
+        $query->set( 'order', 'DESC' );
+    } elseif ( 'title' === $requested ) {
+        $query->set( 'orderby', 'title' );
+        $query->set( 'order', 'ASC' );
+    } else {
+        $query->set( 'orderby', 'date' );
+        $query->set( 'order', 'DESC' );
+    }
+}
+add_action( 'pre_get_posts', 'cr2026_brand_archive_native_sort', 100 );
+
 /** Skip SQL for the Shop hub and for filtered category/root result shells. */
 function cr2026_product_listing_short_circuit_query( $posts, $query ) {
     if ( null !== $posts || is_admin() || ! $query->is_main_query() || $query->is_search() ) { return $posts; }

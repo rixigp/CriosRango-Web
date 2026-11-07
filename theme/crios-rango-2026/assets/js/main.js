@@ -578,6 +578,15 @@
     }
   }
 
+  // Brand archive sorting submits the selected catalogue value to the current brand URL.
+  const brandOrderControl = document.querySelector('[data-cr-brand-order]');
+  if (brandOrderControl) {
+    brandOrderControl.addEventListener('change', () => {
+      const form = brandOrderControl.closest('[data-cr-brand-order-form]');
+      if (form) form.requestSubmit();
+    });
+  }
+
   // Brand and product-search archives use WordPress's real next-page URL and server-rendered cards.
   const htmlListingPaginators=document.querySelectorAll('[data-cr-html-pagination]');
   htmlListingPaginators.forEach(container=>{

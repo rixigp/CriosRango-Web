@@ -534,3 +534,28 @@ test('brand and product Search Load more use the WordPress next-page URL and app
   assert.match(js, /if\(loading\|\|!nextUrl\)return/);
   assert.match(js, /button\.textContent='Cargando…'/);
 });
+
+
+test('brand archive native sorting preserves its taxonomy URL and existing GET parameters', () => {
+  const brandTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
+  assert.match(brandTemplate, /class="cr-product-listing__ordering"[^>]*data-cr-brand-order-form/);
+  assert.match(brandTemplate, /get_term_link\( \$brand_term \)/);
+  assert.match(brandTemplate, /foreach \( \$_GET as \$brand_query_key => \$brand_query_value \)/);
+  assert.match(brandTemplate, /name="orderby" data-cr-brand-order/);
+  assert.match(brandTemplate, /value="date"/);
+  assert.match(brandTemplate, /value="price"/);
+  assert.match(brandTemplate, /value="price-desc"/);
+  assert.match(brandTemplate, /value="title"/);
+  assert.match(js, /brandOrderControl\.addEventListener\('change'/);
+  assert.match(js, /form\.requestSubmit\(\)/);
+  assert.doesNotMatch(brandTemplate, /new WP_Query/);
+});
+
+test('brand sort maps the four shared values onto the existing product_brand main query only', () => {
+  assert.match(php, /function cr2026_brand_archive_native_sort\( \$query \)/);
+  assert.match(php, /\$query->is_tax\( 'product_brand' \)/);
+  assert.match(php, /\$query->set\( 'orderby', 'cr2026_price_asc' \)/);
+  assert.match(php, /\$query->set\( 'orderby', 'cr2026_price_desc' \)/);
+  assert.match(php, /\$query->set\( 'orderby', 'title' \)/);
+  assert.match(php, /add_action\( 'pre_get_posts', 'cr2026_brand_archive_native_sort', 100 \)/);
+});

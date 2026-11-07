@@ -41,6 +41,29 @@ get_header( 'shop' );
             </header>
             <span class="cr-brand-archive__back-spacer" aria-hidden="true"></span>
         </div>
+        <?php
+        $brand_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
+        if ( ! in_array( $brand_orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $brand_orderby = 'date'; }
+        $brand_archive_url = get_term_link( $brand_term );
+        if ( is_wp_error( $brand_archive_url ) ) { $brand_archive_url = home_url( '/' ); }
+        ?>
+        <form class="cr-product-listing__ordering" data-cr-brand-order-form method="get" action="<?php echo esc_url( $brand_archive_url ); ?>">
+            <?php foreach ( $_GET as $brand_query_key => $brand_query_value ) :
+                $brand_query_key = sanitize_key( $brand_query_key );
+                if ( 'orderby' === $brand_query_key || ! is_scalar( $brand_query_value ) ) { continue; }
+            ?>
+                <input type="hidden" name="<?php echo esc_attr( $brand_query_key ); ?>" value="<?php echo esc_attr( wp_unslash( (string) $brand_query_value ) ); ?>">
+            <?php endforeach; ?>
+            <label for="cr-brand-product-order"><?php esc_html_e( 'Ordenar por', 'crios-rango-2026' ); ?></label>
+            <span class="cr-product-listing__select-wrap">
+                <select id="cr-brand-product-order" name="orderby" data-cr-brand-order aria-label="<?php esc_attr_e( 'Ordenar productos', 'crios-rango-2026' ); ?>">
+                    <option value="date"<?php selected( 'date', $brand_orderby ); ?>><?php esc_html_e( 'Más recientes', 'crios-rango-2026' ); ?></option>
+                    <option value="price"<?php selected( 'price', $brand_orderby ); ?>><?php esc_html_e( 'Precio: menor a mayor', 'crios-rango-2026' ); ?></option>
+                    <option value="price-desc"<?php selected( 'price-desc', $brand_orderby ); ?>><?php esc_html_e( 'Precio: mayor a menor', 'crios-rango-2026' ); ?></option>
+                    <option value="title"<?php selected( 'title', $brand_orderby ); ?>><?php esc_html_e( 'Nombre A-Z', 'crios-rango-2026' ); ?></option>
+                </select>
+            </span>
+        </form>
         <?php if ( have_posts() ) : ?>
             <div class="cr-product-grid" data-cr-brand-product-grid aria-live="polite">
                 <?php
