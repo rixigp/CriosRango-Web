@@ -239,7 +239,11 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         $sort = 'newest';
     }
     $filter_keys = array( 'size_ids', 'color_ids', 'brand_ids' );
-    $has_filters = $is_outlet_scope || $is_brand_context;
+    // The root catalogue (Novedades) is a valid global context without a
+    // product_cat term. Route it through the same Filter API as filtered
+    // catalogues, but never send catalog_category_id for this context.
+    $is_root_catalog_context = 'catalog' === $scope && 0 === $category_id && ! $is_brand_context;
+    $has_filters = $is_outlet_scope || $is_brand_context || $is_root_catalog_context;
     foreach ( $filter_keys as $filter_key ) {
         if ( '' !== trim( (string) $request->get_param( $filter_key ) ) ) {
             $has_filters = true;
