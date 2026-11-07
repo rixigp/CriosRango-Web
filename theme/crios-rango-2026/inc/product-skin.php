@@ -10,10 +10,47 @@ if ( ! defined( 'ABSPATH' ) ) {
 function cr2026_product_skin_body_class( $classes ) {
     if ( function_exists( 'is_product' ) && is_product() ) {
         $classes[] = 'cr-product-detail-app';
+
+        if ( function_exists( 'WC' ) && WC()->session ) {
+            $feedback = WC()->session->get( 'cr2026_product_added_feedback' );
+            if ( is_array( $feedback ) ) {
+                $feedback_product_id = isset( $feedback['product_id'] ) ? absint( $feedback['product_id'] ) : 0;
+                $feedback_created_at = isset( $feedback['created_at'] ) ? absint( $feedback['created_at'] ) : 0;
+                if ( $feedback_product_id === absint( get_queried_object_id() ) && $feedback_created_at > 0 && time() - $feedback_created_at <= 30 ) {
+                    $classes[] = 'cr-product-added-to-cart';
+                }
+                WC()->session->__unset( 'cr2026_product_added_feedback' );
+            }
+        }
     }
     return $classes;
 }
 add_filter( 'body_class', 'cr2026_product_skin_body_class' );
+
+/** Mark a successful native single-product POST so the CTA can confirm after its redirect. */
+function cr2026_product_skin_mark_added_feedback( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+    if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) {
+        return;
+    }
+    $referer = wp_get_referer();
+    if ( ! $referer || absint( url_to_postid( $referer ) ) !== absint( $product_id ) ) {
+        return;
+    }
+    if ( function_exists( 'WC' ) && WC()->session ) {
+        WC()->session->set( 'cr2026_product_added_feedback', array(
+            'product_id' => absint( $product_id ),
+            'variation_id' => absint( $variation_id ),
+            'created_at' => time(),
+        ) );
+    }
+}
+add_action( 'woocommerce_add_to_cart', 'cr2026_product_skin_mark_added_feedback', 10, 6 );
+
+/** Remove only WooCommerce's successful add-to-cart notice on Product Detail; errors remain native. */
+function cr2026_product_skin_suppress_success_notice( $message, $products ) {
+    return is_product() ? '' : $message;
+}
+add_filter( 'wc_add_to_cart_message_html', 'cr2026_product_skin_suppress_success_notice', 10, 2 );
 
 /** Toolbar uses the already-approved category toolbar presentation classes. */
 function cr2026_product_skin_toolbar() {

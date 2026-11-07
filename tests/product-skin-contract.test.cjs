@@ -175,6 +175,34 @@ test('variation CTA uses the existing WooCommerce button and native variation ID
   assert.match(skinCss, /\.cr-product-cart-icon\s*\{[^}]*stroke:\s*currentColor;/s);
 });
 
+test('CTA uses light mint before selection, dark green for a valid variation, and temporary mint success feedback', () => {
+  assert.ok(productUiJs.includes("document.querySelector('.cr-cart-link .cr-icon svg')"));
+  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
+  assert.ok(productUiJs.includes("checkPath.setAttribute('d', 'm5 12 4 4L19 6')"));
+  assert.ok(productUiJs.includes("nativeButton.classList.add('is-added-to-cart')"));
+  assert.ok(productUiJs.includes("window.setTimeout(function ()"));
+  assert.ok(productUiJs.includes("}, 2200)"));
+  assert.ok(productUiJs.includes("added_to_cart.crProductDetail"));
+  assert.ok(productUiJs.includes("var addedButton = $button && $button.jquery ? $button[0] : $button"));
+  assert.ok(productUiJs.includes("body.classList.contains('cr-product-added-to-cart')"));
+  assert.match(skinCss, /--cr-product-mint:\s*#E4EFEA;/);
+  assert.match(skinCss, /\.single_add_to_cart_button\.is-added-to-cart[\s\S]*?background:\s*var\(--cr-product-mint\) !important;/);
+  assert.match(skinCss, /\.single_add_to_cart_button:disabled[\s\S]*?background:\s*var\(--cr-product-mint\) !important;/);
+  assert.match(skinCss, /\.single_add_to_cart_button:not\(:disabled\)[\s\S]*?background:\s*var\(--cr-product-green\) !important;/);
+  assert.equal(productUiJs.includes("cr-cart-count"), false);
+  assert.equal(productUiJs.includes("data-cr-cart-count"), false);
+});
+
+test('only successful add-to-cart notices are suppressed on Product Detail; WooCommerce errors remain visible', () => {
+  assert.match(skin, /function cr2026_product_skin_suppress_success_notice\( \$message, \$products \)\s*\{\s*return is_product\(\) \? '' : \$message;/);
+  assert.match(skin, /add_filter\( 'wc_add_to_cart_message_html', 'cr2026_product_skin_suppress_success_notice', 10, 2 \)/);
+  assert.match(skin, /add_action\( 'woocommerce_add_to_cart', 'cr2026_product_skin_mark_added_feedback', 10, 6 \)/);
+  assert.match(skin, /cr-product-added-to-cart/);
+  assert.match(skinCss, /\.woocommerce-notices-wrapper \.woocommerce-error/);
+  assert.doesNotMatch(skinCss, /\.woocommerce-message\s*\{[^}]*display:\s*none/i);
+  assert.doesNotMatch(skinCss, /\.woocommerce-notices-wrapper\s*\{[^}]*display:\s*none/i);
+});
+
 test('enhancements are progressive and the native add-to-cart button remains the only submit', () => {
   assert.ok(assets.includes('cr2026-product-ui-enhancements'));
   assert.ok(assets.includes('if ( $uses_product_detail_skin )'));

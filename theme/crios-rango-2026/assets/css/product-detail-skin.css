@@ -2,6 +2,7 @@
 body.cr-product-detail-app {
   --cr-product-cream: #FCFAF7;
   --cr-product-green: #183B35;
+  --cr-product-mint: #E4EFEA;
   --cr-product-muted: #777277;
   --cr-product-border: #D8D9D5;
   --cr-product-coral: #E58B78;
@@ -771,4 +772,33 @@ body.cr-product-detail-app .cr-product-cart-label {
   body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button {
     margin-top: 2px;
   }
+}
+
+
+/* Product Detail CTA feedback states: native WooCommerce controls remain authoritative. */
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button:not(:disabled):not(.disabled):not(.wc-variation-selection-needed):not(.is-added-to-cart),
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button:not(:disabled):not(.disabled):not(.wc-variation-selection-needed):not(.is-added-to-cart):hover,
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button:not(:disabled):not(.disabled):not(.wc-variation-selection-needed):not(.is-added-to-cart):focus {
+  background: var(--cr-product-green) !important;
+  color: #fff !important;
+}
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button:disabled,
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.disabled,
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.wc-variation-selection-needed {
+  background: var(--cr-product-mint) !important;
+  color: #557568 !important;
+}
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.is-added-to-cart,
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.is-added-to-cart:hover,
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.is-added-to-cart:focus {
+  background: var(--cr-product-mint) !important;
+  color: #557568 !important;
+  cursor: default;
+}
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.is-added-to-cart .cr-product-cart-icon {
+  color: var(--cr-product-green) !important;
+  stroke: currentColor;
+}
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.is-added-to-cart .cr-product-cart-label {
+  color: #557568 !important;
 }
