@@ -140,15 +140,39 @@ test('variation chips are native select proxies and do not implement variation m
   assert.equal(productUiJs.includes('price'), false);
 });
 
-test('quantity stepper delegates to the existing WooCommerce quantity input', () => {
+test('quantity row matches the APP without replacing WooCommerce quantity authority', () => {
   assert.ok(productUiJs.includes('form.cart .quantity input.qty'));
+  assert.ok(productUiJs.includes("quantityLabel.textContent = 'Cantidad'"));
   assert.ok(productUiJs.includes('input.stepDown()'));
   assert.ok(productUiJs.includes('input.stepUp()'));
   assert.ok(productUiJs.includes('dispatchNativeChange(input)'));
+  assert.ok(skinCss.includes('.quantity.cr-product-quantity-row'));
+  assert.ok(skinCss.includes('border: 0;'));
+  assert.ok(skinCss.includes('background: transparent;'));
   assert.equal(productUiJs.includes('input.min'), false);
   assert.equal(productUiJs.includes('input.max'), false);
   assert.equal(productUiJs.includes('fetch('), false);
   assert.equal(productUiJs.includes('XMLHttpRequest'), false);
+});
+
+test('Limpiar is visually hidden while the native WooCommerce reset link remains in the form', () => {
+  assert.match(skinCss, /\.reset_variations\s*\{[^}]*display:\s*none !important;/s);
+  assert.ok(skinCss.includes('.reset_variations'));
+  assert.doesNotMatch(productUiJs, /reset_variations[^\n]*(?:remove|delete)/);
+});
+
+test('variation CTA uses the existing WooCommerce button and native variation ID state', () => {
+  assert.ok(productUiJs.includes("form.querySelector('button.single_add_to_cart_button')"));
+  assert.ok(productUiJs.includes("document.createElementNS('http://www.w3.org/2000/svg', 'svg')"));
+  assert.ok(productUiJs.includes("cartBody.setAttribute('d', 'M5 8h14l-1 12H6L5 8Z')"));
+  assert.ok(productUiJs.includes("cartHandle.setAttribute('d', 'M9 9V6a3 3 0 0 1 6 0v3')"));
+  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige una combinación'"));
+  assert.ok(productUiJs.includes("Number(variationId.value) > 0"));
+  assert.doesNotMatch(productUiJs, /nativeButton\.disabled\s*=/);
+  assert.match(skinCss, /\.single_add_to_cart_button\s*\{[^}]*height:\s*52px;[^}]*min-height:\s*52px;/s);
+  assert.match(skinCss, /\.single_add_to_cart_button:disabled[\s\S]*?background:\s*#E4EFEA;/);
+  assert.match(skinCss, /\.single_add_to_cart_button:not\(:disabled\)[\s\S]*?background:\s*#183B35;/);
+  assert.match(skinCss, /\.cr-product-cart-icon\s*\{[^}]*stroke:\s*currentColor;/s);
 });
 
 test('enhancements are progressive and the native add-to-cart button remains the only submit', () => {

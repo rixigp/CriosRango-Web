@@ -252,7 +252,25 @@
 
       var variationId = form.querySelector('input.variation_id');
       var nativeButton = form.querySelector('button.single_add_to_cart_button');
-      var originalButtonText = nativeButton ? nativeButton.textContent.trim() : '';
+      var nativeButtonLabel = null;
+      if (nativeButton) {
+        nativeButton.textContent = '';
+        var cartIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        cartIcon.setAttribute('viewBox', '0 0 24 24');
+        cartIcon.setAttribute('aria-hidden', 'true');
+        cartIcon.setAttribute('focusable', 'false');
+        cartIcon.classList.add('cr-product-cart-icon');
+        var cartBody = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        cartBody.setAttribute('d', 'M5 8h14l-1 12H6L5 8Z');
+        var cartHandle = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        cartHandle.setAttribute('d', 'M9 9V6a3 3 0 0 1 6 0v3');
+        cartIcon.appendChild(cartBody);
+        cartIcon.appendChild(cartHandle);
+        nativeButtonLabel = document.createElement('span');
+        nativeButtonLabel.className = 'cr-product-cart-label';
+        nativeButton.appendChild(cartIcon);
+        nativeButton.appendChild(nativeButtonLabel);
+      }
       function syncVariationState() {
         selects.forEach(function (select) {
           var chips = select.nextElementSibling;
@@ -267,8 +285,8 @@
         });
         var validNativeVariation = !!(variationId && Number(variationId.value) > 0);
         if (reserve && reserve.dataset.variable === '1') reserve.disabled = !validNativeVariation;
-        if (nativeButton && variationId) {
-          nativeButton.textContent = validNativeVariation ? (originalButtonText || 'Añadir al carrito') : 'Elige una combinación';
+        if (nativeButtonLabel && variationId) {
+          nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige una combinación';
         }
       }
       form.addEventListener('change', syncVariationState);
@@ -283,6 +301,14 @@
         if (input.closest('.cr-product-quantity-stepper')) return;
         var originalParent = input.parentNode;
         var originalNext = input.nextSibling;
+        var quantity = input.closest('.quantity');
+        var quantityLabel = document.createElement('span');
+        quantityLabel.className = 'cr-product-quantity-label';
+        quantityLabel.textContent = 'Cantidad';
+        if (quantity) {
+          quantity.classList.add('cr-product-quantity-row');
+          quantity.appendChild(quantityLabel);
+        }
         var stepper = document.createElement('div');
         stepper.className = 'cr-product-quantity-stepper';
         var minus = document.createElement('button');
@@ -291,6 +317,7 @@
         plus.type = 'button'; plus.textContent = '+'; plus.setAttribute('aria-label', 'Aumentar cantidad');
         input.parentNode.insertBefore(stepper, input);
         stepper.appendChild(minus); stepper.appendChild(input); stepper.appendChild(plus);
+        if (quantity && quantityLabel.parentNode === quantity) quantity.insertBefore(quantityLabel, stepper);
         function sync() {
           minus.disabled = !!input.disabled;
           plus.disabled = !!input.disabled;
@@ -304,6 +331,8 @@
           if (originalNext && originalNext.parentNode === originalParent) originalParent.insertBefore(input, originalNext);
           else originalParent.appendChild(input);
           if (stepper.parentNode) stepper.remove();
+          if (quantityLabel.parentNode) quantityLabel.remove();
+          if (quantity) quantity.classList.remove('cr-product-quantity-row');
         } });
       });
     }
