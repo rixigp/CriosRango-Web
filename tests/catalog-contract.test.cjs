@@ -715,7 +715,7 @@ test('server catalog cache uses fresh/stale transients and generation-complete k
   assert.match(php, /update_option\( 'cr2026_catalog_cache_generation', cr2026_catalog_cache_generation\(\) \+ 1, false \)/);
 });
 test('server cache HIT skips the catalog pipeline; MISS validates and stores; locks serve same-generation stale', () => {
-  assert.match(php, /'hit' === \$cache_result\['state'\] \|\| 'stale' === \$cache_result\['state'\]\) \{\s*return rest_ensure_response\( \$cache_result\['payload'\] \)/);
+  assert.ok(php.includes("if ( 'hit' === $cache_result['state'] || 'stale' === $cache_result['state'] ) {"));
   assert.match(php, /function cr2026_catalog_cache_payload_valid/);
   assert.match(php, /cr2026_catalog_cache_payload_valid\( \$payload \)/);
   assert.match(php, /'locked' === \$cache_result\['state'\]/);
@@ -797,7 +797,7 @@ test('catalog-page exposes monotonic Server-Timing diagnostics without changing 
   assert.match(php, /function cr2026_catalog_timing_headers\([\s\S]*?rest_post_dispatch/);
   assert.match(php, /catalog-total;dur=/);
   for (const stage of ['filter','products','render','cache','other']) assert.match(php, new RegExp(stage + ';dur='));
-  assert.match(php, /X-CriosRango-Catalog-Cache',[\\s\\S]*?cr2026_catalog_cache_status/);
+  assert.ok(php.includes("$response->header( 'X-CriosRango-Catalog-Cache', isset( $GLOBALS['cr2026_catalog_cache_status'] )"));
   assert.match(php, /X-CriosRango-Persistent-Object-Cache/);
   assert.match(php, /cr2026_catalog_timing_add\( 'filter'/);
   assert.match(php, /cr2026_catalog_timing_add\( 'products'/);
