@@ -283,3 +283,17 @@ test('global header product search trigger opens the existing form panel and blo
   assert.match(searchform,/name="post_type" value="product"/);
   assert.match(searchform,/action=.*home_url\( '\/' \)/);
 });
+
+
+
+test('WooCommerce product search results reuse the shared catalog product-card renderer',()=>{
+  const searchTemplate=fs.readFileSync(path.join(root,'theme/crios-rango-2026/search.php'),'utf8');
+  assert.match(searchTemplate,/\$is_product_search\s*=\s*is_search\(\)/);
+  assert.match(searchTemplate,/\'product\' === \$requested_post_type/);
+  assert.match(searchTemplate,/cr2026_render_product_card\( \$search_product, \$card_index \)/);
+  assert.match(searchTemplate,/class="cr-product-grid" data-cr-search-product-grid/);
+  assert.doesNotMatch(searchTemplate,/cr-post-card/);
+  assert.match(searchTemplate,/No hemos encontrado productos para/);
+  assert.match(searchTemplate,/cr2026_shop_url\(\)/);
+  assert.match(searchTemplate,/get_search_query\(\)/);
+});
