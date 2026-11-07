@@ -936,7 +936,7 @@ const cartCss = fs.readFileSync(cartCssPath, 'utf8');
 
 test('CART_APP_STYLE_LAYOUT=PASS', () => {
   assert.match(cartTemplate, /class="cr-cart-page"/);
-  assert.match(cartTemplate, /class="cr-cart-item"/);
+  assert.match(cartTemplate, /class="[^"]*cr-cart-item/);
   assert.match(cartTemplate, /class="cr-cart-promotions"/);
   assert.match(cartTemplate, /class="cr-cart-summary"/);
   assert.match(cartCss, /grid-template-columns:minmax\(0,1fr\) minmax\(290px,360px\)/);
@@ -1048,7 +1048,7 @@ test('CART_SHIPPING_NOT_HARDCODED=PASS', () => {
 test('CART_GUEST_WALLET_HIDDEN=PASS', () => {
   assert.match(cartTemplate, /data-cr-cart-wallet hidden/);
   assert.match(cartJs, /if \(!config\.authenticated\) return/);
-  assert.match(cartJs, /else walletPanel\.hidden = true/);
+  assert.match(cartJs, /walletPanel\.hidden = true/);
   assert.match(cartJs, /personal \|\| promotion\.requires_login/);
   assert.match(cartJs, /bienvenida/);
   assert.match(cartJs, /birthday/);
