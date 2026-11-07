@@ -429,7 +429,7 @@ test('Search exposes exactly two app controls and the custom clear never closes 
   assert.match(styles, /::-ms-clear/);
   assert.match(styles, /::-ms-reveal/);
   assert.doesNotMatch(styles, /body\.home \.cr-app-header \.cr-cart-count,[\s\S]*?background:\s*#b3261e/);
-  assert.match(styles, /\.cr-cart-count\s*\{[\s\S]*?background:\s*var\(--cr-sale-coral\)/);
+  assert.match(styles, /\.cr-cart-count\s*\{[\s\S]*?background:\s*var\(--cr-green\)/);
 });
 
 test('Search empty state has the compact requested copy and canonical WooCommerce Shop destination', () => {
@@ -527,7 +527,7 @@ test('brand and product Search Load more use the WordPress next-page URL and app
   assert.match(brand, /data-cr-html-load-more data-next-url=/);
   assert.match(search, /get_next_posts_page_link\(\)/);
   assert.match(search, /data-cr-html-load-more data-next-url=/);
-  assert.match(js, /fetch\(nextUrl,\{credentials:'same-origin',headers:\{Accept:'text\\/html'\}\}\)/);
+  assert.match(js, /fetch\(nextUrl,\{credentials:'same-origin',headers:\{Accept:'text\/html'\}\}\)/);
   assert.match(js, /grid\.appendChild\(fragment\)/);
   assert.match(js, /new URL\(nextLink\.href,nextDocument\.baseURI\)/);
   assert.match(js, /if\(loading\|\|!nextUrl\)return/);
