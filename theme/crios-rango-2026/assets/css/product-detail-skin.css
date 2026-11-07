@@ -68,6 +68,11 @@ body.cr-product-detail-app .cr-main--woocommerce div.product div.woocommerce-pro
   overflow: hidden;
   background: #fff;
 }
+/* Hide the native zoom affordance while preserving its WooCommerce trigger binding for delegated image taps. */
+body.cr-product-detail-app .woocommerce-product-gallery .woocommerce-product-gallery__trigger {
+  display: none !important;
+}
+
 body.cr-product-detail-app .woocommerce-product-gallery__wrapper {
   margin: 0;
 }

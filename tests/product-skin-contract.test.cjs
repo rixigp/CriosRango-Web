@@ -247,6 +247,13 @@ test('mobile WooCommerce attribute rows always stack labels above full-width opt
   assert.match(skinCss, /td\.value \.cr-product-choice-chips\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*flex-start;[^}]*flex-wrap:\s*wrap;/s);
 });
 
+test('native WooCommerce zoom control is visually hidden while its native lightbox trigger remains in use', () => {
+  assert.ok(skinCss.includes('body.cr-product-detail-app .woocommerce-product-gallery .woocommerce-product-gallery__trigger {'));
+  assert.ok(skinCss.includes('display: none !important;'));
+  assert.ok(productUiJs.includes('nativeTrigger.click()'));
+  assert.ok(setup.includes('wc-product-gallery-lightbox'));
+});
+
 test('touch tap delegates to WooCommerce native lightbox while swipe remains native', () => {
   assert.ok(productUiJs.includes("pointerdown"));
   assert.ok(productUiJs.includes("pointerup"));
