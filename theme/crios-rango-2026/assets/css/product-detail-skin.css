@@ -1885,3 +1885,14 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
     margin: 0;
   }
 }
+
+
+/* Quantity control follows the page canvas; visual-only background correction. */
+@media (max-width: 767px) {
+  body.cr-product-detail-app .cr-product-quantity-stepper,
+  body.cr-product-detail-app .cr-product-quantity-stepper button,
+  body.cr-product-detail-app .cr-product-quantity-stepper input.qty {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+}

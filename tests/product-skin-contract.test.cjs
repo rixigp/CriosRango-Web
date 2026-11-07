@@ -229,6 +229,16 @@ test('Color and Size cards render only real native options and preserve WooComme
   assert.ok(productUiJs.includes("select.addEventListener('change', render)"));
 });
 
+test('quantity stepper background matches Product Detail canvas without changing its layout or behavior', () => {
+  const backgroundFix = skinCss.slice(skinCss.lastIndexOf('Quantity control follows the page canvas'));
+  assert.match(backgroundFix, /\.cr-product-quantity-stepper,[\s\S]*?\.cr-product-quantity-stepper button,[\s\S]*?\.cr-product-quantity-stepper input\.qty[\s\S]*?background:\s*transparent !important;[\s\S]*?background-color:\s*transparent !important;/);
+  assert.match(skinCss, /\.cr-product-quantity-label\s*\{[^}]*display:\s*none !important;/s);
+  assert.ok(productUiJs.includes("quantityLabel.textContent = 'Cantidad'"));
+  assert.ok(productUiJs.includes('input.stepDown()'));
+  assert.ok(productUiJs.includes('input.stepUp()'));
+  assert.ok(productUiJs.includes('dispatchNativeChange(input)'));
+});
+
 test('quantity row matches the APP without replacing WooCommerce quantity authority', () => {
   assert.ok(productUiJs.includes('form.cart .quantity input.qty'));
   assert.ok(productUiJs.includes("quantityLabel.textContent = 'Cantidad'"));
