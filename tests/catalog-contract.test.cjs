@@ -346,3 +346,32 @@ test('product search uses compact app-like search field, preserves query, and ke
   assert.match(js,/data-cr-search-clear/);
   assert.match(js,/input\.dispatchEvent\(new Event\('input'/);
 });
+
+
+test('search global header stays sticky in document flow without covering the product grid',()=>{
+  const styles=fs.readFileSync(path.join(root,'theme/crios-rango-2026/assets/css/main.css'),'utf8');
+  assert.match(styles,/body\.search \.cr-app-header \{[^}]*position:sticky!important;[^}]*top:var\(--cr-admin-bar-offset,0px\)/s);
+  assert.match(styles,/body\.search\.cr-global-app-header:not\(\.home\) \{[^}]*padding-top:0!important/s);
+  assert.match(styles,/body\.admin-bar \{ --cr-admin-bar-offset: 32px; \}/);
+  assert.match(styles,/@media \(max-width: 782px\) \{\s*body\.admin-bar \{ --cr-admin-bar-offset: 46px; \}/);
+  assert.doesNotMatch(styles,/body\.search\.cr-global-app-header:not\(\.home\) \{[^}]*padding-top:var\(--cr-app-topbar-height\)/s);
+});
+
+test('product search has no active bottom-navigation destination while links remain navigable',()=>{
+  const helpers=fs.readFileSync(path.join(root,'theme/crios-rango-2026/inc/helpers.php'),'utf8');
+  const footer=fs.readFileSync(path.join(root,'theme/crios-rango-2026/footer.php'),'utf8');
+  const active=helpers.match(/function cr2026_app_nav_active_item\(\) \{[\s\S]*?\n\}/)?.[0]||'';
+  assert.match(active,/is_search\(\) && 'product' === get_query_var\( 'post_type' \)\) \{ return ''; \}/);
+  assert.ok(active.indexOf("return '';")<active.indexOf("is_shop()"));
+  for(const destination of ['home','categories','outlet','cart','account']) assert.ok(footer.includes("$nav_urls['"+destination+"']"));
+  assert.match(footer,/data-cr-cart-count/);
+});
+
+test('mobile product search shows no more than three suggestions without changing their source',()=>{
+  const styles=fs.readFileSync(path.join(root,'theme/crios-rango-2026/assets/css/main.css'),'utf8');
+  const searchTemplate=fs.readFileSync(path.join(root,'theme/crios-rango-2026/search.php'),'utf8');
+  assert.match(styles,/@media\(max-width:767px\)\s*\{\s*body\.search \.cr-search-suggestions li:nth-child\(n\+4\) \{ display:none; \}/);
+  assert.match(searchTemplate,/\$GLOBALS\['wp_query'\]->posts/);
+  assert.match(searchTemplate,/foreach \( \$GLOBALS\['wp_query'\]->posts as \$suggestion_post \)/);
+  assert.match(searchTemplate,/cr2026_render_product_card\( \$search_product, \$card_index \)/);
+});

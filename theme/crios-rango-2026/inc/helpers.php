@@ -250,6 +250,8 @@ function cr2026_app_nav_urls() {
 }
 
 function cr2026_app_nav_active_item() {
+    // Product search is an independent destination; keep every app tab inactive.
+    if ( function_exists( 'is_search' ) && is_search() && 'product' === get_query_var( 'post_type' ) ) { return ''; }
     if ( is_front_page() ) { return 'home'; }
     if ( function_exists( 'is_cart' ) && is_cart() ) { return 'cart'; }
     if ( function_exists( 'is_account_page' ) && is_account_page() ) { return 'account'; }

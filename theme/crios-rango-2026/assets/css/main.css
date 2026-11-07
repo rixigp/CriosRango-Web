@@ -2691,7 +2691,7 @@ body.admin-bar { --cr-admin-bar-offset: 32px; }
 body.search .cr-main--search,
 body.search .cr-search-results-page { background:#FCFAF7; }
 body.search { background:#FCFAF7; scroll-padding-top:var(--cr-app-topbar-height,64px); }
-body.search.cr-global-app-header:not(.home) { --cr-app-topbar-height:64px; padding-top:var(--cr-app-topbar-height); }
+body.search.cr-global-app-header:not(.home) { --cr-app-topbar-height:64px; padding-top:0!important; }
 @media(min-width:768px){body.search.cr-global-app-header:not(.home){--cr-app-topbar-height:82px}}
 @media(min-width:1280px){body.search.cr-global-app-header:not(.home){--cr-app-topbar-height:88px}}
 body.search .cr-main { min-height:60vh; background:#FCFAF7; }
@@ -2750,4 +2750,18 @@ body.search .cr-search-results-page .page-numbers.dots { border-color:transparen
 }
 @media(min-width:1024px) {
   body.search .cr-search-results-page .cr-product-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
+
+
+/* Search keeps the global header in document flow: sticky, not fixed. */
+body.search .cr-app-header {
+  position:sticky!important;
+  top:var(--cr-admin-bar-offset,0px);
+  left:auto;
+  right:auto;
+  width:100%;
+  z-index:1150;
+}
+@media(max-width:767px) {
+  body.search .cr-search-suggestions li:nth-child(n+4) { display:none; }
 }
