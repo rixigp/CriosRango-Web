@@ -411,67 +411,17 @@ test('visual color resolution never mutates the native WooCommerce option value'
 });
 
 
-test('Product Detail variable add-to-cart is intercepted and sent through the official WooCommerce AJAX endpoint', () => {
-  assert.ok(productUiJs.includes("form.addEventListener('submit', submitProductDetailAddToCart, true)"));
-  assert.ok(productUiJs.includes("getWooAjaxUrl('add_to_cart')"));
-  assert.ok(productUiJs.includes("event.preventDefault()"));
-  assert.ok(productUiJs.includes("event.stopImmediatePropagation()"));
-  assert.ok(productUiJs.includes("type: 'POST'"));
-  assert.ok(productUiJs.includes("data: buildNativeAddToCartPayload()"));
+test('Product Detail does not own or intercept WooCommerce add-to-cart submission', () => {
+  assert.doesNotMatch(productUiJs, /submitProductDetailAddToCart/);
+  assert.doesNotMatch(productUiJs, /addEventListener\(['"]submit['"]/);
+  assert.doesNotMatch(productUiJs, /getWooAjaxUrl\(['"]add_to_cart['"]\)/);
+  assert.doesNotMatch(productUiJs, /jQuery\.ajax\s*\(/);
   assert.match(assets, /array\( 'jquery', 'wc-add-to-cart', 'wc-cart-fragments' \)/);
-});
-
-test('AJAX payload keeps every native attribute as a top-level POST field and in the WooCommerce variation map', () => {
-  const sandboxModule = { exports: {} };
-  vm.runInNewContext(productUiJs, { module: sandboxModule, document: { readyState: 'loading', addEventListener() {} } });
-  const payload = sandboxModule.exports.buildVariationAddToCartPayload([
-    { name: 'attribute_pa_color', value: 'azul' },
-    { name: 'attribute_pa_talla', value: 'M' },
-    { name: 'quantity', value: '3' }
-  ], '21110', '57392', '3');
-  assert.equal(payload.product_id, '21110');
-  assert.equal(payload.variation_id, '57392');
-  assert.equal(payload.quantity, '3');
-  assert.equal(payload.attribute_pa_color, 'azul');
-  assert.equal(payload.attribute_pa_talla, 'M');
-  assert.deepEqual(JSON.parse(JSON.stringify(payload.variation)), { attribute_pa_color: 'azul', attribute_pa_talla: 'M' });
-  assert.ok(productUiJs.includes('window.jQuery(form).serializeArray()'));
-  assert.doesNotMatch(productUiJs, /attribute_pa_color|attribute_pa_tallas/);
-});
-
-test('only a confirmed WooCommerce AJAX response triggers success feedback and standard fragment events', () => {
-  assert.match(productUiJs, /!response \|\| response\.error \|\| !response\.fragments \|\| typeof response\.cart_hash === 'undefined'/);
-  assert.ok(productUiJs.includes("trigger('added_to_cart', ["));
-  assert.ok(productUiJs.includes("response.fragments"));
-  assert.ok(productUiJs.includes("response.cart_hash"));
-  assert.ok(productUiJs.includes("showAddedFeedback()"));
-});
-
-test('AJAX errors retrieve native WooCommerce notices and do not show false success or redirect', () => {
-  assert.ok(productUiJs.includes("refreshWooErrorNotices()"));
-  assert.ok(productUiJs.includes("getWooAjaxUrl('get_refreshed_fragments')"));
-  assert.ok(productUiJs.includes("cr_product_detail=1"));
-  assert.ok(productUiJs.includes("showWooAddToCartError("));
-  assert.ok(woocommerce.includes("function cr2026_product_detail_error_notice_fragment"));
-  assert.ok(woocommerce.includes("wc_get_notices( 'error' )"));
-  assert.ok(woocommerce.includes("wc_get_template( 'notices/error.php'"));
-  assert.equal(woocommerce.includes('wc_print_notices( true )'), false);
-  assert.ok(woocommerce.includes("div.woocommerce-notices-wrapper"));
-  assert.doesNotMatch(productUiJs, /window\.location\s*=|location\.href\s*=|location\.reload\s*\(/);
-});
-
-test('repeated submit is blocked while AJAX is pending and no scroll-reset hack is used', () => {
-  assert.ok(productUiJs.includes('var isAddingToCart = false'));
-  assert.ok(productUiJs.includes('if (isAddingToCart)'));
-  assert.ok(productUiJs.includes('isAddingToCart = true'));
-  assert.ok(productUiJs.includes('isAddingToCart = false'));
-  assert.doesNotMatch(productUiJs, /window\.scrollTo|document\.documentElement\.scrollTop\s*=|window\.location\.reload/);
 });
 
 test('cart count remains a WooCommerce fragment for every existing header and bottom-nav counter', () => {
   assert.match(woocommerce, /\$fragments\['span\[data-cr-cart-count\]'\]/);
   assert.match(woocommerce, /add_filter\( 'woocommerce_add_to_cart_fragments', 'cr2026_cart_count_fragment' \)/);
-  assert.ok(productUiJs.includes("trigger('added_to_cart', ["));
 });
 
 test('short-description fixtures preserve valid formatting and contain malformed underline markup', () => {
@@ -508,111 +458,44 @@ test('short-description fixtures preserve valid formatting and contain malformed
   assert.match(valid.expected, /<u>Marca:<\/u> Arggido/);
 });
 
-test('AJAX submit capture prevents traditional submit and leaves one submit handler', () => {
-  const start = productUiJs.indexOf('function submitProductDetailAddToCart(event)');
-  const end = productUiJs.indexOf("form.addEventListener('submit', submitProductDetailAddToCart, true)", start);
-  assert.ok(start >= 0 && end > start);
-  const handler = productUiJs.slice(start, end);
-  assert.ok(handler.includes('event.preventDefault()'));
-  assert.ok(handler.includes('event.stopImmediatePropagation()'));
-  assert.ok(handler.includes('isAddingToCart = true'));
-  assert.equal(productUiJs.split("form.addEventListener('submit'").length - 1, 1);
-});
-test('successful AJAX response dispatches standard event and CTA state is not reset immediately', () => {
-  assert.ok(productUiJs.includes("trigger('added_to_cart', ["));
-  assert.ok(productUiJs.includes('response.fragments'));
-  assert.ok(productUiJs.includes('response.cart_hash'));
-  assert.ok(productUiJs.includes("added_to_cart.crProductDetail"));
-  assert.ok(productUiJs.includes('showAddedFeedback()'));
-  assert.ok(productUiJs.includes('!hasAddedFeedback'));
-});
-test('error fragment renders only validation errors, not success or informational notices', () => {
-  const start = woocommerce.indexOf('function cr2026_product_detail_error_notice_fragment');
-  const end = woocommerce.indexOf("add_filter( 'woocommerce_add_to_cart_fragments', 'cr2026_product_detail_error_notice_fragment'", start);
-  const fragment = woocommerce.slice(start, end);
-  assert.ok(fragment.includes("wc_get_notices( 'error' )"));
-  assert.ok(fragment.includes("notices/error.php"));
-  assert.equal(fragment.includes('wc_get_notices()'), false);
-  assert.equal(fragment.includes('wc_print_notices'), false);
+test('duplicate custom submit owner and request-only helpers are removed', () => {
+  assert.doesNotMatch(productUiJs, /submitProductDetailAddToCart/);
+  assert.doesNotMatch(productUiJs, /addEventListener\(['"]submit['"]/);
+  for (const deadHelper of [
+    'buildVariationAddToCartPayload',
+    'buildNativeAddToCartPayload',
+    'getWooAjaxUrl',
+    'applyWooCartFragments',
+    'refreshWooErrorNotices',
+    'showWooAddToCartError',
+    'releaseAddToCartLock',
+    'isAddingToCart'
+  ]) assert.doesNotMatch(productUiJs, new RegExp(deadHelper));
+  assert.doesNotMatch(woocommerce, /cr2026_product_detail_error_notice_fragment|cr_product_detail/);
 });
 
-test('Product Detail clears only its own old notices before a valid AJAX request', () => {
-  assert.ok(productUiJs.includes("document.querySelector('.cr-main--woocommerce')"));
+test('CTA keeps its native added_to_cart listener without creating a replacement request', () => {
+  assert.ok(productUiJs.includes("added_to_cart.crProductDetail"));
+  assert.ok(productUiJs.includes('showAddedFeedback()'));
+  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
+  assert.doesNotMatch(productUiJs, /jQuery\.ajax\s*\(|fetch\s*\(/);
+});
+
+test('Product Detail clears only its own notices when WooCommerce resolves a variation', () => {
   assert.ok(productUiJs.includes('function clearProductDetailNotices()'));
+  assert.match(productUiJs, /on\('found_variation show_variation', function \(\) \{\s*clearProductDetailNotices\(\);\s*syncVariationState\(\);/);
   assert.ok(productUiJs.includes("noticeRoot.querySelectorAll('.woocommerce-notices-wrapper')"));
-  const start = productUiJs.indexOf('function submitProductDetailAddToCart(event)');
-  const end = productUiJs.indexOf("form.addEventListener('submit', submitProductDetailAddToCart, true)", start);
-  const handler = productUiJs.slice(start, end);
-  assert.ok(handler.indexOf('clearProductDetailNotices();') < handler.indexOf('window.jQuery.ajax({'));
   assert.doesNotMatch(productUiJs, /document\.querySelectorAll\(['"]\.woocommerce-message/);
 });
 
-test('confirmed server success applies fragments and cart hash, shows CTA feedback directly, then emits added_to_cart', () => {
-  const start = productUiJs.indexOf('function submitProductDetailAddToCart(event)');
-  const end = productUiJs.indexOf("form.addEventListener('submit', submitProductDetailAddToCart, true)", start);
-  const handler = productUiJs.slice(start, end);
-  const apply = handler.indexOf('applyWooCartFragments(response)');
-  const clear = handler.indexOf('clearProductDetailNotices();', apply);
-  const feedback = handler.indexOf('showAddedFeedback();', clear);
-  const trigger = handler.indexOf("trigger('added_to_cart', [", feedback);
-  assert.ok(apply >= 0);
-  assert.ok(clear > apply);
-  assert.ok(feedback > clear);
-  assert.ok(trigger > feedback);
-  assert.ok(handler.indexOf('response.fragments', trigger) > trigger);
-  assert.ok(handler.indexOf('response.cart_hash', trigger) > trigger);
-  assert.ok(handler.indexOf('clearProductDetailNotices();', trigger) > trigger);
-  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
-  assert.match(productUiJs, /function applyWooCartFragments\(response\)[\s\S]*?sessionStorage\.setItem\(cartHashKey, response\.cart_hash\)[\s\S]*?localStorage\.setItem\(cartHashKey, response\.cart_hash\)/);
-});
-
-test('AJAX error response does not execute success feedback and refreshes only current WooCommerce errors', () => {
-  const start = productUiJs.indexOf('function submitProductDetailAddToCart(event)');
-  const end = productUiJs.indexOf("form.addEventListener('submit', submitProductDetailAddToCart, true)", start);
-  const handler = productUiJs.slice(start, end);
-  const errorStart = handler.indexOf("if (!response || response.error");
-  const successStart = handler.indexOf('applyWooCartFragments(response)', errorStart);
-  const errorBranch = handler.slice(errorStart, successStart);
-  assert.ok(errorStart >= 0);
-  assert.ok(successStart > errorStart);
-  assert.ok(errorBranch.includes('refreshWooErrorNotices()'));
-  assert.ok(errorBranch.includes('return;'));
-  assert.equal(errorBranch.includes('showAddedFeedback()'), false);
-  assert.ok(productUiJs.includes("window.jQuery(noticeRoot).find(selector).first()"));
-});
-
-
-test('a resolved valid variation clears an old Product Detail validation notice', () => {
-  assert.match(productUiJs, /on\('found_variation show_variation', function \(\) \{\s*clearProductDetailNotices\(\);\s*syncVariationState\(\);/);
-  assert.ok(productUiJs.includes("noticeRoot.querySelectorAll('.woocommerce-notices-wrapper')"));
-});
-
-test('success feedback survives variation synchronization and lock release until its timer expires', () => {
-  const syncStart = productUiJs.indexOf('function syncVariationState()');
-  const syncEnd = productUiJs.indexOf('var isAddingToCart = false', syncStart);
-  const sync = productUiJs.slice(syncStart, syncEnd);
-  assert.match(sync, /if \(nativeButtonLabel && variationId && !hasAddedFeedback\)/);
-  const releaseStart = productUiJs.indexOf('function releaseAddToCartLock()');
-  const releaseEnd = productUiJs.indexOf('function refreshWooErrorNotices()', releaseStart);
-  const release = productUiJs.slice(releaseStart, releaseEnd);
-  assert.ok(release.includes('syncVariationState()'));
-  assert.ok(productUiJs.includes('hasAddedFeedback = true'));
-  assert.ok(productUiJs.includes('hasAddedFeedback = false'));
-  assert.ok(productUiJs.includes('}, 2200);'));
-});
-
-test('current AJAX error cannot execute success feedback, while stale notices are cleared after the event', () => {
-  const start = productUiJs.indexOf('function submitProductDetailAddToCart(event)');
-  const end = productUiJs.indexOf("form.addEventListener('submit', submitProductDetailAddToCart, true)", start);
-  const handler = productUiJs.slice(start, end);
-  const errorStart = handler.indexOf("if (!response || response.error");
-  const successStart = handler.indexOf('applyWooCartFragments(response)', errorStart);
-  const errorBranch = handler.slice(errorStart, successStart);
-  assert.ok(errorStart >= 0 && successStart > errorStart);
-  assert.ok(errorBranch.includes('refreshWooErrorNotices()'));
-  assert.equal(errorBranch.includes('showAddedFeedback()'), false);
-  const trigger = handler.indexOf("trigger('added_to_cart', [");
-  assert.ok(handler.indexOf('clearProductDetailNotices();', trigger) > trigger);
+test('variation chips, quantity, CTA, gallery and native lightbox remain presentational enhancements', () => {
+  assert.ok(productUiJs.includes('cr-product-choice-chips'));
+  assert.ok(productUiJs.includes('form.cart .quantity input.qty'));
+  assert.ok(productUiJs.includes("form.querySelector('button.single_add_to_cart_button')"));
+  assert.ok(productUiJs.includes('showAddedFeedback'));
+  assert.ok(productUiJs.includes('initNativeTouchLightbox'));
+  assert.ok(productUiJs.includes('.woocommerce-product-gallery__trigger'));
+  assert.ok(productUiJs.includes("added_to_cart.crProductDetail"));
 });
 
 test('Product Detail renders assigned product_brand logo with native metadata priority and name fallback', () => {
