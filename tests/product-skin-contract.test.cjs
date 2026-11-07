@@ -552,9 +552,13 @@ test('AJAX error response does not execute success feedback and refreshes only c
   const start = productUiJs.indexOf('function submitProductDetailAddToCart(event)');
   const end = productUiJs.indexOf("form.addEventListener('submit', submitProductDetailAddToCart, true)", start);
   const handler = productUiJs.slice(start, end);
-  const errorBranch = handler.slice(handler.indexOf("if (!response || response.error"));
+  const errorStart = handler.indexOf("if (!response || response.error");
+  const successStart = handler.indexOf("window.jQuery(document.body).trigger('added_to_cart',", errorStart);
+  const errorBranch = handler.slice(errorStart, successStart);
+  assert.ok(errorStart >= 0);
+  assert.ok(successStart > errorStart);
   assert.ok(errorBranch.includes('refreshWooErrorNotices()'));
+  assert.ok(errorBranch.includes('return;'));
   assert.equal(errorBranch.includes('showAddedFeedback()'), false);
-  assert.equal(errorBranch.includes("trigger('added_to_cart'"), false);
   assert.ok(productUiJs.includes("window.jQuery(noticeRoot).find(selector).first()"));
 });
