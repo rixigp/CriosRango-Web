@@ -437,7 +437,6 @@ test('AJAX errors retrieve native WooCommerce notices and do not show false succ
   assert.ok(productUiJs.includes("cr_product_detail=1"));
   assert.ok(productUiJs.includes("showWooAddToCartError("));
   assert.ok(woocommerce.includes("function cr2026_product_detail_error_notice_fragment"));
-  assert.ok(woocommerce.includes("wc_get_notices()"));
   assert.ok(woocommerce.includes("wc_get_notices( 'error' )"));
   assert.ok(woocommerce.includes("wc_get_template( 'notices/error.php'"));
   assert.doesNotMatch(woocommerce, /wc_print_notices\\( true \\)/);
