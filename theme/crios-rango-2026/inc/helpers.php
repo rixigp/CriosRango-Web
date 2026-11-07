@@ -697,13 +697,11 @@ function cr2026_home_brand_image_url( $term ) {
  * Home section destinations: dedicated pages when present, Shop otherwise.
  */
 function cr2026_home_novedades_url() {
-    $page = get_page_by_path( 'novedades' );
-    return $page ? get_permalink( $page ) : add_query_arg( 'orderby', 'date', cr2026_shop_url() );
+    return home_url( '/novedades/' );
 }
 
 function cr2026_home_brands_url() {
-    $page = get_page_by_path( 'marcas' );
-    return $page ? get_permalink( $page ) : cr2026_shop_url();
+    return home_url( '/marcas/' );
 }
 
 
