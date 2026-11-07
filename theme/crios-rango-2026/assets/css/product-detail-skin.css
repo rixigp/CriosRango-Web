@@ -1719,3 +1719,88 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
   min-height: 46px;
   padding: 0 20px;
 }
+
+
+/* Product Detail storefront parity: share the exact Category/Home canvas token.
+   The product information and variation surfaces remain transparent. */
+body.cr-product-detail-app {
+  background: var(--cr-app-canvas);
+}
+body.cr-product-detail-app .cr-main--woocommerce,
+body.cr-product-detail-app .cr-main--woocommerce > .cr-shell,
+body.cr-product-detail-app .cr-main--woocommerce div.product,
+body.cr-product-detail-app .cr-main--woocommerce div.product div.summary {
+  background: transparent;
+}
+body.cr-product-detail-app .cr-product-detail-toolbar {
+  background: var(--cr-app-canvas);
+}
+body.cr-product-detail-app .cr-product-description,
+body.cr-product-detail-app .cr-product-description__toggle,
+body.cr-product-detail-app .cr-product-description__panel,
+body.cr-product-detail-app .cr-product-description__icon,
+body.cr-product-detail-app .cr-product-variation-card {
+  background: transparent !important;
+}
+body.cr-product-detail-app .cr-product-description {
+  margin-bottom: 13px;
+  border: 1px solid var(--cr-product-border);
+  border-radius: 14px;
+}
+body.cr-product-detail-app .cr-product-description__toggle {
+  min-height: 52px;
+  padding: 8px 15px;
+  background: transparent !important;
+}
+body.cr-product-detail-app .cr-product-description__icon {
+  width: 26px;
+  height: 26px;
+  flex-basis: 26px;
+  background: transparent !important;
+}
+body.cr-product-detail-app .cr-product-description__icon svg {
+  width: 18px;
+  height: 18px;
+}
+body.cr-product-detail-app .cr-product-variation-cards {
+  gap: 10px;
+  margin: 0 0 18px;
+}
+body.cr-product-detail-app .cr-product-variation-card {
+  height: auto;
+  min-height: 0;
+  padding: 11px 15px;
+  border: 1px solid var(--cr-product-border);
+  border-radius: 18px;
+  background: transparent !important;
+}
+body.cr-product-detail-app .cr-product-variation-card__title {
+  margin: 0 0 9px;
+}
+body.cr-product-detail-app .cr-product-variation-card .cr-product-choice-chips {
+  min-height: 0;
+  gap: 4px 10px;
+  margin: 0;
+}
+body.cr-product-detail-app .cr-product-choice-chips--color .cr-product-choice-chip {
+  height: auto;
+  min-height: 0;
+  gap: 4px;
+  padding: 0 3px;
+  background: transparent !important;
+}
+body.cr-product-detail-app .cr-product-choice-chips--color .cr-product-choice-chip__swatch {
+  width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+}
+body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chip {
+  height: 40px;
+  min-height: 40px;
+  min-width: 84px;
+  padding: 0 20px;
+  background: transparent;
+}
+body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chip[aria-pressed="true"] {
+  background: var(--cr-product-green);
+}

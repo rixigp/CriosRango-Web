@@ -980,3 +980,17 @@ test('Product Detail uses the shared canvas and content-sized compact variation 
   assert.match(skinCss, /\.cr-product-choice-chips--size \.cr-product-choice-chip\s*\{[^}]*min-height:\s*46px;[^}]*padding:\s*0 20px;/s);
   assert.match(skinCss, /\.cr-product-variation-cards\s*\{[^}]*gap:\s*12px;[^}]*margin:\s*0 0 20px;/s);
 });
+
+
+test('Product Detail matches the global Category canvas and uses transparent compact description and variation surfaces', () => {
+  const globalCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
+  assert.match(globalCss, /body\.cr-parent-category-view \{[^}]*background:\s*var\(--cr-app-canvas\);/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \{[^}]*background:\s*var\(--cr-app-canvas\);/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce div\.product,\s*body\.cr-product-detail-app \.cr-main--woocommerce div\.product div\.summary \{[^}]*background:\s*transparent;/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-description,\s*body\.cr-product-detail-app \.cr-product-description__toggle,\s*body\.cr-product-detail-app \.cr-product-description__panel,\s*body\.cr-product-detail-app \.cr-product-description__icon,\s*body\.cr-product-detail-app \.cr-product-variation-card \{[^}]*background:\s*transparent !important;/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-description__toggle \{[^}]*min-height:\s*52px;[^}]*padding:\s*8px 15px;/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-variation-card \{[^}]*height:\s*auto;[^}]*min-height:\s*0;[^}]*padding:\s*11px 15px;/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-choice-chips--color \.cr-product-choice-chip__swatch \{[^}]*width:\s*44px;[^}]*height:\s*44px;/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-choice-chips--size \.cr-product-choice-chip \{[^}]*height:\s*40px;[^}]*min-height:\s*40px;[^}]*min-width:\s*84px;/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-variation-cards \{[^}]*gap:\s*10px;[^}]*margin:\s*0 0 18px;/s);
+});
