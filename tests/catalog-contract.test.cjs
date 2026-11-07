@@ -295,7 +295,7 @@ test('WooCommerce product search results reuse the shared catalog product-card r
   assert.match(searchTemplate, /cr2026_render_product_card/);
   assert.ok(searchTemplate.includes('<?php else : ?>'));
   assert.match(searchTemplate, /cr-post-card/);
-  assert.match(searchTemplate,/No hemos encontrado productos para/);
+  assert.match(searchTemplate,/No encontramos productos para/);
   assert.match(searchTemplate,/cr2026_shop_url\(\)/);
   assert.match(searchTemplate,/get_search_query\(\)/);
 });
@@ -312,7 +312,7 @@ test('product search routing overrides WooCommerce Shop template and keeps the p
   assert.match(searchTemplate,/cr2026_render_product_card\( \$search_product, \$card_index \)/);
   assert.doesNotMatch(searchTemplate,/cr2026_render_category_toolbar|cr2026_home_categories|cr-app-category-grid|Categorías/);
   assert.match(searchTemplate,/get_search_query\(\)/);
-  assert.match(searchTemplate,/No hemos encontrado productos para/);
+  assert.match(searchTemplate,/No encontramos productos para/);
 });
 
 
