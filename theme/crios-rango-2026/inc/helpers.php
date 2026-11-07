@@ -682,7 +682,7 @@ function cr2026_brands_index_terms() {
     }
     $terms = get_terms( array(
         'taxonomy'   => 'product_brand',
-        'hide_empty' => true,
+        'hide_empty' => false,
         'number'     => 0,
         'orderby'    => 'name',
         'order'      => 'ASC',
@@ -692,7 +692,7 @@ function cr2026_brands_index_terms() {
     }
     return array_values( array_filter( $terms, static function ( $term ) {
         return $term instanceof WP_Term && 'product_brand' === $term->taxonomy
-            && $term->term_id > 0 && $term->count > 0 && '' !== trim( $term->name );
+            && $term->term_id > 0 && '' !== trim( $term->name );
     } ) );
 }
 

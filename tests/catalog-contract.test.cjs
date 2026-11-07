@@ -673,14 +673,15 @@ test('Novedades route renders all products through the shared catalog listing wi
   assert.match(archive, /data-cr-product-load-more/);
 });
 
-test('Nuestras marcas route uses only populated product_brand terms in NAME_ASC order', () => {
+test('Nuestras marcas route includes all product_brand terms, including zero-count terms, in NAME_ASC order', () => {
   const routes = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/catalog-routes.php'), 'utf8');
   const brandTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/page-marcas.php'), 'utf8');
   const indexFn = helpers.slice(helpers.indexOf('function cr2026_brands_index_terms'), helpers.indexOf('function cr2026_home_brand_image_url'));
   assert.match(routes, /\^marcas\/\?\$.*cr2026_brands_index=1/s);
   assert.match(routes, /cr2026_brands_index.*page-marcas\.php/s);
   assert.match(indexFn, /'taxonomy'\s*=>\s*'product_brand'/);
-  assert.match(indexFn, /'hide_empty'\s*=>\s*true/);
+  assert.match(indexFn, /'hide_empty'\s*=>\s*false/);
+  assert.doesNotMatch(indexFn, /\$term->count\s*>\s*0/);
   assert.match(indexFn, /'orderby'\s*=>\s*'name'/);
   assert.match(indexFn, /'order'\s*=>\s*'ASC'/);
   assert.doesNotMatch(indexFn, /product_tag/);
