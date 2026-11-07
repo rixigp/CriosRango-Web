@@ -188,7 +188,7 @@ test('staging baseline failure is fail-closed and FULL is reserved for confirmed
   assert.match(deploy, /BASELINE_STATUS="ABSENT"/);
   assert.match(deploy, /BASELINE_STATUS="UNAVAILABLE"/);
   assert.match(deploy, /BASELINE_ERROR="curl_exit_\$\{BASELINE_CURL_EXIT\}"/);
-  assert.match(deploy, /BASELINE_CURL_EXIT\] -eq 78 \] && \[ "\$BASELINE_RESPONSE_CODE" = "550"/);
+  assert.ok(deploy.includes('elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then'));
   assert.match(deploy, /DEPLOY_MODE="ABORTED"/);
   assert.match(deploy, /DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE/);
   assert.match(deploy, /--retry 2/);
