@@ -75,7 +75,7 @@ get_header( 'shop' );
             <p><?php echo $listing_filtered ? esc_html__( 'No encontramos productos con esos filtros.', 'crios-rango-2026' ) : esc_html__( 'No hay productos disponibles.', 'crios-rango-2026' ); ?></p>
             <?php if ( $listing_filtered ) : ?><a href="<?php echo esc_url( $remove_filter_url ); ?>"><?php esc_html_e( 'Limpiar filtros', 'crios-rango-2026' ); ?></a><?php endif; ?>
         </div>
-        <div class="cr-product-listing__sentinel" data-cr-product-sentinel aria-hidden="true"></div>
+        <button type="button" class="cr-product-listing__load-more" data-cr-product-load-more hidden>Cargar más</button>
     </div>
 </main>
 <?php get_footer( 'shop' );

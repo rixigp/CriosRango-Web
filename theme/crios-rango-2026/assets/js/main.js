@@ -349,7 +349,7 @@
     const grid = productListing.querySelector('[data-cr-product-grid]');
     const emptyState = productListing.querySelector('[data-cr-product-empty]');
     const orderControl = productListing.querySelector('[data-cr-product-order]');
-    const sentinel = productListing.querySelector('[data-cr-product-sentinel]');
+    const loadMoreButton = productListing.querySelector('[data-cr-product-load-more]');
     const filterSheetNode = document.querySelector('[data-cr-filter-sheet]');
     const categoryId = String(productListing.dataset.categoryId || '0');
     const outletCategoryId = Number(productListing.dataset.outletCategoryId || 0);
@@ -407,6 +407,7 @@
       }
     };
     const showEmpty = () => { grid.replaceChildren(); emptyState.hidden = false; };
+    const updateLoadMoreButton = (isLoading = false) => { if(!loadMoreButton)return;loadMoreButton.disabled=isLoading;loadMoreButton.textContent=isLoading?'Cargando…':'Cargar más';loadMoreButton.hidden=!hasMore; };
     const loadPage = async (page, append, token=requestGeneration) => {
       if (append && loading) return;
       const controller=new AbortController();
@@ -468,18 +469,17 @@
       } catch (error) {
         if(token!==requestGeneration||(error&&error.name==='AbortError'))return;
         console.error('[Críos&Rango productos] No se pudo cargar la página del catálogo',error);
-        if (!append) showEmpty();
-        hasMore = false;
+        if (!append) { showEmpty(); hasMore = false; }
       } finally {
         if(token===requestGeneration){
-          loading=false;if(activeRequest===controller)activeRequest=null;
+          loading=false;if(activeRequest===controller)activeRequest=null;updateLoadMoreButton(false);
         }
       }
     };
     const resetAndLoad = () => {
       requestGeneration++;
       if(activeRequest)activeRequest.abort();
-      activeRequest=null;loading=false;currentPage=0;hasMore=false;totalProducts=null;
+      activeRequest=null;loading=false;currentPage=0;hasMore=false;totalProducts=null;updateLoadMoreButton(false);
       loadPage(1,false,requestGeneration);
     };
     const applyFilters = filters => {
@@ -546,12 +546,12 @@
     renderActiveFilterChips();
     if(outletCategoryId)initializeOutletBubbles();
     resetAndLoad();
-    if (sentinel && 'IntersectionObserver' in window) {
-      const catalogObserver=new IntersectionObserver(entries=>{
-        if(entries.some(entry=>entry.isIntersecting)&&hasMore&&!loading&&currentPage>0)loadPage(currentPage+1,true,requestGeneration);
-      },{root:null,rootMargin:'0px 0px 900px 0px',threshold:0});
-      catalogObserver.observe(sentinel);
-      window.addEventListener('pagehide',()=>catalogObserver.disconnect(),{once:true});
+    if(loadMoreButton){
+      loadMoreButton.addEventListener('click',()=>{
+        if(!hasMore||loading||currentPage<1)return;
+        updateLoadMoreButton(true);
+        loadPage(currentPage+1,true,requestGeneration);
+      });
     }
     if (orderControl) {
       const fitOrderControl = () => {
@@ -577,5 +577,46 @@
       });
     }
   }
+
+  // Brand and product-search archives use WordPress's real next-page URL and server-rendered cards.
+  const htmlListingPaginators=document.querySelectorAll('[data-cr-html-pagination]');
+  htmlListingPaginators.forEach(container=>{
+    const button=container.querySelector('[data-cr-html-load-more]');
+    const grid=document.querySelector('[data-cr-brand-product-grid], [data-cr-search-product-grid]');
+    if(!button||!grid||!button.dataset.nextUrl)return;
+    const pagination=container.querySelector('.navigation.pagination');
+    if(pagination)pagination.hidden=true;
+    button.hidden=false;
+    let nextUrl=button.dataset.nextUrl,loading=false;
+    button.addEventListener('click',async()=>{
+      if(loading||!nextUrl)return;
+      loading=true;button.disabled=true;button.textContent='Cargando…';
+      try{
+        const response=await fetch(nextUrl,{credentials:'same-origin',headers:{Accept:'text/html'}});
+        if(!response.ok)throw new Error('Listing page HTTP '+response.status);
+        const html=await response.text();
+        const nextDocument=new DOMParser().parseFromString(html,'text/html');
+        const selector=grid.matches('[data-cr-brand-product-grid]')?'[data-cr-brand-product-grid]':'[data-cr-search-product-grid]';
+        const nextGrid=nextDocument.querySelector(selector);
+        if(!nextGrid)throw new Error('Next listing page has no matching product grid');
+        const cards=Array.from(nextGrid.querySelectorAll('.cr-product-card[data-product-id]'));
+        const existing=new Set(Array.from(grid.querySelectorAll('.cr-product-card[data-product-id]')).map(card=>String(card.dataset.productId||'')));
+        const incoming=cards.map(card=>String(card.dataset.productId||''));
+        if(incoming.some(id=>!id)||new Set(incoming).size!==incoming.length||incoming.some(id=>existing.has(id)))throw new Error('Next listing page contains invalid or duplicate product IDs');
+        const fragment=document.createDocumentFragment();
+        cards.forEach(card=>fragment.appendChild(card.cloneNode(true)));
+        grid.appendChild(fragment);
+        const nextLink=nextDocument.querySelector('.navigation.pagination .page-numbers.next');
+        nextUrl=nextLink?new URL(nextLink.href,nextDocument.baseURI).href:'';
+        button.dataset.nextUrl=nextUrl;
+        button.hidden=!nextUrl||cards.length===0;
+      }catch(error){
+        console.error('[Críos&Rango productos] No se pudo cargar la siguiente tanda',error);
+      }finally{
+        loading=false;button.disabled=false;
+        if(!button.hidden)button.textContent='Cargar más';
+      }
+    });
+  });
 
 })();

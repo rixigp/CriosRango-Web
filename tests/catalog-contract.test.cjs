@@ -103,12 +103,14 @@ test('category filter selection is live, chips are actionable, and Apply only cl
   assert.match(js, /window\.history\.replaceState/);
 });
 
-test('catalog automatically paginates through an observer sentinel without a visible Load more button', () => {
-  assert.match(archive, /data-cr-product-sentinel/);
-  assert.doesNotMatch(archive, /data-cr-product-load-more/);
-  assert.match(js, /new IntersectionObserver/);
-  assert.match(js, /catalogObserver\.observe\(sentinel\)/);
-  assert.match(js, /rootMargin:'0px 0px 900px 0px'/);
+test('catalog uses an explicit inline Load more button with retryable append state and no auto observer', () => {
+  assert.match(archive, /data-cr-product-load-more/);
+  assert.doesNotMatch(archive, /data-cr-product-sentinel/);
+  assert.match(js, /loadPage\(currentPage\+1,true,requestGeneration\)/);
+  assert.match(js, /updateLoadMoreButton\(true\)/);
+  assert.match(js, /updateLoadMoreButton\(false\)/);
+  assert.doesNotMatch(js, /new IntersectionObserver/);
+  assert.match(js, /if \(!append\) \{ showEmpty\(\); hasMore = false; \}/);
 });
 
 test('product card image source and crop match app responsive source selection and ContentScale.Crop', () => {
@@ -516,4 +518,18 @@ test('brand back and brand identity share one centered grid row without responsi
   assert.match(css, /\.cr-brand-archive__back-row \{[^}]*display:grid; grid-template-columns:48px minmax\(0,1fr\) 48px; align-items:center;/);
   assert.match(css, /\.cr-brand-archive__heading \{[^}]*grid-column:2; grid-row:1;[^}]*margin:0; padding:0;/);
   assert.match(css, /\.cr-brand-archive__heading img \{[^}]*object-fit:contain/);
+});
+
+test('brand and product Search Load more use the WordPress next-page URL and append server-rendered shared cards', () => {
+  const brand = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
+  const search = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/search.php'), 'utf8');
+  assert.match(brand, /get_next_posts_page_link\(\)/);
+  assert.match(brand, /data-cr-html-load-more data-next-url=/);
+  assert.match(search, /get_next_posts_page_link\(\)/);
+  assert.match(search, /data-cr-html-load-more data-next-url=/);
+  assert.match(js, /fetch\(nextUrl,\{credentials:'same-origin',headers:\{Accept:'text\\/html'\}\}\)/);
+  assert.match(js, /grid\.appendChild\(fragment\)/);
+  assert.match(js, /new URL\(nextLink\.href,nextDocument\.baseURI\)/);
+  assert.match(js, /if\(loading\|\|!nextUrl\)return/);
+  assert.match(js, /button\.textContent='Cargando…'/);
 });

@@ -72,15 +72,15 @@ if ( $is_product_search && ! empty( $GLOBALS['wp_query']->posts ) ) {
                     <?php endwhile; ?>
                 </div>
             <?php endif; ?>
-            <?php
-            the_posts_pagination(
-                array(
-                    'mid_size'  => 1,
-                    'prev_text' => esc_html__( 'Anterior', 'crios-rango-2026' ),
-                    'next_text' => esc_html__( 'Cargar más', 'crios-rango-2026' ),
-                )
-            );
-            ?>
+            <?php if ( $is_product_search ) : ?>
+                <?php $search_next_page_url = get_next_posts_page_link(); ?>
+                <div class="cr-html-listing-pagination" data-cr-html-pagination>
+                    <?php if ( $search_next_page_url ) : ?><button type="button" class="cr-product-listing__load-more" data-cr-html-load-more data-next-url="<?php echo esc_url( $search_next_page_url ); ?>" hidden>Cargar más</button><?php endif; ?>
+                    <?php the_posts_pagination( array( 'mid_size' => 1, 'prev_text' => esc_html__( 'Anterior', 'crios-rango-2026' ), 'next_text' => esc_html__( 'Siguiente', 'crios-rango-2026' ) ) ); ?>
+                </div>
+            <?php else : ?>
+                <?php the_posts_pagination( array( 'mid_size' => 1, 'prev_text' => esc_html__( 'Anterior', 'crios-rango-2026' ), 'next_text' => esc_html__( 'Siguiente', 'crios-rango-2026' ) ) ); ?>
+            <?php endif; ?>
         <?php else : ?>
             <?php if ( $is_product_search ) : ?>
                 <div class="cr-search-empty" role="status">

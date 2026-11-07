@@ -2571,8 +2571,8 @@ body.cr-product-listing-view .cr-product-card__price bdi { display:inline-flex; 
 .cr-product-card__price .amount,.cr-product-card__price bdi { font-weight:400; }
 .cr-product-card__price del { margin-right:5px; color:#92958F; font-size:12px; opacity:.8; }
 .cr-product-card__price ins { color:#315D50; text-decoration:none; }
-.cr-product-listing__load-more { display:block; min-width:150px; min-height:42px; margin:28px auto 18px; padding:0 22px; border:1px solid #D8D9D5; border-radius:999px; background:transparent; color:#315D50; font:400 14px/20px "Roboto",Arial,sans-serif; cursor:pointer; }
-.cr-product-listing__load-more[hidden],.cr-product-listing__empty[hidden] { display:none!important; }
+.cr-product-listing__load-more { display:block; min-width:150px; min-height:48px; margin:28px auto 18px; padding:0 22px; border:0; border-radius:999px; background:#E3EFEB; color:#183B35; font:400 14px/20px "Roboto",Arial,sans-serif; text-align:center; text-decoration:none; cursor:pointer; }
+.cr-product-listing__load-more[hidden],.cr-product-listing__empty[hidden],.cr-html-listing-pagination .navigation.pagination[hidden] { display:none!important; }
 .cr-product-listing__load-more:disabled { opacity:.55; cursor:wait; }
 .cr-product-listing__empty { width:calc(100% - 40px); margin:36px auto; text-align:center; color:#777b77; font:300 14px/22px "Roboto",Arial,sans-serif; }
 .cr-product-listing__empty a { color:#315D50; text-decoration:underline; }
@@ -2834,3 +2834,5 @@ body.cr-product-listing-view .cr-brand-archive .cr-product-grid { margin-top:0; 
 .cr-brand-archive .page-numbers { display:inline-flex; align-items:center; justify-content:center; min-width:38px; min-height:38px; padding:0 12px; border:1px solid #D8D9D5; border-radius:999px; background:transparent; color:#315D50; font:400 13px/18px "Roboto",Arial,sans-serif; text-decoration:none; }
 .cr-brand-archive .page-numbers.current { border-color:#183B35; background:#183B35; color:#FCFAF7; }
 .cr-brand-archive__empty { margin:20px; color:#555B56; font:300 14px/22px "Roboto",Arial,sans-serif; }
+
+.cr-html-listing-pagination { width:100%; }
