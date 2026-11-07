@@ -579,6 +579,76 @@ test('short-description fixtures preserve valid formatting and contain malformed
   assert.match(valid.expected, /<u>Marca:<\/u> Arggido/);
 });
 
+test('cart submitting state enters and clears repeatedly, including a second add without reload', () => {
+  const sandboxModule={exports:{}};
+  vm.runInNewContext(productUiJs,{module:sandboxModule,document:{readyState:'loading',addEventListener(){}}});
+  const {enterCartSubmittingState,clearCartSubmittingState}=sandboxModule.exports;
+  const classes=new Set();
+  const button={
+    disabled:false,
+    attrs:{'aria-disabled':'false','aria-busy':'false'},
+    classList:{add(name){classes.add(name);},remove(name){classes.delete(name);}},
+    setAttribute(name,value){this.attrs[name]=value;}
+  };
+  const label={textContent:'Añadir al carrito'};
+  const spinner={hidden:true};
+  // Simulate three consecutive valid request cycles, specifically asserting the second re-entry.
+  for(let add=1;add<=3;add++){
+    enterCartSubmittingState(button,label,spinner);
+    assert.equal(classes.has('is-submitting'),true, 'add '+add+' enters submitting');
+    assert.equal(button.disabled,true);
+    assert.equal(button.attrs['aria-disabled'],'true');
+    assert.equal(button.attrs['aria-busy'],'true');
+    assert.equal(label.textContent,'Añadiendo...');
+    assert.equal(spinner.hidden,false);
+    clearCartSubmittingState(button,label,spinner,true,true);
+    assert.equal(classes.has('is-submitting'),false, 'add '+add+' clears submitting');
+    assert.equal(button.attrs['aria-busy'],'false');
+    assert.equal(spinner.hidden,true);
+    label.textContent='Añadido al carrito';
+    clearCartSubmittingState(button,label,spinner,true,false);
+    assert.equal(label.textContent,'Añadir al carrito');
+    assert.equal(button.disabled,false);
+    assert.equal(button.attrs['aria-disabled'],'false');
+  }
+});
+
+test('cart submitting cleanup on request error restores READY or INCOMPLETE and clears aria-busy', () => {
+  const sandboxModule={exports:{}};
+  vm.runInNewContext(productUiJs,{module:sandboxModule,document:{readyState:'loading',addEventListener(){}}});
+  const {enterCartSubmittingState,clearCartSubmittingState}=sandboxModule.exports;
+  const classes=new Set();
+  const button={disabled:false,attrs:{},classList:{add(n){classes.add(n);},remove(n){classes.delete(n);}},setAttribute(n,v){this.attrs[n]=v;}};
+  const label={textContent:'Añadir al carrito'}, spinner={hidden:true};
+  enterCartSubmittingState(button,label,spinner);
+  clearCartSubmittingState(button,label,spinner,true,false);
+  assert.equal(classes.has('is-submitting'),false);
+  assert.equal(button.attrs['aria-busy'],'false');
+  assert.equal(button.disabled,false);
+  assert.equal(label.textContent,'Añadir al carrito');
+  enterCartSubmittingState(button,label,spinner);
+  clearCartSubmittingState(button,label,spinner,false,false);
+  assert.equal(button.disabled,true);
+  assert.equal(button.attrs['aria-disabled'],'true');
+  assert.equal(label.textContent,'Elige opciones');
+});
+
+test('Product Detail loading uses centered custom spinner and suppresses WooCommerce corner pseudo-spinner', () => {
+  assert.ok(productUiJs.includes("enterCartSubmittingState(nativeButton, nativeButtonLabel, loadingSpinner)"));
+  assert.ok(productUiJs.includes("clearCartSubmittingState(nativeButton, nativeButtonLabel, loadingSpinner, currentVariationReady, hasAddedFeedback)"));
+  assert.ok(skinCss.includes('.single_add_to_cart_button.loading::after {'));
+  assert.ok(skinCss.includes('display: none !important;'));
+  assert.ok(skinCss.includes('.single_add_to_cart_button.is-submitting .cr-product-cart-spinner'));
+  assert.ok(skinCss.includes('justify-content: center;'));
+  assert.ok(skinCss.includes('align-items: center;'));
+  assert.ok(skinCss.includes('border-right-color: transparent;'));
+  assert.ok(skinCss.includes('animation: cr-product-cart-spin 700ms linear infinite;'));
+  assert.ok(skinCss.includes('.single_add_to_cart_button.is-submitting .cr-product-cart-icon'));
+  assert.ok(skinCss.includes('width: 20px;'));
+  assert.ok(skinCss.includes('height: 52px;'));
+  assert.ok(skinCss.includes('min-height: 52px;'));
+});
+
 test('variation AJAX flow is single-request, guarded, and emits WooCommerce added_to_cart feedback', () => {
   assert.ok(productUiJs.includes('initVariationAjaxAddToCart();'));
   assert.match(productUiJs, /var isAddingToCart = false/);

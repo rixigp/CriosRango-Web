@@ -79,13 +79,33 @@
     if (label) label.textContent = ready ? 'Añadir al carrito' : 'Elige opciones';
   }
 
+  function enterCartSubmittingState(button, label, spinner) {
+    if (!button) return;
+    button.classList.add('is-submitting');
+    button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+    button.setAttribute('aria-busy', 'true');
+    if (label) label.textContent = 'Añadiendo...';
+    if (spinner) spinner.hidden = false;
+  }
+
+  function clearCartSubmittingState(button, label, spinner, ready, successActive) {
+    if (!button) return;
+    button.classList.remove('is-submitting');
+    button.setAttribute('aria-busy', 'false');
+    if (spinner) spinner.hidden = true;
+    if (!successActive) applyVariationButtonState(button, label, ready);
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       COLOR_SWATCH_MAP: COLOR_SWATCH_MAP,
       normalizeColorKey: normalizeColorKey,
       resolveColorSwatch: resolveColorSwatch,
       isVariationEventReady: isVariationEventReady,
-      applyVariationButtonState: applyVariationButtonState
+      applyVariationButtonState: applyVariationButtonState,
+      enterCartSubmittingState: enterCartSubmittingState,
+      clearCartSubmittingState: clearCartSubmittingState
     };
   }
 
@@ -276,6 +296,7 @@
       var nativeButtonLabel = null;
       var cartIcon = null;
       var bagIconTemplate = null;
+      var loadingSpinner = null;
       var addedFeedbackTimer = null;
       var hasAddedFeedback = false;
       var currentVariationReady = false;
@@ -298,6 +319,11 @@
         bagIconTemplate = cartIcon.cloneNode(true);
         nativeButtonLabel = document.createElement('span');
         nativeButtonLabel.className = 'cr-product-cart-label';
+        loadingSpinner = document.createElement('span');
+        loadingSpinner.className = 'cr-product-cart-spinner';
+        loadingSpinner.setAttribute('aria-hidden', 'true');
+        loadingSpinner.hidden = true;
+        nativeButton.appendChild(loadingSpinner);
         nativeButton.appendChild(cartIcon);
         nativeButton.appendChild(nativeButtonLabel);
       }
@@ -384,37 +410,49 @@
           var $button = $(nativeButton);
 
           isAddingToCart = true;
+          enterCartSubmittingState(nativeButton, nativeButtonLabel, loadingSpinner);
+          // Keep WooCommerce's functional loading class; Product Detail replaces its pseudo-spinner visually.
           nativeButton.classList.add('loading');
-          nativeButton.setAttribute('aria-busy', 'true');
-          $(document.body).trigger('adding_to_cart', [$button, data]);
 
-          $.ajax({
-            type: 'POST',
-            url: endpoint,
-            data: data,
-            dataType: 'json'
-          }).done(function (response) {
-            if (!response || response.error || response.success === false) {
-              if (window.console && console.error) {
-                console.error('[CR Product UI] WooCommerce variation add-to-cart failed.', response);
+          try {
+            $(document.body).trigger('adding_to_cart', [$button, data]);
+
+            $.ajax({
+              type: 'POST',
+              url: endpoint,
+              data: data,
+              dataType: 'json'
+            }).done(function (response) {
+              if (!response || response.error || response.success === false) {
+                if (window.console && console.error) {
+                  console.error('[CR Product UI] WooCommerce variation add-to-cart failed.', response);
+                }
+                return;
               }
-              return;
-            }
 
-            $(document.body).trigger('added_to_cart', [
-              response.fragments || {},
-              response.cart_hash || '',
-              $button
-            ]);
-          }).fail(function (xhr, status, error) {
-            if (window.console && console.error) {
-              console.error('[CR Product UI] WooCommerce variation add-to-cart request failed.', status, error);
-            }
-          }).always(function () {
+              clearCartSubmittingState(nativeButton, nativeButtonLabel, loadingSpinner, currentVariationReady, true);
+              $(document.body).trigger('added_to_cart', [
+                response.fragments || {},
+                response.cart_hash || '',
+                $button
+              ]);
+            }).fail(function (xhr, status, error) {
+              if (window.console && console.error) {
+                console.error('[CR Product UI] WooCommerce variation add-to-cart request failed.', status, error);
+              }
+            }).always(function () {
+              isAddingToCart = false;
+              nativeButton.classList.remove('loading');
+              clearCartSubmittingState(nativeButton, nativeButtonLabel, loadingSpinner, currentVariationReady, hasAddedFeedback);
+            });
+          } catch (error) {
             isAddingToCart = false;
             nativeButton.classList.remove('loading');
-            nativeButton.removeAttribute('aria-busy');
-          });
+            clearCartSubmittingState(nativeButton, nativeButtonLabel, loadingSpinner, currentVariationReady, hasAddedFeedback);
+            if (window.console && console.error) {
+              console.error('[CR Product UI] WooCommerce variation add-to-cart threw before completion.', error);
+            }
+          }
         }, true);
       }
 

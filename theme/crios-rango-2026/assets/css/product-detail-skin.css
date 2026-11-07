@@ -1393,3 +1393,30 @@ body.cr-product-detail-app .woocommerce-product-gallery .flex-direction-nav .fle
     min-width: 104px;
   }
 }
+
+
+/* Product Detail's own repeatable, centered add-to-cart submitting feedback. */
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.loading::after {
+  display: none !important;
+  content: none !important;
+}
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.is-submitting .cr-product-cart-icon {
+  display: none !important;
+}
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.is-submitting .cr-product-cart-spinner {
+  display: inline-block;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: cr-product-cart-spin 700ms linear infinite;
+}
+body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button .cr-product-cart-spinner[hidden] {
+  display: none !important;
+}
+@keyframes cr-product-cart-spin {
+  to { transform: rotate(360deg); }
+}
