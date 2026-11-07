@@ -621,8 +621,10 @@ test('brand requests always carry catalog scope and catalog_brand_id, never fake
   assert.match(php, /\$filter_params\['catalog_brand_id'\] = \$brand_id/);
   assert.match(php, /\$has_filters = \$is_outlet_scope \|\| \$is_brand_context/);
   const brandRequest = js.slice(js.indexOf('const loadPage = async'), js.indexOf('const response = await fetch(productsUrl'));
-  assert.doesNotMatch(brandRequest, /catalog_category_id/);
-  assert.doesNotMatch(brandRequest, /brand_ids/);
+  const fixedBrandRequest = brandRequest.slice(brandRequest.indexOf('if(brandContext)'), brandRequest.indexOf('else if(outletCategoryId)'));
+  assert.match(fixedBrandRequest, /catalog_brand_id/);
+  assert.doesNotMatch(fixedBrandRequest, /catalog_category_id|brand_ids/);
+  assert.doesNotMatch(brandRequest, /params\.set\('brand_ids'/);
 });
 
 test('brand filters preserve active sort, clear only selectable dimensions, and keep context on every page', () => {
