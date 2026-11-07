@@ -372,6 +372,23 @@
           wrapper.replaceChildren();
         });
       }
+      function applyWooCartFragments(response) {
+        var fragments = response.fragments || {};
+        Object.keys(fragments).forEach(function (selector) {
+          if (/woocommerce-notices-wrapper/.test(selector)) return;
+          window.jQuery(selector).replaceWith(fragments[selector]);
+        });
+        var params = window.wc_cart_fragments_params || {};
+        var cartHashKey = params.cart_hash_key || 'wc_cart_hash';
+        var fragmentName = params.fragment_name || 'wc_fragments';
+        try {
+          window.sessionStorage.setItem(cartHashKey, response.cart_hash);
+          window.sessionStorage.setItem(fragmentName, JSON.stringify(fragments));
+        } catch (error) {}
+        try {
+          window.localStorage.setItem(cartHashKey, response.cart_hash);
+        } catch (error) {}
+      }
       function showWooAddToCartError(message) {
         var noticeRoot = getProductDetailNoticeRoot();
         var wrapper = noticeRoot.querySelector('div.woocommerce-notices-wrapper');
@@ -449,13 +466,15 @@
             refreshWooErrorNotices();
             return;
           }
+          applyWooCartFragments(response);
+          clearProductDetailNotices();
+          showAddedFeedback();
           window.jQuery(document.body).trigger('added_to_cart', [
             response.fragments,
             response.cart_hash,
             window.jQuery(nativeButton)
           ]);
           clearProductDetailNotices();
-          if (!hasAddedFeedback) showAddedFeedback();
           releaseAddToCartLock();
         }).fail(function () {
           refreshWooErrorNotices();
@@ -464,11 +483,15 @@
       form.addEventListener('submit', submitProductDetailAddToCart, true);
       form.addEventListener('change', syncVariationState);
       if (window.jQuery) {
-        window.jQuery(form).on('woocommerce_update_variation_values found_variation reset_data hide_variation show_variation', syncVariationState);
+        window.jQuery(form).on('woocommerce_update_variation_values reset_data hide_variation', syncVariationState);
+        window.jQuery(form).on('found_variation show_variation', function () {
+          clearProductDetailNotices();
+          syncVariationState();
+        });
         window.jQuery(document.body).on('added_to_cart.crProductDetail', function (event, fragments, cartHash, $button) {
           var addedButton = $button && $button.jquery ? $button[0] : $button;
           if (!addedButton || (addedButton !== nativeButton && !(addedButton.closest && addedButton.closest('form.cart') === form))) return;
-          showAddedFeedback();
+          if (!hasAddedFeedback) showAddedFeedback();
         });
       }
       syncVariationState();
