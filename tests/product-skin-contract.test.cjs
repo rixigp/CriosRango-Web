@@ -457,12 +457,12 @@ test('short-description fixtures preserve valid formatting and contain malformed
   function assertBalancedMarkup(html) {
     const stack = [];
     const voidTags = new Set(['br']);
-    for (const match of html.matchAll(/<\\/?([a-z][a-z0-9]*)(?:\\s[^>]*)?\\s*\\/?\s*>/gi)) {
+    for (const match of html.matchAll(/<\/?([a-z][a-z0-9]*)(?:\s[^>]*)?\s*\/?>/gi)) {
       const tag = match[1].toLowerCase();
       const token = match[0];
       if (token.startsWith('</')) {
         assert.equal(stack.pop(), tag, 'closing tag must match its open tag');
-      } else if (!voidTags.has(tag) && !/\\/\\s*>$/.test(token)) {
+      } else if (!voidTags.has(tag) && !/\/\s*>$/.test(token)) {
         stack.push(tag);
       }
     }
@@ -474,12 +474,12 @@ test('short-description fixtures preserve valid formatting and contain malformed
     const balanced = fixture.input + (fixture.name.startsWith('malformed') ? '</u>' : '');
     assert.equal(balanced, fixture.expected, fixture.name);
     assertBalancedMarkup(balanced);
-    assert.match(balanced, /<u>/);
-    assert.match(balanced, /<\\/u>/);
+    assert.match(balanced, /<\/u>/);
+    assert.match(balanced, /<\/u>/);
   }
 
   const valid = fixtures.find((fixture) => fixture.name.startsWith('valid'));
   assert.equal(valid.expected, valid.input, 'already-balanced WooCommerce markup must remain unchanged');
-  assert.match(valid.expected, /<u>Composición:<\\/u>/);
-  assert.match(valid.expected, /<u>Marca:<\\/u> Arggido/);
+  assert.match(valid.expected, /<u>Composición:<\/u>/);
+  assert.match(valid.expected, /<u>Marca:<\/u> Arggido/);
 });
