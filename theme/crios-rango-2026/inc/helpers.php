@@ -190,7 +190,7 @@ function cr2026_render_product_sale_badge( $product ) {
     if ( ! $product instanceof WC_Product || ! $product->is_on_sale() ) {
         return;
     }
-    echo '<span class="cr-product-card__badge">' . esc_html__( 'Oferta', 'crios-rango-2026' ) . '</span>';
+    echo '<span class="cr-product-card__badge">' . esc_html__( 'OFERTA', 'crios-rango-2026' ) . '</span>';
 }
 
 function cr2026_render_product_card( $product, $index = 99 ) {

@@ -427,7 +427,7 @@ test('Search exposes exactly two app controls and the custom clear never closes 
   assert.match(styles, /::-ms-clear/);
   assert.match(styles, /::-ms-reveal/);
   assert.doesNotMatch(styles, /body\.home \.cr-app-header \.cr-cart-count,[\s\S]*?background:\s*#b3261e/);
-  assert.match(styles, /\.cr-cart-count\s*\{[\s\S]*?background:\s*var\(--cr-green\)/);
+  assert.match(styles, /\.cr-cart-count\s*\{[\s\S]*?background:\s*var\(--cr-sale-coral\)/);
 });
 
 test('Search empty state has the compact requested copy and canonical WooCommerce Shop destination', () => {
