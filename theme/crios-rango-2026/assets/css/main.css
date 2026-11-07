@@ -2557,7 +2557,7 @@ body.cr-product-listing-view .cr-product-listing .cr-parent-category__toolbar { 
 .cr-product-listing__ordering select { width:auto; min-width:0; max-width:none; min-height:34px; padding:0 22px 0 2px; appearance:none; -webkit-appearance:none; border:0; border-radius:0; outline:none; background:transparent; color:#183B35; font:300 13px/20px "Roboto",Arial,sans-serif; cursor:pointer; }
 .cr-product-listing__ordering select:focus { outline:none; }
 .cr-product-listing__ordering select:focus-visible { outline:2px solid #315D50; outline-offset:3px; border-radius:4px; }
-.cr-brand-archive__ordering select { padding-right:14px; }
+.cr-brand-archive [data-cr-brand-order-form] select { padding-right:14px; }
 body.cr-product-listing-view .cr-product-card__price bdi { display:inline-flex; align-items:baseline; gap:.22em; }
 .cr-product-grid { width:calc(100% - 40px); margin:0 auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px 12px; }
 .cr-product-card { min-width:0; margin:0; padding:0; border:0; background:transparent; box-shadow:none; }

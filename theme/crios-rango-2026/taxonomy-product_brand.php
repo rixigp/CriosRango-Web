@@ -47,7 +47,7 @@ get_header( 'shop' );
         $brand_archive_url = get_term_link( $brand_term );
         if ( is_wp_error( $brand_archive_url ) ) { $brand_archive_url = home_url( '/' ); }
         ?>
-        <form class="cr-product-listing__ordering cr-brand-archive__ordering" data-cr-brand-order-form method="get" action="<?php echo esc_url( $brand_archive_url ); ?>">
+        <form class="cr-product-listing__ordering" data-cr-brand-order-form method="get" action="<?php echo esc_url( $brand_archive_url ); ?>">
             <?php foreach ( $_GET as $brand_query_key => $brand_query_value ) :
                 $brand_query_key = sanitize_key( $brand_query_key );
                 if ( 'orderby' === $brand_query_key || ! is_scalar( $brand_query_value ) ) { continue; }

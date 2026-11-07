@@ -564,7 +564,7 @@ test('brand sort maps the four shared values onto the existing product_brand mai
 test('brand archive order select sizes to the selected option and keeps its native submit behavior', () => {
   const brandTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
   const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
-  assert.match(brandTemplate, /class="cr-product-listing__ordering cr-brand-archive__ordering"[^>]*data-cr-brand-order-form/);
+  assert.match(brandTemplate, /class="cr-product-listing__ordering"[^>]*data-cr-brand-order-form/);
   assert.match(brandTemplate, /<label for="cr-brand-product-order">/);
   assert.match(brandTemplate, /<select id="cr-brand-product-order" name="orderby" data-cr-brand-order/);
   for (const value of ['date', 'price', 'price-desc', 'title']) assert.ok(brandTemplate.includes('value="' + value + '"'));
