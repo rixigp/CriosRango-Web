@@ -30,6 +30,50 @@ function catalogStateApi() {
   return window.CR2026CatalogState;
 }
 
+test('catalog session cache uses a versioned five-minute TTL and state-derived keys', () => {
+  const api = catalogStateApi();
+  const first = api.catalogCacheKey({ pathname:'/categoria/vestidos/', sort:'newest', filters:{size_ids:['12','4','12'],color_ids:[]} });
+  const reordered = api.catalogCacheKey({ pathname:'/categoria/vestidos/', sort:'newest', filters:{color_ids:[],size_ids:['4','12']} });
+  const differentSort = api.catalogCacheKey({ pathname:'/categoria/vestidos/', sort:'price_asc', filters:{size_ids:['4','12'],color_ids:[]} });
+  assert.equal(first, reordered);
+  assert.notEqual(first, differentSort);
+  assert.equal(api.CATALOG_SESSION_CACHE_TTL_MS, 300000);
+  const entry = { version:1, timestamp:1000, key:first, page:1, pages:[{}], payload:{html:'<article></article>'} };
+  assert.equal(api.isValidCatalogCacheEntry(entry, first, 1000 + 299999), true);
+  assert.equal(api.isValidCatalogCacheEntry(entry, first, 1000 + 300000), false);
+  assert.equal(api.isValidCatalogCacheEntry({...entry,version:2}, first, 1001), false);
+  assert.equal(api.isValidCatalogCacheEntry({...entry,key:differentSort}, first, 1001), false);
+});
+
+test('catalog listing restores session snapshots and revalidates without clearing cached cards', () => {
+  assert.match(js, /sessionStorage\.getItem\(cacheStorageKey\(\)/);
+  assert.match(js, /sessionStorage\.setItem\(baseKey, JSON\.stringify\(entry\)\)/);
+  assert.match(js, /restoreCatalogCache\(\)/);
+  assert.match(js, /revalidateCatalogCache\(entry\)/);
+  assert.match(js, /loadPage\(index \+ 1, index > 0, token, responses\[index\], true\)/);
+  assert.match(js, /if \(!append && !background\) \{ showEmpty\(\); hasMore = false; \}/);
+  assert.match(js, /entry\.scrollY/);
+  assert.match(js, /window\.addEventListener\('pagehide',[\s\S]*?writeCatalogCache\(window\.scrollY\)/);
+});
+
+test('catalog session snapshots retain loaded pages and isolate sort/filter/context state', () => {
+  assert.match(js, /pages: cachedCatalogPages\.slice\(\)/);
+  assert.match(js, /page: cachedCatalogPages\.length/);
+  assert.match(js, /filters: getFilters\(\)/);
+  assert.match(js, /sort: sortMap\[orderby\]/);
+  assert.match(js, /categoryId: !brandContext && !outletCategoryId \? categoryId : '0'/);
+  assert.match(js, /brandTermId: brandContext \? String\(brandTermId\) : ''/);
+  assert.match(js, /outletOriginIds: activeOutletOriginIds\.slice\(\)/);
+  assert.match(js, /currentPage = entry\.page/);
+  assert.match(js, /hasMore = Boolean\(entry\.hasMore\)/);
+});
+
+test('catalog cache rejects invalid payloads and keeps image URLs untouched', () => {
+  assert.match(js, /if \(!validateCachedPages\(entry\.pages\)\)/);
+  assert.match(js, /sameOrderedIds\(endpoint, rendered\)/);
+  assert.doesNotMatch(js, /src\s*\+\s*['"][?&]t=|cache-buster|cachebuster/i);
+});
+
 test('select then deselect restores the exact selected term IDs', () => {
   const api = catalogStateApi();
   const initial = ['12', '18', '9'];
