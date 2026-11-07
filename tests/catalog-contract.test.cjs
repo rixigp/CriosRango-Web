@@ -657,7 +657,6 @@ test('root catalog context uses Filter API without requiring product_cat or send
   assert.match(php, /'scope' => \$is_outlet_scope \? 'outlet' : 'catalog'/);
   assert.match(php, /elseif \( \$category_id > 0 \) \{\s*\$filter_params\['catalog_category_id'\] = \$category_id;/);
   assert.match(js, /else if\(categoryId!=='0'\)params\.set\('catalog_category_id',categoryId\)/);
-  assert.match(php, /'catalog_category_id' \] = \$category_id/);
 });
 
 test('Novedades route renders all products through the shared catalog listing with recent-first default', () => {
