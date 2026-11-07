@@ -1,6 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-if ( function_exists( 'is_shop' ) && is_shop() && ! cr2026_category_filters_selected() ) {
+if ( function_exists( 'is_shop' ) && is_shop() && ! get_query_var( 'cr2026_novelties' ) && ! cr2026_category_filters_selected() ) {
     get_header( 'shop' );
     $categories = cr2026_home_categories();
     $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets/images/categories/';
@@ -30,7 +30,8 @@ $GLOBALS['cr2026_product_listing_view'] = true;
 $listing_term = is_product_category() ? get_queried_object() : null;
 $listing_term = $listing_term instanceof WP_Term && 'product_cat' === $listing_term->taxonomy ? $listing_term : null;
 $listing_context = $listing_term ? 'archive' : 'root';
-$listing_title = $listing_term ? cr2026_product_cat_display_name( $listing_term ) : __( 'Categorías', 'crios-rango-2026' );
+$is_novelties_view = (bool) get_query_var( 'cr2026_novelties' );
+$listing_title = $listing_term ? cr2026_product_cat_display_name( $listing_term ) : ( $is_novelties_view ? __( 'Novedades', 'crios-rango-2026' ) : __( 'Categorías', 'crios-rango-2026' ) );
 $listing_back_url = $listing_term ? cr2026_category_back_url( $listing_term ) : home_url( '/' );
 $listing_category_id = $listing_term ? (int) $listing_term->term_id : 0;
 $listing_outlet_category_id = in_array($listing_category_id,cr2026_outlet_branch_ids(),true)?$listing_category_id:0;
