@@ -333,8 +333,8 @@
         var entries = ['JS LOADED'];
         var submitStartedAt = null;
         function now() { return window.performance && typeof window.performance.now === 'function' ? window.performance.now() : Date.now(); }
-        function clean(value) { return String(value == null ? '' : value).replace(/[\\r\\n]+/g, ' ').trim(); }
-        function render() { output.textContent = entries.join('\\n'); }
+        function clean(value) { return String(value == null ? '' : value).replace(/[\r\n]+/g, ' ').trim(); }
+        function render() { output.textContent = entries.join('\n'); }
         function log(label, fields) {
           var line = label;
           if (fields) {
@@ -348,7 +348,7 @@
           var parent = node && node.parentElement;
           if (!parent) return 'none';
           var tag = parent.tagName ? parent.tagName.toLowerCase() : 'node';
-          return tag + (parent.id ? '#' + parent.id : '') + (parent.className && typeof parent.className === 'string' ? '.' + parent.className.trim().replace(/\\s+/g, '.') : '');
+          return tag + (parent.id ? '#' + parent.id : '') + (parent.className && typeof parent.className === 'string' ? '.' + parent.className.trim().replace(/\s+/g, '.') : '');
         }
         function noticeNodes() {
           return Array.prototype.slice.call(document.querySelectorAll('.woocommerce-error,.woocommerce-message,.woocommerce-info'));
@@ -414,7 +414,7 @@
         render();
 
         var scriptTag = Array.prototype.filter.call(document.scripts, function (script) {
-          return script.src && /product-ui-enhancements\\.js(?:\\?|$)/.test(script.src);
+          return script.src && /product-ui-enhancements\.js(?:\?|$)/.test(script.src);
         })[0];
         if (scriptTag && window.fetch) {
           var manifestUrl = new URL('../../build.json', scriptTag.src).toString();
