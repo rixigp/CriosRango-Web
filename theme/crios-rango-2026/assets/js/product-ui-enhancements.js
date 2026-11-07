@@ -325,6 +325,110 @@
           nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige una combinación';
         }
       }
+      var isAddingToCart = false;
+      function getWooAjaxUrl(endpoint) {
+        var params = window.wc_add_to_cart_params;
+        if (!params || !params.wc_ajax_url) return '';
+        return params.wc_ajax_url.replace('%%endpoint%%', endpoint);
+      }
+      function buildNativeAddToCartPayload() {
+        var payload = {};
+        var variation = {};
+        window.jQuery(form).serializeArray().forEach(function (field) {
+          if (field.name.indexOf('attribute_') === 0) variation[field.name] = field.value;
+          else payload[field.name] = field.value;
+        });
+        var productIdInput = form.querySelector('input[name="product_id"]') || form.querySelector('input[name="add-to-cart"]');
+        payload.product_id = productIdInput && productIdInput.value ? productIdInput.value : form.getAttribute('data-product_id');
+        payload.variation_id = variationId ? variationId.value : '';
+        var quantityInput = form.querySelector('input.qty[name="quantity"], input[name="quantity"]');
+        payload.quantity = quantityInput ? quantityInput.value : (payload.quantity || '1');
+        payload.variation = variation;
+        return payload;
+      }
+      function showWooAddToCartError(message) {
+        var wrapper = document.querySelector('div.woocommerce-notices-wrapper');
+        if (!wrapper) {
+          wrapper = document.createElement('div');
+          wrapper.className = 'woocommerce-notices-wrapper';
+          form.parentNode.insertBefore(wrapper, form);
+        }
+        wrapper.innerHTML = '<ul class="woocommerce-error" role="alert"><li></li></ul>';
+        wrapper.querySelector('li').textContent = message;
+      }
+      function releaseAddToCartLock() {
+        isAddingToCart = false;
+        if (nativeButton) {
+          nativeButton.removeAttribute('aria-busy');
+          nativeButton.removeAttribute('aria-disabled');
+        }
+        syncVariationState();
+      }
+      function refreshWooErrorNotices() {
+        var refreshUrl = getWooAjaxUrl('get_refreshed_fragments');
+        if (!refreshUrl) {
+          showWooAddToCartError('No se ha podido añadir el producto al carrito. Inténtalo de nuevo.');
+          releaseAddToCartLock();
+          return;
+        }
+        var noticeUrl = refreshUrl + (refreshUrl.indexOf('?') === -1 ? '?' : '&') + 'cr_product_detail=1';
+        window.jQuery.ajax({ url: noticeUrl, method: 'GET', dataType: 'json' })
+          .done(function (response) {
+            var fragments = response && response.fragments ? response.fragments : {};
+            var renderedNotice = false;
+            Object.keys(fragments).forEach(function (selector) {
+              var $current = window.jQuery(selector);
+              if ($current.length) $current.replaceWith(fragments[selector]);
+              else if (selector === 'div.woocommerce-notices-wrapper') window.jQuery(form).before(fragments[selector]);
+              if (selector === 'div.woocommerce-notices-wrapper' && /woocommerce-error/.test(fragments[selector])) renderedNotice = true;
+            });
+            if (Object.keys(fragments).length) window.jQuery(document.body).trigger('wc_fragments_refreshed');
+            if (!renderedNotice) showWooAddToCartError('WooCommerce no ha podido añadir el producto al carrito. Comprueba la combinación y vuelve a intentarlo.');
+          })
+          .fail(function () {
+            showWooAddToCartError('No se ha podido confirmar la operación. Comprueba el carrito antes de volver a intentarlo.');
+          })
+          .always(releaseAddToCartLock);
+      }
+      function submitProductDetailAddToCart(event) {
+        if (isAddingToCart) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          return;
+        }
+        if (!variationId || Number(variationId.value) <= 0) return;
+        if (typeof form.checkValidity === 'function' && !form.checkValidity()) return;
+        var addUrl = getWooAjaxUrl('add_to_cart');
+        if (!addUrl || !window.jQuery) return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        isAddingToCart = true;
+        if (nativeButton) {
+          nativeButton.setAttribute('aria-busy', 'true');
+          nativeButton.setAttribute('aria-disabled', 'true');
+        }
+        window.jQuery.ajax({
+          type: 'POST',
+          url: addUrl,
+          data: buildNativeAddToCartPayload(),
+          dataType: 'json'
+        }).done(function (response) {
+          if (!response || response.error || !response.fragments || typeof response.cart_hash === 'undefined') {
+            refreshWooErrorNotices();
+            return;
+          }
+          window.jQuery(document.body).trigger('added_to_cart', [
+            response.fragments,
+            response.cart_hash,
+            window.jQuery(nativeButton)
+          ]);
+          releaseAddToCartLock();
+        }).fail(function () {
+          refreshWooErrorNotices();
+        });
+      }
+      form.addEventListener('submit', submitProductDetailAddToCart, true);
       form.addEventListener('change', syncVariationState);
       if (window.jQuery) {
         window.jQuery(form).on('woocommerce_update_variation_values found_variation reset_data hide_variation show_variation', syncVariationState);

@@ -357,6 +357,31 @@ add_filter( 'woocommerce_add_to_cart_fragments', 'cr2026_cart_count_fragment' );
 
 
 /**
+ * Return native WooCommerce validation notices to Product Detail's AJAX submitter.
+ * Cart mutations themselves continue through WooCommerce's official wc-ajax endpoint.
+ */
+function cr2026_product_detail_error_notice_fragment( $fragments ) {
+    if ( ! isset( $_GET['cr_product_detail'] ) || '1' !== (string) wp_unslash( $_GET['cr_product_detail'] ) ) {
+        return $fragments;
+    }
+    if ( ! function_exists( 'wc_get_notices' ) || ! function_exists( 'wc_print_notices' ) ) {
+        return $fragments;
+    }
+    $notices = wc_get_notices();
+    if ( empty( $notices ) ) {
+        return $fragments;
+    }
+    $notice_html = wc_print_notices( true );
+    if ( '' !== $notice_html ) {
+        $fragments['div.woocommerce-notices-wrapper'] = '<div class="woocommerce-notices-wrapper">' . $notice_html . '</div>';
+    }
+    return $fragments;
+}
+add_filter( 'woocommerce_add_to_cart_fragments', 'cr2026_product_detail_error_notice_fragment', 20 );
+
+
+
+/**
  * Keep loyalty accounting active but remove its promotional points sentence
  * from product listing cards. The message is useful on product/cart/checkout,
  * but on a two-column mobile catalogue it creates excessive vertical noise.

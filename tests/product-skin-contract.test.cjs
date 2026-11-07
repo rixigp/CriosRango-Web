@@ -10,6 +10,7 @@ const setup = fs.readFileSync(path.join(theme, 'inc/setup.php'), 'utf8');
 const functions = fs.readFileSync(path.join(theme, 'functions.php'), 'utf8');
 const assets = fs.readFileSync(path.join(theme, 'inc/assets.php'), 'utf8');
 const skin = fs.readFileSync(path.join(theme, 'inc/product-skin.php'), 'utf8');
+const woocommerce = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
 const skinCss = fs.readFileSync(path.join(theme, 'assets/css/product-detail-skin.css'), 'utf8');
 const productUiJs = fs.readFileSync(path.join(theme, 'assets/js/product-ui-enhancements.js'), 'utf8');
 
@@ -209,7 +210,7 @@ test('enhancements are progressive and the native add-to-cart button remains the
   assert.ok(productUiJs.includes("body.classList.add('cr-product-ui-enhanced')"));
   assert.ok(productUiJs.includes("body.classList.remove('cr-product-ui-enhanced')"));
   assert.ok(productUiJs.includes("form.querySelector('button.single_add_to_cart_button')"));
-  assert.equal(productUiJs.includes("addEventListener('submit'"), false);
+  assert.ok(productUiJs.includes("form.addEventListener('submit', submitProductDetailAddToCart, true)"));
   assert.equal(productUiJs.includes('requestSubmit'), false);
   assert.equal(productUiJs.includes('fetch('), false);
   assert.equal(productUiJs.includes('XMLHttpRequest'), false);
@@ -387,4 +388,60 @@ test('visual color resolution never mutates the native WooCommerce option value'
   assert.equal(nativeSelectValue, originalValue);
   assert.match(productUiJs, /var rawColorValue = option\.value;[\s\S]*?resolveColorSwatch\(rawColorValue, rawColorLabel\)/);
   assert.match(productUiJs, /select\.value = isToggleAttribute && select\.value === option\.value \? '' : option\.value/);
+});
+
+
+test('Product Detail variable add-to-cart is intercepted and sent through the official WooCommerce AJAX endpoint', () => {
+  assert.ok(productUiJs.includes("form.addEventListener('submit', submitProductDetailAddToCart, true)"));
+  assert.ok(productUiJs.includes("getWooAjaxUrl('add_to_cart')"));
+  assert.ok(productUiJs.includes("event.preventDefault()"));
+  assert.ok(productUiJs.includes("event.stopImmediatePropagation()"));
+  assert.ok(productUiJs.includes("type: 'POST'"));
+  assert.ok(productUiJs.includes("data: buildNativeAddToCartPayload()"));
+  assert.match(assets, /array\( 'jquery', 'wc-add-to-cart', 'wc-cart-fragments' \)/);
+});
+
+test('AJAX payload sends native product ID, real variation ID, exact quantity and all dynamic native attributes', () => {
+  assert.ok(productUiJs.includes('input[name="product_id"]'));
+  assert.ok(productUiJs.includes('payload.product_id = productIdInput'));
+  assert.ok(productUiJs.includes("payload.variation_id = variationId ? variationId.value : ''"));
+  assert.ok(productUiJs.includes("payload.quantity = quantityInput ? quantityInput.value"));
+  assert.ok(productUiJs.includes("field.name.indexOf('attribute_') === 0"));
+  assert.ok(productUiJs.includes("variation[field.name] = field.value"));
+  assert.ok(productUiJs.includes("payload.variation = variation"));
+  assert.doesNotMatch(productUiJs, /attribute_pa_color|attribute_pa_tallas/);
+});
+
+test('only a confirmed WooCommerce AJAX response triggers success feedback and standard fragment events', () => {
+  assert.match(productUiJs, /!response \|\| response\.error \|\| !response\.fragments \|\| typeof response\.cart_hash === 'undefined'/);
+  assert.ok(productUiJs.includes("trigger('added_to_cart', ["));
+  assert.ok(productUiJs.includes("response.fragments"));
+  assert.ok(productUiJs.includes("response.cart_hash"));
+  assert.ok(productUiJs.includes("showAddedFeedback()"));
+});
+
+test('AJAX errors retrieve native WooCommerce notices and do not show false success or redirect', () => {
+  assert.ok(productUiJs.includes("refreshWooErrorNotices()"));
+  assert.ok(productUiJs.includes("getWooAjaxUrl('get_refreshed_fragments')"));
+  assert.ok(productUiJs.includes("cr_product_detail=1"));
+  assert.ok(productUiJs.includes("showWooAddToCartError("));
+  assert.ok(woocommerce.includes("function cr2026_product_detail_error_notice_fragment"));
+  assert.ok(woocommerce.includes("wc_get_notices()"));
+  assert.ok(woocommerce.includes("wc_print_notices( true )"));
+  assert.ok(woocommerce.includes("div.woocommerce-notices-wrapper"));
+  assert.doesNotMatch(productUiJs, /window\.location\s*=|location\.href\s*=|location\.reload\s*\(/);
+});
+
+test('repeated submit is blocked while AJAX is pending and no scroll-reset hack is used', () => {
+  assert.ok(productUiJs.includes('var isAddingToCart = false'));
+  assert.ok(productUiJs.includes('if (isAddingToCart)'));
+  assert.ok(productUiJs.includes('isAddingToCart = true'));
+  assert.ok(productUiJs.includes('isAddingToCart = false'));
+  assert.doesNotMatch(productUiJs, /window\.scrollTo|document\.documentElement\.scrollTop\s*=|window\.location\.reload/);
+});
+
+test('cart count remains a WooCommerce fragment for every existing header and bottom-nav counter', () => {
+  assert.match(woocommerce, /\$fragments\['span\[data-cr-cart-count\]'\]/);
+  assert.match(woocommerce, /add_filter\( 'woocommerce_add_to_cart_fragments', 'cr2026_cart_count_fragment' \)/);
+  assert.ok(productUiJs.includes("trigger('added_to_cart', ["));
 });

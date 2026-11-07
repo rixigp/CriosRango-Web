@@ -82,7 +82,7 @@ function cr2026_enqueue_assets() {
         wp_enqueue_script(
             'cr2026-product-ui-enhancements',
             CR2026_URI . '/assets/js/product-ui-enhancements.js',
-            array( 'jquery' ),
+            array( 'jquery', 'wc-add-to-cart', 'wc-cart-fragments' ),
             cr2026_asset_version( 'assets/js/product-ui-enhancements.js' ),
             true
         );
