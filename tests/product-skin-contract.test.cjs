@@ -519,3 +519,42 @@ test('error fragment renders only validation errors, not success or informationa
   assert.equal(fragment.includes('wc_get_notices()'), false);
   assert.equal(fragment.includes('wc_print_notices'), false);
 });
+
+test('Product Detail clears only its own old notices before a valid AJAX request', () => {
+  assert.ok(productUiJs.includes("document.querySelector('.cr-main--woocommerce')"));
+  assert.ok(productUiJs.includes('function clearProductDetailNotices()'));
+  assert.ok(productUiJs.includes("noticeRoot.querySelectorAll('.woocommerce-notices-wrapper')"));
+  const start = productUiJs.indexOf('function submitProductDetailAddToCart(event)');
+  const end = productUiJs.indexOf("form.addEventListener('submit', submitProductDetailAddToCart, true)", start);
+  const handler = productUiJs.slice(start, end);
+  assert.ok(handler.indexOf('clearProductDetailNotices();') < handler.indexOf('window.jQuery.ajax({'));
+  assert.doesNotMatch(productUiJs, /document\.querySelectorAll\(['"]\.woocommerce-message/);
+});
+
+test('confirmed AJAX success applies Woo fragments, dispatches the standard event, clears notices and preserves CTA feedback', () => {
+  const start = productUiJs.indexOf('function submitProductDetailAddToCart(event)');
+  const end = productUiJs.indexOf("form.addEventListener('submit', submitProductDetailAddToCart, true)", start);
+  const handler = productUiJs.slice(start, end);
+  const trigger = handler.indexOf("trigger('added_to_cart', [");
+  const clear = handler.indexOf('clearProductDetailNotices();', trigger);
+  const feedback = handler.indexOf('if (!hasAddedFeedback) showAddedFeedback();', clear);
+  assert.ok(trigger >= 0);
+  assert.ok(handler.indexOf('response.fragments', trigger) > trigger);
+  assert.ok(handler.indexOf('response.cart_hash', trigger) > trigger);
+  assert.ok(clear > trigger);
+  assert.ok(feedback > clear);
+  assert.ok(productUiJs.includes("added_to_cart.crProductDetail"));
+  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
+  assert.ok(productUiJs.includes('!hasAddedFeedback'));
+});
+
+test('AJAX error response does not execute success feedback and refreshes only current WooCommerce errors', () => {
+  const start = productUiJs.indexOf('function submitProductDetailAddToCart(event)');
+  const end = productUiJs.indexOf("form.addEventListener('submit', submitProductDetailAddToCart, true)", start);
+  const handler = productUiJs.slice(start, end);
+  const errorBranch = handler.slice(handler.indexOf("if (!response || response.error"));
+  assert.ok(errorBranch.includes('refreshWooErrorNotices()'));
+  assert.equal(errorBranch.includes('showAddedFeedback()'), false);
+  assert.equal(errorBranch.includes("trigger('added_to_cart'"), false);
+  assert.ok(productUiJs.includes("window.jQuery(noticeRoot).find(selector).first()"));
+});

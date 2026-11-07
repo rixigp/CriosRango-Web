@@ -358,8 +358,19 @@
           quantity
         );
       }
+      function getProductDetailNoticeRoot() {
+        return document.querySelector('.cr-main--woocommerce') || form.closest('.product') || form.parentNode;
+      }
+      function clearProductDetailNotices() {
+        var noticeRoot = getProductDetailNoticeRoot();
+        if (!noticeRoot || !noticeRoot.querySelectorAll) return;
+        noticeRoot.querySelectorAll('.woocommerce-notices-wrapper').forEach(function (wrapper) {
+          wrapper.replaceChildren();
+        });
+      }
       function showWooAddToCartError(message) {
-        var wrapper = document.querySelector('div.woocommerce-notices-wrapper');
+        var noticeRoot = getProductDetailNoticeRoot();
+        var wrapper = noticeRoot.querySelector('div.woocommerce-notices-wrapper');
         if (!wrapper) {
           wrapper = document.createElement('div');
           wrapper.className = 'woocommerce-notices-wrapper';
@@ -389,7 +400,10 @@
             var fragments = response && response.fragments ? response.fragments : {};
             var renderedNotice = false;
             Object.keys(fragments).forEach(function (selector) {
-              var $current = window.jQuery(selector);
+              var noticeRoot = getProductDetailNoticeRoot();
+              var $current = selector === 'div.woocommerce-notices-wrapper'
+                ? window.jQuery(noticeRoot).find(selector).first()
+                : window.jQuery(selector);
               if ($current.length) $current.replaceWith(fragments[selector]);
               else if (selector === 'div.woocommerce-notices-wrapper') window.jQuery(form).before(fragments[selector]);
               if (selector === 'div.woocommerce-notices-wrapper' && /woocommerce-error/.test(fragments[selector])) renderedNotice = true;
@@ -415,6 +429,7 @@
 
         event.preventDefault();
         event.stopImmediatePropagation();
+        clearProductDetailNotices();
         isAddingToCart = true;
         if (nativeButton) {
           nativeButton.setAttribute('aria-busy', 'true');
@@ -435,6 +450,8 @@
             response.cart_hash,
             window.jQuery(nativeButton)
           ]);
+          clearProductDetailNotices();
+          if (!hasAddedFeedback) showAddedFeedback();
           releaseAddToCartLock();
         }).fail(function () {
           refreshWooErrorNotices();
