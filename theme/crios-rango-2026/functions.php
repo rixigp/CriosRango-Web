@@ -12,5 +12,6 @@ require_once CR2026_DIR . '/inc/assets.php';
 require_once CR2026_DIR . '/inc/helpers.php';
 require_once CR2026_DIR . '/inc/navigation.php';
 require_once CR2026_DIR . '/inc/woocommerce.php';
+require_once CR2026_DIR . '/inc/catalog-routes.php';
 require_once CR2026_DIR . '/inc/product-skin.php';
 require_once CR2026_DIR . '/inc/login.php';
