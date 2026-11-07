@@ -275,7 +275,7 @@ test('global header product search trigger opens the existing form panel and blo
   assert.doesNotMatch(header,/href=.*s=&post_type=product/);
   assert.match(header,/id="cr-header-search-panel"/);
   assert.match(header,/get_search_form\(\)/);
-  assert.match(js,/headerSearchToggle\.addEventListener\('click',toggleHeaderSearch\)/);
+  assert.ok(js.includes("headerSearchToggle.addEventListener('click', toggleHeaderSearch)"));
   assert.match(js,/headerSearchInput\.focus\(\{ preventScroll: true \}\)/);
   assert.match(js,/event\.key === 'Escape'/);
   assert.match(js,/headerSearchInput\.value\.trim\(\) === ''[\s\S]*?event\.preventDefault\(\)/);
@@ -293,7 +293,7 @@ test('WooCommerce product search results reuse the shared catalog product-card r
   assert.match(searchTemplate,/cr2026_render_product_card\( \$search_product, \$card_index \)/);
   assert.match(searchTemplate,/class="cr-product-grid" data-cr-search-product-grid/);
   assert.match(searchTemplate, /cr2026_render_product_card/);
-  assert.match(searchTemplate, /<?php else : ?>/);
+  assert.ok(searchTemplate.includes('<?php else : ?>'));
   assert.match(searchTemplate, /cr-post-card/);
   assert.match(searchTemplate,/No hemos encontrado productos para/);
   assert.match(searchTemplate,/cr2026_shop_url\(\)/);
