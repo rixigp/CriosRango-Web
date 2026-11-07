@@ -152,7 +152,7 @@ function cr2026_product_skin_actions() {
     echo '<button type="button" class="cr-product-actions__button cr-product-reserve" data-variable="' . ( $product->is_type( 'variable' ) ? '1' : '0' ) . '" ' . disabled( ! $reserve_enabled, true, false ) . '>' . cr2026_icon( 'message', 'cr-product-actions__icon' ) . '<span>Reservarlo</span></button>';
     echo '</div>';
 }
-add_action( 'woocommerce_after_add_to_cart_form', 'cr2026_product_skin_actions', 25 );
+add_action( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_actions', 31 );
 
 /** Replace the translated WooCommerce sale label only on product detail pages. */
 function cr2026_product_skin_sale_label( $translation, $text, $domain ) {
@@ -202,7 +202,7 @@ function cr2026_product_skin_brand() {
 function cr2026_product_skin_global_size_help() {
     if ( ! is_product() ) { return; }
     echo '<section class="cr-product-size-help" aria-labelledby="cr-product-size-help-title">';
-    echo '<span class="cr-product-size-help__icon" aria-hidden="true"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10.5 20.8 4.8a4 4 0 0 1 5.1 2.4l1.3 3.5a4 4 0 0 1-2.4 5.1L9 21.5a4 4 0 0 1-5.1-2.4l-1.3-3.5A4 4 0 0 1 5 10.5Z" transform="translate(1 3) rotate(-12 16 16)"/><path d="m9 12 2 3m2-5 2 3m2-5 2 3m2-5 2 3"/></svg></span>';
+    echo '<span class="cr-product-size-help__icon" aria-hidden="true"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="18" r="7"/><circle cx="9.5" cy="18" r="2.5"/><path d="M15.8 13.5h11.4c1 0 1.8.8 1.8 1.8v3c0 1-.8 1.8-1.8 1.8H15.5M19 13.5v3m4-3v2m4-2v3"/></svg></span>';
     echo '<div class="cr-product-size-help__content">';
     echo '<h2 id="cr-product-size-help-title">Pregunta por más tallas!</h2>';
     echo '<p>Si la talla que necesitas, no se encuentra disponible, contacta con nosotros en <a href="mailto:criosrango@criosrango.es">criosrango@criosrango.es</a> o nuestro whatsapp <a href="https://wa.me/34633246788" target="_blank" rel="noopener noreferrer">633 246 788</a>.</p>';
