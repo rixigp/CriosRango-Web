@@ -340,6 +340,66 @@
           wrapper.replaceChildren();
         });
       }
+      function initVariationAjaxAddToCart() {
+        if (!form || !nativeButton || !variationId || !window.jQuery) return;
+
+        var $ = window.jQuery;
+        var isAddingToCart = false;
+
+        form.addEventListener('submit', function (event) {
+          var selectedVariationId = Number(variationId.value);
+          var ajaxParams = window.wc_add_to_cart_params;
+          if (!selectedVariationId || !ajaxParams || !ajaxParams.wc_ajax_url) return;
+
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          if (isAddingToCart) return;
+
+          var quantityInput = form.querySelector('input.qty[name="quantity"]');
+          var data = {
+            product_id: selectedVariationId,
+            quantity: quantityInput ? quantityInput.value : 1
+          };
+          var endpoint = String(ajaxParams.wc_ajax_url).replace('%%endpoint%%', 'add_to_cart');
+          var $button = $(nativeButton);
+
+          isAddingToCart = true;
+          nativeButton.classList.add('loading');
+          nativeButton.setAttribute('aria-busy', 'true');
+          $(document.body).trigger('adding_to_cart', [$button, data]);
+
+          $.ajax({
+            type: 'POST',
+            url: endpoint,
+            data: data,
+            dataType: 'json'
+          }).done(function (response) {
+            if (!response || response.error || response.success === false) {
+              if (window.console && console.error) {
+                console.error('[CR Product UI] WooCommerce variation add-to-cart failed.', response);
+              }
+              return;
+            }
+
+            $(document.body).trigger('added_to_cart', [
+              response.fragments || {},
+              response.cart_hash || '',
+              $button
+            ]);
+          }).fail(function (xhr, status, error) {
+            if (window.console && console.error) {
+              console.error('[CR Product UI] WooCommerce variation add-to-cart request failed.', status, error);
+            }
+          }).always(function () {
+            isAddingToCart = false;
+            nativeButton.classList.remove('loading');
+            nativeButton.removeAttribute('aria-busy');
+          });
+        }, true);
+      }
+
+      initVariationAjaxAddToCart();
       form.addEventListener('change', syncVariationState);
       if (window.jQuery) {
         window.jQuery(form).on('woocommerce_update_variation_values reset_data hide_variation', syncVariationState);
