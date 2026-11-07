@@ -764,3 +764,27 @@ test('subcategory query order is NAME_ASC and top-level Home editorial order rem
   const ids = Array.from(homeCategories.matchAll(/'id'\s*=>\s*(\d+)/g), match => Number(match[1]));
   assert.deepEqual(ids, [560, 292, 294, 420, 504, 509, 70, 71, 68, 310, 67, 445]);
 });
+
+test('catalog-page exposes monotonic Server-Timing diagnostics without changing its JSON payload', () => {
+  assert.match(php, /function cr2026_catalog_timer_now\(\)[\s\S]*?hrtime\( true \)/);
+  assert.match(php, /function cr2026_catalog_timing_headers\([\s\S]*?rest_pre_serve_request/);
+  assert.match(php, /catalog-total;dur=/);
+  for (const stage of ['filter','products','render','cache','other']) assert.match(php, new RegExp(stage + ';dur='));
+  assert.match(php, /X-CriosRango-Catalog-Cache', 'BYPASS'/);
+  assert.match(php, /X-CriosRango-Persistent-Object-Cache/);
+  assert.match(php, /cr2026_catalog_timing_add\( 'filter'/);
+  assert.match(php, /cr2026_catalog_timing_add\( 'products'/);
+  assert.match(php, /cr2026_catalog_timing_add\( 'render'/);
+  assert.match(php, /'html' => \$rendered_html/);
+  assert.doesNotMatch(php, /'server_timing'\s*=>|'catalog_timing'\s*=>/);
+});
+
+test('staging benchmark records three cold and three warm requests for the same catalogue state', () => {
+  assert.match(deploy, /Benchmark staging catalog endpoint \(3 cold \+ 3 warm requests\)/);
+  assert.match(deploy, /for INDEX in 1 2 3 4 5 6/);
+  assert.match(deploy, /LABEL="COLD"/);
+  assert.match(deploy, /LABEL="WARM"/);
+  assert.match(deploy, /CURL_TOTAL_S=/);
+  assert.match(deploy, /SERVER_TIMING=/);
+  assert.match(deploy, /catalog_category_id=560/);
+});

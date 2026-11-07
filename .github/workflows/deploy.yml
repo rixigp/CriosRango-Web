@@ -724,4 +724,39 @@ jobs:
           curl --silent --show-error --fail --ssl-reqd --ftp-pasv --connect-timeout 20 --retry 2 \
             --user "${SFTP_USER}:${SFTP_PASSWORD}" "${BASE_URL}/build.json" --output /tmp/criosrango-build.json
           node -e 'const fs=require("fs");const manifest=JSON.parse(fs.readFileSync("/tmp/criosrango-build.json","utf8"));if(manifest.sha!==process.env.EXPECTED_THEME_SHA){console.error("STAGING_BUILD_SHA mismatch: "+manifest.sha+" != "+process.env.EXPECTED_THEME_SHA);process.exit(1)}console.log("STAGING_BUILD_SHA="+manifest.sha);console.log("REPOSITORY_HEAD="+process.env.GITHUB_SHA);console.log("THEME_DEPLOY_SHA="+manifest.sha);'
+      - name: Benchmark staging catalog endpoint (3 cold + 3 warm requests)
+        if: github.ref == 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          ENDPOINT="https://criosrango.es/prueba/wp-json/cr2026/v1/catalog-page"
+          HEADERS_FILE="$(mktemp)"
+          BODY_FILE="$(mktemp)"
+          trap 'rm -f "$HEADERS_FILE" "$BODY_FILE"' EXIT
+          for INDEX in 1 2 3 4 5 6; do
+            if [ "$INDEX" -le 3 ]; then LABEL="COLD"; else LABEL="WARM"; fi
+            CURL_RESULT="$(curl --silent --show-error --get --connect-timeout 15 --max-time 90 \
+              --dump-header "$HEADERS_FILE" --output "$BODY_FILE" \
+              --write-out '%{http_code} %{time_total}' \
+              --data-urlencode 'scope=catalog' \
+              --data-urlencode 'catalog_category_id=560' \
+              --data-urlencode 'page=1' \
+              --data-urlencode 'per_page=12' \
+              --data-urlencode 'sort=newest' "$ENDPOINT")"
+            HTTP_STATUS="${CURL_RESULT%% *}"
+            CURL_SECONDS="${CURL_RESULT#* }"
+            node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(!d||d.page!==1||d.per_page!==12||!Array.isArray(d.product_ids)||!Array.isArray(d.rendered_product_ids)||typeof d.html!=="string")process.exit(2)' "$BODY_FILE"
+            SERVER_TIMING="$(grep -i '^Server-Timing:' "$HEADERS_FILE" | tail -1 | tr -d '\r' | cut -d: -f2- | xargs || true)"
+            CACHE_STATE="$(grep -i '^X-CriosRango-Catalog-Cache:' "$HEADERS_FILE" | tail -1 | tr -d '\r' | cut -d: -f2- | xargs || true)"
+            OBJECT_CACHE="$(grep -i '^X-CriosRango-Persistent-Object-Cache:' "$HEADERS_FILE" | tail -1 | tr -d '\r' | cut -d: -f2- | xargs || true)"
+            echo "${LABEL}_REQUEST_${INDEX} HTTP=${HTTP_STATUS} CURL_TOTAL_S=${CURL_SECONDS} CACHE=${CACHE_STATE:-MISSING} OBJECT_CACHE=${OBJECT_CACHE:-UNKNOWN} SERVER_TIMING=${SERVER_TIMING:-MISSING}"
+            if [ "$HTTP_STATUS" != "200" ] || [ -z "$SERVER_TIMING" ]; then
+              echo "CATALOG_BENCHMARK_FAILED=YES"
+              exit 1
+            fi
+          done
+          echo "CATALOG_BENCHMARK_REQUESTS=6"
+          echo "CATALOG_BENCHMARK_CONTEXT=catalog_category_id:560,page:1,per_page:12,sort:newest"
+
 
