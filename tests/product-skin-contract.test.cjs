@@ -193,6 +193,42 @@ test('variation chips are native select proxies and do not implement variation m
   assert.equal(productUiJs.includes('price'), false);
 });
 
+test('description icon uses the app canvas and the accordion remains compact and inline', () => {
+  assert.ok(skin.includes('class="cr-product-description__icon"'));
+  assert.ok(skin.includes('<svg viewBox="0 0 24 24"'));
+  assert.match(skinCss, /\.cr-product-description__icon\s*\{[^}]*background:\s*var\(--cr-app-canvas,\s*var\(--cr-product-cream\)\);[^}]*color:\s*var\(--cr-product-green\);/s);
+  assert.match(skinCss, /\.cr-product-description__toggle\s*\{[^}]*min-height:\s*58px;/s);
+  assert.match(skinCss, /\.cr-product-description__toggle\s*\{[^}]*padding:\s*12px 16px;/s);
+  assert.ok(skin.includes('aria-expanded="false"'));
+  assert.ok(productUiJs.includes('panel.hidden = isExpanded'));
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 )"));
+});
+
+test('Color and Size cards render only real native options and preserve WooCommerce selection and availability', () => {
+  assert.ok(productUiJs.includes('cr-product-variation-cards'));
+  assert.ok(productUiJs.includes('cr-product-variation-card--color'));
+  assert.ok(productUiJs.includes('cr-product-variation-card--size'));
+  assert.ok(productUiJs.includes('cr-product-choice-chips--color'));
+  assert.ok(productUiJs.includes('cr-product-choice-chips--size'));
+  assert.ok(productUiJs.includes('Array.prototype.slice.call(select.options)'));
+  assert.ok(productUiJs.includes('if (!option.value) return'));
+  assert.ok(productUiJs.includes('chip.disabled = !!option.disabled'));
+  assert.ok(productUiJs.includes("chip.setAttribute('aria-pressed', select.value === option.value ? 'true' : 'false')"));
+  assert.ok(productUiJs.includes('resolveColorSwatch(rawColorValue, rawColorLabel)'));
+  assert.ok(productUiJs.includes('if (colorMapping.color) swatch.style.backgroundColor = colorMapping.color'));
+  assert.ok(productUiJs.includes("select.value = isToggleAttribute && select.value === option.value ? '' : option.value"));
+  assert.ok(productUiJs.includes('dispatchNativeChange(select)'));
+  assert.ok(productUiJs.includes('woocommerce_update_variation_values'));
+  assert.match(skinCss, /\.cr-product-variation-card\s*\{[^}]*background:\s*#fff;[^}]*border-radius:\s*21px;/s);
+  assert.match(skinCss, /\.cr-product-choice-chips--color[\s\S]*?border-radius:\s*50%;/);
+  assert.match(skinCss, /\.cr-product-choice-chips--size[\s\S]*?min-height:\s*50px;/);
+  assert.match(skinCss, /\.cr-product-choice-chips--size[\s\S]*?background:\s*var\(--cr-product-green\);[\s\S]*?color:\s*#fff;/);
+  assert.match(skinCss, /\.cr-product-choice-chips--size[\s\S]*?\.cr-product-choice-chip:disabled/);
+  assert.ok(productUiJs.includes("select.insertAdjacentElement('afterend', chips)") === false);
+  assert.ok(productUiJs.includes("select.addEventListener('change', render)"));
+});
+
 test('quantity row matches the APP without replacing WooCommerce quantity authority', () => {
   assert.ok(productUiJs.includes('form.cart .quantity input.qty'));
   assert.ok(productUiJs.includes("quantityLabel.textContent = 'Cantidad'"));

@@ -378,6 +378,7 @@ function cr2026_product_skin_description_accordion() {
     $toggle_id = $panel_id . '-toggle';
     echo '<section class="cr-product-description">';
     echo '<button type="button" class="cr-product-description__toggle" id="' . esc_attr( $toggle_id ) . '" aria-expanded="false" aria-controls="' . esc_attr( $panel_id ) . '">';
+    echo '<span class="cr-product-description__icon" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.75h7l4 4v12.5H6.5z"/><path d="M13.5 3.75v4h4M9.5 12h5M9.5 15.5h5"/></svg></span>';
     echo '<span class="cr-product-description__title">Descripción</span>';
     echo '<span class="cr-product-description__chevron" aria-hidden="true"></span>';
     echo '</button>';

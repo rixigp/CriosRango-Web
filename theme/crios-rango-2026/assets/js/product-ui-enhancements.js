@@ -202,15 +202,30 @@
       if (!form) return;
       var selects = Array.prototype.slice.call(form.querySelectorAll('table.variations select'));
       if (!selects.length) return;
+      var variationTable = selects[0].closest('table.variations');
+      if (!variationTable) return;
+      variationTable.classList.add('cr-product-variations-native');
+      added.push({ cleanup: function () { variationTable.classList.remove('cr-product-variations-native'); } });
+      var variationCards = remember(document.createElement('div'));
+      variationCards.className = 'cr-product-variation-cards';
+      variationTable.insertAdjacentElement('afterend', variationCards);
       selects.forEach(function (select) {
         var labelNode = select.closest('td') && select.closest('td').parentElement.querySelector('label');
         var label = (labelNode ? labelNode.textContent : select.name || '').trim().toLowerCase();
         var isColor = /colou?r|tono/.test(label);
+        var isSize = /talla|size/.test(label);
+        var card = remember(document.createElement('section'));
+        card.className = 'cr-product-variation-card' + (isColor ? ' cr-product-variation-card--color' : isSize ? ' cr-product-variation-card--size' : '');
+        var heading = document.createElement('h3');
+        heading.className = 'cr-product-variation-card__title';
+        heading.textContent = (labelNode ? labelNode.textContent : label).trim().toLocaleUpperCase();
+        card.appendChild(heading);
         var chips = remember(document.createElement('div'));
-        chips.className = 'cr-product-choice-chips';
+        chips.className = 'cr-product-choice-chips' + (isColor ? ' cr-product-choice-chips--color' : isSize ? ' cr-product-choice-chips--size' : '');
         chips.setAttribute('role', 'group');
         chips.setAttribute('aria-label', labelNode ? labelNode.textContent.trim() : 'Opciones');
-        select.insertAdjacentElement('afterend', chips);
+        card.appendChild(chips);
+        variationCards.appendChild(card);
 
         function render() {
           chips.replaceChildren();
@@ -249,7 +264,6 @@
             chip.appendChild(text);
             chip.addEventListener('click', function () {
               if (chip.disabled) return;
-              var isSize = /talla|size/.test(label);
               var isToggleAttribute = isSize || isColor;
               select.value = isToggleAttribute && select.value === option.value ? '' : option.value;
               dispatchNativeChange(select);
