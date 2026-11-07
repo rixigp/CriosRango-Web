@@ -554,7 +554,7 @@ test('variation chips, quantity, CTA, gallery and native lightbox remain present
 test('Product Detail renders assigned product_brand logo with native metadata priority and name fallback', () => {
   assert.ok(skin.includes('function cr2026_product_skin_brand()'));
   assert.ok(skin.includes("taxonomy_exists( 'product_brand' )"));
-  assert.ok(skin.includes("get_the_terms( $product_id, 'product_brand' )"));
+  assert.ok(skin.includes("get_the_terms( absint( get_queried_object_id() ), 'product_brand' )"));
   assert.ok(skin.includes("cr2026_home_brand_image_url( $brand )"));
   assert.ok(skin.includes('cr-product-brand__logo'));
   assert.ok(skin.includes('cr-product-brand__name'));
@@ -699,11 +699,11 @@ test('display title removes only a final product_brand suffix and leaves the sti
 
   function expectedDisplayTitle(title, brand) {
     if (!brand || !brand.trim()) return title;
-    const escaped = brand.trim().split('').map((ch) => '.+*?^${}()|[]\\\\'.includes(ch) ? '\\\\' + ch : ch).join('');
+    const escaped = brand.trim();
     const suffix = new RegExp('^(.*?)(?:\\\\s*[-–—|]\\\\s*)' + escaped + '\\\\s*$', 'iu');
     const match = title.match(suffix);
     if (!match) return title;
-    return match[1].replace(/[\\s\\-–—|]+$/u, '') || title;
+    return match[1].replace(/[\s\-–—|]+$/u, '') || title;
   }
 
   const cases = [
@@ -714,6 +714,7 @@ test('display title removes only a final product_brand suffix and leaves the sti
     ['Producto – Spagnolo', 'spagnolo', 'Producto'],
     ['Producto — Spagnolo  ', 'Spagnolo', 'Producto'],
     ['Producto | Spagnolo', 'Spagnolo', 'Producto'],
+    ['Producto - - Spagnolo', 'Spagnolo', 'Producto'],
     ['Vestido Spagnolo edición especial', 'Spagnolo', 'Vestido Spagnolo edición especial'],
     ['Producto - Spagnolo - especial', 'Spagnolo', 'Producto - Spagnolo - especial'],
     ['Cárdigan - MARCA Ñandú', 'marca ñANDÚ', 'Cárdigan'],
