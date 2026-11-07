@@ -545,16 +545,21 @@
       return productsUrl+'?'+params.toString();
     };
     const revalidateCatalogCache = async entry => {
+      const token = requestGeneration;
       const controller = new AbortController();
       const responses = [];
       for (let page = 1; page <= entry.page; page++) {
         const response = await fetch(buildCatalogPageUrl(page), {credentials:'same-origin',headers:{Accept:'application/json'},signal:controller.signal});
+        if (token !== requestGeneration) return;
         if (!response.ok) throw new Error('Catalog background revalidation HTTP '+response.status);
         const data = await response.json();
+        if (token !== requestGeneration) return;
         if (!data || Number(data.page) !== page || Number(data.per_page) !== pageSize || typeof data.html !== 'string') throw new Error('Invalid catalog background response for page '+page);
+        if (!(Array.isArray(data.product_ids) && data.product_ids.length) && Number(data.total) !== 0) throw new Error('Empty non-zero catalog response during background revalidation.');
         responses.push(data);
         if (!data.has_more) break;
       }
+      if (token !== requestGeneration) return;
       if (!validateCachedPages(responses)) throw new Error('Invalid catalog background product/card contract.');
       const unchanged = responses.length === entry.pages.length && responses.every((data,index) => {
         const old = entry.pages[index];
@@ -562,17 +567,17 @@
           sameOrderedIds(data.rendered_product_ids || [], old.rendered_product_ids || []) &&
           Boolean(data.has_more) === Boolean(old.has_more) && Number(data.total) === Number(old.total);
       });
+      if (token !== requestGeneration) return;
       if (unchanged) {
         entry.timestamp = Date.now();
         writeCatalogCache(entry.scrollY);
         return;
       }
-      requestGeneration++;
       if (activeRequest) activeRequest.abort();
       activeRequest = null;
       loading = false;
-      const token = requestGeneration;
       for (let index = 0; index < responses.length; index++) {
+        if (token !== requestGeneration) return;
         await loadPage(index + 1, index > 0, token, responses[index], true);
       }
     };
