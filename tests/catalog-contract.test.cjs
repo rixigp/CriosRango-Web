@@ -388,3 +388,24 @@ test('mobile product search shows no more than three suggestions without changin
   assert.match(searchTemplate,/foreach \( \$GLOBALS\['wp_query'\]->posts as \$suggestion_post \)/);
   assert.match(searchTemplate,/cr2026_render_product_card\( \$search_product, \$card_index \)/);
 });
+
+
+test('product_brand archives render the native main query with shared product cards, never category landings', () => {
+  const brandArchive = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
+  const helpers = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/helpers.php'), 'utf8');
+  assert.match(brandArchive, /get_queried_object\(\)/);
+  assert.match(brandArchive, /'product_brand' !== \$brand_term->taxonomy/);
+  assert.match(brandArchive, /\$GLOBALS\['cr2026_product_listing_view'\] = true/);
+  assert.match(brandArchive, /while \( have_posts\(\) \)/);
+  assert.match(brandArchive, /the_post\(\)/);
+  assert.match(brandArchive, /cr2026_render_product_card\( \$brand_product, \$brand_card_index \)/);
+  assert.match(brandArchive, /the_posts_pagination\(/);
+  assert.match(brandArchive, /data-brand-term-id=/);
+  assert.match(brandArchive, /data-brand-term-slug=/);
+  assert.doesNotMatch(brandArchive, /new WP_Query|cr2026_render_category_toolbar|cr2026_render_category_filter_sheet|cr2026_home_categories|Categorías/);
+  assert.match(helpers, /is_tax\( 'product_brand' \)/);
+  assert.match(helpers, /function cr2026_home_brand_image_url\( \$term \)/);
+  assert.match(helpers, /array\( 'thumbnail_id', 'image_id' \)/);
+  assert.match(php, /\$is_category_query = \$query->is_tax\( 'product_cat' \)/);
+  assert.doesNotMatch(php, /\$is_brand_query\s*=/);
+});
