@@ -18,7 +18,7 @@ $is_product_search = is_search()
             <h1>
                 <?php
                 if ( $is_product_search ) {
-                    printf( esc_html__( 'Productos para: %s', 'crios-rango-2026' ), esc_html( $search_query ) );
+                    printf( esc_html__( 'Resultados para “%s”', 'crios-rango-2026' ), esc_html( $search_query ) );
                 } else {
                     printf( esc_html__( 'Buscar: %s', 'crios-rango-2026' ), esc_html( $search_query ) );
                 }

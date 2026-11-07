@@ -3,6 +3,29 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * Product searches must win over WooCommerce's Shop-page template override.
+ * The /prueba route is configured as the Shop page, so WC can otherwise
+ * replace WordPress search.php with archive-product.php even when s is set.
+ */
+function cr2026_product_search_template_include( $template ) {
+    if ( ! is_search() ) {
+        return $template;
+    }
+
+    $requested_post_type = get_query_var( 'post_type' );
+    $is_product_search = 'product' === $requested_post_type
+        || ( is_array( $requested_post_type ) && in_array( 'product', $requested_post_type, true ) );
+
+    if ( ! $is_product_search ) {
+        return $template;
+    }
+
+    $search_template = locate_template( 'search.php' );
+    return $search_template ? $search_template : $template;
+}
+add_filter( 'template_include', 'cr2026_product_search_template_include', 99 );
+
 // Canonical catalogue page size audited against app CatalogPaginator.PAGE_SIZE.
 if ( ! defined( 'CR2026_CATALOG_PAGE_SIZE' ) ) {
     define( 'CR2026_CATALOG_PAGE_SIZE', 12 );

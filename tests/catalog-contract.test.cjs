@@ -299,3 +299,18 @@ test('WooCommerce product search results reuse the shared catalog product-card r
   assert.match(searchTemplate,/cr2026_shop_url\(\)/);
   assert.match(searchTemplate,/get_search_query\(\)/);
 });
+
+test('product search routing overrides WooCommerce Shop template and keeps the product search main query',()=>{
+  const searchTemplate=fs.readFileSync(path.join(root,'theme/crios-rango-2026/search.php'),'utf8');
+  assert.match(php,/function cr2026_product_search_template_include\( \$template \)/);
+  assert.match(php,/if \( ! is_search\(\) \) \{\s*return \$template;/);
+  assert.match(php,/\$requested_post_type = get_query_var\( 'post_type' \)/);
+  assert.match(php,/\$is_product_search = 'product' === \$requested_post_type/);
+  assert.match(php,/locate_template\( 'search.php' \)/);
+  assert.match(php,/add_filter\( 'template_include', 'cr2026_product_search_template_include', 99 \)/);
+  assert.match(searchTemplate,/\$is_product_search\s*=\s*is_search\(\)/);
+  assert.match(searchTemplate,/cr2026_render_product_card\( \$search_product, \$card_index \)/);
+  assert.doesNotMatch(searchTemplate,/cr2026_render_category_toolbar|cr2026_home_categories|cr-app-category-grid|Categorías/);
+  assert.match(searchTemplate,/get_search_query\(\)/);
+  assert.match(searchTemplate,/No hemos encontrado productos para/);
+});
