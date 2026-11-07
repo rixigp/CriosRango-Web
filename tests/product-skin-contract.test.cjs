@@ -183,7 +183,9 @@ test('variation CTA uses the existing WooCommerce button and native variation ID
   assert.ok(productUiJs.includes("document.createElementNS('http://www.w3.org/2000/svg', 'svg')"));
   assert.ok(productUiJs.includes("cartBody.setAttribute('d', 'M5 8h14l-1 12H6L5 8Z')"));
   assert.ok(productUiJs.includes("cartHandle.setAttribute('d', 'M9 9V6a3 3 0 0 1 6 0v3')"));
-  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige una combinación'"));
+  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige opciones'"));
+  assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
+  assert.ok(productUiJs.includes("Añadir al carrito"));
   assert.ok(productUiJs.includes("Number(variationId.value) > 0"));
   assert.doesNotMatch(productUiJs, /nativeButton\.disabled\s*=/);
   assert.match(skinCss, /\.single_add_to_cart_button\s*\{[^}]*height:\s*52px;[^}]*min-height:\s*52px;/s);
@@ -583,7 +585,7 @@ test('legacy excerpt brand and size help cleanup leaves the balancing sanitizer 
 
 test('final app layout groups native title, dynamic price and WordPress brand without standalone brand dividers', () => {
   assert.ok(skin.includes('function cr2026_product_skin_title_price_brand()'));
-  assert.ok(skin.includes('woocommerce_template_single_title();'));
+  assert.ok(skin.includes('$display_title = cr2026_product_skin_display_title();'));
   assert.ok(skin.includes('woocommerce_template_single_price();'));
   assert.ok(skin.includes('cr2026_product_skin_brand();'));
   assert.ok(skin.includes('cr-product-title-brand-row__divider'));
@@ -681,4 +683,44 @@ test('product category fallback uses assigned primary category then deterministi
   assert.match(skin, /\$right\['depth'\] <=> \$left\['depth'\]/);
   assert.match(skin, /\$left\['term'\]->term_id <=> \$right\['term'\]->term_id/);
   assert.match(skin, /return cr2026_shop_url\(\)/);
+});
+
+test('display title removes only a final product_brand suffix and leaves the sticky title complete', () => {
+  assert.match(skin, /function cr2026_product_skin_brand_term\(\)/);
+  assert.match(skin, /function cr2026_product_skin_display_title\( \$original_title = null, \$brand_name = null \)/);
+  assert.ok(skin.includes("get_the_terms( absint( get_queried_object_id() ), 'product_brand' )"));
+  assert.ok(skin.includes("preg_quote( $brand_name, '~' )"));
+  assert.ok(skin.includes("$~iu"));
+  assert.ok(skin.includes("$display_title = cr2026_product_skin_display_title();"));
+  assert.ok(skin.includes("esc_html( $display_title )"));
+  assert.match(skin, /echo '<h1 class="cr-parent-category__title">'.*?esc_html\( \$product->get_name\(\) \)/);
+  const toolbar = skin.slice(skin.indexOf('function cr2026_product_skin_toolbar'), skin.indexOf("add_action( 'woocommerce_before_single_product'"));
+  assert.doesNotMatch(toolbar, /display_title/);
+
+  function expectedDisplayTitle(title, brand) {
+    if (!brand || !brand.trim()) return title;
+    const escaped = brand.trim().split('').map((ch) => '.+*?^${}()|[]\\\\'.includes(ch) ? '\\\\' + ch : ch).join('');
+    const suffix = new RegExp('^(.*?)(?:\\\\s*[-–—|]\\\\s*)' + escaped + '\\\\s*$', 'iu');
+    const match = title.match(suffix);
+    if (!match) return title;
+    return match[1].replace(/[\\s\\-–—|]+$/u, '') || title;
+  }
+
+  const cases = [
+    ['Jersey - 194000146P - Spagnolo', 'Spagnolo', 'Jersey - 194000146P'],
+    ['Chaqueta - 6516 - Ragussa', 'Ragussa', 'Chaqueta - 6516'],
+    ['Vestido - Mayoral', 'Mayoral', 'Vestido'],
+    ['Vestido especial', 'Mayoral', 'Vestido especial'],
+    ['Producto – Spagnolo', 'spagnolo', 'Producto'],
+    ['Producto — Spagnolo  ', 'Spagnolo', 'Producto'],
+    ['Producto | Spagnolo', 'Spagnolo', 'Producto'],
+    ['Vestido Spagnolo edición especial', 'Spagnolo', 'Vestido Spagnolo edición especial'],
+    ['Producto - Spagnolo - especial', 'Spagnolo', 'Producto - Spagnolo - especial'],
+    ['Cárdigan - MARCA Ñandú', 'marca ñANDÚ', 'Cárdigan'],
+    ['Producto - Marca.+', 'Marca.+', 'Producto']
+  ];
+  for (const [title, brand, expected] of cases) {
+    assert.equal(expectedDisplayTitle(title, brand), expected, title);
+  }
+  assert.equal(expectedDisplayTitle('Vestido - Mayoral', ''), 'Vestido - Mayoral');
 });

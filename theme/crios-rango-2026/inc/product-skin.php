@@ -252,7 +252,8 @@ function cr2026_product_skin_title_price_brand() {
     if ( ! is_product() ) { return; }
     echo '<div class="cr-product-title-brand-row">';
     echo '<div class="cr-product-title-brand-row__details">';
-    woocommerce_template_single_title();
+    $display_title = cr2026_product_skin_display_title();
+    echo '<h1 class="product_title entry-title">' . esc_html( $display_title ) . '</h1>';
     woocommerce_template_single_price();
     echo '</div>';
     echo '<span class="cr-product-title-brand-row__divider" aria-hidden="true"></span>';
@@ -262,14 +263,49 @@ function cr2026_product_skin_title_price_brand() {
     echo '</div>';
 }
 
+/**
+ * Resolve the assigned product_brand term once for the display title and logo.
+ * The real WooCommerce/product title is never modified.
+ */
+function cr2026_product_skin_brand_term() {
+    if ( ! is_product() || ! taxonomy_exists( 'product_brand' ) ) { return null; }
+    $terms = get_the_terms( absint( get_queried_object_id() ), 'product_brand' );
+    if ( is_wp_error( $terms ) || empty( $terms ) ) { return null; }
+    $brand = reset( $terms );
+    return $brand instanceof WP_Term && 'product_brand' === $brand->taxonomy ? $brand : null;
+}
+
+/**
+ * Remove only a final, independent product_brand suffix from the large display title.
+ * Sticky navigation continues to render the full WooCommerce product name.
+ */
+function cr2026_product_skin_display_title( $original_title = null, $brand_name = null ) {
+    if ( null === $original_title ) {
+        $original_title = get_the_title( absint( get_queried_object_id() ) );
+    }
+    if ( ! is_string( $original_title ) ) { return $original_title; }
+
+    if ( null === $brand_name ) {
+        $brand = cr2026_product_skin_brand_term();
+        $brand_name = $brand instanceof WP_Term ? $brand->name : '';
+    }
+    if ( ! is_string( $brand_name ) ) { return $original_title; }
+    $brand_name = preg_replace( '/^\\\\s+|\\\\s+$/u', '', $brand_name );
+    if ( '' === $brand_name ) { return $original_title; }
+
+    $pattern = '~^(.*?)(?:\\\\s*[-–—|]\\\\s*)' . preg_quote( $brand_name, '~' ) . '\\\\s*$~iu';
+    if ( ! preg_match( $pattern, $original_title, $matches ) ) {
+        return $original_title;
+    }
+
+    $display_title = preg_replace( '~[\\\\s\\\\-–—|]+$~u', '', $matches[1] );
+    return is_string( $display_title ) && '' !== $display_title ? $display_title : $original_title;
+}
+
 /** Render the assigned WordPress product_brand term as a centered native logo. */
 function cr2026_product_skin_brand() {
-    if ( ! is_product() || ! taxonomy_exists( 'product_brand' ) ) { return; }
-    $product_id = absint( get_queried_object_id() );
-    $terms = get_the_terms( $product_id, 'product_brand' );
-    if ( is_wp_error( $terms ) || empty( $terms ) ) { return; }
-    $brand = reset( $terms );
-    if ( ! $brand instanceof WP_Term || 'product_brand' !== $brand->taxonomy ) { return; }
+    $brand = cr2026_product_skin_brand_term();
+    if ( ! $brand instanceof WP_Term ) { return; }
     $logo_url = function_exists( 'cr2026_home_brand_image_url' ) ? cr2026_home_brand_image_url( $brand ) : '';
     echo '<div class="cr-product-brand" aria-label="' . esc_attr__( 'Marca', 'crios-rango-2026' ) . '">';
     if ( $logo_url ) {

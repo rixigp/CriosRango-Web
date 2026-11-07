@@ -327,7 +327,7 @@
         var validNativeVariation = !!(variationId && Number(variationId.value) > 0);
         if (reserve && reserve.dataset.variable === '1') reserve.disabled = !validNativeVariation;
         if (nativeButtonLabel && variationId && !hasAddedFeedback) {
-          nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige una combinación';
+          nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige opciones';
         }
       }
       function getProductDetailNoticeRoot() {
