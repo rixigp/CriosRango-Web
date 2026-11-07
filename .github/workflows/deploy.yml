@@ -1,6 +1,7 @@
 name: Deploy Crios & Rango Web
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
