@@ -284,6 +284,7 @@ function cr2026_is_app_nav_shell() {
         || ( function_exists( 'is_shop' ) && is_shop() )
         || ( function_exists( 'is_product_category' ) && is_product_category() )
         || ( function_exists( 'is_tax' ) && is_tax( 'product_brand' ) )
+        || ( function_exists( 'get_query_var' ) && ( get_query_var( 'cr2026_brands_index' ) || get_query_var( 'cr2026_novelties' ) ) )
         || ( function_exists( 'is_product' ) && is_product() )
         || ( function_exists( 'is_cart' ) && is_cart() )
         || ( function_exists( 'is_checkout' ) && is_checkout() )
