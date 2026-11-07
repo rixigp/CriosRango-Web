@@ -482,3 +482,38 @@ test('brand archive uses the shared contextual back control and shows either log
   assert.match(brandArchive, /cr2026_render_product_card\( \$brand_product, \$brand_card_index \)/);
   assert.match(brandArchive, /while \( have_posts\(\) \)/);
 });
+
+
+test('sale badge is centralized and rendered by every theme product-card path', () => {
+  const frontPage = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/front-page.php'), 'utf8');
+  const woocommerce = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/woocommerce.php'), 'utf8');
+  const brandArchive = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
+  const searchTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/search.php'), 'utf8');
+  const archiveTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/archive-product.php'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
+  assert.match(helpers, /function cr2026_render_product_sale_badge\( \$product \)[\s\S]*?! \$product->is_on_sale\(\)[\s\S]*?cr-product-card__badge/);
+  assert.match(helpers, /function cr2026_render_product_card\([\s\S]*?cr2026_render_product_sale_badge\( \$product \)/);
+  assert.match(helpers, /function cr2026_product_card\([\s\S]*?cr2026_render_product_sale_badge\( \$product \)/);
+  assert.match(frontPage, /cr-home-product__image[\s\S]*?cr2026_render_product_sale_badge\( \$product \)/);
+  assert.match(woocommerce, /cr2026_catalog_page_rest_response[\s\S]*?cr2026_render_product_card\( \$product/);
+  assert.match(archiveTemplate, /data-products-url=.*catalog-page/);
+  assert.match(brandArchive, /cr2026_render_product_card\( \$brand_product/);
+  assert.match(searchTemplate, /cr2026_render_product_card\( \$search_product/);
+  assert.match(css, /\.cr-product-card__badge \{ position:absolute; top:10px; left:10px; padding:7px 10px; border-radius:999px; background:var\(--cr-green\)/);
+  assert.match(css, /\.cr-home-product__image \{\s*position: relative;/);
+  assert.match(helpers, /\$price_html = \$product->get_price_html\(\)/);
+});
+
+test('brand back and brand identity share one centered grid row without responsive changes', () => {
+  const brandArchive = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
+  const rowStart = brandArchive.indexOf('<div class="cr-brand-archive__back-row">');
+  const rowEnd = brandArchive.indexOf('</div>', rowStart);
+  const row = brandArchive.slice(rowStart, rowEnd);
+  assert.ok(row.includes('cr-parent-category__back'));
+  assert.ok(row.includes('cr-brand-archive__heading'));
+  assert.ok(row.includes('cr-brand-archive__back-spacer'));
+  assert.match(css, /\.cr-brand-archive__back-row \{[^}]*display:grid; grid-template-columns:48px minmax\(0,1fr\) 48px; align-items:center;/);
+  assert.match(css, /\.cr-brand-archive__heading \{[^}]*grid-column:2; grid-row:1;[^}]*margin:0; padding:0;/);
+  assert.match(css, /\.cr-brand-archive__heading img \{[^}]*object-fit:contain/);
+});

@@ -123,6 +123,7 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
                                 echo wp_kses_post( wc_placeholder_img( 'woocommerce_thumbnail', array( 'class' => 'cr-home-product__photo', 'loading' => 'lazy' ) ) );
                             }
                             ?>
+                            <?php cr2026_render_product_sale_badge( $product ); ?>
                         </span>
                         <span class="cr-home-product__name"><?php echo esc_html( $product->get_name() ); ?></span>
                         <span class="cr-home-product__price"><?php echo wp_kses_post( wc_price( (float) $product->get_price() ) ); ?></span>

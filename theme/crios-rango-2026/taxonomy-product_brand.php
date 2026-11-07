@@ -32,14 +32,15 @@ get_header( 'shop' );
                 aria-label="<?php esc_attr_e( 'Volver a marcas', 'crios-rango-2026' ); ?>">
                 <?php echo cr2026_icon( 'arrow' ); ?>
             </a>
+            <header class="cr-brand-archive__heading">
+                <?php if ( $brand_logo_url ) : ?>
+                    <img src="<?php echo esc_url( $brand_logo_url ); ?>" alt="<?php echo esc_attr( $brand_term->name ); ?>" loading="eager" decoding="async">
+                <?php else : ?>
+                    <h1><?php echo esc_html( $brand_term->name ); ?></h1>
+                <?php endif; ?>
+            </header>
+            <span class="cr-brand-archive__back-spacer" aria-hidden="true"></span>
         </div>
-        <header class="cr-brand-archive__heading">
-            <?php if ( $brand_logo_url ) : ?>
-                <img src="<?php echo esc_url( $brand_logo_url ); ?>" alt="<?php echo esc_attr( $brand_term->name ); ?>" loading="eager" decoding="async">
-            <?php else : ?>
-                <h1><?php echo esc_html( $brand_term->name ); ?></h1>
-            <?php endif; ?>
-        </header>
         <?php if ( have_posts() ) : ?>
             <div class="cr-product-grid" data-cr-brand-product-grid aria-live="polite">
                 <?php

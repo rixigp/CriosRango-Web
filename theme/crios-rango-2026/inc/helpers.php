@@ -182,6 +182,17 @@ function cr2026_product_card_price_format( $format, $currency_pos ) {
     return $format;
 }
 
+/**
+ * Shared sale badge for every theme product-card renderer.
+ * WooCommerce is the sole source of the sale state.
+ */
+function cr2026_render_product_sale_badge( $product ) {
+    if ( ! $product instanceof WC_Product || ! $product->is_on_sale() ) {
+        return;
+    }
+    echo '<span class="cr-product-card__badge">' . esc_html__( 'Oferta', 'crios-rango-2026' ) . '</span>';
+}
+
 function cr2026_render_product_card( $product, $index = 99 ) {
     if ( ! $product instanceof WC_Product ) { return; }
     $product_id = $product->get_id();
@@ -205,6 +216,7 @@ function cr2026_render_product_card( $product, $index = 99 ) {
     }
     echo '<article class="cr-product-card" data-product-id="' . esc_attr( $product_id ) . '"><a class="cr-product-card__link" href="' . esc_url( $permalink ) . '">';
     echo '<span class="cr-product-card__media">' . $image; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    cr2026_render_product_sale_badge( $product );
     if ( ! $product->is_in_stock() ) { echo '<span class="cr-product-card__stock">' . esc_html__( 'Agotado', 'crios-rango-2026' ) . '</span>'; }
     echo '</span><span class="cr-product-card__details"><span class="cr-product-card__name">' . esc_html( $name ) . '</span>';
     add_filter( 'woocommerce_price_format', 'cr2026_product_card_price_format', 100, 2 );
@@ -513,9 +525,7 @@ function cr2026_product_card( $product ) {
     <article class="cr-product-card">
         <a class="cr-product-card__image" href="<?php echo esc_url( $url ); ?>">
             <?php echo wp_kses_post( $image ); ?>
-            <?php if ( $product->is_on_sale() ) : ?>
-                <span class="cr-product-card__badge"><?php esc_html_e( 'Oferta', 'crios-rango-2026' ); ?></span>
-            <?php endif; ?>
+            <?php cr2026_render_product_sale_badge( $product ); ?>
         </a>
         <div class="cr-product-card__body">
             <h3 class="cr-product-card__title"><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $product->get_name() ); ?></a></h3>
