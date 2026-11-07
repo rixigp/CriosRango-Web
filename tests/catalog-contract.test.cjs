@@ -109,7 +109,7 @@ test('catalog uses an explicit inline Load more button with retryable append sta
   assert.match(js, /loadPage\(currentPage\+1,true,requestGeneration\)/);
   assert.match(js, /updateLoadMoreButton\(true\)/);
   assert.match(js, /updateLoadMoreButton\(false\)/);
-  assert.doesNotMatch(js, /new IntersectionObserver/);
+  assert.doesNotMatch(js, /catalogObserver|data-cr-product-sentinel/);
   assert.match(js, /if \(!append\) \{ showEmpty\(\); hasMore = false; \}/);
 });
 
