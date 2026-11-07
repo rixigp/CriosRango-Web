@@ -481,8 +481,8 @@ test('brand archive uses the shared contextual back control and shows either log
   assert.match(productSkin, /insideSite && isDifferentPage/);
   assert.match(styles, /\.cr-brand-archive__back-row \.cr-parent-category__back/);
   assert.match(styles, /object-fit:contain/);
-  assert.match(brandArchive, /cr2026_render_product_card\( \$brand_product, \$brand_card_index \)/);
-  assert.match(brandArchive, /while \( have_posts\(\) \)/);
+  assert.match(brandArchive, /data-cr-product-grid/);
+  assert.match(php, /cr2026_render_product_card\( \$product, \$index \+/);
 });
 
 
@@ -499,7 +499,8 @@ test('sale badge is centralized and rendered by every theme product-card path', 
   assert.match(frontPage, /cr-home-product__image[\s\S]*?cr2026_render_product_sale_badge\( \$product \)/);
   assert.match(woocommerce, /cr2026_catalog_page_rest_response[\s\S]*?cr2026_render_product_card\( \$product/);
   assert.match(archiveTemplate, /data-products-url=.*catalog-page/);
-  assert.match(brandArchive, /cr2026_render_product_card\( \$brand_product/);
+  assert.match(brandArchive, /data-products-url=.*catalog-page/s);
+  assert.match(php, /cr2026_render_product_card\( \$product, \$index \+/);
   assert.match(searchTemplate, /cr2026_render_product_card\( \$search_product/);
   assert.match(css, /\.cr-product-card__badge \{\s*position:\s*absolute;\s*top:\s*10px;\s*left:\s*10px;\s*padding:\s*7px 10px;\s*border-radius:\s*999px;\s*background:\s*var\(--cr-sale-coral\)/);
   assert.match(css, /\.cr-home-product__image \{\s*position: relative;/);
@@ -515,19 +516,23 @@ test('brand back and brand identity share one centered grid row without responsi
   const row = brandArchive.slice(rowStart, rowEnd);
   assert.ok(row.includes('cr-parent-category__back'));
   assert.ok(row.includes('cr-brand-archive__heading'));
-  assert.ok(row.includes('cr-brand-archive__back-spacer'));
+  assert.ok(row.includes('data-cr-filter-open'));
   assert.match(css, /\.cr-brand-archive__back-row \{[^}]*display:grid; grid-template-columns:48px minmax\(0,1fr\) 48px; align-items:center;/);
   assert.match(css, /\.cr-brand-archive__heading \{[^}]*grid-column:2; grid-row:1;[^}]*margin:0; padding:0;/);
   assert.match(css, /\.cr-brand-archive__heading img \{[^}]*object-fit:contain/);
 });
 
-test('brand and product Search Load more use the WordPress next-page URL and append server-rendered shared cards', () => {
+test('brand archive uses the shared catalog-page endpoint and filter-API pagination; Search keeps HTML pagination', () => {
   const brand = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
   const search = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/search.php'), 'utf8');
-  assert.match(brand, /get_next_posts_page_link\(\)/);
-  assert.match(brand, /data-cr-html-load-more data-next-url=/);
+  assert.match(brand, /data-cr-product-list/);
+  assert.match(brand, /data-products-url=.*cr2026\/v1\/catalog-page/s);
+  assert.match(brand, /data-cr-product-grid/);
+  assert.match(brand, /data-cr-product-load-more/);
+  assert.doesNotMatch(brand, /data-cr-html-pagination|data-cr-html-load-more/);
   assert.match(search, /get_next_posts_page_link\(\)/);
   assert.match(search, /data-cr-html-load-more data-next-url=/);
+  assert.match(js, /loadPage\(currentPage\+1,true,requestGeneration\)/);
   assert.match(js, /fetch\(nextUrl,\{credentials:'same-origin',headers:\{Accept:'text\/html'\}\}\)/);
   assert.match(js, /grid\.appendChild\(fragment\)/);
   assert.match(js, /new URL\(nextLink\.href,nextDocument\.baseURI\)/);
@@ -536,19 +541,18 @@ test('brand and product Search Load more use the WordPress next-page URL and app
 });
 
 
-test('brand archive native sorting preserves its taxonomy URL and existing GET parameters', () => {
+test('brand archive uses the existing shared catalog sort control and retains brand context', () => {
   const brandTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
-  assert.match(brandTemplate, /class="cr-product-listing__ordering"[^>]*data-cr-brand-order-form/);
+  assert.match(brandTemplate, /class="cr-product-listing__ordering"/);
+  assert.match(brandTemplate, /data-cr-product-order/);
   assert.match(brandTemplate, /get_term_link\( \$brand_term \)/);
-  assert.match(brandTemplate, /foreach \( \$_GET as \$brand_query_key => \$brand_query_value \)/);
-  assert.match(brandTemplate, /name="orderby" data-cr-brand-order/);
-  assert.match(brandTemplate, /value="date"/);
-  assert.match(brandTemplate, /value="price"/);
-  assert.match(brandTemplate, /value="price-desc"/);
-  assert.match(brandTemplate, /value="title"/);
-  assert.match(js, /brandOrderControl\.addEventListener\('change'/);
-  assert.match(js, /form\.requestSubmit\(\)/);
+  for (const value of ['date', 'price', 'price-desc', 'title']) assert.ok(brandTemplate.includes('value="' + value + '"'));
+  assert.ok(js.includes("const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc',title:'title_asc'};"));
+  assert.match(js, /orderControl.addEventListener\('change'/);
+  assert.match(js, /window\.history\.replaceState\(\{\},'',currentUrl\.toString\(\)\)/);
+  assert.match(js, /resetAndLoad\(\)/);
   assert.doesNotMatch(brandTemplate, /new WP_Query/);
+  assert.doesNotMatch(brandTemplate, /data-cr-brand-order/);
 });
 
 test('brand and catalog share one canonical sort mapping on the existing main query', () => {
@@ -572,24 +576,72 @@ test('brand and catalog share one canonical sort mapping on the existing main qu
 });
 
 
-test('brand archive order select sizes to the selected option and keeps its native submit behavior', () => {
+test('brand archive order select reuses the shared catalog selector sizing and change handler', () => {
   const brandTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
   const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
-  assert.match(brandTemplate, /class="cr-product-listing__ordering"[^>]*data-cr-brand-order-form/);
+  assert.match(brandTemplate, /class="cr-product-listing__ordering"/);
   assert.match(brandTemplate, /<label for="cr-brand-product-order">/);
-  assert.match(brandTemplate, /<select id="cr-brand-product-order" name="orderby" data-cr-brand-order/);
+  assert.match(brandTemplate, /<select id="cr-brand-product-order" data-cr-product-order/);
   for (const value of ['date', 'price', 'price-desc', 'title']) assert.ok(brandTemplate.includes('value="' + value + '"'));
   assert.match(css, /\.cr-product-listing__select-wrap::after \{[^}]*right:3px;[^}]*width:7px;/);
-  assert.ok(css.includes('.cr-brand-archive [data-cr-brand-order-form] select { padding-right:14px; }'));
-  assert.match(js, /const fitBrandOrderControl = \(\) =>/);
-  assert.match(js, /context\.measureText\(selectedText\)\.width/);
-  assert.match(js, /brandOrderControl\.style\.width = Math\.ceil\(textWidth \+ paddingLeft \+ paddingRight\) \+ 'px'/);
-  assert.match(js, /fitBrandOrderControl\(\);[\s\S]*?brandOrderControl\.addEventListener\('change'/);
-  assert.match(js, /form\.requestSubmit\(\)/);
+  assert.match(js, /const fitOrderControl = \(\) =>/);
+  assert.match(js, /orderControl.style.width = Math.ceil\(textWidth \+ paddingLeft \+ paddingRight\) \+ 'px'/);
+  assert.match(js, /fitOrderControl\(\);[\s\S]*?orderControl.addEventListener\('change'/);
 });
 
 
 test('temporary brand sort diagnostics and brand-only sorting are fully removed', () => {
   assert.doesNotMatch(php, /crsortdebug|CR2026_BRAND_SORT_DEBUG|cr2026_capture_brand_sort_debug|cr2026_render_brand_sort_debug/);
   assert.doesNotMatch(php, /cr2026_brand_archive_native_sort/);
+});
+
+
+test('brand filter sheet accepts only product_brand terms and exposes fixed catalog context without a brand facet', () => {
+  const brandArchive = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
+  assert.match(helpers, /\$is_brand_context = 'brand' === \$context/);
+  assert.match(helpers, /if \( ! \$term instanceof WP_Term \|\| 'product_brand' !== \$term->taxonomy \) \{ return; \}/);
+  assert.match(helpers, /data-context=.*\$context/);
+  assert.match(helpers, /data-catalog-brand-id=.*\$filter_brand_id/);
+  assert.match(helpers, /\$dimensions = \$is_brand_context \? array\( 'sizes' => 'Talla', 'colors' => 'Color' \)/);
+  assert.match(brandArchive, /get_queried_object\(\)/);
+  assert.match(brandArchive, /\$brand_term->term_id/);
+  assert.match(brandArchive, /data-cr-filter-open/);
+  assert.match(brandArchive, /cr2026_render_category_filter_sheet\( \$brand_term, 'brand' \)/);
+  assert.match(fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8'), /cr-brand-archive__back-row \.cr-parent-category__filters[^}]*opacity:1;[^}]*cursor:pointer;/);
+});
+
+test('brand requests always carry catalog scope and catalog_brand_id, never fake category or legacy brand context', () => {
+  assert.match(js, /const brandContext = filterSheet\.dataset\.context === 'brand'/);
+  assert.match(js, /new URLSearchParams\(\{scope:filterSheet\.dataset\.scope\|\|'catalog'/);
+  assert.match(js, /params\.set\('catalog_brand_id',catalogBrandId\)/);
+  assert.match(js, /const brandContext = productListing\.dataset\.context === 'brand'/);
+  assert.match(js, /scope:outletCategoryId\?'outlet':'catalog'/);
+  assert.match(js, /params\.set\('catalog_brand_id',String\(brandTermId\)\)/);
+  assert.match(php, /\$brand_id = absint\( \$request->get_param\( 'catalog_brand_id' \) \)/);
+  assert.match(php, /'catalog_brand_id' => \$brand_id/);
+  assert.match(php, /\$has_filters = \$is_outlet_scope \|\| \$is_brand_context/);
+  const brandRequest = js.slice(js.indexOf('const loadPage = async'), js.indexOf('const response = await fetch(productsUrl'));
+  assert.doesNotMatch(brandRequest, /catalog_category_id/);
+  assert.doesNotMatch(brandRequest, /brand_ids/);
+});
+
+test('brand filters preserve active sort, clear only selectable dimensions, and keep context on every page', () => {
+  assert.match(js, /const filterKeys = brandContext \? \['size_ids','color_ids'\]/);
+  assert.match(js, /new URLSearchParams\(window\.location\.search\)/);
+  assert.match(js, /loadPage\(currentPage\+1,true,requestGeneration\)/);
+  assert.match(js, /sort:sortMap\[orderby\]/);
+  assert.match(js, /params\.set\('catalog_brand_id',String\(brandTermId\)\)/);
+  assert.match(js, /window\.history\.replaceState\(\{\},'',currentUrl\.toString\(\)\)/);
+  const sharedOrderHandler = js.slice(js.indexOf('if (orderControl)'), js.indexOf('// Size the native brand select'));
+  assert.match(sharedOrderHandler, /currentUrl\.searchParams\.delete\('orderby'\)/);
+  assert.match(sharedOrderHandler, /resetAndLoad\(\)/);
+  assert.match(php, /if \( \$is_brand_context \) \{\s*\$filter_params\['catalog_brand_id'\] = \$brand_id;/);
+});
+
+test('category and Outlet contexts remain separate from brand context', () => {
+  assert.match(js, /params\.set\('catalog_category_id',categoryId\)/);
+  assert.match(js, /params\.set\('outlet_category_id',String\(context\.categoryId\)\)/);
+  assert.match(php, /\$filter_params\['catalog_category_id'\] = \$category_id/);
+  assert.match(php, /\$filter_params\['outlet_category_id'\] = \$outlet_category_id/);
+  assert.match(php, /'outlet' === \$scope/);
 });

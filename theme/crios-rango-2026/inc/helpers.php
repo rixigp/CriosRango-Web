@@ -407,22 +407,29 @@ function cr2026_render_outlet_bubbles($outlet_category_id){$candidates=cr2026_fi
 
 function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
     $is_root_catalog = 'root' === $context;
-    if ( ! $is_root_catalog && ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) ) { return; }
-    $filter_category_id = $is_root_catalog ? '' : (string) (int) $term->term_id;
-    $outlet_category_id = ( ! $is_root_catalog && in_array((int)$term->term_id,cr2026_outlet_branch_ids(),true) ) ? (int)$term->term_id : 0;
+    $is_brand_context = 'brand' === $context;
+    if ( $is_brand_context ) {
+        if ( ! $term instanceof WP_Term || 'product_brand' !== $term->taxonomy ) { return; }
+    } elseif ( ! $is_root_catalog && ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) ) {
+        return;
+    }
+    $filter_category_id = ( $is_root_catalog || $is_brand_context ) ? '' : (string) (int) $term->term_id;
+    $filter_brand_id = $is_brand_context ? (string) (int) $term->term_id : '';
+    $outlet_category_id = ( ! $is_root_catalog && ! $is_brand_context && in_array((int)$term->term_id,cr2026_outlet_branch_ids(),true) ) ? (int)$term->term_id : 0;
     $filter_scope = $outlet_category_id ? 'outlet' : 'catalog';
+    $dimensions = $is_brand_context ? array( 'sizes' => 'Talla', 'colors' => 'Color' ) : array( 'sizes' => 'Talla', 'colors' => 'Color', 'brands' => 'Marca' );
     $labels = cr2026_category_filter_term_labels();
     $debug = function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), array( 'staging', 'development', 'local' ), true );
     $selected = array(
         'sizes' => cr2026_category_filter_selected_values( 'size_ids' ),
         'colors' => cr2026_category_filter_selected_values( 'color_ids' ),
-        'brands' => cr2026_category_filter_selected_values( 'brand_ids' ),
+        'brands' => $is_brand_context ? array() : cr2026_category_filter_selected_values( 'brand_ids' ),
     );
-    echo '<div class="cr-category-filter-sheet" data-cr-filter-sheet data-debug="' . ( $debug ? '1' : '0' ) . '" hidden data-category-id="' . esc_attr( $filter_category_id ) . '" data-scope="' . esc_attr( $filter_scope ) . '" data-outlet-category-id="' . esc_attr( $outlet_category_id ) . '" data-api-url="' . esc_url( rest_url( 'criosrango-filter/v1/query' ) ) . '" data-term-labels="' . esc_attr( wp_json_encode( $labels ) ) . '" data-initial-sizes="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-initial-colors="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-initial-brands="' . esc_attr( implode( ',', $selected['brands'] ) ) . '">';
+    echo '<div class="cr-category-filter-sheet" data-cr-filter-sheet data-context="' . esc_attr( $context ) . '" data-catalog-brand-id="' . esc_attr( $filter_brand_id ) . '" data-debug="' . ( $debug ? '1' : '0' ) . '" hidden data-category-id="' . esc_attr( $filter_category_id ) . '" data-scope="' . esc_attr( $filter_scope ) . '" data-outlet-category-id="' . esc_attr( $outlet_category_id ) . '" data-api-url="' . esc_url( rest_url( 'criosrango-filter/v1/query' ) ) . '" data-term-labels="' . esc_attr( wp_json_encode( $labels ) ) . '" data-initial-sizes="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-initial-colors="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-initial-brands="' . esc_attr( implode( ',', $selected['brands'] ) ) . '">';
     echo '<div class="cr-category-filter-sheet__backdrop" data-cr-filter-close></div><section class="cr-category-filter-sheet__dialog" role="dialog" aria-modal="true" aria-labelledby="cr-category-filter-title" tabindex="-1">';
     echo '<div class="cr-category-filter-sheet__header"><h2 id="cr-category-filter-title">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</h2></div>';
     echo '<div class="cr-category-filter-sheet__tabs" role="tablist" aria-label="' . esc_attr__( 'Tipo de filtro', 'crios-rango-2026' ) . '">';
-    foreach ( array( 'sizes' => 'Talla', 'colors' => 'Color', 'brands' => 'Marca' ) as $dimension => $label ) {
+    foreach ( $dimensions as $dimension => $label ) {
         echo '<button type="button" role="tab" class="cr-category-filter-sheet__tab' . ( 'sizes' === $dimension ? ' is-active' : '' ) . '" data-cr-filter-tab="' . esc_attr( $dimension ) . '" aria-selected="' . ( 'sizes' === $dimension ? 'true' : 'false' ) . '">' . esc_html( $label ) . '</button>';
     }
     echo '</div><div class="cr-category-filter-sheet__content">';

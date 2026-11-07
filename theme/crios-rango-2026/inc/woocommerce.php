@@ -202,6 +202,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $page = max( 1, absint( $request->get_param( 'page' ) ) );
     $per_page = CR2026_CATALOG_PAGE_SIZE;
     $category_id = absint( $request->get_param( 'catalog_category_id' ) );
+    $brand_id = absint( $request->get_param( 'catalog_brand_id' ) );
     $scope = sanitize_key( (string) $request->get_param( 'scope' ) );
     if ( '' === $scope ) { $scope = 'catalog'; }
     $is_outlet_scope = 'outlet' === $scope;
@@ -209,6 +210,11 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         return new WP_Error( 'cr2026_catalog_scope', __( 'Ámbito de catálogo no válido.', 'crios-rango-2026' ), array( 'status' => 400 ) );
     }
     $outlet_category_id = absint( $request->get_param( 'outlet_category_id' ) );
+    $brand_term = $brand_id ? get_term( $brand_id, 'product_brand' ) : null;
+    $is_brand_context = $brand_id > 0;
+    if ( $is_brand_context && ( ! $brand_term instanceof WP_Term || 'product_brand' !== $brand_term->taxonomy || $category_id > 0 || $is_outlet_scope ) ) {
+        return new WP_Error( 'cr2026_catalog_brand', __( 'Contexto de marca no válido.', 'crios-rango-2026' ), array( 'status' => 400 ) );
+    }
     $raw_origin_ids = trim( (string) $request->get_param( 'origin_category_ids' ) );
     $origin_category_ids = array();
     if ( '' !== $raw_origin_ids ) {
@@ -233,7 +239,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         $sort = 'newest';
     }
     $filter_keys = array( 'size_ids', 'color_ids', 'brand_ids' );
-    $has_filters = $is_outlet_scope;
+    $has_filters = $is_outlet_scope || $is_brand_context;
     foreach ( $filter_keys as $filter_key ) {
         if ( '' !== trim( (string) $request->get_param( $filter_key ) ) ) {
             $has_filters = true;
@@ -261,6 +267,8 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
             if ( ! empty( $origin_category_ids ) ) {
                 $filter_params['origin_category_ids'] = implode( ',', $origin_category_ids );
             }
+        } elseif ( $is_brand_context ) {
+            $filter_params['catalog_brand_id'] = $brand_id;
         } elseif ( $category_id > 0 ) {
             $filter_params['catalog_category_id'] = $category_id;
         }

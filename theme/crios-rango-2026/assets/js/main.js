@@ -144,15 +144,18 @@
   const filterSheet = document.querySelector('[data-cr-filter-sheet]');
   if (filterSheet) {
     const categoryId = String(filterSheet.dataset.categoryId || 'root');
+    const brandContext = filterSheet.dataset.context === 'brand';
+    const catalogBrandId = String(filterSheet.dataset.catalogBrandId || '');
+    if (brandContext && !/^[1-9][0-9]*$/.test(catalogBrandId)) throw new Error('Brand filter context has no valid product_brand term ID.');
     const apiUrl = filterSheet.dataset.apiUrl;
     const debug = filterSheet.dataset.debug === '1';
     let termLabels = {};
     try { termLabels = JSON.parse(filterSheet.dataset.termLabels || '{}'); } catch (error) {}
-    const dimensions = ['sizes', 'colors', 'brands'];
+    const dimensions = brandContext ? ['sizes', 'colors'] : ['sizes', 'colors', 'brands'];
     const apiKeys = {sizes:'size_ids',colors:'color_ids',brands:'brand_ids'};
     const taxonomies = {sizes:'pa_tallas',colors:'pa_color',brands:'product_tag'};
     const initialKeys = {sizes:'initialSizes',colors:'initialColors',brands:'initialBrands'};
-    const ttl = 300000, storageKey = 'cr2026_filters_v2_category_' + categoryId;
+    const ttl = 300000, storageKey = brandContext ? 'cr2026_filters_v2_brand_' + catalogBrandId : 'cr2026_filters_v2_category_' + categoryId;
     try { sessionStorage.removeItem('cr2026_filters_v1_category_' + categoryId); } catch (error) {}
     const memoryCache = window.categoryFacetCacheV2 || (window.categoryFacetCacheV2 = Object.create(null));
     const collator = new Intl.Collator('es',{sensitivity:'base'});
@@ -160,7 +163,7 @@
     const sortIds = values => Array.from(new Set((values||[]).map(String).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'en',{numeric:true}));
     const outletScope=filterSheet.dataset.scope==='outlet';
     const outletContext=()=>window.CR2026CatalogListing&&window.CR2026CatalogListing.getOutletContext?window.CR2026CatalogListing.getOutletContext():{categoryId:Number(filterSheet.dataset.outletCategoryId||0),originCategoryIds:[]};
-    const cacheKey=(facet,state)=>{const context=outletScope?outletContext():null;return [categoryId,filterSheet.dataset.scope||'catalog',context?context.categoryId:0,context?context.originCategoryIds.join(','):'',facet,...dimensions.filter(d=>d!==facet).map(d=>d+':'+sortIds(state[d]).join(','))].join('|');};
+    const cacheKey=(facet,state)=>{const context=outletScope?outletContext():null;return [brandContext?'brand:'+catalogBrandId:categoryId,filterSheet.dataset.scope||'catalog',context?context.categoryId:0,context?context.originCategoryIds.join(','):'',facet,...dimensions.filter(d=>d!==facet).map(d=>d+':'+sortIds(state[d]).join(','))].join('|');};
     const isValid = value => value && Number(value.timestamp)>0 && Date.now()-Number(value.timestamp)<ttl;
     const readStore = key => {try{const value=JSON.parse(sessionStorage.getItem(key)||'null');return isValid(value)?value:null;}catch(error){return null;}};
     const writeStore = (key,value) => {memoryCache[key]=value;try{sessionStorage.setItem(key,JSON.stringify(value));}catch(error){}};
@@ -171,12 +174,13 @@
     const optionsNode=filterSheet.querySelector('[data-cr-filter-options]');
     const dialog=filterSheet.querySelector('.cr-category-filter-sheet__dialog');
     const openButtons=Array.from(document.querySelectorAll('[data-cr-filter-open]'));
-    window.CR2026CatalogFacetContextChanged=()=>{if(outletScope&&!filterSheet.hidden)scheduleDependentRefresh(null);};
+    window.CR2026CatalogFacetContextChanged=()=>{if((outletScope||brandContext)&&!filterSheet.hidden)scheduleDependentRefresh(null);};
     const facetEndpoint = async (facet,state,signal) => {
       const key=cacheKey(facet,state), cached=memoryCache[key]||readStore(storageKey+'|'+key);
       if(cached){memoryCache[key]=cached;if(debug)console.debug('[CR2026 facets] cache-hit',{facet,selectedState:state,responseTermIds:cached.rows.flatMap(row=>row.term_ids)});return cached.rows;}
       const params=new URLSearchParams({scope:filterSheet.dataset.scope||'catalog',facet,page:'1',per_page:'1'});
       if(outletScope){const context=outletContext();if(!context.categoryId)throw new Error('Outlet facet context has no active branch.');params.set('outlet_category_id',String(context.categoryId));if(context.originCategoryIds.length)params.set('origin_category_ids',context.originCategoryIds.join(','));}
+      else if(brandContext)params.set('catalog_brand_id',catalogBrandId);
       else if(categoryId!=='root')params.set('catalog_category_id',categoryId);
       dimensions.forEach(d=>{if(d!==facet&&state[d].length)params.set(apiKeys[d],sortIds(state[d]).join(','));});
       if(debug)console.debug('[CR2026 facets] request',{facet,selectedState:state,params:Object.fromEntries(params.entries())});
@@ -274,7 +278,8 @@
       if(isPrefetch)prefetchControllers=controllers;
       const results=await Promise.all(dimensions.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal)));
       if(isPrefetch)prefetchControllers=[];
-      const value={timestamp:Date.now(),sizes:results[0],colors:results[1],brands:results[2]};
+      const value={timestamp:Date.now()};
+      dimensions.forEach((dimension,index)=>{value[dimension]=results[index];});
       baseFacets=value;writeStore(storageKey,value);dimensions.forEach(d=>{rowsByDimension[d]=value[d];facetAvailability[d]=new Set(value[d].flatMap(row=>row.term_ids));});return value;
     };
     const setDimension = dimension => {
@@ -352,7 +357,11 @@
     const loadMoreButton = productListing.querySelector('[data-cr-product-load-more]');
     const filterSheetNode = document.querySelector('[data-cr-filter-sheet]');
     const categoryId = String(productListing.dataset.categoryId || '0');
+    const brandTermId = Number(productListing.dataset.brandTermId || 0);
+    const brandContext = productListing.dataset.context === 'brand' || brandTermId > 0;
+    if (brandContext && (!Number.isInteger(brandTermId) || brandTermId < 1)) throw new Error('Brand listing has no valid product_brand term ID.');
     const outletCategoryId = Number(productListing.dataset.outletCategoryId || 0);
+    if (brandContext && outletCategoryId) throw new Error('Brand listing cannot use Outlet context.');
     const outletNode = productListing.querySelector('[data-cr-outlet-bubbles]');
     const debug = productListing.dataset.debug === '1';
     const productsUrl = productListing.dataset.productsUrl;
@@ -361,7 +370,7 @@
     const currentUrl = new URL(window.location.href);
     let orderby = ['date','price','price-desc','title'].includes(currentUrl.searchParams.get('orderby')) ? currentUrl.searchParams.get('orderby') : 'date';
     const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc',title:'title_asc'};
-    const filterKeys = ['size_ids','color_ids','brand_ids'];
+    const filterKeys = brandContext ? ['size_ids','color_ids'] : ['size_ids','color_ids','brand_ids'];
     const taxonomyByKey = {size_ids:'pa_tallas',color_ids:'pa_color',brand_ids:'product_tag'};
     const labelByKey = {size_ids:'Talla',color_ids:'',brand_ids:''};
     let currentPage = 0, hasMore = false, loading = false, requestGeneration = 0, activeRequest = null;
@@ -414,7 +423,8 @@
       activeRequest=controller;loading=true;
       try {
         const params=new URLSearchParams({page:String(page),per_page:String(pageSize),scope:outletCategoryId?'outlet':'catalog',facet:'none',sort:sortMap[orderby]});
-        if(outletCategoryId){params.set('outlet_category_id',String(outletCategoryId));if(activeOutletOriginIds.length)params.set('origin_category_ids',activeOutletOriginIds.join(','));}
+        if(brandContext)params.set('catalog_brand_id',String(brandTermId));
+        else if(outletCategoryId){params.set('outlet_category_id',String(outletCategoryId));if(activeOutletOriginIds.length)params.set('origin_category_ids',activeOutletOriginIds.join(','));}
         else if(categoryId!=='0')params.set('catalog_category_id',categoryId);
         filterKeys.forEach(key=>{const value=currentUrl.searchParams.get(key);if(value)params.set(key,value);});
         const response = await fetch(productsUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'},signal:controller.signal});
