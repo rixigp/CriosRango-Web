@@ -409,7 +409,7 @@ test('product_brand archives render the native main query with shared product ca
   assert.match(helpers, /function cr2026_home_brand_image_url\( \$term \)/);
   assert.match(helpers, /array\( 'thumbnail_id', 'image_id' \)/);
   assert.match(php, /\$is_category_query = \$query->is_tax\( 'product_cat' \)/);
-  assert.doesNotMatch(php, /\$is_brand_query\s*=/);
+  assert.match(php, /\$is_brand_query = \$query->is_tax\( 'product_brand' \)/);
 });
 
 
@@ -551,13 +551,22 @@ test('brand archive native sorting preserves its taxonomy URL and existing GET p
   assert.doesNotMatch(brandTemplate, /new WP_Query/);
 });
 
-test('brand sort maps the four shared values onto the existing product_brand main query only', () => {
-  assert.match(php, /function cr2026_brand_archive_native_sort\( \$query \)/);
-  assert.match(php, /\$query->is_tax\( 'product_brand' \)/);
-  assert.match(php, /\$query->set\( 'orderby', 'cr2026_price_asc' \)/);
-  assert.match(php, /\$query->set\( 'orderby', 'cr2026_price_desc' \)/);
-  assert.match(php, /\$query->set\( 'orderby', 'title' \)/);
-  assert.match(php, /add_action\( 'pre_get_posts', 'cr2026_brand_archive_native_sort', 100 \)/);
+test('brand and catalog share one canonical sort mapping on the existing main query', () => {
+  assert.match(php, /function cr2026_catalog_sort_query_vars\( \$sort \)/);
+  assert.match(php, /'oldest' === \$sort/);
+  assert.match(php, /array\( 'price', 'price_asc' \)/);
+  assert.match(php, /array\( 'price-desc', 'price_desc' \)/);
+  assert.match(php, /array\( 'title', 'title_asc' \)/);
+  assert.match(php, /'title_desc' === \$sort/);
+  assert.match(php, /function cr2026_product_listing_main_query\( \$query \)/);
+  assert.match(php, /\$is_brand_query = \$query->is_tax\( 'product_brand' \)/);
+  assert.match(php, /cr2026_catalog_sort_query_vars\( \$query->get\( 'orderby' \) \)/);
+  assert.match(php, /cr2026_catalog_sort_query_vars\( \$sort \)/);
+  assert.match(php, /add_action\( 'pre_get_posts', 'cr2026_product_listing_main_query', 99 \)/);
+  assert.match(php, /add_filter\( 'posts_clauses', 'cr2026_catalog_price_sort_post_clauses', 20, 2 \)/);
+  assert.doesNotMatch(php, /cr2026_brand_archive_native_sort/);
+  assert.doesNotMatch(php, /\$query->set\( 'tax_query'/);
+  assert.doesNotMatch(php, /new WP_Query/);
 });
 
 
@@ -578,18 +587,7 @@ test('brand archive order select sizes to the selected option and keeps its nati
 });
 
 
-test('brand sort SQL diagnostics are gated to explicit administrator requests and expose only scoped query data', () => {
-  assert.match(php, /function cr2026_capture_brand_sort_debug\( \$posts, \$query \)/);
-  assert.match(php, /! \$query->is_main_query\(\)/);
-  assert.match(php, /! \$query->is_tax\( 'product_brand' \)/);
-  assert.match(php, /! is_user_logged_in\(\)/);
-  assert.match(php, /! current_user_can\( 'manage_options' \)/);
-      assert.ok(php.includes("$_GET['crsortdebug']"));
-  assert.match(php, /\$query->request/);
-  assert.match(php, /sql_order_by/);
-  assert.match(php, /wc_product_meta_lookup/);
-  assert.match(php, /'display_price'/);
-  assert.match(php, /'min_price'/);
-  assert.match(php, /CR2026_BRAND_SORT_DEBUG/);
-  assert.match(php, /add_filter\( 'the_posts', 'cr2026_capture_brand_sort_debug', PHP_INT_MAX, 2 \)/);
+test('temporary brand sort diagnostics and brand-only sorting are fully removed', () => {
+  assert.doesNotMatch(php, /crsortdebug|CR2026_BRAND_SORT_DEBUG|cr2026_capture_brand_sort_debug|cr2026_render_brand_sort_debug/);
+  assert.doesNotMatch(php, /cr2026_brand_archive_native_sort/);
 });

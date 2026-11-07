@@ -32,6 +32,35 @@ if ( ! defined( 'CR2026_CATALOG_PAGE_SIZE' ) ) {
 }
 
 /**
+ * Canonical sort mapping shared by catalogue REST pages and native product
+ * archive main queries. Price ordering is completed by the shared
+ * cr2026_catalog_price_sort_post_clauses() posts_clauses filter below.
+ */
+function cr2026_catalog_sort_query_vars( $sort ) {
+    $sort = sanitize_key( (string) $sort );
+    $orderby = 'date';
+    $order = 'DESC';
+
+    if ( 'oldest' === $sort ) {
+        $order = 'ASC';
+    } elseif ( in_array( $sort, array( 'price', 'price_asc' ), true ) ) {
+        $orderby = 'cr2026_price_asc';
+        $order = 'ASC';
+    } elseif ( in_array( $sort, array( 'price-desc', 'price_desc' ), true ) ) {
+        $orderby = 'cr2026_price_desc';
+        $order = 'DESC';
+    } elseif ( in_array( $sort, array( 'title', 'title_asc' ), true ) ) {
+        $orderby = 'title';
+        $order = 'ASC';
+    } elseif ( 'title_desc' === $sort ) {
+        $orderby = 'title';
+        $order = 'DESC';
+    }
+
+    return array( 'orderby' => $orderby, 'order' => $order );
+}
+
+/**
  * Product archives use a count-free first page. Filtered archives and the
  * unfiltered Shop hub are shell-only requests resolved asynchronously in JS.
  */
@@ -39,42 +68,24 @@ function cr2026_product_listing_main_query( $query ) {
     if ( is_admin() || ! $query->is_main_query() || $query->is_search() ) { return; }
     $is_shop_query = function_exists( 'is_shop' ) && is_shop();
     $is_category_query = $query->is_tax( 'product_cat' );
-    if ( ! $is_shop_query && ! $is_category_query ) { return; }
+    $is_brand_query = $query->is_tax( 'product_brand' );
+    if ( ! $is_shop_query && ! $is_category_query && ! $is_brand_query ) { return; }
 
-    // The listing is hydrated page-by-page by catalog-page. Do not let the
-    // archive's WP_Query produce a differently sorted first page.
+    if ( $is_brand_query ) {
+        // Keep the existing product_brand main query and its taxonomy clause.
+        // Only share the canonical catalogue sort vars with catalog-page.
+        $sort_args = cr2026_catalog_sort_query_vars( $query->get( 'orderby' ) );
+        $query->set( 'orderby', $sort_args['orderby'] );
+        $query->set( 'order', $sort_args['order'] );
+        return;
+    }
+
+    // The Shop/category listing is hydrated page-by-page by catalog-page.
+    // Do not let the archive's WP_Query produce a differently sorted first page.
     $query->set( 'posts_per_page', 1 );
     $query->set( 'no_found_rows', true );
 }
 add_action( 'pre_get_posts', 'cr2026_product_listing_main_query', 99 );
-
-/**
- * Apply catalogue ordering to the existing product_brand main query.
- * The existing brand taxonomy clause and result set remain untouched.
- */
-function cr2026_brand_archive_native_sort( $query ) {
-    if ( is_admin() || ! $query->is_main_query() || ! $query->is_tax( 'product_brand' ) ) { return; }
-
-    $requested = sanitize_key( (string) $query->get( 'orderby' ) );
-    if ( ! in_array( $requested, array( 'date', 'price', 'price-desc', 'title' ), true ) ) {
-        $requested = 'date';
-    }
-
-    if ( 'price' === $requested ) {
-        $query->set( 'orderby', 'cr2026_price_asc' );
-        $query->set( 'order', 'ASC' );
-    } elseif ( 'price-desc' === $requested ) {
-        $query->set( 'orderby', 'cr2026_price_desc' );
-        $query->set( 'order', 'DESC' );
-    } elseif ( 'title' === $requested ) {
-        $query->set( 'orderby', 'title' );
-        $query->set( 'order', 'ASC' );
-    } else {
-        $query->set( 'orderby', 'date' );
-        $query->set( 'order', 'DESC' );
-    }
-}
-add_action( 'pre_get_posts', 'cr2026_brand_archive_native_sort', 100 );
 
 /** Skip SQL for the Shop hub and for filtered category/root result shells. */
 function cr2026_product_listing_short_circuit_query( $posts, $query ) {
@@ -178,92 +189,6 @@ function cr2026_catalog_price_sort_post_clauses( $clauses, $query ) {
 }
 add_filter( 'posts_clauses', 'cr2026_catalog_price_sort_post_clauses', 20, 2 );
 
-/**
- * Temporary brand-sort diagnostics. Output is available only to administrators
- * who explicitly request ?crsortdebug=1 on a product_brand archive.
- */
-function cr2026_capture_brand_sort_debug( $posts, $query ) {
-    if (
-        is_admin()
-        || ! $query->is_main_query()
-        || ! $query->is_tax( 'product_brand' )
-        || ! is_user_logged_in()
-        || ! current_user_can( 'manage_options' )
-        || ! isset( $_GET['crsortdebug'] )
-        || '1' !== (string) wp_unslash( $_GET['crsortdebug'] )
-    ) {
-        return $posts;
-    }
-
-    global $wpdb;
-    $ids = array();
-    foreach ( (array) $posts as $post ) {
-        if ( isset( $post->ID ) ) {
-            $ids[] = absint( $post->ID );
-        }
-        if ( count( $ids ) >= 5 ) {
-            break;
-        }
-    }
-
-    $lookup_by_id = array();
-    if ( $ids && isset( $wpdb->wc_product_meta_lookup ) ) {
-        $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
-        $lookup_sql = $wpdb->prepare(
-            "SELECT product_id, min_price, max_price FROM {$wpdb->wc_product_meta_lookup} WHERE product_id IN ({$placeholders})",
-            $ids
-        );
-        $lookup_rows = $wpdb->get_results( $lookup_sql, ARRAY_A );
-        foreach ( (array) $lookup_rows as $row ) {
-            $lookup_by_id[ (int) $row['product_id'] ] = array(
-                'min_price' => $row['min_price'],
-                'max_price' => $row['max_price'],
-            );
-        }
-    }
-
-    $first_results = array();
-    foreach ( $ids as $id ) {
-        $product = function_exists( 'wc_get_product' ) ? wc_get_product( $id ) : false;
-        $first_results[] = array(
-            'id' => $id,
-            'display_price' => $product ? trim( wp_strip_all_tags( $product->get_price_html() ) ) : null,
-            'active_price' => $product ? $product->get_price() : null,
-            'lookup' => isset( $lookup_by_id[ $id ] ) ? $lookup_by_id[ $id ] : null,
-        );
-    }
-
-    $sql_order_by = null;
-    if ( preg_match( '/\\bORDER BY\\b(.*?)(?:\\bLIMIT\\b|$)/is', (string) $query->request, $matches ) ) {
-        $sql_order_by = trim( $matches[1] );
-    }
-
-    $GLOBALS['cr2026_brand_sort_debug_data'] = array(
-        'orderby_param' => isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date',
-        'query_vars' => array(
-            'orderby' => $query->get( 'orderby' ),
-            'order' => $query->get( 'order' ),
-            'meta_key' => $query->get( 'meta_key' ),
-            'paged' => $query->get( 'paged' ),
-            'taxonomy' => $query->get( 'taxonomy' ),
-            'term' => $query->get( 'term' ),
-            'product_brand' => $query->get( 'product_brand' ),
-        ),
-        'sql_order_by' => $sql_order_by,
-        'first_results' => $first_results,
-    );
-
-    return $posts;
-}
-add_filter( 'the_posts', 'cr2026_capture_brand_sort_debug', PHP_INT_MAX, 2 );
-
-function cr2026_render_brand_sort_debug() {
-    if ( empty( $GLOBALS['cr2026_brand_sort_debug_data'] ) ) {
-        return;
-    }
-    echo "\n<!-- CR2026_BRAND_SORT_DEBUG " . esc_html( wp_json_encode( $GLOBALS['cr2026_brand_sort_debug_data'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) ) . " -->\n";
-}
-add_action( 'wp_footer', 'cr2026_render_brand_sort_debug', PHP_INT_MAX );
 
 
 function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
@@ -403,25 +328,9 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) {
             return new WP_Error( 'cr2026_catalog_category', __( 'Categoría no válida.', 'crios-rango-2026' ), array( 'status' => 400 ) );
         }
-        $orderby = 'date';
-        $order = 'DESC';
-        if ( 'oldest' === $sort ) {
-            $orderby = 'date';
-            $order = 'ASC';
-        } elseif ( 'price_asc' === $sort ) {
-            // App's Store API prices.price is the active minimum for variable parents; use min_price in both directions.
-            $orderby = 'cr2026_price_asc';
-            $order = 'ASC';
-        } elseif ( 'price_desc' === $sort ) {
-            $orderby = 'cr2026_price_desc';
-            $order = 'DESC';
-        } elseif ( 'title_asc' === $sort ) {
-            $orderby = 'title';
-            $order = 'ASC';
-        } elseif ( 'title_desc' === $sort ) {
-            $orderby = 'title';
-            $order = 'DESC';
-        }
+        $sort_args = cr2026_catalog_sort_query_vars( $sort );
+        $orderby = $sort_args['orderby'];
+        $order = $sort_args['order'];
         $catalog_result = wc_get_products( array(
             'status' => 'publish',
             'visibility' => 'visible',
