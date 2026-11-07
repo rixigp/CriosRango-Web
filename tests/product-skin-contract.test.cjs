@@ -565,30 +565,32 @@ test('AJAX error response does not execute success feedback and refreshes only c
 });
 
 test('Product Detail renders assigned product_brand logo with native metadata priority and name fallback', () => {
-  assert.match(skin, /function cr2026_product_skin_brand\\(\\)/);
-  assert.match(skin, /taxonomy_exists\\( 'product_brand' \\)/);
-  assert.match(skin, /get_the_terms\\( \\$product_id, 'product_brand' \\)/);
-  assert.match(skin, /cr2026_home_brand_image_url\\( \\$brand \\)/);
-  assert.match(skin, /cr-product-brand__logo/);
-  assert.match(skin, /cr-product-brand__name/);
-  assert.match(skinCss, /cr-product-brand::before/);
-  assert.match(skinCss, /object-fit:contain/);
-  assert.match(skin, /woocommerce_single_product_summary', 'cr2026_product_skin_brand', 22/);
-  assert.match(fs.readFileSync(path.join(theme, 'inc/helpers.php'), 'utf8'), /foreach \\( array\\( 'thumbnail_id', 'image_id' \\) as \\$meta_key \\)/);
+  assert.ok(skin.includes('function cr2026_product_skin_brand()'));
+  assert.ok(skin.includes("taxonomy_exists( 'product_brand' )"));
+  assert.ok(skin.includes("get_the_terms( $product_id, 'product_brand' )"));
+  assert.ok(skin.includes("cr2026_home_brand_image_url( $brand )"));
+  assert.ok(skin.includes('cr-product-brand__logo'));
+  assert.ok(skin.includes('cr-product-brand__name'));
+  assert.ok(skinCss.includes('cr-product-brand::before'));
+  assert.ok(skinCss.includes('object-fit:contain'));
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_brand', 22 )"));
+  const helpers = fs.readFileSync(path.join(theme, 'inc/helpers.php'), 'utf8');
+  assert.ok(helpers.includes("foreach ( array( 'thumbnail_id', 'image_id' ) as $meta_key )"));
 });
 
 test('Product Detail global size help has exact email and WhatsApp links', () => {
-  assert.match(skin, /Pregunta por más tallas!/);
-  assert.match(skin, /Si la talla que necesitas, no se encuentra disponible, contacta con nosotros en/);
-  assert.match(skin, /mailto:criosrango@criosrango\\.es/);
-  assert.match(skin, /https:\\/\\/wa\\.me\\/34633246788/);
-  assert.match(skin, /target="_blank" rel="noopener noreferrer">633 246 788/);
-  assert.match(skin, /woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24/);
+  assert.ok(skin.includes('Pregunta por más tallas!'));
+  assert.ok(skin.includes('Si la talla que necesitas, no se encuentra disponible, contacta con nosotros en'));
+  assert.ok(skin.includes('href="mailto:criosrango@criosrango.es"'));
+  assert.ok(skin.includes('href="https://wa.me/34633246788"'));
+  assert.ok(skin.includes('target="_blank" rel="noopener noreferrer">633 246 788'));
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
 });
 
 test('legacy excerpt brand and size help cleanup leaves the balancing sanitizer active', () => {
-  assert.match(skin, /Strip legacy brand labels\\/values/);
-  assert.match(skin, /Legacy sizing-help blocks are now rendered globally/);
-  assert.match(skin, /return force_balance_tags\\( \\$short_description \\)/);
-  assert.match(skin, /criosrango@criosrango\\.es|633\\s\\*246\\s\\*788/);
+  assert.ok(skin.includes('Strip legacy brand labels/values'));
+  assert.ok(skin.includes('Legacy sizing-help blocks are now rendered globally'));
+  assert.ok(skin.includes('return force_balance_tags( $short_description );'));
+  assert.ok(skin.includes('criosrango@criosrango.es'));
+  assert.ok(skin.includes('633\\s*246\\s*788'));
 });
