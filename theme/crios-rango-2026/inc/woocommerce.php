@@ -49,7 +49,7 @@ function cr2026_catalog_sort_query_vars( $sort ) {
     } elseif ( in_array( $sort, array( 'price-desc', 'price_desc' ), true ) ) {
         $orderby = 'cr2026_price_desc';
         $order = 'DESC';
-    } elseif ( in_array( $sort, array( 'title', 'title_asc' ), true ) ) {
+    } elseif ( 'title_asc' === $sort || 'title' === $sort ) {
         $orderby = 'title';
         $order = 'ASC';
     } elseif ( 'title_desc' === $sort ) {

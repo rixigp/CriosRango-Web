@@ -556,7 +556,7 @@ test('brand and catalog share one canonical sort mapping on the existing main qu
   assert.match(php, /'oldest' === \$sort/);
   assert.match(php, /array\( 'price', 'price_asc' \)/);
   assert.match(php, /array\( 'price-desc', 'price_desc' \)/);
-  assert.match(php, /array\( 'title', 'title_asc' \)/);
+  assert.match(php, /'title_asc' === \$sort/);
   assert.match(php, /'title_desc' === \$sort/);
   assert.match(php, /function cr2026_product_listing_main_query\( \$query \)/);
   assert.match(php, /\$is_brand_query = \$query->is_tax\( 'product_brand' \)/);
