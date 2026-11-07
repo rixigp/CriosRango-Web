@@ -215,7 +215,9 @@ test('enhancements are progressive and the native add-to-cart button remains the
   assert.ok(productUiJs.includes("body.classList.add('cr-product-ui-enhanced')"));
   assert.ok(productUiJs.includes("body.classList.remove('cr-product-ui-enhanced')"));
   assert.ok(productUiJs.includes("form.querySelector('button.single_add_to_cart_button')"));
-  assert.ok(productUiJs.includes("form.addEventListener('submit', submitProductDetailAddToCart, true)"));
+  assert.doesNotMatch(productUiJs, /submitProductDetailAddToCart|addEventListener\(['"]submit['"]/);
+  assert.ok(productUiJs.includes("added_to_cart.crProductDetail"));
+  assert.doesNotMatch(productUiJs, /jQuery\.ajax\s*\(/);
   assert.equal(productUiJs.includes('requestSubmit'), false);
   assert.equal(productUiJs.includes('fetch('), false);
   assert.equal(productUiJs.includes('XMLHttpRequest'), false);
