@@ -196,9 +196,9 @@ test('variation chips are native select proxies and do not implement variation m
 test('description icon uses the app canvas and the accordion remains compact and inline', () => {
   assert.ok(skin.includes('class="cr-product-description__icon"'));
   assert.ok(skin.includes('<svg viewBox="0 0 24 24"'));
-  assert.match(skinCss, /\.cr-product-description__icon\s*\{[^}]*background:\s*var\(--cr-app-canvas,\s*var\(--cr-product-cream\)\);[^}]*color:\s*var\(--cr-product-green\);/s);
-  assert.match(skinCss, /\.cr-product-description__toggle\s*\{[^}]*min-height:\s*58px;/s);
-  assert.match(skinCss, /\.cr-product-description__toggle\s*\{[^}]*padding:\s*12px 16px;/s);
+  assert.match(skinCss, /\.cr-product-description__icon\s*\{[^}]*background:\s*var\(--cr-app-canvas\);[^}]*color:\s*var\(--cr-product-green\);/s);
+  assert.match(skinCss, /\.cr-product-description__toggle\s*\{[^}]*min-height:\s*54px;/s);
+  assert.match(skinCss, /\.cr-product-description__toggle\s*\{[^}]*padding:\s*10px 16px;/s);
   assert.ok(skin.includes('aria-expanded="false"'));
   assert.ok(productUiJs.includes('panel.hidden = isExpanded'));
   assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
@@ -222,7 +222,7 @@ test('Color and Size cards render only real native options and preserve WooComme
   assert.ok(productUiJs.includes('woocommerce_update_variation_values'));
   assert.match(skinCss, /\.cr-product-variation-card\s*\{[^}]*border-radius:\s*21px;[^}]*background:\s*#fff;/s);
   assert.match(skinCss, /\.cr-product-choice-chips--color[\s\S]*?border-radius:\s*50%;/);
-  assert.match(skinCss, /\.cr-product-choice-chips--size[\s\S]*?min-height:\s*50px;/);
+  assert.match(skinCss, /\.cr-product-choice-chips--size[\s\S]*?\.cr-product-choice-chip\s*\{[^}]*min-height:\s*46px;/s);
   assert.match(skinCss, /\.cr-product-choice-chips--size[\s\S]*?background:\s*var\(--cr-product-green\);[\s\S]*?color:\s*#fff;/);
   assert.match(skinCss, /\.cr-product-choice-chips--size[\s\S]*?\.cr-product-choice-chip:disabled/);
   assert.ok(productUiJs.includes("select.insertAdjacentElement('afterend', chips)") === false);
@@ -966,4 +966,17 @@ test('Product Detail makes the complete brand logo or text fallback a safe same-
   assert.doesNotMatch(brandRenderer, /target="_blank"/);
   assert.match(skinCss, /\.cr-product-title-brand-row__brand \.cr-product-brand-link\s*\{[^}]*width:\s*100%;[^}]*text-decoration:\s*none;/s);
   assert.match(skin, /if \( ! \$brand instanceof WP_Term \) \{ return; \}/);
+});
+
+
+test('Product Detail uses the shared canvas and content-sized compact variation cards', () => {
+  assert.match(skinCss, /--cr-product-cream:\s*var\(--cr-app-canvas\)/);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce div\.product \{[^}]*background:\s*var\(--cr-app-canvas\)/s);
+  assert.match(skinCss, /\.cr-product-description__icon\s*\{[^}]*background:\s*var\(--cr-app-canvas\)/s);
+  assert.match(skinCss, /\.cr-product-variation-card\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*0;[^}]*padding:\s*14px 15px 12px;/s);
+  assert.match(skinCss, /\.cr-product-variation-card__title\s*\{[^}]*margin-bottom:\s*12px;/s);
+  assert.match(skinCss, /\.cr-product-choice-chips--color \.cr-product-choice-chip\s*\{[^}]*min-height:\s*0;[^}]*gap:\s*5px;/s);
+  assert.match(skinCss, /\.cr-product-choice-chips--color \.cr-product-choice-chip__swatch\s*\{[^}]*width:\s*42px;[^}]*height:\s*42px;/s);
+  assert.match(skinCss, /\.cr-product-choice-chips--size \.cr-product-choice-chip\s*\{[^}]*min-height:\s*46px;[^}]*padding:\s*0 20px;/s);
+  assert.match(skinCss, /\.cr-product-variation-cards\s*\{[^}]*gap:\s*12px;[^}]*margin:\s*0 0 20px;/s);
 });
