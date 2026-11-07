@@ -653,7 +653,7 @@ test('category and Outlet contexts remain separate from brand context', () => {
 test('root catalog context uses Filter API without requiring product_cat or sending catalog_category_id', () => {
   assert.match(php, /\$is_root_catalog_context = 'catalog' === \$scope && 0 === \$category_id && ! \$is_brand_context/);
   assert.match(php, /\$has_filters = \$is_outlet_scope \|\| \$is_brand_context \|\| \$is_root_catalog_context/);
-  assert.match(php, /if \( \$is_root_catalog_context \) \{[\s\S]*?\$filter_request = new WP_REST_Request/);
+  assert.match(php, /if \( \$has_filters \) \{[\s\S]*?\$filter_request = new WP_REST_Request/);
   assert.match(php, /'scope' => \$is_outlet_scope \? 'outlet' : 'catalog'/);
   assert.match(php, /elseif \( \$category_id > 0 \) \{\s*\$filter_params\['catalog_category_id'\] = \$category_id;/);
   assert.match(js, /else if\(categoryId!=='0'\)params\.set\('catalog_category_id',categoryId\)/);
