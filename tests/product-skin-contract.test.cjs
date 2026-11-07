@@ -990,7 +990,27 @@ test('Product Detail matches the global Category canvas and uses transparent com
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-description,\s*body\.cr-product-detail-app \.cr-product-description__toggle,\s*body\.cr-product-detail-app \.cr-product-description__panel,\s*body\.cr-product-detail-app \.cr-product-description__icon,\s*body\.cr-product-detail-app \.cr-product-variation-card \{[^}]*background:\s*transparent !important;/s);
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-description__toggle \{[^}]*min-height:\s*52px;[^}]*padding:\s*8px 15px;/s);
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-variation-card \{[^}]*height:\s*auto;[^}]*min-height:\s*0;[^}]*padding:\s*11px 15px;/s);
-  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-choice-chips--color \.cr-product-choice-chip__swatch \{[^}]*width:\s*44px;[^}]*height:\s*44px;/s);
-  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-choice-chips--size \.cr-product-choice-chip \{[^}]*height:\s*40px;[^}]*min-height:\s*40px;[^}]*min-width:\s*84px;/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-choice-chips--color \.cr-product-choice-chip__swatch \{[^}]*width:\s*32px;[^}]*height:\s*32px;/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-choice-chips--size \.cr-product-choice-chip \{[^}]*height:\s*40px;[^}]*min-height:\s*40px;[^}]*min-width:\s*58px;[^}]*padding:\s*0 14px;[^}]*border-radius:\s*13px;/s);
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-variation-cards \{[^}]*gap:\s*10px;[^}]*margin:\s*0 0 18px;/s);
+});
+
+
+test('Product Detail final controls stay compact and quantity label is visually removed without changing behavior', () => {
+  assert.ok(skinCss.includes('width: 32px;') && skinCss.includes('height: 32px;'), 'COLOR_SWATCH_SMALLER=PASS');
+  assert.ok(skinCss.includes('0 0 0 4px var(--cr-product-green)'), 'COLOR_SELECTED_RING_PRESERVED=PASS');
+  assert.ok(skinCss.includes('width: 12px;') && skinCss.includes('height: 12px;'), 'COLOR_CHECK_REDUCED=PASS');
+  assert.ok(skinCss.includes('min-width: 58px;') && skinCss.includes('padding: 0 14px;') && skinCss.includes('border-radius: 13px;'), 'SIZE_CHIP_NARROWER_AND_LESS_PILL=PASS');
+  assert.ok(skinCss.includes('.cr-product-quantity-label {\n    display: none !important;'), 'QUANTITY_LABEL_RENDERED=NO');
+  assert.ok(skinCss.includes('border: 1px solid var(--cr-product-border);\n    border-radius: 12px;\n    background: #fff;'), 'QUANTITY_CONTROL_WHITE_BACKGROUND=PASS');
+  assert.ok(skinCss.includes('.woocommerce-variation-add-to-cart {\n    display: flex !important;') && skinCss.includes('gap: 10px;'), 'QUANTITY_AND_CTA_ALIGNED=PASS');
+  assert.ok(skinCss.includes('flex: 1 1 auto;'), 'CTA_RETAINS_AVAILABLE_WIDTH=PASS');
+});
+
+test('Shared bottom navigation uses the exact storefront canvas with no visible top cut', () => {
+  const globalCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
+  assert.ok(globalCss.includes('.cr-mobile-bottom-nav {\n  background: var(--cr-app-canvas) !important;'), 'BOTTOM_NAV_MATCHES_PAGE_BACKGROUND=PASS');
+  assert.ok(globalCss.includes('border-top: 0 !important;') && globalCss.includes('box-shadow: none !important;') && globalCss.includes('backdrop-filter: none !important;'), 'BOTTOM_NAV_BORDER_OR_SHADOW_REMOVED=PASS');
+  assert.ok(globalCss.includes('.cr-mobile-bottom-nav::before,\n.cr-mobile-bottom-nav::after {\n  display: none !important;\n  content: none !important;'), 'BOTTOM_NAV_PSEUDO_SEPARATORS_REMOVED=PASS');
+  assert.ok(globalCss.includes('.cr-mobile-bottom-nav__inner {\n  background: transparent !important;'), 'BOTTOM_NAV_INNER_TRANSPARENT=PASS');
 });
