@@ -439,7 +439,7 @@ test('AJAX errors retrieve native WooCommerce notices and do not show false succ
   assert.ok(woocommerce.includes("function cr2026_product_detail_error_notice_fragment"));
   assert.ok(woocommerce.includes("wc_get_notices( 'error' )"));
   assert.ok(woocommerce.includes("wc_get_template( 'notices/error.php'"));
-  assert.doesNotMatch(woocommerce, /wc_print_notices\\( true \\)/);
+  assert.equal(woocommerce.includes('wc_print_notices( true )'), false);
   assert.ok(woocommerce.includes("div.woocommerce-notices-wrapper"));
   assert.doesNotMatch(productUiJs, /window\.location\s*=|location\.href\s*=|location\.reload\s*\(/);
 });
@@ -500,18 +500,22 @@ test('AJAX submit capture prevents traditional submit and leaves one submit hand
   assert.ok(handler.includes('event.preventDefault()'));
   assert.ok(handler.includes('event.stopImmediatePropagation()'));
   assert.ok(handler.includes('isAddingToCart = true'));
-  assert.equal((productUiJs.match(/form\\.addEventListener\\('submit'/g) || []).length, 1);
+  assert.equal(productUiJs.split("form.addEventListener('submit'").length - 1, 1);
 });
 test('successful AJAX response dispatches standard event and CTA state is not reset immediately', () => {
-  assert.match(productUiJs, /trigger\\('added_to_cart', \\[\\s\\S]*?response\\.fragments,[\\s\\S]*?response\\.cart_hash/);
-  assert.match(productUiJs, /\\.on\\('added_to_cart\\.crProductDetail'[\\s\\S]*?showAddedFeedback\\(\\)/);
-  assert.match(productUiJs, /!hasAddedFeedback/);
+  assert.ok(productUiJs.includes("trigger('added_to_cart', ["));
+  assert.ok(productUiJs.includes('response.fragments'));
+  assert.ok(productUiJs.includes('response.cart_hash'));
+  assert.ok(productUiJs.includes("added_to_cart.crProductDetail"));
+  assert.ok(productUiJs.includes('showAddedFeedback()'));
+  assert.ok(productUiJs.includes('!hasAddedFeedback'));
 });
 test('error fragment renders only validation errors, not success or informational notices', () => {
   const start = woocommerce.indexOf('function cr2026_product_detail_error_notice_fragment');
   const end = woocommerce.indexOf("add_filter( 'woocommerce_add_to_cart_fragments', 'cr2026_product_detail_error_notice_fragment'", start);
   const fragment = woocommerce.slice(start, end);
-  assert.match(fragment, /wc_get_notices\\( 'error' \\)/);
-  assert.match(fragment, /notices\\/error\\.php/);
-  assert.doesNotMatch(fragment, /wc_get_notices\\(\\s*\\)|wc_print_notices/);
+  assert.ok(fragment.includes("wc_get_notices( 'error' )"));
+  assert.ok(fragment.includes("notices/error.php"));
+  assert.equal(fragment.includes('wc_get_notices()'), false);
+  assert.equal(fragment.includes('wc_print_notices'), false);
 });
