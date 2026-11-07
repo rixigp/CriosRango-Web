@@ -78,7 +78,7 @@ test('sale badge, price, notices and native controls receive presentation-only C
 
 test('short description is sanitized and balanced only at the WooCommerce excerpt boundary', () => {
   assert.match(skin, /function cr2026_product_skin_sanitize_short_description\( \$short_description \)/);
-  assert.match(skin, /wp_kses_post\\( \\$short_description \\)/);
+  assert.ok(skin.includes('wp_kses_post( $short_description )'));
   assert.match(skin, /return force_balance_tags\\( \\$short_description \\);/);
   assert.match(skin, /add_filter\( 'woocommerce_short_description', 'cr2026_product_skin_sanitize_short_description', 20 \)/);
   assert.match(skin, /! is_product\(\)/);
