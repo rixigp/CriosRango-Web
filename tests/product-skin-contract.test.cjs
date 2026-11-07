@@ -186,7 +186,7 @@ test('variation CTA uses the existing WooCommerce button and native variation ID
   assert.ok(productUiJs.includes("nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige opciones'"));
   assert.ok(productUiJs.includes("nativeButtonLabel.textContent = 'Añadido al carrito'"));
   assert.ok(productUiJs.includes("Añadir al carrito"));
-  assert.ok(productUiJs.includes("Number(variationId.value) > 0"));
+  assert.ok(productUiJs.includes("!Number.isFinite(variationId) || variationId <= 0"));
   assert.ok(productUiJs.includes('nativeButton.disabled = !validNativeVariation;'));
   assert.ok(productUiJs.includes("nativeButton.setAttribute('aria-disabled', validNativeVariation ? 'false' : 'true')"));
   assert.ok(productUiJs.includes("form.querySelector('.woocommerce-variation-add-to-cart')"));
