@@ -576,3 +576,20 @@ test('brand archive order select sizes to the selected option and keeps its nati
   assert.match(js, /fitBrandOrderControl\(\);[\s\S]*?brandOrderControl\.addEventListener\('change'/);
   assert.match(js, /form\.requestSubmit\(\)/);
 });
+
+
+test('brand sort SQL diagnostics are gated to explicit administrator requests and expose only scoped query data', () => {
+  assert.match(php, /function cr2026_capture_brand_sort_debug\( \$posts, \$query \)/);
+  assert.match(php, /! \$query->is_main_query\(\)/);
+  assert.match(php, /! \$query->is_tax\( 'product_brand' \)/);
+  assert.match(php, /! is_user_logged_in\(\)/);
+  assert.match(php, /! current_user_can\( 'manage_options' \)/);
+  assert.match(php, /'crsortdebug'\s*\)/);
+  assert.match(php, /\$query->request/);
+  assert.match(php, /sql_order_by/);
+  assert.match(php, /wc_product_meta_lookup/);
+  assert.match(php, /'display_price'/);
+  assert.match(php, /'min_price'/);
+  assert.match(php, /CR2026_BRAND_SORT_DEBUG/);
+  assert.match(php, /add_filter\( 'the_posts', 'cr2026_capture_brand_sort_debug', PHP_INT_MAX, 2 \)/);
+});

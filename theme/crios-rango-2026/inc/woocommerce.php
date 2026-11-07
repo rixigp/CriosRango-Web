@@ -178,6 +178,94 @@ function cr2026_catalog_price_sort_post_clauses( $clauses, $query ) {
 }
 add_filter( 'posts_clauses', 'cr2026_catalog_price_sort_post_clauses', 20, 2 );
 
+/**
+ * Temporary brand-sort diagnostics. Output is available only to administrators
+ * who explicitly request ?crsortdebug=1 on a product_brand archive.
+ */
+function cr2026_capture_brand_sort_debug( $posts, $query ) {
+    if (
+        is_admin()
+        || ! $query->is_main_query()
+        || ! $query->is_tax( 'product_brand' )
+        || ! is_user_logged_in()
+        || ! current_user_can( 'manage_options' )
+        || ! isset( $_GET['crsortdebug'] )
+        || '1' !== (string) wp_unslash( $_GET['crsortdebug'] )
+    ) {
+        return $posts;
+    }
+
+    global $wpdb;
+    $ids = array();
+    foreach ( (array) $posts as $post ) {
+        if ( isset( $post->ID ) ) {
+            $ids[] = absint( $post->ID );
+        }
+        if ( count( $ids ) >= 5 ) {
+            break;
+        }
+    }
+
+    $lookup_by_id = array();
+    if ( $ids && isset( $wpdb->wc_product_meta_lookup ) ) {
+        $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+        $lookup_sql = $wpdb->prepare(
+            "SELECT product_id, min_price, max_price FROM {$wpdb->wc_product_meta_lookup} WHERE product_id IN ({$placeholders})",
+            $ids
+        );
+        $lookup_rows = $wpdb->get_results( $lookup_sql, ARRAY_A );
+        foreach ( (array) $lookup_rows as $row ) {
+            $lookup_by_id[ (int) $row['product_id'] ] = array(
+                'min_price' => $row['min_price'],
+                'max_price' => $row['max_price'],
+            );
+        }
+    }
+
+    $first_results = array();
+    foreach ( $ids as $id ) {
+        $product = function_exists( 'wc_get_product' ) ? wc_get_product( $id ) : false;
+        $first_results[] = array(
+            'id' => $id,
+            'display_price' => $product ? trim( wp_strip_all_tags( $product->get_price_html() ) ) : null,
+            'active_price' => $product ? $product->get_price() : null,
+            'lookup' => isset( $lookup_by_id[ $id ] ) ? $lookup_by_id[ $id ] : null,
+        );
+    }
+
+    $sql_order_by = null;
+    if ( preg_match( '/\\bORDER BY\\b(.*?)(?:\\bLIMIT\\b|$)/is', (string) $query->request, $matches ) ) {
+        $sql_order_by = trim( $matches[1] );
+    }
+
+    $GLOBALS['cr2026_brand_sort_debug_data'] = array(
+        'orderby_param' => isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date',
+        'query_vars' => array(
+            'orderby' => $query->get( 'orderby' ),
+            'order' => $query->get( 'order' ),
+            'meta_key' => $query->get( 'meta_key' ),
+            'paged' => $query->get( 'paged' ),
+            'taxonomy' => $query->get( 'taxonomy' ),
+            'term' => $query->get( 'term' ),
+            'product_brand' => $query->get( 'product_brand' ),
+        ),
+        'sql_order_by' => $sql_order_by,
+        'first_results' => $first_results,
+    );
+
+    return $posts;
+}
+add_filter( 'the_posts', 'cr2026_capture_brand_sort_debug', PHP_INT_MAX, 2 );
+
+function cr2026_render_brand_sort_debug() {
+    if ( empty( $GLOBALS['cr2026_brand_sort_debug_data'] ) ) {
+        return;
+    }
+    echo "\n<!-- CR2026_BRAND_SORT_DEBUG " . esc_html( wp_json_encode( $GLOBALS['cr2026_brand_sort_debug_data'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) ) . " -->\n";
+}
+add_action( 'wp_footer', 'cr2026_render_brand_sort_debug', PHP_INT_MAX );
+
+
 function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $page = max( 1, absint( $request->get_param( 'page' ) ) );
     $per_page = CR2026_CATALOG_PAGE_SIZE;
