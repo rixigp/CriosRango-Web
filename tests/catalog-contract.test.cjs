@@ -392,19 +392,19 @@ test('mobile product search shows no more than three suggestions without changin
 });
 
 
-test('product_brand archives render the native main query with shared product cards, never category landings', () => {
+test('product_brand archives use the fixed brand context and shared catalog-page cards, never category landings', () => {
   const brandArchive = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
   const helpers = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/helpers.php'), 'utf8');
   assert.match(brandArchive, /get_queried_object\(\)/);
   assert.match(brandArchive, /'product_brand' !== \$brand_term->taxonomy/);
   assert.match(brandArchive, /\$GLOBALS\['cr2026_product_listing_view'\] = true/);
-  assert.match(brandArchive, /while \( have_posts\(\) \)/);
-  assert.match(brandArchive, /the_post\(\)/);
-  assert.match(brandArchive, /cr2026_render_product_card\( \$brand_product, \$brand_card_index \)/);
-  assert.match(brandArchive, /the_posts_pagination\(/);
+  assert.match(brandArchive, /data-context="brand"/);
   assert.match(brandArchive, /data-brand-term-id=/);
-  assert.match(brandArchive, /data-brand-term-slug=/);
-  assert.doesNotMatch(brandArchive, /new WP_Query|cr2026_render_category_toolbar|cr2026_render_category_filter_sheet|cr2026_home_categories|Categorías/);
+  assert.match(brandArchive, /data-products-url=.*catalog-page/s);
+  assert.match(brandArchive, /data-cr-product-grid/);
+  assert.match(brandArchive, /data-cr-product-load-more/);
+  assert.doesNotMatch(brandArchive, /while \( have_posts\(\) \)|the_post\(\)|the_posts_pagination\(/);
+  assert.doesNotMatch(brandArchive, /new WP_Query|cr2026_render_category_toolbar|cr2026_home_categories|Categorías/);
   assert.match(helpers, /is_tax\( 'product_brand' \)/);
   assert.match(helpers, /function cr2026_home_brand_image_url\( \$term \)/);
   assert.match(helpers, /array\( 'thumbnail_id', 'image_id' \)/);
@@ -618,7 +618,7 @@ test('brand requests always carry catalog scope and catalog_brand_id, never fake
   assert.match(js, /scope:outletCategoryId\?'outlet':'catalog'/);
   assert.match(js, /params\.set\('catalog_brand_id',String\(brandTermId\)\)/);
   assert.match(php, /\$brand_id = absint\( \$request->get_param\( 'catalog_brand_id' \) \)/);
-  assert.match(php, /'catalog_brand_id' => \$brand_id/);
+  assert.match(php, /\$filter_params\['catalog_brand_id'\] = \$brand_id/);
   assert.match(php, /\$has_filters = \$is_outlet_scope \|\| \$is_brand_context/);
   const brandRequest = js.slice(js.indexOf('const loadPage = async'), js.indexOf('const response = await fetch(productsUrl'));
   assert.doesNotMatch(brandRequest, /catalog_category_id/);
@@ -627,7 +627,6 @@ test('brand requests always carry catalog scope and catalog_brand_id, never fake
 
 test('brand filters preserve active sort, clear only selectable dimensions, and keep context on every page', () => {
   assert.match(js, /const filterKeys = brandContext \? \['size_ids','color_ids'\]/);
-  assert.match(js, /new URLSearchParams\(window\.location\.search\)/);
   assert.match(js, /loadPage\(currentPage\+1,true,requestGeneration\)/);
   assert.match(js, /sort:sortMap\[orderby\]/);
   assert.match(js, /params\.set\('catalog_brand_id',String\(brandTermId\)\)/);
