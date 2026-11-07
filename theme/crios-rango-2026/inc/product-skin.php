@@ -252,7 +252,10 @@ function cr2026_product_skin_title_price_brand() {
     if ( ! is_product() ) { return; }
     echo '<div class="cr-product-title-brand-row">';
     echo '<div class="cr-product-title-brand-row__details">';
-    $display_title = cr2026_product_skin_display_title();
+    $product = wc_get_product( get_queried_object_id() );
+    $brand = cr2026_product_skin_brand_term();
+    $original_title = $product instanceof WC_Product ? $product->get_name() : get_the_title( absint( get_queried_object_id() ) );
+    $display_title = cr2026_product_skin_display_title( $original_title, $brand instanceof WP_Term ? $brand->name : '' );
     echo '<h1 class="product_title entry-title">' . esc_html( $display_title ) . '</h1>';
     woocommerce_template_single_price();
     echo '</div>';
@@ -281,25 +284,37 @@ function cr2026_product_skin_brand_term() {
  */
 function cr2026_product_skin_display_title( $original_title = null, $brand_name = null ) {
     if ( null === $original_title ) {
-        $original_title = get_the_title( absint( get_queried_object_id() ) );
+        $product = wc_get_product( absint( get_queried_object_id() ) );
+        $original_title = $product instanceof WC_Product ? $product->get_name() : get_the_title( absint( get_queried_object_id() ) );
     }
     if ( ! is_string( $original_title ) ) { return $original_title; }
-
+    $original_title = trim( $original_title );
     if ( null === $brand_name ) {
         $brand = cr2026_product_skin_brand_term();
         $brand_name = $brand instanceof WP_Term ? $brand->name : '';
     }
     if ( ! is_string( $brand_name ) ) { return $original_title; }
-    $brand_name = preg_replace( '/^\s+|\s+$/u', '', $brand_name );
+    $brand_name = trim( $brand_name );
     if ( '' === $brand_name ) { return $original_title; }
 
-    $pattern = '~^(.*?)(?:\s*[-–—|]\s*)' . preg_quote( $brand_name, '~' ) . '\s*$~iu';
-    if ( ! preg_match( $pattern, $original_title, $matches ) ) {
-        return $original_title;
-    }
-
-    $display_title = preg_replace( '~[\s\-–—|]+$~u', '', $matches[1] );
-    return is_string( $display_title ) && '' !== $display_title ? $display_title : $original_title;
+    // Exact trailing segment comparison: brand text is data, never a regular-expression fragment.
+    $title_length = function_exists( 'mb_strlen' ) ? mb_strlen( $original_title, 'UTF-8' ) : strlen( $original_title );
+    $brand_length = function_exists( 'mb_strlen' ) ? mb_strlen( $brand_name, 'UTF-8' ) : strlen( $brand_name );
+    if ( $title_length <= $brand_length ) { return $original_title; }
+    $title_suffix = function_exists( 'mb_substr' )
+        ? mb_substr( $original_title, -$brand_length, null, 'UTF-8' )
+        : substr( $original_title, -$brand_length );
+    $suffix_matches = function_exists( 'mb_strtolower' )
+        ? mb_strtolower( $title_suffix, 'UTF-8' ) === mb_strtolower( $brand_name, 'UTF-8' )
+        : 0 === strcasecmp( $title_suffix, $brand_name );
+    if ( ! $suffix_matches ) { return $original_title; }
+    $prefix = function_exists( 'mb_substr' )
+        ? mb_substr( $original_title, 0, $title_length - $brand_length, 'UTF-8' )
+        : substr( $original_title, 0, -$brand_length );
+    if ( ! preg_match( '/\s*[-–—|]\s*$/u', $prefix ) ) { return $original_title; }
+    $display_title = preg_replace( '/\s*[-–—|]\s*$/u', '', $prefix );
+    $display_title = is_string( $display_title ) ? trim( $display_title ) : '';
+    return '' !== $display_title ? $display_title : $original_title;
 }
 
 /** Render the assigned WordPress product_brand term as a centered native logo. */

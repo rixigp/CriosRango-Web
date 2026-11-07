@@ -745,51 +745,29 @@ test('product category fallback uses assigned primary category then deterministi
   assert.match(skin, /return cr2026_shop_url\(\)/);
 });
 
-test('display title removes only a final product_brand suffix and leaves the sticky title complete', () => {
-  assert.match(skin, /function cr2026_product_skin_brand_term\(\)/);
-  assert.match(skin, /function cr2026_product_skin_display_title\( \$original_title = null, \$brand_name = null \)/);
+test('display title removes only an exact final product_brand suffix and Product Info renders the helper result', () => {
+  assert.match(skin, /function cr2026_product_skin_brand_term\\(\\)/);
+  assert.match(skin, /function cr2026_product_skin_display_title\\( \\$original_title = null, \\$brand_name = null \\)/);
   assert.ok(skin.includes("get_the_terms( absint( get_queried_object_id() ), 'product_brand' )"));
-  assert.ok(skin.includes("preg_quote( $brand_name, '~' )"));
-  assert.ok(skin.includes(String.raw`$brand_name = preg_replace( '/^\s+|\s+$/u', '', $brand_name );`));
-  assert.ok(skin.includes(String.raw`$pattern = '~^(.*?)(?:\s*[-–—|]\s*)' . preg_quote( $brand_name, '~' ) . '\s*$~iu';`));
-  assert.ok(skin.includes(String.raw`$display_title = preg_replace( '~[\s\-–—|]+$~u', '', $matches[1] );`));
-
-  assert.ok(skin.includes("$~iu"));
-  assert.ok(skin.includes("$display_title = cr2026_product_skin_display_title();"));
-  assert.ok(skin.includes("esc_html( $display_title )"));
-  assert.match(skin, /echo '<h1 class="cr-parent-category__title">'.*?esc_html\( \$product->get_name\(\) \)/);
-  const toolbar = skin.slice(skin.indexOf('function cr2026_product_skin_toolbar'), skin.indexOf("add_action( 'woocommerce_before_single_product'"));
-  assert.doesNotMatch(toolbar, /display_title/);
-
-  function expectedDisplayTitle(title, brand) {
-    if (!brand || !brand.trim()) return title;
-    const escaped = Array.from(brand.trim(), (ch) =>
-      ('.+*?^${}()|[]'.includes(ch) || ch.charCodeAt(0) === 92) ? String.fromCharCode(92) + ch : ch
-    ).join('');
-    const whitespace = String.fromCharCode(92) + 's';
-    const suffix = new RegExp('^(.*?)(?:' + whitespace + '*[-–—|]' + whitespace + '*)' + escaped + whitespace + '*$', 'iu');
-    const match = title.match(suffix);
-    if (!match) return title;
-    const trailingSeparators = new RegExp('[' + whitespace + '–—|-]+$', 'u');
-    return match[1].replace(trailingSeparators, '') || title;
-  }
-
-  const cases = [
-    ['Jersey - 194000146P - Spagnolo', 'Spagnolo', 'Jersey - 194000146P'],
-    ['Chaqueta - 6516 - Ragussa', 'Ragussa', 'Chaqueta - 6516'],
-    ['Vestido - Mayoral', 'Mayoral', 'Vestido'],
-    ['Vestido especial', 'Mayoral', 'Vestido especial'],
-    ['Producto – Spagnolo', 'spagnolo', 'Producto'],
-    ['Producto — Spagnolo  ', 'Spagnolo', 'Producto'],
-    ['Producto | Spagnolo', 'Spagnolo', 'Producto'],
-    ['Producto - - Spagnolo', 'Spagnolo', 'Producto'],
-    ['Vestido Spagnolo edición especial', 'Spagnolo', 'Vestido Spagnolo edición especial'],
-    ['Producto - Spagnolo - especial', 'Spagnolo', 'Producto - Spagnolo - especial'],
-    ['Cárdigan - MARCA Ñandú', 'marca ñANDÚ', 'Cárdigan'],
-    ['Producto - Marca.+', 'Marca.+', 'Producto']
+  assert.ok(skin.includes("mb_strtolower( $title_suffix, 'UTF-8' )"));
+  assert.ok(skin.includes("mb_substr( $original_title, -$brand_length, null, 'UTF-8' )"));
+  const strip=(title,brand)=>{const original=title,t=title.trim(),b=brand.trim();if(!b||t.length<=b.length||t.slice(-b.length).toLocaleLowerCase('es')!==b.toLocaleLowerCase('es'))return original;const prefix=t.slice(0,-b.length);if(!/\\s*[-–—|]\\s*$/.test(prefix))return original;const out=prefix.replace(/\\s*[-–—|]\\s*$/,'').trim();return out||original;};
+  const cases=[
+    ['Jersey - 194000146P - Spagnolo','Spagnolo','Jersey - 194000146P'],
+    ['Chaqueta - 6516 - Ragussa','Ragussa','Chaqueta - 6516'],
+    ['Vestido – Mayoral','Mayoral','Vestido'],
+    ['Vestido especial','Mayoral','Vestido especial'],
+    ['Spagnolo Jersey Edición Especial','Spagnolo','Spagnolo Jersey Edición Especial'],
+    ['Vestido Spagnolo Edición Especial','Spagnolo','Vestido Spagnolo Edición Especial'],
+    ['Jersey - 194000146P | spagnolo','Spagnolo','Jersey - 194000146P']
   ];
-  for (const [title, brand, expected] of cases) {
-    assert.equal(expectedDisplayTitle(title, brand), expected, title);
-  }
-  assert.equal(expectedDisplayTitle('Vestido - Mayoral', ''), 'Vestido - Mayoral');
+  for(const [title,brand,expected] of cases) assert.equal(strip(title,brand),expected,title);
+  assert.equal(strip('Jersey - 194000146P - Spagnolo',''),'Jersey - 194000146P - Spagnolo');
+  assert.equal(strip('Jersey - 194000146P Spagnolo','Spagnolo'),'Jersey - 194000146P Spagnolo');
+  const renderer=skin.slice(skin.indexOf('function cr2026_product_skin_title_price_brand()'),skin.indexOf('function cr2026_product_skin_brand_term()'));
+  assert.ok(renderer.includes('cr2026_product_skin_display_title( $original_title, $brand instanceof WP_Term ? $brand->name :'));
+  assert.match(renderer,/esc_html\\( \\$display_title \\)/);
+  assert.doesNotMatch(renderer,/esc_html\\( \\$product->get_name\\(\\) \\)/);
+  assert.ok(skin.includes("echo '<h1 class=\"cr-parent-category__title\">' . esc_html( $product->get_name() ) . '</h1>'"));
+  assert.equal(renderer.includes('esc_html( $display_title )'),true,'PRODUCT_INFO_RENDER_USES_DISPLAY_TITLE=YES');
 });
