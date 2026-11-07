@@ -298,162 +298,6 @@
         nativeButton.appendChild(cartIcon);
         nativeButton.appendChild(nativeButtonLabel);
       }
-
-      function initProductDebug() {
-        var params = new URLSearchParams(window.location.search);
-        if (params.get('crdebug') !== '1') return null;
-
-        var build = 'loading';
-        var panel = document.createElement('details');
-        panel.open = true;
-        panel.style.cssText = 'position:fixed;z-index:2147483647;right:8px;bottom:8px;width:min(390px,calc(100vw - 16px));max-height:55vh;overflow:auto;background:#171717;color:#f5f5f5;border:1px solid #777;border-radius:8px;padding:8px;font:12px/1.4 monospace;box-shadow:0 3px 18px rgba(0,0,0,.35)';
-        var summary = document.createElement('summary');
-        summary.textContent = 'CR PRODUCT DEBUG · JS LOADED · BUILD=' + build;
-        summary.style.cssText = 'cursor:pointer;font-weight:700;position:sticky;top:0;background:#171717;padding:3px 0';
-        var output = document.createElement('pre');
-        output.style.cssText = 'white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0;max-height:34vh;overflow:auto';
-        var controls = document.createElement('div');
-        controls.style.cssText = 'display:flex;gap:8px;position:sticky;bottom:0;background:#171717;padding-top:5px';
-        var copy = document.createElement('button');
-        copy.type = 'button';
-        copy.textContent = 'Copiar trace';
-        var clear = document.createElement('button');
-        clear.type = 'button';
-        clear.textContent = 'Limpiar';
-        [copy, clear].forEach(function (button) {
-          button.style.cssText = 'border:1px solid #aaa;border-radius:5px;background:#333;color:#fff;padding:5px 9px;font:inherit';
-        });
-        controls.appendChild(copy);
-        controls.appendChild(clear);
-        panel.appendChild(summary);
-        panel.appendChild(output);
-        panel.appendChild(controls);
-        document.body.appendChild(panel);
-
-        var entries = ['JS LOADED'];
-        var submitStartedAt = null;
-        function now() { return window.performance && typeof window.performance.now === 'function' ? window.performance.now() : Date.now(); }
-        function clean(value) { return String(value == null ? '' : value).replace(/[\r\n]+/g, ' ').trim(); }
-        function render() { output.textContent = entries.join('\n'); }
-        function log(label, fields) {
-          var line = label;
-          if (fields) {
-            Object.keys(fields).forEach(function (key) { line += ' ' + key + '=' + clean(fields[key]); });
-          }
-          entries.push(line);
-          render();
-        }
-        function elapsed() { return submitStartedAt === null ? 'NA' : Math.round(now() - submitStartedAt); }
-        function parentLabel(node) {
-          var parent = node && node.parentElement;
-          if (!parent) return 'none';
-          var tag = parent.tagName ? parent.tagName.toLowerCase() : 'node';
-          return tag + (parent.id ? '#' + parent.id : '') + (parent.className && typeof parent.className === 'string' ? '.' + parent.className.trim().replace(/\s+/g, '.') : '');
-        }
-        function noticeNodes() {
-          return Array.prototype.slice.call(document.querySelectorAll('.woocommerce-error,.woocommerce-message,.woocommerce-info'));
-        }
-        function logNoticeBefore() {
-          var notices = noticeNodes();
-          if (!notices.length) log('NOTICE_BEFORE', { text: '(none)', parent: '(none)' });
-          notices.forEach(function (notice) {
-            log('NOTICE_BEFORE', { text: notice.textContent, parent: parentLabel(notice) });
-          });
-        }
-        function logNoticeAfterClear() {
-          var notices = noticeNodes();
-          log('NOTICE_AFTER_CLEAR', {
-            count: notices.length,
-            texts: notices.map(function (notice) { return clean(notice.textContent); }).join(' | ') || '(none)'
-          });
-        }
-        function logInsertedNotice(node) {
-          if (!node || node.nodeType !== 1 || panel.contains(node)) return;
-          var candidates = [];
-          if (node.matches && node.matches('.woocommerce-error,.woocommerce-message,.woocommerce-info')) candidates.push(node);
-          if (node.querySelectorAll) candidates = candidates.concat(Array.prototype.slice.call(node.querySelectorAll('.woocommerce-error,.woocommerce-message,.woocommerce-info')));
-          candidates.forEach(function (notice) {
-            log('NOTICE_INSERTED', { time: elapsed() + 'ms', text: notice.textContent, parent: parentLabel(notice) });
-          });
-        }
-        if (nativeButton && window.MutationObserver) {
-          var ctaObserver = new MutationObserver(function () {
-            log('CTA_MUTATION', {
-              time: elapsed() + 'ms',
-              text: nativeButtonLabel ? nativeButtonLabel.textContent : nativeButton.textContent,
-              class: nativeButton.className
-            });
-          });
-          ctaObserver.observe(nativeButton, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
-        }
-        if (window.MutationObserver && document.body) {
-          var noticeObserver = new MutationObserver(function (records) {
-            records.forEach(function (record) {
-              Array.prototype.forEach.call(record.addedNodes, logInsertedNotice);
-            });
-          });
-          noticeObserver.observe(document.body, { subtree: true, childList: true });
-        }
-        copy.addEventListener('click', function () {
-          var value = entries.join('\\n');
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(value);
-          } else {
-            var field = document.createElement('textarea');
-            field.value = value;
-            panel.appendChild(field);
-            field.select();
-            document.execCommand('copy');
-            panel.removeChild(field);
-          }
-        });
-        clear.addEventListener('click', function () {
-          entries = ['JS LOADED'];
-          render();
-        });
-        render();
-
-        var scriptTag = Array.prototype.filter.call(document.scripts, function (script) {
-          return script.src && /product-ui-enhancements\.js(?:\?|$)/.test(script.src);
-        })[0];
-        if (scriptTag && window.fetch) {
-          var manifestUrl = new URL('../../build.json', scriptTag.src).toString();
-          window.fetch(manifestUrl, { cache: 'no-store', credentials: 'same-origin' })
-            .then(function (response) {
-              if (!response.ok) throw new Error('build manifest HTTP ' + response.status);
-              return response.json();
-            })
-            .then(function (manifest) {
-              build = manifest && typeof manifest.sha === 'string' ? manifest.sha.slice(0, 7) : 'unknown';
-              summary.textContent = 'CR PRODUCT DEBUG · JS LOADED · BUILD=' + build;
-              entries.splice(1, 0, 'BUILD=' + build);
-              render();
-            })
-            .catch(function () {
-              build = 'unknown';
-              summary.textContent = 'CR PRODUCT DEBUG · JS LOADED · BUILD=' + build;
-              entries.splice(1, 0, 'BUILD=' + build);
-              render();
-            });
-        } else {
-          entries.splice(1, 0, 'BUILD=unknown');
-          render();
-        }
-
-        return {
-          log: log,
-          beginSubmit: function (variation, quantity) {
-            submitStartedAt = now();
-            log('SUBMIT_START');
-            log('variationId=' + clean(variation));
-            log('quantity=' + clean(quantity));
-            logNoticeBefore();
-          },
-          noticeAfterClear: logNoticeAfterClear
-        };
-      }
-      var crProductDebug = initProductDebug();
-
       function setCartIcon(state) {
         if (!cartIcon) return;
         while (cartIcon.firstChild) cartIcon.removeChild(cartIcon.firstChild);
@@ -469,28 +313,20 @@
         cartIcon.classList.toggle('is-check', state === 'check');
       }
       function showAddedFeedback() {
-        if (crProductDebug) crProductDebug.log('SHOW_ADDED_FEEDBACK_ENTER');
         if (!nativeButton || !nativeButtonLabel) return;
         hasAddedFeedback = true;
         if (addedFeedbackTimer) window.clearTimeout(addedFeedbackTimer);
         nativeButton.classList.add('is-added-to-cart');
         setCartIcon('check');
         nativeButtonLabel.textContent = 'Añadido al carrito';
-        if (crProductDebug) crProductDebug.log('SHOW_ADDED_FEEDBACK_WRITTEN', { text: nativeButtonLabel.textContent });
         addedFeedbackTimer = window.setTimeout(function () {
-          var textBefore = nativeButtonLabel ? nativeButtonLabel.textContent : '';
           hasAddedFeedback = false;
           nativeButton.classList.remove('is-added-to-cart');
           setCartIcon('bag');
           syncVariationState();
-          if (crProductDebug) crProductDebug.log('SUCCESS_TIMER_END', {
-            textBefore: textBefore,
-            textAfter: nativeButtonLabel ? nativeButtonLabel.textContent : ''
-          });
         }, 2200);
       }
       function syncVariationState() {
-        var debugTextBefore = nativeButtonLabel ? nativeButtonLabel.textContent : '';
         selects.forEach(function (select) {
           var chips = select.nextElementSibling;
           if (!chips || !chips.classList.contains('cr-product-choice-chips')) return;
@@ -507,11 +343,6 @@
         if (nativeButtonLabel && variationId && !hasAddedFeedback) {
           nativeButtonLabel.textContent = validNativeVariation ? 'Añadir al carrito' : 'Elige una combinación';
         }
-        if (crProductDebug) crProductDebug.log('SYNC_VARIATION', {
-          hasAddedFeedback: hasAddedFeedback,
-          textBefore: debugTextBefore,
-          textAfter: nativeButtonLabel ? nativeButtonLabel.textContent : ''
-        });
       }
       var isAddingToCart = false;
       function getWooAjaxUrl(endpoint) {
@@ -536,12 +367,10 @@
       }
       function clearProductDetailNotices() {
         var noticeRoot = getProductDetailNoticeRoot();
-        if (noticeRoot && noticeRoot.querySelectorAll) {
-          noticeRoot.querySelectorAll('.woocommerce-notices-wrapper').forEach(function (wrapper) {
-            wrapper.replaceChildren();
-          });
-        }
-        if (crProductDebug) crProductDebug.noticeAfterClear();
+        if (!noticeRoot || !noticeRoot.querySelectorAll) return;
+        noticeRoot.querySelectorAll('.woocommerce-notices-wrapper').forEach(function (wrapper) {
+          wrapper.replaceChildren();
+        });
       }
       function applyWooCartFragments(response) {
         var fragments = response.fragments || {};
@@ -619,10 +448,6 @@
         var addUrl = getWooAjaxUrl('add_to_cart');
         if (!addUrl || !window.jQuery) return;
 
-        if (crProductDebug) {
-          var debugQuantityInput = form.querySelector('input.qty[name="quantity"], input[name="quantity"]');
-          crProductDebug.beginSubmit(variationId.value, debugQuantityInput ? debugQuantityInput.value : '1');
-        }
         event.preventDefault();
         event.stopImmediatePropagation();
         clearProductDetailNotices();
@@ -637,17 +462,10 @@
           data: buildNativeAddToCartPayload(),
           dataType: 'json'
         }).done(function (response) {
-          if (crProductDebug) crProductDebug.log('RESPONSE_RECEIVED', {
-            error: response && response.error ? 'yes' : 'no',
-            fragments: response && response.fragments && Object.keys(response.fragments).length ? 'yes' : 'no',
-            cartHash: response && typeof response.cart_hash !== 'undefined' && response.cart_hash !== '' ? 'yes' : 'no'
-          });
           if (!response || response.error || !response.fragments || typeof response.cart_hash === 'undefined') {
-            if (crProductDebug) crProductDebug.log('BRANCH_ERROR');
             refreshWooErrorNotices();
             return;
           }
-          if (crProductDebug) crProductDebug.log('BRANCH_SUCCESS');
           applyWooCartFragments(response);
           clearProductDetailNotices();
           showAddedFeedback();
@@ -656,11 +474,9 @@
             response.cart_hash,
             window.jQuery(nativeButton)
           ]);
-          if (crProductDebug) crProductDebug.log('ADDED_TO_CART_EVENT');
           clearProductDetailNotices();
           releaseAddToCartLock();
         }).fail(function () {
-          if (crProductDebug) crProductDebug.log('BRANCH_ERROR');
           refreshWooErrorNotices();
         });
       }
