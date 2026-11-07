@@ -133,8 +133,8 @@ test('long product description is a single accessible collapsed accordion after 
 test('empty descriptions omit the accordion and native variation/cart behavior stays intact', () => {
   assert.ok(skin.includes("if ( ! is_string( $description ) || '' === trim( $description ) ) { return; }"));
   assert.ok(skin.includes("if ( ! is_string( $plain_description ) || '' === $plain_description ) { return; }"));
-  assert.doesNotMatch(skin, /remove_action\\(\\s*'woocommerce_single_product_summary',\\s*'woocommerce_template_single_add_to_cart'/);
-  assert.doesNotMatch(skin, /remove_action\\(\\s*'woocommerce_single_product_summary',\\s*'woocommerce_single_variation'/);
+  assert.ok(!skin.includes("remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart'"));
+  assert.ok(!skin.includes("remove_action( 'woocommerce_single_product_summary', 'woocommerce_single_variation'"));
   assert.ok(skin.includes("add_filter( 'woocommerce_product_tabs', 'cr2026_product_skin_remove_description_tab', 99 )"));
   assert.ok(productUiJs.includes("toggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true')"));
 });

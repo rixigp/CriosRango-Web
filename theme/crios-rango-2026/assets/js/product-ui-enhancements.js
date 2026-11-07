@@ -587,7 +587,8 @@
     }
 
     try {
-      initProductDescriptionAccordion();\n      initNativeTouchLightbox();
+      initProductDescriptionAccordion();
+      initNativeTouchLightbox();
       initGalleryDots();
       initVariationProxies();
       initQuantityStepper();
