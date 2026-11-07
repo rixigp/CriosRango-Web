@@ -27,6 +27,20 @@ function cr2026_product_skin_body_class( $classes ) {
 }
 add_filter( 'body_class', 'cr2026_product_skin_body_class' );
 
+/**
+ * Sanitize and contain WooCommerce's product short description before it is
+ * inserted into the single-product DOM. Balancing after KSES ensures malformed
+ * allowed markup cannot escape the excerpt and wrap following product controls.
+ */
+function cr2026_product_skin_sanitize_short_description( $short_description ) {
+    if ( ! function_exists( 'is_product' ) || ! is_product() || ! is_string( $short_description ) ) {
+        return $short_description;
+    }
+
+    return force_balance_tags( wp_kses_post( $short_description ) );
+}
+add_filter( 'woocommerce_short_description', 'cr2026_product_skin_sanitize_short_description', 20 );
+
 /** Mark a successful native single-product POST so the CTA can confirm after its redirect. */
 function cr2026_product_skin_mark_added_feedback( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
     if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) {

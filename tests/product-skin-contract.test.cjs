@@ -76,8 +76,12 @@ test('sale badge, price, notices and native controls receive presentation-only C
   assert.match(skinCss, /single_add_to_cart_button/);
 });
 
-test('native description HTML remains intact and is only styled', () => {
-  assert.doesNotMatch(skin, /the_content\s*\(|get_description\s*\(|wp_kses|DOMDocument/);
+test('short description is sanitized and balanced only at the WooCommerce excerpt boundary', () => {
+  assert.match(skin, /function cr2026_product_skin_sanitize_short_description\( \$short_description \)/);
+  assert.match(skin, /return force_balance_tags\( wp_kses_post\( \$short_description \) \);/);
+  assert.match(skin, /add_filter\( 'woocommerce_short_description', 'cr2026_product_skin_sanitize_short_description', 20 \)/);
+  assert.match(skin, /! is_product\(\)/);
+  assert.doesNotMatch(skin, /the_content\s*\(|get_description\s*\(|DOMDocument/);
   assert.doesNotMatch(skin, /add_action\([^\n]*woocommerce_single_product_summary[^\n]*(?:quantity|cart|variation)/i);
   assert.match(skinCss, /woocommerce-product-details__short-description/);
   assert.match(skinCss, /\.woocommerce-product-details__short-description u \{\s*text-decoration: none;\s*\}/s);
@@ -444,4 +448,38 @@ test('cart count remains a WooCommerce fragment for every existing header and bo
   assert.match(woocommerce, /\$fragments\['span\[data-cr-cart-count\]'\]/);
   assert.match(woocommerce, /add_filter\( 'woocommerce_add_to_cart_fragments', 'cr2026_cart_count_fragment' \)/);
   assert.ok(productUiJs.includes("trigger('added_to_cart', ["));
+});
+
+test('short-description fixtures preserve valid formatting and contain malformed underline markup', () => {
+  const fixtures = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/product-short-description.json'), 'utf8'));
+  assert.equal(fixtures.length, 2);
+
+  function assertBalancedMarkup(html) {
+    const stack = [];
+    const voidTags = new Set(['br']);
+    for (const match of html.matchAll(/<\\/?([a-z][a-z0-9]*)(?:\\s[^>]*)?\\s*\\/?\s*>/gi)) {
+      const tag = match[1].toLowerCase();
+      const token = match[0];
+      if (token.startsWith('</')) {
+        assert.equal(stack.pop(), tag, 'closing tag must match its open tag');
+      } else if (!voidTags.has(tag) && !/\\/\\s*>$/.test(token)) {
+        stack.push(tag);
+      }
+    }
+    assert.deepEqual(stack, [], 'all allowed markup must be closed before following product controls');
+  }
+
+  for (const fixture of fixtures) {
+    // force_balance_tags() closes the remaining open inline element at the excerpt boundary.
+    const balanced = fixture.input + (fixture.name.startsWith('malformed') ? '</u>' : '');
+    assert.equal(balanced, fixture.expected, fixture.name);
+    assertBalancedMarkup(balanced);
+    assert.match(balanced, /<u>/);
+    assert.match(balanced, /<\\/u>/);
+  }
+
+  const valid = fixtures.find((fixture) => fixture.name.startsWith('valid'));
+  assert.equal(valid.expected, valid.input, 'already-balanced WooCommerce markup must remain unchanged');
+  assert.match(valid.expected, /<u>Composición:<\\/u>/);
+  assert.match(valid.expected, /<u>Marca:<\\/u> Arggido/);
 });
