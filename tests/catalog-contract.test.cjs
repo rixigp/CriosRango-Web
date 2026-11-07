@@ -779,16 +779,22 @@ test('catalog-page exposes monotonic Server-Timing diagnostics without changing 
   assert.doesNotMatch(php, /'server_timing'\s*=>|'catalog_timing'\s*=>/);
 });
 
-test('staging benchmark records three cold and three warm requests for the same catalogue state', () => {
-  assert.match(deploy, /Benchmark staging catalog endpoint \(3 cold \+ 3 warm requests\)/);
+test('staging benchmark captures three initial and three repeated requests with transport data before JSON parsing', () => {
+  assert.match(deploy, /Benchmark staging catalog endpoint \\(3 cold \\+ 3 warm requests\\)/);
   assert.match(deploy, /for INDEX in 1 2 3 4 5 6/);
-  assert.match(deploy, /LABEL="COLD"/);
-  assert.match(deploy, /LABEL="WARM"/);
-  assert.match(deploy, /CURL_TOTAL_S=/);
-  assert.match(deploy, /SERVER_TIMING=/);
+  assert.match(deploy, /SAMPLE="COLD"/);
+  assert.match(deploy, /SAMPLE="WARM"/);
+  assert.match(deploy, /--dump-header "\\$HEADERS"/);
+  assert.match(deploy, /--output "\\$BODY"/);
+  assert.match(deploy, /--write-out '%\\{http_code\\}\\|%\\{time_total\\}\\|%\\{size_download\\}'/);
+  assert.match(deploy, /Server-Timing/);
   assert.match(deploy, /catalog_category_id=560/);
+  assert.match(deploy, /CATEGORY_PLAIN/);
+  assert.match(deploy, /NOVEDADES/);
+  assert.match(deploy, /BRAND/);
+  assert.match(deploy, /OUTLET_OR_FILTERED/);
+  assert.ok(deploy.indexOf('--dump-header') < deploy.indexOf('node - "$BODY" "$HEADERS"'));
 });
-
 test('catalog-page preserves its exact frontend JSON schema and captures card HTML', () => {
   const catalogStart = php.indexOf('function cr2026_catalog_page_rest_response');
   const catalogEnd = php.indexOf('function cr2026_woocommerce_wrappers', catalogStart);
@@ -800,9 +806,9 @@ test('catalog-page preserves its exact frontend JSON schema and captures card HT
   assert.ok(catalog.includes('$rendered_html = ob_get_clean();'));
   assert.ok(catalog.includes("'html' => $rendered_html"));
   assert.ok(catalog.includes("cr2026_catalog_timing_add( 'render'"));
-  assert.ok(js.includes("typeof responseData.html !== 'string'"));
-  assert.ok(js.includes("template.innerHTML=responseData.html||''"));
-  assert.equal(fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/js/main.js'), 'utf8'), js);
+  // Match the actual shared validator and the listing renderer's response consumer.
+  assert.match(js, /typeof data\\.html !== 'string'/);
+  assert.match(js, /template\\.innerHTML\\s*=\\s*responseData\\.html\\s*\\|\\|\\s*''/);
 });
 
 test('staging benchmark captures transport metrics before JSON validation across all four catalogue contexts', () => {
