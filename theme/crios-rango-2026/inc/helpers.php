@@ -180,7 +180,7 @@ function cr2026_render_category_ordering( $orderby = 'date' ) {
     <div class="cr-product-listing__ordering">
         <label for="cr-product-order"><?php esc_html_e( 'Ordenar por', 'crios-rango-2026' ); ?></label>
         <span class="cr-product-listing__select-wrap">
-            <select id="cr-product-order" data-cr-product-order aria-label="<?php esc_attr_e( 'Ordenar productos', 'crios-rango-2026' ); ?>">
+            <select id="cr-product-order" name="orderby" data-cr-product-order aria-label="<?php esc_attr_e( 'Ordenar productos', 'crios-rango-2026' ); ?>">
                 <option value="date"<?php selected( 'date', $orderby ); ?>><?php esc_html_e( 'Más recientes', 'crios-rango-2026' ); ?></option>
                 <option value="price"<?php selected( 'price', $orderby ); ?>><?php esc_html_e( 'Precio: menor a mayor', 'crios-rango-2026' ); ?></option>
                 <option value="price-desc"<?php selected( 'price-desc', $orderby ); ?>><?php esc_html_e( 'Precio: mayor a menor', 'crios-rango-2026' ); ?></option>

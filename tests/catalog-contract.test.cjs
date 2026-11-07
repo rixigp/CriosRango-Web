@@ -96,7 +96,8 @@ test('web catalog page size is sourced from the audited app paginator contract',
 test('category filter selection is live, chips are actionable, and Apply only closes', () => {
   assert.match(js, /publishLiveFilters\(\);scheduleDependentRefresh\(dimension\)/);
   assert.match(js, /window\.CR2026CatalogListing=\{applyFilters,getFilters,renderActiveFilterChips,pageSize,getOutletContext\}/);
-  assert.ok(js.includes("filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',closeSheet)"));
+  assert.match(js, /filterSheet\.querySelector\('\[data-cr-filter-apply\]'\)\.addEventListener\('click',\(\)=>\{/);
+  assert.match(js, /if\(brandArchive\)\{window\.location\.assign\(window\.location\.href\);return;\}[\s\S]*?closeSheet\(\)/);
   assert.match(js, /data-cr-active-filter-chips/);
   assert.match(js, /cr-product-listing__clear-filters/);
   assert.doesNotMatch(js, /window\.location\.assign\(url\.toString\(\)\)/);
@@ -475,7 +476,7 @@ test('brand archives reuse catalogue filters and sorting while preserving produc
   assert.match(brandArchive, /cr2026_render_category_filter_trigger\(\)/);
   assert.match(brandArchive, /cr2026_render_category_filter_sheet\( null, 'root' \)/);
   assert.match(brandArchive, /data-cr-brand-sort/);
-  assert.match(brandArchive, /name="orderby"/);
+  assert.match(helpers, /<select id="cr-product-order" name="orderby" data-cr-product-order/);
   assert.match(brandArchive, /cr2026_render_category_ordering\( \$brand_orderby \)/);
   assert.match(woocommerce, /\$query->is_tax\( 'product_brand' \)/);
   assert.match(woocommerce, /'size_ids' => 'pa_tallas'/);

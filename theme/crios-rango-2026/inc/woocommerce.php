@@ -70,8 +70,16 @@ function cr2026_brand_archive_query_context( $query ) {
 
     $orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
     if ( ! in_array( $orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $orderby = 'date'; }
-    $query->set( 'orderby', 'price-desc' === $orderby ? 'price' : $orderby );
-    $query->set( 'order', 'price' === $orderby ? 'ASC' : ( 'price-desc' === $orderby ? 'DESC' : 'DESC' ) );
+    if ( 'price' === $orderby ) {
+        $query->set( 'orderby', 'cr2026_price_asc' );
+        $query->set( 'order', 'ASC' );
+    } elseif ( 'price-desc' === $orderby ) {
+        $query->set( 'orderby', 'cr2026_price_desc' );
+        $query->set( 'order', 'DESC' );
+    } else {
+        $query->set( 'orderby', 'title' === $orderby ? 'title' : 'date' );
+        $query->set( 'order', 'DESC' );
+    }
 
     $filter_taxonomies = array(
         'size_ids' => 'pa_tallas',
