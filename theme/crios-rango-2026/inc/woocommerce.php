@@ -251,6 +251,12 @@ function cr2026_catalog_cache_invalidate_term( $term_id, $tt_id = 0, $taxonomy =
         cr2026_catalog_cache_invalidate();
     }
 }
+function cr2026_catalog_cache_invalidate_object_terms( $object_id, $terms, $tt_ids, $taxonomy ) {
+    if ( ( 'product_cat' === $taxonomy || 'product_brand' === $taxonomy || 0 === strpos( (string) $taxonomy, 'pa_' ) )
+        && in_array( get_post_type( $object_id ), array( 'product', 'product_variation' ), true ) ) {
+        cr2026_catalog_cache_invalidate();
+    }
+}
 add_action( 'save_post_product', 'cr2026_catalog_cache_invalidate_product_save', 20, 1 );
 add_action( 'save_post_product_variation', 'cr2026_catalog_cache_invalidate_product_save', 20, 1 );
 add_action( 'woocommerce_update_product', 'cr2026_catalog_cache_invalidate_product_object', 20, 1 );
@@ -261,6 +267,9 @@ add_action( 'woocommerce_variation_set_stock', 'cr2026_catalog_cache_invalidate_
 add_action( 'created_term', 'cr2026_catalog_cache_invalidate_term', 20, 3 );
 add_action( 'edited_term', 'cr2026_catalog_cache_invalidate_term', 20, 3 );
 add_action( 'delete_term', 'cr2026_catalog_cache_invalidate_term', 20, 3 );
+add_action( 'set_object_terms', 'cr2026_catalog_cache_invalidate_object_terms', 20, 6 );
+add_action( 'woocommerce_product_set_stock_status', 'cr2026_catalog_cache_invalidate_product_object', 20, 1 );
+add_action( 'woocommerce_variation_set_stock_status', 'cr2026_catalog_cache_invalidate_product_object', 20, 1 );
 function cr2026_catalog_cache_normalize_ids( $value ) {
     $parts = is_array( $value ) ? $value : explode( ',', (string) $value );
     $ids = array();

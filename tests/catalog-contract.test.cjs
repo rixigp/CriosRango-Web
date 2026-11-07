@@ -724,7 +724,7 @@ test('server cache HIT skips the catalog pipeline; MISS validates and stores; lo
   for (const status of ['STALE','HIT','MISS','BYPASS']) assert.ok(php.includes("'" + status + "'"));
 });
 test('catalog generation invalidates product, variation, stock, category, brand and attributes once per request', () => {
-  for (const hook of ['save_post_product','save_post_product_variation','woocommerce_update_product','woocommerce_update_product_variation','before_delete_post','woocommerce_product_set_stock','woocommerce_variation_set_stock','created_term','edited_term','delete_term']) assert.ok(php.includes("add_action( '" + hook + "'"), 'missing hook ' + hook);
+  for (const hook of ['save_post_product','save_post_product_variation','woocommerce_update_product','woocommerce_update_product_variation','before_delete_post','woocommerce_product_set_stock','woocommerce_variation_set_stock','woocommerce_product_set_stock_status','woocommerce_variation_set_stock_status','set_object_terms','created_term','edited_term','delete_term']) assert.ok(php.includes("add_action( '" + hook + "'"), 'missing hook ' + hook);
   assert.match(php, /static \$invalidated_this_request = false/);
   assert.match(php, /strpos\( \(string\) \$taxonomy, 'pa_' \)/);
   assert.match(php, /cr2026_catalog_cache_session_sensitive/);
