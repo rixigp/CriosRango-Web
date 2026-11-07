@@ -361,7 +361,7 @@ test('product search has no active bottom-navigation destination while links rem
   const helpers=fs.readFileSync(path.join(root,'theme/crios-rango-2026/inc/helpers.php'),'utf8');
   const footer=fs.readFileSync(path.join(root,'theme/crios-rango-2026/footer.php'),'utf8');
   const active=helpers.match(/function cr2026_app_nav_active_item\(\) \{[\s\S]*?\n\}/)?.[0]||'';
-  assert.match(active,/is_search\(\) && 'product' === get_query_var\( 'post_type' \)\) \{ return ''; \}/);
+  assert.match(active,/function_exists\( 'is_search' \) && is_search\(\) && 'product' === get_query_var\( 'post_type' \) \) \{ return ''; \}/);
   assert.ok(active.indexOf("return '';")<active.indexOf("is_shop()"));
   for(const destination of ['home','categories','outlet','cart','account']) assert.ok(footer.includes("$nav_urls['"+destination+"']"));
   assert.match(footer,/data-cr-cart-count/);
