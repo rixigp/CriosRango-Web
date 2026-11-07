@@ -2651,3 +2651,37 @@ body.admin-bar { --cr-admin-bar-offset: 32px; }
 @media (max-width: 782px) {
   body.admin-bar { --cr-admin-bar-offset: 46px; }
 }
+
+
+/* Header product search panel: compact extension below the canonical topbar. */
+.cr-header-search-panel[hidden] { display:none!important; }
+.cr-app-header .cr-header-search-panel {
+  position:absolute; top:100%; right:max(24px,calc((100% - 1360px)/2)); z-index:1160;
+  display:flex; align-items:center; gap:8px; width:min(560px,calc(100% - 32px));
+  box-sizing:border-box; padding:10px 12px; border:1px solid rgba(24,59,53,.12);
+  border-radius:14px; background:#FCFAF7; box-shadow:0 8px 24px rgba(0,0,0,.12);
+  pointer-events:auto;
+}
+.cr-app-header .cr-header-search-panel .cr-search-form {
+  display:flex; align-items:center; gap:10px; flex:1 1 auto; min-width:0; margin:0;
+}
+.cr-app-header .cr-header-search-panel .cr-search-form .cr-icon { flex:0 0 22px; width:22px; height:22px; }
+.cr-app-header .cr-header-search-panel .cr-search-form input[type="search"] {
+  flex:1 1 auto; min-width:0; width:100%; min-height:44px; padding:8px 4px;
+  border:0; outline:none; background:transparent; color:#183B35; font:400 16px/22px "Roboto",Arial,sans-serif;
+}
+.cr-app-header .cr-header-search-panel .cr-search-form button[type="submit"] {
+  flex:0 0 auto; min-height:40px; padding:0 12px; border:0; border-radius:10px;
+  background:#183B35; color:#fff; font:400 14px/20px "Roboto",Arial,sans-serif; cursor:pointer;
+}
+.cr-app-header .cr-header-search-close {
+  flex:0 0 36px; width:36px; height:36px; display:grid; place-items:center;
+  border:0; border-radius:50%; background:transparent; color:#183B35;
+  font:400 26px/1 Arial,sans-serif; cursor:pointer;
+}
+.cr-app-header [data-cr-header-search-toggle] { cursor:pointer; }
+@media (max-width:767px) {
+  .cr-app-header .cr-header-search-panel { right:8px; width:calc(100% - 16px); padding:8px; gap:4px; border-radius:12px; }
+  .cr-app-header .cr-header-search-panel .cr-search-form { gap:6px; }
+  .cr-app-header .cr-header-search-panel .cr-search-form button[type="submit"] { min-height:40px; padding-inline:9px; }
+}

@@ -22,6 +22,44 @@
     });
   }
 
+  // Global product search panel: keep the existing WooCommerce searchform contract.
+  const headerSearchToggle = document.querySelector('[data-cr-header-search-toggle]');
+  const headerSearchPanel = document.querySelector('[data-cr-header-search-panel]');
+  const headerSearchInput = headerSearchPanel ? headerSearchPanel.querySelector('#cr-search-field') : null;
+  const headerSearchForm = headerSearchPanel ? headerSearchPanel.querySelector('form.cr-search-form') : null;
+  const headerSearchClose = headerSearchPanel ? headerSearchPanel.querySelector('[data-cr-header-search-close]') : null;
+
+  const closeHeaderSearch = (returnFocus = true) => {
+    if (!headerSearchToggle || !headerSearchPanel) return;
+    headerSearchPanel.hidden = true;
+    headerSearchToggle.setAttribute('aria-expanded', 'false');
+    if (returnFocus) headerSearchToggle.focus({ preventScroll: true });
+  };
+  const openHeaderSearch = () => {
+    if (!headerSearchToggle || !headerSearchPanel || !headerSearchInput) return;
+    headerSearchPanel.hidden = false;
+    headerSearchToggle.setAttribute('aria-expanded', 'true');
+    window.requestAnimationFrame(() => headerSearchInput.focus({ preventScroll: true }));
+  };
+  const toggleHeaderSearch = () => {
+    if (!headerSearchPanel) return;
+    if (headerSearchPanel.hidden) openHeaderSearch();
+    else closeHeaderSearch(false);
+  };
+  if (headerSearchToggle && headerSearchPanel && headerSearchInput && headerSearchForm) {
+    headerSearchToggle.addEventListener('click', toggleHeaderSearch);
+    if (headerSearchClose) headerSearchClose.addEventListener('click', () => closeHeaderSearch(true));
+    headerSearchForm.addEventListener('submit', (event) => {
+      if (headerSearchInput.value.trim() === '') {
+        event.preventDefault();
+        headerSearchInput.focus({ preventScroll: true });
+      }
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !headerSearchPanel.hidden) closeHeaderSearch(true);
+    });
+  }
+
   const slides = Array.from(document.querySelectorAll('[data-cr-hero-slide]'));
   if (slides.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     let index = 0;

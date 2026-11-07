@@ -48,14 +48,18 @@ function cr2026_render_app_header() {
                 <img class="cr-home-mark__logo" src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/brand/home_logo.png' ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="34" height="34" decoding="async">
             </a>
             <div class="cr-home-topbar__actions">
-                <a class="cr-app-icon-button" href="<?php echo esc_url( home_url( '/?s=&post_type=product' ) ); ?>" aria-label="<?php esc_attr_e( 'Buscar', 'crios-rango-2026' ); ?>">
+                <button type="button" class="cr-app-icon-button" data-cr-header-search-toggle aria-label="<?php esc_attr_e( 'Buscar', 'crios-rango-2026' ); ?>" aria-expanded="false" aria-controls="cr-header-search-panel">
                     <?php echo cr2026_icon( 'search' ); ?>
-                </a>
+                </button>
                 <a class="cr-app-icon-button cr-cart-link" href="<?php echo esc_url( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/carrito/' ) ); ?>" aria-label="<?php esc_attr_e( 'Carrito', 'crios-rango-2026' ); ?>">
                     <?php echo cr2026_icon( 'bag' ); ?>
                     <span class="cr-cart-count<?php echo 0 === $cart_count ? ' is-empty' : ''; ?>" data-cr-cart-count data-count="<?php echo esc_attr( $cart_count ); ?>"><?php echo esc_html( $cart_count ); ?></span>
                 </a>
             </div>
+        </div>
+        <div id="cr-header-search-panel" class="cr-header-search-panel" data-cr-header-search-panel hidden>
+            <?php get_search_form(); ?>
+            <button type="button" class="cr-header-search-close" data-cr-header-search-close aria-label="<?php esc_attr_e( 'Cerrar búsqueda', 'crios-rango-2026' ); ?>">×</button>
         </div>
     </header>
     <?php

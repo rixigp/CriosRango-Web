@@ -264,3 +264,22 @@ test('Outlet bubbles are positioned between toolbar and active filter chips',()=
   assert.ok(outletCss.includes('overflow-x:auto'));
   assert.ok(outletCss.includes('.cr-outlet-bubbles__pill.is-selected{background:#163B35;color:#FFFFFF}'));
 });
+
+
+
+test('global header product search trigger opens the existing form panel and blocks empty submit',()=>{
+  const header=helpers.match(/function cr2026_render_app_header\(\)[\s\S]*?function cr2026_attachment_public_url/)[0];
+  const searchform=fs.readFileSync(path.join(root,'theme/crios-rango-2026/searchform.php'),'utf8');
+  assert.match(header,/<button type="button" class="cr-app-icon-button" data-cr-header-search-toggle/);
+  assert.match(header,/aria-expanded="false" aria-controls="cr-header-search-panel"/);
+  assert.doesNotMatch(header,/href=.*s=&post_type=product/);
+  assert.match(header,/#cr-header-search-panel/);
+  assert.match(header,/get_search_form\(\)/);
+  assert.match(js,/headerSearchToggle\.addEventListener\('click',toggleHeaderSearch\)/);
+  assert.match(js,/headerSearchInput\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(js,/event\.key === 'Escape'/);
+  assert.match(js,/headerSearchInput\.value\.trim\(\) === ''[\s\S]*?event\.preventDefault\(\)/);
+  assert.match(searchform,/type="search" name="s"/);
+  assert.match(searchform,/name="post_type" value="product"/);
+  assert.match(searchform,/action=.*home_url\( '\/' \)/);
+});
