@@ -294,6 +294,7 @@ function cr2026_app_nav_body_class( $classes ) {
     $classes[] = 'cr-global-app-header';
     if ( ! empty( $GLOBALS['cr2026_parent_category_view'] ) ) { $classes[] = 'cr-parent-category-view'; }
     if ( ! empty( $GLOBALS['cr2026_product_listing_view'] ) ) { $classes[] = 'cr-product-listing-view'; }
+    if ( ! empty( $GLOBALS['cr2026_brands_index_view'] ) ) { $classes[] = 'cr-brands-index-view'; }
     if ( cr2026_is_app_nav_shell() ) { $classes[] = 'cr-app-nav-shell'; }
     return $classes;
 }
