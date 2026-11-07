@@ -254,6 +254,14 @@ test('native WooCommerce zoom control is visually hidden while its native lightb
   assert.ok(setup.includes('wc-product-gallery-lightbox'));
 });
 
+test('single-image tap bypasses FlexSlider active-slide class while multi-image taps remain gated', () => {
+  assert.ok(productUiJs.includes("var isSingleImage = slides.length === 1;"));
+  assert.ok(productUiJs.includes("var isActiveSlide = tappedSlide.classList.contains('flex-active-slide');"));
+  assert.ok(productUiJs.includes("if (!isSingleImage && !isActiveSlide) return;"));
+  assert.ok(productUiJs.includes("if (moved > 10) return;"));
+  assert.ok(productUiJs.includes("nativeTrigger.click()"));
+});
+
 test('touch tap delegates to WooCommerce native lightbox while swipe remains native', () => {
   assert.ok(productUiJs.includes("pointerdown"));
   assert.ok(productUiJs.includes("pointerup"));

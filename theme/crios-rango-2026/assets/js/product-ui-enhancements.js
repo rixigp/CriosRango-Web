@@ -123,7 +123,11 @@
         var moved = Math.hypot(event.clientX - start.x, event.clientY - start.y);
         var tappedSlide = start.slide;
         start = null;
-        if (moved > 10 || !tappedSlide.classList.contains('flex-active-slide')) return;
+        if (moved > 10) return;
+        var slides = gallery.querySelectorAll('.woocommerce-product-gallery__wrapper > .woocommerce-product-gallery__image');
+        var isSingleImage = slides.length === 1;
+        var isActiveSlide = tappedSlide.classList.contains('flex-active-slide');
+        if (!isSingleImage && !isActiveSlide) return;
         var nativeTrigger = gallery.querySelector('.woocommerce-product-gallery__trigger');
         if (!nativeTrigger) return;
         event.preventDefault();
