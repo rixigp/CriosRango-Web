@@ -65,11 +65,26 @@
     return { normalized: candidates.join(' | '), color: null, fallback: true };
   }
 
+  function buildVariationAddToCartPayload(serializedFields, productId, variationId, quantity) {
+    var payload = {};
+    var variation = {};
+    (serializedFields || []).forEach(function (field) {
+      payload[field.name] = field.value;
+      if (field.name.indexOf('attribute_') === 0) variation[field.name] = field.value;
+    });
+    payload.product_id = productId;
+    payload.variation_id = variationId;
+    payload.quantity = quantity;
+    payload.variation = variation;
+    return payload;
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       COLOR_SWATCH_MAP: COLOR_SWATCH_MAP,
       normalizeColorKey: normalizeColorKey,
-      resolveColorSwatch: resolveColorSwatch
+      resolveColorSwatch: resolveColorSwatch,
+      buildVariationAddToCartPayload: buildVariationAddToCartPayload
     };
   }
 
@@ -332,19 +347,16 @@
         return params.wc_ajax_url.replace('%%endpoint%%', endpoint);
       }
       function buildNativeAddToCartPayload() {
-        var payload = {};
-        var variation = {};
-        window.jQuery(form).serializeArray().forEach(function (field) {
-          if (field.name.indexOf('attribute_') === 0) variation[field.name] = field.value;
-          else payload[field.name] = field.value;
-        });
         var productIdInput = form.querySelector('input[name="product_id"]') || form.querySelector('input[name="add-to-cart"]');
-        payload.product_id = productIdInput && productIdInput.value ? productIdInput.value : form.getAttribute('data-product_id');
-        payload.variation_id = variationId ? variationId.value : '';
+        var productId = productIdInput && productIdInput.value ? productIdInput.value : form.getAttribute('data-product_id');
         var quantityInput = form.querySelector('input.qty[name="quantity"], input[name="quantity"]');
-        payload.quantity = quantityInput ? quantityInput.value : (payload.quantity || '1');
-        payload.variation = variation;
-        return payload;
+        var quantity = quantityInput ? quantityInput.value : '1';
+        return buildVariationAddToCartPayload(
+          window.jQuery(form).serializeArray(),
+          productId,
+          variationId ? variationId.value : '',
+          quantity
+        );
       }
       function showWooAddToCartError(message) {
         var wrapper = document.querySelector('div.woocommerce-notices-wrapper');

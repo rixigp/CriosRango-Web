@@ -405,14 +405,21 @@ test('Product Detail variable add-to-cart is intercepted and sent through the of
   assert.match(assets, /array\( 'jquery', 'wc-add-to-cart', 'wc-cart-fragments' \)/);
 });
 
-test('AJAX payload sends native product ID, real variation ID, exact quantity and all dynamic native attributes', () => {
-  assert.ok(productUiJs.includes('input[name="product_id"]'));
-  assert.ok(productUiJs.includes('payload.product_id = productIdInput'));
-  assert.ok(productUiJs.includes("payload.variation_id = variationId ? variationId.value : ''"));
-  assert.ok(productUiJs.includes("payload.quantity = quantityInput ? quantityInput.value"));
-  assert.ok(productUiJs.includes("field.name.indexOf('attribute_') === 0"));
-  assert.ok(productUiJs.includes("variation[field.name] = field.value"));
-  assert.ok(productUiJs.includes("payload.variation = variation"));
+test('AJAX payload keeps every native attribute as a top-level POST field and in the WooCommerce variation map', () => {
+  const sandboxModule = { exports: {} };
+  vm.runInNewContext(productUiJs, { module: sandboxModule, document: { readyState: 'loading', addEventListener() {} } });
+  const payload = sandboxModule.exports.buildVariationAddToCartPayload([
+    { name: 'attribute_pa_color', value: 'azul' },
+    { name: 'attribute_pa_talla', value: 'M' },
+    { name: 'quantity', value: '3' }
+  ], '21110', '57392', '3');
+  assert.equal(payload.product_id, '21110');
+  assert.equal(payload.variation_id, '57392');
+  assert.equal(payload.quantity, '3');
+  assert.equal(payload.attribute_pa_color, 'azul');
+  assert.equal(payload.attribute_pa_talla, 'M');
+  assert.deepEqual(JSON.parse(JSON.stringify(payload.variation)), { attribute_pa_color: 'azul', attribute_pa_talla: 'M' });
+  assert.ok(productUiJs.includes('window.jQuery(form).serializeArray()'));
   assert.doesNotMatch(productUiJs, /attribute_pa_color|attribute_pa_tallas/);
 });
 
@@ -431,7 +438,9 @@ test('AJAX errors retrieve native WooCommerce notices and do not show false succ
   assert.ok(productUiJs.includes("showWooAddToCartError("));
   assert.ok(woocommerce.includes("function cr2026_product_detail_error_notice_fragment"));
   assert.ok(woocommerce.includes("wc_get_notices()"));
-  assert.ok(woocommerce.includes("wc_print_notices( true )"));
+  assert.ok(woocommerce.includes("wc_get_notices( 'error' )"));
+  assert.ok(woocommerce.includes("wc_get_template( 'notices/error.php'"));
+  assert.doesNotMatch(woocommerce, /wc_print_notices\\( true \\)/);
   assert.ok(woocommerce.includes("div.woocommerce-notices-wrapper"));
   assert.doesNotMatch(productUiJs, /window\.location\s*=|location\.href\s*=|location\.reload\s*\(/);
 });
@@ -482,4 +491,28 @@ test('short-description fixtures preserve valid formatting and contain malformed
   assert.equal(valid.expected, valid.input, 'already-balanced WooCommerce markup must remain unchanged');
   assert.match(valid.expected, /<u>Composición:<\/u>/);
   assert.match(valid.expected, /<u>Marca:<\/u> Arggido/);
+});
+
+test('AJAX submit capture prevents traditional submit and leaves one submit handler', () => {
+  const start = productUiJs.indexOf('function submitProductDetailAddToCart(event)');
+  const end = productUiJs.indexOf("form.addEventListener('submit', submitProductDetailAddToCart, true)", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = productUiJs.slice(start, end);
+  assert.ok(handler.includes('event.preventDefault()'));
+  assert.ok(handler.includes('event.stopImmediatePropagation()'));
+  assert.ok(handler.includes('isAddingToCart = true'));
+  assert.equal((productUiJs.match(/form\\.addEventListener\\('submit'/g) || []).length, 1);
+});
+test('successful AJAX response dispatches standard event and CTA state is not reset immediately', () => {
+  assert.match(productUiJs, /trigger\\('added_to_cart', \\[\\s\\S]*?response\\.fragments,[\\s\\S]*?response\\.cart_hash/);
+  assert.match(productUiJs, /\\.on\\('added_to_cart\\.crProductDetail'[\\s\\S]*?showAddedFeedback\\(\\)/);
+  assert.match(productUiJs, /!hasAddedFeedback/);
+});
+test('error fragment renders only validation errors, not success or informational notices', () => {
+  const start = woocommerce.indexOf('function cr2026_product_detail_error_notice_fragment');
+  const end = woocommerce.indexOf("add_filter( 'woocommerce_add_to_cart_fragments', 'cr2026_product_detail_error_notice_fragment'", start);
+  const fragment = woocommerce.slice(start, end);
+  assert.match(fragment, /wc_get_notices\\( 'error' \\)/);
+  assert.match(fragment, /notices\\/error\\.php/);
+  assert.doesNotMatch(fragment, /wc_get_notices\\(\\s*\\)|wc_print_notices/);
 });

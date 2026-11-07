@@ -364,14 +364,20 @@ function cr2026_product_detail_error_notice_fragment( $fragments ) {
     if ( ! isset( $_GET['cr_product_detail'] ) || '1' !== (string) wp_unslash( $_GET['cr_product_detail'] ) ) {
         return $fragments;
     }
-    if ( ! function_exists( 'wc_get_notices' ) || ! function_exists( 'wc_print_notices' ) ) {
+    if ( ! function_exists( 'wc_get_notices' ) || ! function_exists( 'wc_get_template' ) ) {
         return $fragments;
     }
-    $notices = wc_get_notices();
-    if ( empty( $notices ) ) {
+
+    // Only validation failures belong in this fragment. Success and informational
+    // notices (including "added to cart" and "View cart") are CTA-owned or redundant.
+    $error_notices = wc_get_notices( 'error' );
+    if ( empty( $error_notices ) ) {
         return $fragments;
     }
-    $notice_html = wc_print_notices( true );
+
+    ob_start();
+    wc_get_template( 'notices/error.php', array( 'notices' => $error_notices ) );
+    $notice_html = ob_get_clean();
     if ( '' !== $notice_html ) {
         $fragments['div.woocommerce-notices-wrapper'] = '<div class="woocommerce-notices-wrapper">' . $notice_html . '</div>';
     }
