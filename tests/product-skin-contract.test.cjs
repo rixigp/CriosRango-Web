@@ -609,12 +609,33 @@ test('share and reserve capsule is hooked after the native gallery and before pr
   assert.doesNotMatch(skin, /add_action\( 'woocommerce_after_add_to_cart_form', 'cr2026_product_skin_actions'/);
 });
 
-test('mobile quantity and CTA share a row while preserving native quantity and variation form controls', () => {
-  assert.ok(skinCss.includes('form.cart .quantity.cr-product-quantity-row'));
-  assert.ok(skinCss.includes('flex: 0 0 43%'));
-  assert.ok(skinCss.includes('form.cart .single_add_to_cart_button'));
-  assert.ok(productUiJs.includes('form.cart .quantity input.qty'));
+test('mobile variable purchase wrapper follows the native variation table and lays out quantity plus CTA in one grid row', () => {
+  assert.match(skinCss, /form\.cart table\.variations\s*\{[^}]*order:\s*1;/s);
+  assert.match(skinCss, /form\.cart \.single_variation_wrap\s*\{[^}]*order:\s*2;[^}]*flex:\s*0 0 100%;/s);
+  assert.match(skinCss, /\.single_variation_wrap \.woocommerce-variation-add-to-cart\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*max-content 116px minmax\(0, 1fr\);/s);
+  assert.match(skinCss, /\.quantity\.cr-product-quantity-row\s*\{\s*display:\s*contents !important;/s);
+  assert.match(skinCss, /\.cr-product-quantity-stepper\s*\{[^}]*width:\s*116px;[^}]*height:\s*58px;/s);
+  assert.match(skinCss, /\.single_add_to_cart_button\s*\{[^}]*grid-column:\s*3;[^}]*min-width:\s*0;[^}]*white-space:\s*nowrap;/s);
+  assert.match(skinCss, /@media \(max-width: 340px\)[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\)/);
+  assert.ok(productUiJs.includes("quantityLabel.textContent = 'Cantidad'"));
   assert.ok(productUiJs.includes('cr-product-quantity-stepper'));
+});
+
+test('mobile title and brand columns are balanced and title scale is reduced', () => {
+  assert.match(skinCss, /grid-template-columns:\s*minmax\(0,\s*1\.62fr\)\s*1px\s*minmax\(0,\s*1fr\)/);
+  assert.match(skinCss, /font-size:\s*clamp\(20px,\s*4\.8vw,\s*25px\)/);
+  assert.match(skinCss, /line-height:\s*1\.14/);
+  assert.match(skinCss, /font-weight:\s*600/);
+});
+
+test('final mobile block order keeps variations before the native purchase wrapper', () => {
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )"));
+  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
+  assert.ok(skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )") < skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
+  assert.match(skinCss, /form\.cart table\.variations\s*\{[^}]*order:\s*1;/s);
+  assert.match(skinCss, /form\.cart \.single_variation_wrap\s*\{[^}]*order:\s*2;/s);
+  assert.match(skinCss, /\.single_variation_wrap \.woocommerce-variation-add-to-cart\s*\{[^}]*display:\s*grid;/s);
+  assert.match(skinCss, /\.cr-product-title-brand-row \.product_title\s*\{[^}]*font-size:\s*clamp\(20px,\s*4\.8vw,\s*25px\)/s);
 });
 
 test('gallery zoom trigger stays hidden while native WooCommerce lightbox and FlexSlider controls remain', () => {
