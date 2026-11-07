@@ -785,7 +785,7 @@ test('display title removes only an exact final product_brand suffix and Product
   assert.ok(skin.includes("get_the_terms( absint( get_queried_object_id() ), 'product_brand' )"));
   assert.ok(skin.includes("mb_strtolower( $title_suffix, 'UTF-8' )"));
   assert.ok(skin.includes("mb_substr( $original_title, -$brand_length, null, 'UTF-8' )"));
-  const strip=(title,brand)=>{const original=title,t=title.trim(),b=brand.trim();if(!b||t.length<=b.length||t.slice(-b.length).toLocaleLowerCase('es')!==b.toLocaleLowerCase('es'))return original;const prefix=t.slice(0,-b.length);if(!/\\s*[-–—|]\\s*$/.test(prefix))return original;const out=prefix.replace(/\\s*[-–—|]\\s*$/,'').trim();return out||original;};
+  const strip=(title,brand)=>{const original=title,t=title.trim(),b=brand.trim();if(!b||t.length<=b.length||t.slice(-b.length).toLocaleLowerCase('es')!==b.toLocaleLowerCase('es'))return original;const prefix=t.slice(0,-b.length);if(!/\s*[-–—|]\s*$/.test(prefix))return original;const out=prefix.replace(/\s*[-–—|]\s*$/,'').trim();return out||original;};
   const cases=[
     ['Jersey - 194000146P - Spagnolo','Spagnolo','Jersey - 194000146P'],
     ['Chaqueta - 6516 - Ragussa','Ragussa','Chaqueta - 6516'],
