@@ -802,3 +802,16 @@ body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_a
 body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button.is-added-to-cart .cr-product-cart-label {
   color: #557568 !important;
 }
+
+
+
+/* WordPress product_brand logo/fallback and global size assistance. */
+body.cr-product-detail-app .cr-product-brand { display:flex; width:100%; align-items:center; justify-content:center; gap:18px; margin:4px 0 18px; background:transparent; }
+body.cr-product-detail-app .cr-product-brand::before,
+body.cr-product-detail-app .cr-product-brand::after { display:block; flex:1 1 auto; min-width:16px; height:1px; background:var(--cr-product-border); content:""; }
+body.cr-product-detail-app .cr-product-brand__logo { display:block; flex:0 1 auto; width:auto; max-width:min(42%,180px); max-height:64px; height:auto; object-fit:contain; object-position:center; background:transparent; }
+body.cr-product-detail-app .cr-product-brand__name { flex:0 0 auto; max-width:70%; color:var(--cr-product-green); font:400 14px/20px "Roboto",Arial,sans-serif; text-align:center; }
+body.cr-product-detail-app .cr-product-size-help { margin:18px 0 20px; color:#555B56; font:300 14px/1.65 "Roboto",Arial,sans-serif; }
+body.cr-product-detail-app .cr-product-size-help h2 { margin:0 0 6px; color:var(--cr-product-green); font:400 15px/22px "Roboto",Arial,sans-serif; }
+body.cr-product-detail-app .cr-product-size-help p { margin:0; }
+body.cr-product-detail-app .cr-product-size-help a { color:var(--cr-product-green); text-decoration:underline; text-underline-offset:2px; }

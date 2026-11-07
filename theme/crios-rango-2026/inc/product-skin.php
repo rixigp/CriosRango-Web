@@ -37,7 +37,35 @@ function cr2026_product_skin_sanitize_short_description( $short_description ) {
         return $short_description;
     }
 
-    return force_balance_tags( wp_kses_post( $short_description ) );
+    $short_description = wp_kses_post( $short_description );
+
+    // Strip legacy brand labels/values without touching independent composition text.
+    $short_description = preg_replace(
+        '~(?:<p[^>]*>\s*)?(?:<u>\s*)?Marca:\s*(?:</u>)?\s*[^<\r\n]*(?:\s*</p>)?~iu',
+        '',
+        $short_description
+    );
+
+    // Legacy sizing-help blocks are now rendered globally below the excerpt.
+    $short_description = preg_replace_callback(
+        '~<p\b[^>]*>.*?</p>~is',
+        static function ( $paragraph ) {
+            $text = html_entity_decode( wp_strip_all_tags( $paragraph[0] ), ENT_QUOTES, get_bloginfo( 'charset' ) );
+            if ( preg_match( '~Pregunta por más tallas|criosrango@criosrango\.es|633\s*246\s*788|wa\.me/34633246788~iu', $text ) ) {
+                return '';
+            }
+            return $paragraph[0];
+        },
+        $short_description
+    );
+
+    $short_description = preg_replace(
+        '~^[ \t]*[^\r\n]*(?:Pregunta por más tallas|criosrango@criosrango\.es|633\s*246\s*788|wa\.me/34633246788)[^\r\n]*$~imu',
+        '',
+        $short_description
+    );
+
+    return force_balance_tags( $short_description );
 }
 add_filter( 'woocommerce_short_description', 'cr2026_product_skin_sanitize_short_description', 20 );
 
@@ -129,3 +157,34 @@ function cr2026_product_skin_sale_label( $translation, $text, $domain ) {
     return $translation;
 }
 add_filter( 'gettext', 'cr2026_product_skin_sale_label', 20, 3 );
+
+
+/** Render the assigned WordPress product_brand term as a centered native logo. */
+function cr2026_product_skin_brand() {
+    if ( ! is_product() || ! taxonomy_exists( 'product_brand' ) ) { return; }
+    $product_id = absint( get_queried_object_id() );
+    $terms = get_the_terms( $product_id, 'product_brand' );
+    if ( is_wp_error( $terms ) || empty( $terms ) ) { return; }
+    $brand = reset( $terms );
+    if ( ! $brand instanceof WP_Term || 'product_brand' !== $brand->taxonomy ) { return; }
+    $logo_url = function_exists( 'cr2026_home_brand_image_url' ) ? cr2026_home_brand_image_url( $brand ) : '';
+    echo '<div class="cr-product-brand" aria-label="' . esc_attr__( 'Marca', 'crios-rango-2026' ) . '">';
+    if ( $logo_url ) {
+        echo '<img class="cr-product-brand__logo" src="' . esc_url( $logo_url ) . '" alt="' . esc_attr( $brand->name ) . '" loading="lazy" decoding="async">';
+    } else {
+        echo '<span class="cr-product-brand__name">' . esc_html( $brand->name ) . '</span>';
+    }
+    echo '</div>';
+}
+add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_brand', 22 );
+
+/** Render sizing assistance globally; duplicate legacy excerpt content is stripped above. */
+function cr2026_product_skin_global_size_help() {
+    if ( ! is_product() ) { return; }
+    echo '<section class="cr-product-size-help" aria-labelledby="cr-product-size-help-title">';
+    echo '<h2 id="cr-product-size-help-title">Pregunta por más tallas!</h2>';
+    echo '<p>Si la talla que necesitas, no se encuentra disponible, contacta con nosotros en <a href="mailto:criosrango@criosrango.es">criosrango@criosrango.es</a> o nuestro whatsapp <a href="https://wa.me/34633246788" target="_blank" rel="noopener noreferrer">633 246 788</a>.</p>';
+    echo '</section>';
+}
+add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 );
+

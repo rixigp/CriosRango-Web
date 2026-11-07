@@ -78,7 +78,8 @@ test('sale badge, price, notices and native controls receive presentation-only C
 
 test('short description is sanitized and balanced only at the WooCommerce excerpt boundary', () => {
   assert.match(skin, /function cr2026_product_skin_sanitize_short_description\( \$short_description \)/);
-  assert.match(skin, /return force_balance_tags\( wp_kses_post\( \$short_description \) \);/);
+  assert.match(skin, /wp_kses_post\\( \\$short_description \\)/);
+  assert.match(skin, /return force_balance_tags\\( \\$short_description \\);/);
   assert.match(skin, /add_filter\( 'woocommerce_short_description', 'cr2026_product_skin_sanitize_short_description', 20 \)/);
   assert.match(skin, /! is_product\(\)/);
   assert.doesNotMatch(skin, /the_content\s*\(|get_description\s*\(|DOMDocument/);
@@ -561,4 +562,33 @@ test('AJAX error response does not execute success feedback and refreshes only c
   assert.ok(errorBranch.includes('return;'));
   assert.equal(errorBranch.includes('showAddedFeedback()'), false);
   assert.ok(productUiJs.includes("window.jQuery(noticeRoot).find(selector).first()"));
+});
+
+test('Product Detail renders assigned product_brand logo with native metadata priority and name fallback', () => {
+  assert.match(skin, /function cr2026_product_skin_brand\\(\\)/);
+  assert.match(skin, /taxonomy_exists\\( 'product_brand' \\)/);
+  assert.match(skin, /get_the_terms\\( \\$product_id, 'product_brand' \\)/);
+  assert.match(skin, /cr2026_home_brand_image_url\\( \\$brand \\)/);
+  assert.match(skin, /cr-product-brand__logo/);
+  assert.match(skin, /cr-product-brand__name/);
+  assert.match(skinCss, /cr-product-brand::before/);
+  assert.match(skinCss, /object-fit:contain/);
+  assert.match(skin, /woocommerce_single_product_summary', 'cr2026_product_skin_brand', 22/);
+  assert.match(fs.readFileSync(path.join(theme, 'inc/helpers.php'), 'utf8'), /foreach \\( array\\( 'thumbnail_id', 'image_id' \\) as \\$meta_key \\)/);
+});
+
+test('Product Detail global size help has exact email and WhatsApp links', () => {
+  assert.match(skin, /Pregunta por más tallas!/);
+  assert.match(skin, /Si la talla que necesitas, no se encuentra disponible, contacta con nosotros en/);
+  assert.match(skin, /mailto:criosrango@criosrango\\.es/);
+  assert.match(skin, /https:\\/\\/wa\\.me\\/34633246788/);
+  assert.match(skin, /target="_blank" rel="noopener noreferrer">633 246 788/);
+  assert.match(skin, /woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24/);
+});
+
+test('legacy excerpt brand and size help cleanup leaves the balancing sanitizer active', () => {
+  assert.match(skin, /Strip legacy brand labels\\/values/);
+  assert.match(skin, /Legacy sizing-help blocks are now rendered globally/);
+  assert.match(skin, /return force_balance_tags\\( \\$short_description \\)/);
+  assert.match(skin, /criosrango@criosrango\\.es|633\\s\\*246\\s\\*788/);
 });
