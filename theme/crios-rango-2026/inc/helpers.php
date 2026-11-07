@@ -730,8 +730,7 @@ function cr2026_home_brands_url() {
 
 
 /**
- * Return only direct product_cat children, including empty categories.
- * WooCommerce's saved category order (term meta "order") is respected.
+ * Return direct product_cat children, including empty categories, in NAME_ASC order.
  */
 function cr2026_product_cat_children( $term_id ) {
     $term_id = absint( $term_id );
