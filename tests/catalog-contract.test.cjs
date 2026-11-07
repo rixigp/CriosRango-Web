@@ -348,13 +348,26 @@ test('product search uses compact app-like search field, preserves query, and ke
 });
 
 
-test('search global header stays sticky in document flow without covering the product grid',()=>{
+test('admin-bar sticky positioning is global and public header behavior remains unchanged',()=>{
   const styles=fs.readFileSync(path.join(root,'theme/crios-rango-2026/assets/css/main.css'),'utf8');
-  assert.match(styles,/body\.search \.cr-app-header \{[^}]*position:sticky!important;[^}]*top:var\(--cr-admin-bar-offset,0px\)/s);
-  assert.match(styles,/body\.search\.cr-global-app-header:not\(\.home\) \{[^}]*padding-top:0!important/s);
-  assert.match(styles,/body\.admin-bar \{ --cr-admin-bar-offset: 32px; \}/);
-  assert.match(styles,/@media \(max-width: 782px\) \{\s*body\.admin-bar \{ --cr-admin-bar-offset: 46px; \}/);
-  assert.doesNotMatch(styles,/body\.search\.cr-global-app-header:not\(\.home\) \{[^}]*padding-top:var\(--cr-app-topbar-height\)/s);
+  const helpers=fs.readFileSync(path.join(root,'theme/crios-rango-2026/inc/helpers.php'),'utf8');
+  const header=fs.readFileSync(path.join(root,'theme/crios-rango-2026/header.php'),'utf8');
+  const skin=fs.readFileSync(path.join(root,'theme/crios-rango-2026/assets/css/product-detail-skin.css'),'utf8');
+  assert.match(header,/cr2026_render_app_header\(\)/);
+  assert.match(helpers,/\$classes\[\] = 'cr-global-app-header'/);
+  assert.match(styles,/body\.admin-bar\.cr-global-app-header \.cr-app-header\s*\{[^}]*position:\s*sticky !important;[^}]*top:\s*var\(--cr-admin-bar-sticky-top, 0px\) !important;/s);
+  assert.equal((styles.match(/body\.admin-bar\.cr-global-app-header \.cr-app-header\s*\{/g)||[]).length,1);
+  assert.match(styles,/body\.admin-bar\.cr-global-app-header:not\(\.home\)\s*\{\s*padding-top:\s*0 !important;/);
+  assert.match(styles,/body\.admin-bar\s*\{\s*--cr-admin-bar-offset:\s*32px;\s*--cr-admin-bar-sticky-top:\s*32px;/);
+  assert.match(styles,/@media \(max-width: 782px\)\s*\{\s*body\.admin-bar\s*\{\s*--cr-admin-bar-offset:\s*46px;\s*--cr-admin-bar-sticky-top:\s*46px;/);
+  assert.match(styles,/@media \(max-width: 600px\)\s*\{\s*body\.admin-bar\s*\{\s*--cr-admin-bar-sticky-top:\s*0px;/);
+  assert.match(styles,/body\.admin-bar\.home \.cr-app-header\s*\{\s*margin-bottom:\s*calc\(-1 \* var\(--cr-app-topbar-height, 96px\)\);/);
+  assert.match(styles,/\.cr-app-header\s*\{[^}]*z-index:\s*1150;/s);
+  assert.doesNotMatch(styles,/#wpadminbar\s*\{/);
+  assert.doesNotMatch(styles,/body\.admin-bar(?:\.search|\.cr-product-detail-app|\.cr-parent-category-view|\.cr-product-listing-view)[^{]*\.cr-app-header\s*\{/);
+  assert.doesNotMatch(skin,/body\.admin-bar\.cr-product-detail-app \.cr-app-header/);
+  assert.match(styles,/body\.search \.cr-app-header \{[^}]*position:sticky!important;[^}]*top:0;/s);
+  assert.match(styles,/body\.cr-global-app-header:not\(\.home\)\s*\{[^}]*padding-top:\s*var\(--cr-app-topbar-height\)/s);
 });
 
 test('product search has no active bottom-navigation destination while links remain navigable',()=>{

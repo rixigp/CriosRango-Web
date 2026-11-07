@@ -113,7 +113,8 @@ test('WPLoyalty promotional output is hidden by scoped wrapper CSS only', () => 
 test('logged-out mobile Product Detail uses the approved header and toolbar baseline; admin-session geometry is accepted', () => {
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-app-header\s*\{[^}]*position: sticky !important;[^}]*top: 0 !important;/s);
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{\s*position: sticky;\s*top: var\(--cr-app-topbar-height, 64px\);/);
-  // KNOWN_ADMIN_SESSION_UI_BUG=ACCEPTED; admin offsets are deliberately not asserted.
+  assert.doesNotMatch(skinCss, /body\.admin-bar\.cr-product-detail-app \.cr-app-header/);
+  // Admin-bar header offset is now owned by the shared global header rule in main.css.
 });
 
 

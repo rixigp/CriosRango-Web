@@ -357,9 +357,9 @@ body.cr-product-detail-app .cr-main--woocommerce div.product #tab-additional_inf
 
 
 /*
- * Product Detail uses one in-flow sticky header. WordPress core keeps the
- * admin bar fixed above 600px and switches it to absolute at <=600px.
- * The toolbar offsets only for the admin bar while that bar remains fixed.
+ * Product Detail keeps its approved in-flow header in public sessions.
+ * Admin-bar positioning is inherited from the shared global header rule in main.css.
+ * Its secondary toolbar remains offset beneath the header while the admin bar is fixed.
  */
 body.cr-product-detail-app .cr-app-header {
   position: sticky !important;
@@ -368,18 +368,8 @@ body.cr-product-detail-app .cr-app-header {
 }
 
 @media screen and (min-width: 601px) {
-  body.admin-bar.cr-product-detail-app .cr-app-header {
-    top: var(--cr-admin-bar-offset, 0px) !important;
-  }
-
   body.admin-bar.cr-product-detail-app .cr-product-detail-toolbar {
     top: calc(var(--cr-admin-bar-offset, 0px) + var(--cr-app-topbar-height, 64px));
-  }
-}
-
-@media screen and (max-width: 600px) {
-  body.admin-bar.cr-product-detail-app .cr-app-header {
-    top: 0 !important;
   }
 }
 
