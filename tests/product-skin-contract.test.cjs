@@ -39,13 +39,21 @@ test('product detail stylesheet is enqueued only on is_product pages', () => {
   assert.match(assets, /cr2026_asset_version\( 'assets\/css\/product-detail-skin\.css' \)/);
 });
 
-test('toolbar is presentational, uses approved category classes and standard shop navigation', () => {
+test('toolbar back prefers validated same-origin history and has a server-rendered category fallback', () => {
   assert.match(skin, /woocommerce_before_single_product/);
   assert.match(skin, /cr-parent-category__toolbar/);
   assert.match(skin, /cr-parent-category__back/);
   assert.match(skin, /cr-parent-category__title/);
-  assert.match(skin, /cr2026_shop_url\(\)/);
-  assert.doesNotMatch(skin, /history\.back|window\.history|javascript:/);
+  assert.match(skin, /data-fallback-url/);
+  assert.match(skin, /window\.history\.back\(\)/);
+  assert.match(skin, /previous\.origin === current\.origin/);
+  assert.match(skin, /window\.history\.length < 2/);
+  assert.match(skin, /function cr2026_product_skin_back_fallback_url/);
+  assert.match(skin, /get_ancestors\(\$term->term_id, 'product_cat', 'taxonomy'\)/);
+  assert.match(skin, /_yoast_wpseo_primary_product_cat/);
+  assert.match(skin, /_rank_math_primary_product_cat/);
+  assert.match(skin, /return cr2026_shop_url\(\)/);
+  assert.doesNotMatch(skin, /javascript:/);
 });
 
 test('legacy breadcrumb, product meta, related and upsell presentations are removed product-scoped', () => {
@@ -588,16 +596,16 @@ test('final app layout groups native title, dynamic price and WordPress brand wi
 test('global sizing help uses the local measuring-tape SVG and retains the exact contact links', () => {
   assert.ok(skin.includes('cr-product-size-help__icon'));
   assert.ok(skin.includes('<svg viewBox="0 0 32 32"'));
-  assert.match(skin, /<circle cx="9\\.5" cy="18" r="7"/);
-  assert.match(skin, /M15\\.8 13\\.5h11\\.4/);
+  assert.match(skin, /<circle cx="9\.5" cy="18" r="7"/);
+  assert.match(skin, /M15\.8 13\.5h11\.4/);
   assert.ok(skin.includes('cr-product-size-help__content'));
   assert.ok(skinCss.includes('cr-product-size-help__icon svg'));
   assert.ok(skinCss.includes('background: #EAF1E8'));
 });
 
 test('share and reserve capsule is rendered after the native add-to-cart form', () => {
-  assert.ok(skin.includes("add_action( 'woocommerce_after_add_to_cart_form', 'cr2026_product_skin_actions', 25 )"));
-  assert.doesNotMatch(skin, /add_action\( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_actions'/);
+  assert.ok(skin.includes("add_action( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_actions', 31 )"));
+  assert.doesNotMatch(skin, /add_action\( 'woocommerce_after_add_to_cart_form', 'cr2026_product_skin_actions'/);
 });
 
 test('mobile quantity and CTA share a row while preserving native quantity and variation form controls', () => {
@@ -625,4 +633,21 @@ test('final mobile block order places share after gallery and before title, size
   assert.match(skinCss, /flex: 0 0 104px/);
   assert.match(skinCss, /min-height: 60px/);
   assert.match(skinCss, /white-space: nowrap/);
+});
+
+
+test('contextual back ignores external referrers and only goes back within the current site path', () => {
+  assert.match(skin, /previous\.origin === current\.origin/);
+  assert.match(skin, /insideSite && isDifferentPage/);
+  assert.match(skin, /event\.preventDefault\(\);\s*window\.history\.back\(\)/);
+  assert.match(skin, /data-site-path/);
+});
+
+test('product category fallback uses assigned primary category then deterministic deepest category', () => {
+  assert.match(skin, /_yoast_wpseo_primary_product_cat/);
+  assert.match(skin, /_rank_math_primary_product_cat/);
+  assert.match(skin, /get_ancestors\(\$term->term_id, 'product_cat', 'taxonomy'\)/);
+  assert.match(skin, /\$right\['depth'\] <=> \$left\['depth'\]/);
+  assert.match(skin, /\$left\['term'\]->term_id <=> \$right\['term'\]->term_id/);
+  assert.match(skin, /return cr2026_shop_url\(\)/);
 });

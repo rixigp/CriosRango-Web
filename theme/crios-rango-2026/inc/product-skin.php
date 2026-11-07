@@ -94,6 +94,88 @@ function cr2026_product_skin_suppress_success_notice( $message, $products ) {
 }
 add_filter( 'wc_add_to_cart_message_html', 'cr2026_product_skin_suppress_success_notice', 10, 2 );
 
+/**
+ * Resolve a stable Product Detail back destination without relying on the referrer.
+ * A valid assigned primary category wins; otherwise use the deepest assigned term.
+ */
+function cr2026_product_skin_back_fallback_url( $product_id ) {
+    $terms = get_the_terms( absint( $product_id ), 'product_cat' );
+    if ( is_wp_error( $terms ) || empty( $terms ) ) {
+        return cr2026_shop_url();
+    }
+
+    $assigned = array();
+    foreach ( $terms as $term ) {
+        if ( $term instanceof WP_Term && 'product_cat' === $term->taxonomy && ! is_wp_error( get_term_link( $term ) ) ) {
+            $assigned[ $term->term_id ] = $term;
+        }
+    }
+    if ( empty( $assigned ) ) {
+        return cr2026_shop_url();
+    }
+
+    // Respect an SEO primary category only when it is genuinely assigned to this product.
+    foreach ( array( '_yoast_wpseo_primary_product_cat', '_rank_math_primary_product_cat' ) as $primary_key ) {
+        $primary_id = absint( get_post_meta( $product_id, $primary_key, true ) );
+        if ( $primary_id && isset( $assigned[ $primary_id ] ) ) {
+            $primary_url = get_term_link( $assigned[ $primary_id ] );
+            if ( ! is_wp_error( $primary_url ) ) {
+                return $primary_url;
+            }
+        }
+    }
+
+    // Stable tie-break: deepest hierarchy first, then lowest term ID.
+    $ranked = array();
+    foreach ( $assigned as $term ) {
+        $ranked[] = array(
+            'term' => $term,
+            'depth' => count( get_ancestors( $term->term_id, 'product_cat', 'taxonomy' ) ),
+        );
+    }
+    usort( $ranked, static function ( $left, $right ) {
+        if ( $left['depth'] !== $right['depth'] ) {
+            return $right['depth'] <=> $left['depth'];
+        }
+        return $left['term']->term_id <=> $right['term']->term_id;
+    } );
+
+    $fallback = get_term_link( $ranked[0]['term'] );
+    return is_wp_error( $fallback ) ? cr2026_shop_url() : $fallback;
+}
+
+/** Only use browser history when the previous document is a real same-origin site page. */
+function cr2026_product_skin_contextual_back_script() {
+    if ( ! is_product() ) { return; }
+    ?>
+    <script id="cr-product-contextual-back">
+    (function () {
+      var link = document.querySelector('.cr-product-detail-toolbar .cr-parent-category__back[data-fallback-url]');
+      if (!link) return;
+      link.addEventListener('click', function (event) {
+        var referrer = document.referrer;
+        if (!referrer || window.history.length < 2) return;
+        try {
+          var previous = new URL(referrer);
+          var basePath = link.getAttribute('data-site-path') || '/';
+          var current = window.location;
+          var insideSite = previous.origin === current.origin &&
+            (basePath === '/' || previous.pathname === basePath.replace(/\/$/, '') || previous.pathname.indexOf(basePath.replace(/\/$/, '') + '/') === 0);
+          var isDifferentPage = previous.pathname !== current.pathname;
+          if (insideSite && isDifferentPage) {
+            event.preventDefault();
+            window.history.back();
+          }
+        } catch (error) {
+          // The server-rendered category fallback remains available if referrer parsing fails.
+        }
+      });
+    }());
+    </script>
+    <?php
+}
+add_action( 'wp_footer', 'cr2026_product_skin_contextual_back_script', 30 );
+
 /** Toolbar uses the already-approved category toolbar presentation classes. */
 function cr2026_product_skin_toolbar() {
     if ( ! is_product() ) {
@@ -103,8 +185,9 @@ function cr2026_product_skin_toolbar() {
     if ( ! $product instanceof WC_Product ) {
         return;
     }
+    $fallback_url = cr2026_product_skin_back_fallback_url( $product->get_id() );
     echo '<div class="cr-product-detail-toolbar cr-parent-category__toolbar">';
-    echo '<a class="cr-parent-category__back" href="' . esc_url( cr2026_shop_url() ) . '" aria-label="' . esc_attr__( 'Volver a la tienda', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
+    echo '<a class="cr-parent-category__back" href="' . esc_url( $fallback_url ) . '" data-fallback-url="' . esc_url( $fallback_url ) . '" data-site-path="' . esc_attr( wp_parse_url( home_url( '/' ), PHP_URL_PATH ) ) . '" aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
     echo '<h1 class="cr-parent-category__title">' . esc_html( $product->get_name() ) . '</h1>';
     echo '</div>';
 }
