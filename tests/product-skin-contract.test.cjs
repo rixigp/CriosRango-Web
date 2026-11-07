@@ -209,12 +209,18 @@ test('only successful add-to-cart notices are suppressed on Product Detail; WooC
   assert.doesNotMatch(skinCss, /\.woocommerce-notices-wrapper\s*\{[^}]*display:\s*none/i);
 });
 
-test('enhancements are progressive and the native add-to-cart button remains the only submit', () => {
+test('Product Detail enhancements remain progressive while valid native variations use AJAX without navigation', () => {
   assert.ok(assets.includes('cr2026-product-ui-enhancements'));
   assert.ok(assets.includes('if ( $uses_product_detail_skin )'));
   assert.ok(productUiJs.includes("body.classList.add('cr-product-ui-enhanced')"));
   assert.ok(productUiJs.includes("body.classList.remove('cr-product-ui-enhanced')"));
+  assert.ok(productUiJs.includes("var form = document.querySelector('form.variations_form')"));
   assert.ok(productUiJs.includes("form.querySelector('button.single_add_to_cart_button')"));
+  assert.ok(productUiJs.includes('table.variations select'));
+  assert.ok(productUiJs.includes('woocommerce_update_variation_values'));
+  assert.ok(productUiJs.includes('dispatchNativeChange(select)'));
+  assert.ok(productUiJs.includes('aria-pressed'));
+  assert.ok(productUiJs.includes("form.querySelector('input.variation_id')"));
   assert.doesNotMatch(productUiJs, /submitProductDetailAddToCart/);
   assert.match(productUiJs, /form\.addEventListener\('submit',[\s\S]*?\}, true\)/);
   assert.ok(productUiJs.includes('initVariationAjaxAddToCart();'));
@@ -420,12 +426,21 @@ test('visual color resolution never mutates the native WooCommerce option value'
 });
 
 
-test('Product Detail does not own or intercept WooCommerce add-to-cart submission', () => {
-  assert.doesNotMatch(productUiJs, /submitProductDetailAddToCart/);
-  assert.doesNotMatch(productUiJs, /addEventListener\(['"]submit['"]/);
-  assert.doesNotMatch(productUiJs, /getWooAjaxUrl\(['"]add_to_cart['"]\)/);
-  assert.doesNotMatch(productUiJs, /jQuery\.ajax\s*\(/);
+test('valid variable submit is intercepted and posts the WooCommerce variation ID contract', () => {
+  assert.match(productUiJs, /form\.addEventListener\('submit',[\s\S]*?event\.preventDefault\(\)/);
+  assert.ok(productUiJs.includes("form.querySelector('input.variation_id')"));
+  assert.match(productUiJs, /var selectedVariationId = Number\(variationId\.value\)/);
+  assert.match(productUiJs, /product_id:\s*selectedVariationId/);
+  assert.match(productUiJs, /quantity:\s*quantityInput\s*\?\s*quantityInput\.value\s*:\s*1/);
+  assert.doesNotMatch(productUiJs, /product_id:\s*[^,]+,\s*variation_id:/);
+  assert.match(productUiJs, /if \(!selectedVariationId[\s\S]*?return;/);
+  assert.match(productUiJs, /var quantityInput = form\.querySelector\('input\.qty\[name="quantity"\]'\)/);
+  assert.match(productUiJs, /var endpoint = String\(ajaxParams\.wc_ajax_url\)\.replace\('%%endpoint%%', 'add_to_cart'\)/);
+  assert.match(productUiJs, /\$\.ajax\(\{[\s\S]*?data: data[\s\S]*?dataType: 'json'/);
+  assert.match(productUiJs, /form\.addEventListener\('submit',[\s\S]*?\}, true\)/);
   assert.match(assets, /array\( 'jquery', 'wc-add-to-cart', 'wc-cart-fragments' \)/);
+  assert.ok(productUiJs.includes('woocommerce_update_variation_values'));
+  assert.equal(productUiJs.includes('variation_id.value ='), false);
 });
 
 test('cart count remains a WooCommerce fragment for every existing header and bottom-nav counter', () => {
@@ -467,19 +482,20 @@ test('short-description fixtures preserve valid formatting and contain malformed
   assert.match(valid.expected, /<u>Marca:<\/u> Arggido/);
 });
 
-test('duplicate custom submit owner and request-only helpers are removed', () => {
+test('variation AJAX flow is single-request, guarded, and emits WooCommerce added_to_cart feedback', () => {
+  assert.ok(productUiJs.includes('initVariationAjaxAddToCart();'));
+  assert.match(productUiJs, /var isAddingToCart = false/);
+  assert.match(productUiJs, /if \(isAddingToCart\) return/);
+  assert.match(productUiJs, /isAddingToCart = true[\s\S]*?\$\.ajax\(/);
+  assert.match(productUiJs, /\$\.ajax\(\{[\s\S]*?type: 'POST'[\s\S]*?url: endpoint[\s\S]*?data: data/);
+  assert.match(productUiJs, /event\.preventDefault\(\)[\s\S]*?event\.stopImmediatePropagation\(\)/);
+  assert.match(productUiJs, /\$\(document\.body\)\.trigger\('added_to_cart', \[[\s\S]*?response\.fragments[\s\S]*?response\.cart_hash[\s\S]*?\$button/);
+  assert.match(productUiJs, /\.fail\(function \(xhr, status, error\)[\s\S]*?variation add-to-cart request failed/);
+  assert.match(productUiJs, /!response \|\| response\.error \|\| response\.success === false/);
+  assert.match(productUiJs, /\.always\(function \(\)[\s\S]*?isAddingToCart = false[\s\S]*?removeAttribute\('aria-busy'\)/);
+  assert.ok(productUiJs.includes("added_to_cart.crProductDetail"));
+  assert.ok(productUiJs.includes('showAddedFeedback()'));
   assert.doesNotMatch(productUiJs, /submitProductDetailAddToCart/);
-  assert.doesNotMatch(productUiJs, /addEventListener\(['"]submit['"]/);
-  for (const deadHelper of [
-    'buildVariationAddToCartPayload',
-    'buildNativeAddToCartPayload',
-    'getWooAjaxUrl',
-    'applyWooCartFragments',
-    'refreshWooErrorNotices',
-    'showWooAddToCartError',
-    'releaseAddToCartLock',
-    'isAddingToCart'
-  ]) assert.doesNotMatch(productUiJs, new RegExp(deadHelper));
   assert.doesNotMatch(woocommerce, /cr2026_product_detail_error_notice_fragment|cr_product_detail/);
 });
 
