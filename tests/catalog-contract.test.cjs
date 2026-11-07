@@ -569,7 +569,7 @@ test('brand archive order select sizes to the selected option and keeps its nati
   assert.match(brandTemplate, /<select id="cr-brand-product-order" name="orderby" data-cr-brand-order/);
   for (const value of ['date', 'price', 'price-desc', 'title']) assert.ok(brandTemplate.includes('value="' + value + '"'));
   assert.match(css, /\.cr-product-listing__select-wrap::after \{[^}]*right:3px;[^}]*width:7px;/);
-  assert.match(css, /\.cr-brand-archive__ordering select \{ padding-right:14px; \}/);
+  assert.match(css, /\.cr-brand-archive \\[data-cr-brand-order-form\\] select \{ padding-right:14px; \}/);
   assert.match(js, /const fitBrandOrderControl = \(\) =>/);
   assert.match(js, /context\.measureText\(selectedText\)\.width/);
   assert.match(js, /brandOrderControl\.style\.width = Math\.ceil\(textWidth \+ paddingLeft \+ paddingRight\) \+ 'px'/);
