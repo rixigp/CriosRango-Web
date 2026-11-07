@@ -74,6 +74,7 @@ test('legacy breadcrumb, product meta, related and upsell presentations are remo
 test('sale badge, price, notices and native controls receive presentation-only CSS', () => {
   assert.match(skin, /function cr2026_product_skin_sale_label/);
   assert.match(skin, /return 'OFERTA'/);
+  assert.match(skin, /if \( 'woocommerce' === \$domain && in_array\( \$text, array\( 'Sale!', '¡Oferta!' \), true \) \)/);
   assert.match(skinCss, /div\.product \{\s*position:\s*relative;/);
   assert.match(skinCss, /div\.product span\.onsale \{[\s\S]*?position:\s*absolute;[\s\S]*?top:\s*10px;[\s\S]*?left:\s*10px;[\s\S]*?background:\s*var\(--cr-product-coral\);[\s\S]*?color:\s*#fff;[\s\S]*?pointer-events:\s*none;/);
   assert.doesNotMatch(skinCss, /div\.product span\.onsale \{[^}]*position:\s*static;/s);

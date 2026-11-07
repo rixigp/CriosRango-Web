@@ -239,7 +239,7 @@ add_action( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_ac
 
 /** Replace the translated WooCommerce sale label only on product detail pages. */
 function cr2026_product_skin_sale_label( $translation, $text, $domain ) {
-    if ( is_product() && 'woocommerce' === $domain && in_array( $text, array( 'Sale!', '¡Oferta!' ), true ) ) {
+    if ( 'woocommerce' === $domain && in_array( $text, array( 'Sale!', '¡Oferta!' ), true ) ) {
         return 'OFERTA';
     }
     return $translation;
