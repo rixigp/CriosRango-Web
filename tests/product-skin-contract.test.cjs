@@ -700,7 +700,7 @@ test('display title removes only a final product_brand suffix and leaves the sti
   function expectedDisplayTitle(title, brand) {
     if (!brand || !brand.trim()) return title;
     const escaped = brand.trim();
-    const suffix = new RegExp('^(.*?)(?:\\s*[-–—|]\\s*)' + escaped + '\\s*
+    const suffix = new RegExp('^(.*?)(?:\\s*[-–—|]\\s*)' + escaped + '\\s*' + '$', 'iu');
     const match = title.match(suffix);
     if (!match) return title;
     return match[1].replace(/[\s\-–—|]+$/u, '') || title;
