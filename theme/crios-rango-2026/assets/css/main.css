@@ -4,6 +4,7 @@
   --cr-sale-coral: #E58B78;
   --cr-green-dark: #244436;
   --cr-cream: #f7f3eb;
+  --cr-app-canvas: #FCFAF7;
   --cr-sand: #ebe2d4;
   --cr-blush: #f3e6e4;
   --cr-blue: #e5edf1;
@@ -1961,7 +1962,7 @@ body.cr-parent-category-view {
   display: flex;
   flex-direction: column;
   overflow-x: clip;
-  background: #FCFAF7;
+  background: var(--cr-app-canvas);
   color: #183B35;
   font-family: "Roboto", Arial, sans-serif;
 }
@@ -2548,7 +2549,7 @@ body.cr-app-nav-shell .cr-category-hub {
 }
 
 /* Dedicated app-style brands index. */
-.cr-brands-index { min-height:100dvh; background:#FCFAF7; color:#183B35; padding:0 0 calc(88px + env(safe-area-inset-bottom)); }
+.cr-brands-index { min-height:100dvh; background:var(--cr-app-canvas); color:#183B35; padding:0 0 calc(88px + env(safe-area-inset-bottom)); }
 .cr-brands-index__shell { width:100%; max-width:900px; margin:0 auto; }
 .cr-brands-index__toolbar { min-height:72px; display:flex; align-items:center; gap:18px; margin:0 20px 18px; }
 .cr-brands-index__toolbar h1 { min-width:0; margin:0; color:#183B35; font:400 20px/28px "Roboto",Arial,sans-serif; }
@@ -2565,7 +2566,8 @@ body.cr-app-nav-shell .cr-category-hub {
 }
 
 /* App-like product listing: shared toolbar, compact cards and native navigation. */
-body.cr-product-listing-view .cr-product-listing { width:100%; max-width:1360px; margin-inline:auto; padding:0 0 calc(88px + env(safe-area-inset-bottom)); box-sizing:border-box; background:#FCFAF7; }
+body.cr-product-listing-view { background:var(--cr-app-canvas); }
+body.cr-product-listing-view .cr-product-listing { width:100%; max-width:1360px; margin-inline:auto; padding:0 0 calc(88px + env(safe-area-inset-bottom)); box-sizing:border-box; background:var(--cr-app-canvas); }
 body.cr-product-listing-view .cr-product-listing__shell { width:100%; }
 body.cr-product-listing-view .cr-product-listing .cr-parent-category__toolbar { margin:0 20px 14px; }
 .cr-product-listing__ordering { min-height:38px; margin:0 20px 14px; display:flex; align-items:center; gap:9px; color:#777b77; font:300 13px/20px "Roboto",Arial,sans-serif; }
