@@ -756,19 +756,6 @@ function cr2026_product_cat_children( $term_id ) {
         return $child instanceof WP_Term && 'product_cat' === $child->taxonomy;
     } ) );
 
-    usort( $children, static function ( $left, $right ) {
-        $left_order  = get_term_meta( $left->term_id, 'order', true );
-        $right_order = get_term_meta( $right->term_id, 'order', true );
-        $left_order  = '' === $left_order ? 0 : (int) $left_order;
-        $right_order = '' === $right_order ? 0 : (int) $right_order;
-
-        if ( $left_order !== $right_order ) {
-            return $left_order <=> $right_order;
-        }
-
-        return strcasecmp( $left->name, $right->name );
-    } );
-
     return $children;
 }
 
