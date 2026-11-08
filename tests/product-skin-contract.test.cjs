@@ -1592,7 +1592,7 @@ test('CART_PROMOTIONS_LOADING_TEXT_NOT_VISUALLY_RENDERED=PASS; CART_PROMOTIONS_L
  assert.ok(loading,'single promotions loading element remains');
  assert.doesNotMatch(loading[0],/>\s*Cargando promociones(?:…|\.\.\.)?\s*</i,'loading copy is not rendered as visible text');
  assert.match(loading[0],/role="status" aria-live="polite" aria-label="<\?php esc_attr_e\( 'Cargando promociones'/,'accessible loading announcement retained');
- assert.equal((loading[0].match(/cr-cart-promotions__skeleton-bar/g)||[]).length,2,'two decorative skeleton bars');
+ assert.equal((loading[0].match(/class="cr-cart-promotions__skeleton-bar/g)||[]).length,2,'two decorative skeleton bars');
  assert.match(loading[0],/aria-hidden="true"/);
  const skeleton=c.slice(c.lastIndexOf('/* Promotions loading state:'));
  assert.match(skeleton,/\.cr-cart-promotions__loading\s*\{[\s\S]*?margin-inline:var\(--cr-cart-card-inline-gutter\);[\s\S]*?min-height:68px;[\s\S]*?border-radius:13px;[\s\S]*?background:rgba\(53,95,75,\.055\)/);
