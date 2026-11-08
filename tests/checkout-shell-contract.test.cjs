@@ -172,7 +172,7 @@ test('delivery grid uses native wrapper classes and a narrow-screen single-colum
   assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper\s*\{[^}]*display:\s*grid/s);
   assert.match(checkoutCss, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(checkoutCss, /@media \(max-width:\s*360px\)[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/);
-  assert.doesNotMatch(checkoutCss, /\border\s*:/);
+  assert.doesNotMatch(checkoutCss, /^\s*order\s*:/m);
   assert.doesNotMatch(checkoutCss, /order\s*:/);
 });
 
