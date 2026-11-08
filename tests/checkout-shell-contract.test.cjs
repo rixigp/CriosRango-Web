@@ -165,20 +165,43 @@ test('delivery section heading is appended through the native billing hook', () 
   assert.match(checkoutCss, /\.woocommerce-billing-fields > h3\s*\{\s*display:\s*none;/);
 });
 
-test('delivery grid uses native wrapper classes and a narrow-screen single-column fallback', () => {
-  assert.match(woocommercePhp, /'layout' => 'form-row-first'/);
-  assert.match(woocommercePhp, /'layout' => 'form-row-last'/);
-  assert.match(woocommercePhp, /'layout' => 'form-row-wide'/);
-  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper\s*\{[^}]*display:\s*grid/s);
-  assert.match(checkoutCss, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
-  assert.match(checkoutCss, /@media \(max-width:\s*360px\)[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+test('delivery field semantics define five full-width fields and two half-width rows', () => {
+  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const fn = woocommercePhp.slice(start, end);
+  const full = ['billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone', 'billing_address_1'];
+  const half = ['billing_state', 'billing_city', 'billing_postcode', 'billing_country'];
+  for (const key of full) assert.match(fn, new RegExp("'" + key + "'\\s*=>[^\\n]*'layout' => 'full'"));
+  for (const key of half) assert.match(fn, new RegExp("'" + key + "'\\s*=>[^\\n]*'layout' => 'half'"));
+  assert.match(fn, /cr-delivery-field--' \\. \$presentation\['layout'\]/);
+  assert.match(fn, /form-row-first.*form-row-last.*form-row-wide/s);
+  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper\\s*\\{[^}]*display:\\s*grid/s);
+  assert.match(checkoutCss, /grid-template-columns:\\s*repeat\\(2,\\s*minmax\\(0,\\s*1fr\\)\\)/);
+  assert.match(checkoutCss, /\.cr-delivery-field--full\\s*\\{\\s*grid-column:\\s*1\\s*\\/\\s*-1/s);
+  assert.match(checkoutCss, /\.cr-delivery-field--half\\s*\\{\\s*grid-column:\\s*auto/s);
+  assert.match(checkoutCss, /@media \\(max-width:\\s*340px\\)[\\s\\S]*?grid-template-columns:\\s*minmax\\(0,\\s*1fr\\)/);
   const orderDeclarationPattern = /^[ \\t]*order[ \\t]*:/m;
-  assert.doesNotMatch('  border: 1px solid #ddd;', orderDeclarationPattern);
-  assert.doesNotMatch('  border-order: 1;', orderDeclarationPattern);
-  assert.match('  order: 1;', orderDeclarationPattern);
-  assert.match('  order : 2;', orderDeclarationPattern);
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
 });
+
+test('delivery labels float over native controls and retain the real WooCommerce label element', () => {
+  assert.match(checkoutCss, /\.form-row > label\\s*\\{[^}]*position:\\s*absolute/s);
+  assert.match(checkoutCss, /transform:\\s*translateY\\(-50%\\)/);
+  assert.match(checkoutCss, /background:\\s*var\\(--cr-app-canvas\\)/);
+  assert.match(checkoutCss, /pointer-events:\\s*none/);
+  assert.match(checkoutCss, /\.form-row input\\.input-text/);
+  assert.match(woocommercePhp, /\$fields\\['billing'\\]\\[ \$key \\]\\['label'\\]/);
+});
+
+test('native delivery controls and Select2 remain presentation-only with no DOM replacement', () => {
+  assert.doesNotMatch(woocommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);
+  assert.doesNotMatch(checkoutCss, /display:\\s*none[^}]*select2|select2[^}]*display:\\s*none/s);
+  assert.match(checkoutCss, /\.select2-selection--single/);
+  assert.match(checkoutCss, /height:\\s*var\\(--cr-checkout-field-height\\)/);
+  assert.doesNotMatch(checkoutCss, /\\border\\s*:/);
+  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper[^}]*order\\s*:/s);
+});
+
 
 test('country and state remain native WooCommerce selects with Select2 presentation only', () => {
   assert.match(woocommercePhp, /billing_state/);

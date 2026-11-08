@@ -733,15 +733,15 @@ function cr2026_checkout_delivery_fields( $fields ) {
     }
 
     $delivery_fields = array(
-        'billing_first_name' => array( 'label' => __( 'Nombre', 'crios-rango-2026' ), 'priority' => 10, 'layout' => 'form-row-first' ),
-        'billing_last_name'  => array( 'label' => __( 'Apellidos', 'crios-rango-2026' ), 'priority' => 20, 'layout' => 'form-row-last' ),
-        'billing_email'      => array( 'label' => __( 'Email', 'crios-rango-2026' ), 'priority' => 30, 'layout' => 'form-row-first' ),
-        'billing_phone'      => array( 'label' => __( 'Teléfono', 'crios-rango-2026' ), 'priority' => 40, 'layout' => 'form-row-last' ),
-        'billing_address_1'  => array( 'label' => __( 'Dirección', 'crios-rango-2026' ), 'priority' => 50, 'layout' => 'form-row-wide' ),
-        'billing_state'      => array( 'label' => __( 'Provincia', 'crios-rango-2026' ), 'priority' => 60, 'layout' => 'form-row-first' ),
-        'billing_city'       => array( 'label' => __( 'Localidad', 'crios-rango-2026' ), 'priority' => 70, 'layout' => 'form-row-last' ),
-        'billing_postcode'   => array( 'label' => __( 'Código postal', 'crios-rango-2026' ), 'priority' => 80, 'layout' => 'form-row-first' ),
-        'billing_country'    => array( 'label' => __( 'País', 'crios-rango-2026' ), 'priority' => 90, 'layout' => 'form-row-last' ),
+        'billing_first_name' => array( 'label' => __( 'Nombre', 'crios-rango-2026' ), 'priority' => 10, 'layout' => 'full' ),
+        'billing_last_name'  => array( 'label' => __( 'Apellidos', 'crios-rango-2026' ), 'priority' => 20, 'layout' => 'full' ),
+        'billing_email'      => array( 'label' => __( 'Email', 'crios-rango-2026' ), 'priority' => 30, 'layout' => 'full' ),
+        'billing_phone'      => array( 'label' => __( 'Teléfono', 'crios-rango-2026' ), 'priority' => 40, 'layout' => 'full' ),
+        'billing_address_1'  => array( 'label' => __( 'Dirección', 'crios-rango-2026' ), 'priority' => 50, 'layout' => 'full' ),
+        'billing_state'      => array( 'label' => __( 'Provincia', 'crios-rango-2026' ), 'priority' => 60, 'layout' => 'half' ),
+        'billing_city'       => array( 'label' => __( 'Localidad', 'crios-rango-2026' ), 'priority' => 70, 'layout' => 'half' ),
+        'billing_postcode'   => array( 'label' => __( 'Código postal', 'crios-rango-2026' ), 'priority' => 80, 'layout' => 'half' ),
+        'billing_country'    => array( 'label' => __( 'País', 'crios-rango-2026' ), 'priority' => 90, 'layout' => 'half' ),
     );
 
     foreach ( $delivery_fields as $key => $presentation ) {
@@ -759,10 +759,10 @@ function cr2026_checkout_delivery_fields( $fields ) {
         if ( is_array( $fields['billing'][ $key ]['class'] ) ) {
             $classes = array_diff(
                 $fields['billing'][ $key ]['class'],
-                array( 'form-row-first', 'form-row-last', 'form-row-wide' )
+                array( 'form-row-first', 'form-row-last', 'form-row-wide', 'cr-delivery-field', 'cr-delivery-field--full', 'cr-delivery-field--half' )
             );
-            $classes[] = $presentation['layout'];
             $classes[] = 'cr-delivery-field';
+            $classes[] = 'cr-delivery-field--' . $presentation['layout'];
             $fields['billing'][ $key ]['class'] = array_values( array_unique( $classes ) );
         }
     }
