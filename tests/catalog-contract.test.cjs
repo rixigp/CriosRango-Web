@@ -999,7 +999,7 @@ test('CART_STORE_API_NONCE=PASS', () => {
 
 test('CART_PENDING_REWARD_USES_CODE=PASS', () => {
   assert.match(cartJs, /wallet\.pending_rewards/);
-  assert.match(cartJs, /applyCoupon\(reward\.code, 'Crédito', event\.currentTarget\)/);
+  assert.match(cartJs, /applyCoupon\(reward\.code,'Crédito',event\.currentTarget\)/);
 });
 
 test('CART_PROMOTION_USES_CODE=PASS', () => {
@@ -1009,7 +1009,7 @@ test('CART_PROMOTION_USES_CODE=PASS', () => {
 
 test('CART_MANUAL_COUPON_USES_STORE_API=PASS', () => {
   assert.match(cartJs, /manualForm\.addEventListener\('submit'/);
-  assert.match(cartJs, /applyCoupon\(input\.value, 'Cupón', manualForm\.querySelector/);
+  assert.match(cartJs, /applyCoupon\(input\.value,'Cupón',manualForm\.querySelector/);
   assert.match(cartJs, /config\.applyCouponUrl/);
 });
 
