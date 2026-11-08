@@ -1207,7 +1207,7 @@ test('cart final app refinement: light header, compact products, structured vari
   assert.match(cartJs, /Gratis/);
   assert.match(cartJs, /Se calcula en el checkout/);
   assert.doesNotMatch(cartJs, /selectedText[^;]*selectedItem\.textContent/);
-  assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
+  assert.match(cartTotals, /wc_price\( \$cr_merchandise_after_discounts \)/);
   assert.doesNotMatch(cartTotals, /EUR/);
 
   // Native cart operations and shipping selection remain authoritative and unchanged.
@@ -1304,8 +1304,8 @@ test('mobile cart final density, variation label, summary grid and checkout labe
   assert.match(cartCss, /table\.shop_table td::before \{\s*content: none !important;/, 'CART_SHIPPING_NO_CONCATENATED_COLON=PASS');
   assert.match(cartCss, /table\.shop_table td::before \{\s*content: none !important;/, 'CART_TOTAL_NO_CONCATENATED_COLON=PASS');
   assert.match(cartTotals, /wc_cart_totals_subtotal_html\(\)/);
-  assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
-  assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
+  assert.doesNotMatch(cartTotals, /wc_cart_totals_shipping_html\(\)/);
+  assert.match(cartTotals, /wc_price\( \$cr_merchandise_after_discounts \)/);
   assert.match(cartJs, /const renderCartSummary = \(cart\)/);
   assert.match(cartJs, /Gratis/);
   assert.doesNotMatch(cartJs, /selectedText\.textContent\s*=\s*selectedLabel/, 'CART_SHIPPING_NO_METHOD_NAME=PASS');
@@ -1322,7 +1322,7 @@ test('mobile cart final density, variation label, summary grid and checkout labe
   assert.match(cartTemplate, /woocommerce_quantity_input\(/);
   assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
   assert.match(cartTemplate, /woocommerce_before_cart_contents/);
-  assert.match(cartTotals, /WC\(\)->cart->get_total\( 'edit' \)/);
+  assert.match(cartTotals, /get_cart_contents_total\(\)/);
   assert.match(cartTotals, /woocommerce_cart_totals_before_shipping/);
   assert.doesNotMatch(cartJs, /input\.shipping_method:checked/);
   assert.match(cartJs, /requestSubmit\(submit \|\| undefined\)/);
