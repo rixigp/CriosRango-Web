@@ -1510,9 +1510,9 @@ test('CART_PRODUCT_ROW_VERTICAL_PADDING_ZERO=PASS; CART_PRODUCT_LIST_GAP_REMAINS
  for(const rule of rowRules){
   assert.doesNotMatch(rule,/padding-(?:top|bottom|block)\s*:/i,'row rule must not introduce vertical padding');
  }
- assert.match(c,/\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:16px;/);
- assert.match(c,/@media \(max-width:767px\)[\s\S]*?\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:11px;/);
- assert.match(c,/@media \(max-width:360px\)[\s\S]*?\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:9px;/);
+ assert.match(c,/\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-cart-card-inline-gutter\);/);
+ assert.match(c,/@media \(max-width:767px\)[\s\S]*?\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-cart-card-inline-gutter\);/);
+ assert.match(c,/@media \(max-width:360px\)[\s\S]*?\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-cart-card-inline-gutter\);/);
  const gapOwners=c.match(/body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\s*\{[^}]*row-gap\s*:\s*8px!important[^}]*\}/g)||[];
  assert.equal(gapOwners.length,1,'one 8px product-list gap owner');
  assert.equal(8+0+0,8,'zero vertical row padding makes effective spacing equal to tbody gap');
@@ -1520,24 +1520,26 @@ test('CART_PRODUCT_ROW_VERTICAL_PADDING_ZERO=PASS; CART_PRODUCT_LIST_GAP_REMAINS
  assert.match(c,/@media \(max-width: 767px\) \{[\s\S]*?body\.woocommerce-cart \.cr-cart-item__card \{[\s\S]*?padding: 15px;/);
 });
 
-test('CART_PRODUCT_CARD_WIDTH_UNCHANGED=PASS; CART_WALLET_CARD_WIDTH_MATCH_PRODUCT=PASS; CART_REWARD_CARD_WIDTH_MATCH_PRODUCT=PASS; CART_PROMOTION_CARD_WIDTH_MATCH_PRODUCT=PASS; CART_APPLIED_DISCOUNTS_CARD_WIDTH_MATCH_PRODUCT=PASS; CART_PRODUCT_CARD_GEOMETRY_UNCHANGED=PASS; CART_DOM_STRUCTURE_UNCHANGED=PASS; CART_HEADER_UNCHANGED=PASS',()=>{
+test('CART_SHARED_CARD_GUTTER_DEFINED=PASS; CART_PRODUCT_ROW_USES_SHARED_GUTTER=PASS; CART_WALLET_CARD_USES_SHARED_GUTTER=PASS; CART_REWARD_CARD_USES_SHARED_GUTTER=PASS; CART_PROMOTION_CARD_USES_SHARED_GUTTER=PASS; CART_APPLIED_CARD_USES_SHARED_GUTTER=PASS; CART_SECONDARY_CARDS_NO_FULL_RAIL_WIDTH_OVERRIDE=PASS; CART_PRODUCT_CARD_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_VERTICAL_SPACING_UNCHANGED=PASS; CART_DOM_STRUCTURE_UNCHANGED=PASS',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
  const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
- const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
- const common=c.match(/body\.woocommerce-cart \.cr-cart-content \.cr-cart-wallet__summary,\s*body\.woocommerce-cart \.cr-cart-content \.cr-cart-wallet__rewards,\s*body\.woocommerce-cart \.cr-cart-content \.cr-cart-promo-card,\s*body\.woocommerce-cart \.cr-cart-content \.cr-cart-applied\s*\{[^}]*\}/g)||[];
- assert.equal(common.length,1,'single common secondary-card width contract');
- assert.match(common[0],/width:100%!important;[\s\S]*?max-width:100%;[\s\S]*?min-width:0;[\s\S]*?margin-inline:0!important;[\s\S]*?box-sizing:border-box;/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-item__card\{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box\}/,'reference product card geometry remains unchanged');
- for(const selector of ['cr-cart-wallet__summary','cr-cart-wallet__rewards','cr-cart-promo-card','cr-cart-applied'])assert.ok(common[0].includes(selector),selector);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail\{[\s\S]*?width:100%!important;[\s\S]*?max-width:100%!important;[\s\S]*?padding:0!important;[\s\S]*?box-sizing:border-box!important/,'rail remains full width and unpadded');
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail > \.cr-cart-promotions,[\s\S]*?width:100%!important;[\s\S]*?max-width:100%!important/,'promotion container remains on its existing full-width rail');
- assert.match(c,/body\.woocommerce-cart \.cr-cart-promotions \{ padding:0; border:0; border-radius:0; \}/,'promotion wrapper inline padding stays zero');
+ assert.match(c,/body\.woocommerce-cart \{ --cr-cart-card-inline-gutter:16px; \}/,'desktop gutter remains 16px');
+ assert.match(c,/@media\(max-width:767px\)\{body\.woocommerce-cart\{--cr-cart-card-inline-gutter:11px\}\}/,'mobile gutter remains 11px');
+ assert.match(c,/@media\(max-width:360px\)\{body\.woocommerce-cart\{--cr-cart-card-inline-gutter:9px\}\}/,'narrow mobile gutter remains 9px');
+ assert.match(c,/\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-cart-card-inline-gutter\);/,'product row consumes shared gutter');
+ const shared=c.match(/body\.woocommerce-cart \.cr-cart-content \.cr-cart-wallet__summary,[\s\S]*?body\.woocommerce-cart \.cr-cart-content \.cr-cart-applied\s*\{[^}]*\}/);
+ assert.ok(shared,'one shared secondary surface rule exists');
+ for(const selector of ['cr-cart-wallet__summary','cr-cart-wallet__rewards','cr-cart-promo-card','cr-cart-applied'])assert.ok(shared[0].includes(selector),selector);
+ assert.match(shared[0],/inline-size:auto;[\s\S]*?margin-inline:var\(--cr-cart-card-inline-gutter\);[\s\S]*?box-sizing:border-box;/);
+ assert.doesNotMatch(shared[0],/width\s*:\s*100%|max-width\s*:\s*100%|margin-inline\s*:\s*0/,'secondary cards must not stretch across full rail');
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-item__card\{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box\}/,'product card width remains unchanged');
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail\{[\s\S]*?width:100%!important;[\s\S]*?max-width:100%!important;[\s\S]*?padding:0!important/,'secondary rail remains unchanged');
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail > \.cr-cart-promotions,[\s\S]*?width:100%!important;[\s\S]*?max-width:100%!important/,'promotion wrapper rail remains full width');
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\s*\{[^}]*row-gap\s*:\s*8px!important/,'product vertical gap remains 8px');
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-item__card \{\s*gap:4px;\s*padding:6px 8px;/,'product card internals remain unchanged');
  assert.match(p,/class="cr-cart-secondary-rail">[\s\S]*?class="cr-cart-promotions"[\s\S]*?class="cr-cart-wallet"[\s\S]*?class="cr-cart-applied"[\s\S]*?class="cr-cart-manual-coupon"[\s\S]*?class="cart-collaterals cr-cart-summary"/,'DOM hierarchy/order unchanged');
  assert.match(p,/class="cr-cart-item__card"/,'product card DOM remains present');
- assert.match(m,/\.cr-parent-category__toolbar \{[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;[\s\S]*?column-gap: 10px;/,'header layout contract unchanged');
- assert.match(c,/body\.woocommerce-cart \.cr-cart-header-shell > \.cr-parent-category__toolbar\{\s*margin-block-end:8px!important;\s*\}/,'header spacing contract unchanged');
 });
-
 test('CART_HEADER_HORIZONTAL_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_CARD_GEOMETRY_UNCHANGED=PASS',()=>{
  const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
  assert.match(m,/\.cr-parent-category__toolbar \{[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;[\s\S]*?column-gap: 10px;/);
