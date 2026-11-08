@@ -1096,8 +1096,8 @@ test('final cart presentation uses parent variation title and native structured 
 
 test('guest empty promotions stay collapsed without changing authenticated rewards and promotions', () => {
   const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
-  assert.match(cartJs, /if \(!visible\.length && !config\.authenticated\)\s*\{\s*promotionsList\.hidden = true;/);
-  assert.match(cartJs, /const visible = config\.authenticated \? list : list\.filter\(guestPromotionVisible\)/);
+  assert.match(cartJs, /if \(!visible\.length\)\s*\{\s*promotionsList\.hidden = true;/);
+  assert.match(cartJs, /const visible = \(config\.authenticated \? list : list\.filter\(guestPromotionVisible\)\)\s*\.filter\(\(promotion\) => !hasCoupon\(currentCart, promotion\.code\)\)/);
   assert.match(cartJs, /renderPromotions\(promotionsPayload\)/);
 });
 
@@ -1348,7 +1348,7 @@ test('cart removes applied rewards and promotions from available lists and resto
   assert.match(j,/\.filter\(\(promotion\) => !hasCoupon\(currentCart, promotion\.code\)\)/);
   assert.match(j,/if \(!visible\.length\) \{\s*promotionsList\.hidden = true;/);
   assert.match(j,/const refreshCartUi = async \(cart\) => \{ currentCart=cart; renderAppliedCoupons\(cart\); renderCartSummary\(cart\); if\(promotionsPayload\)renderPromotions\(promotionsPayload\); if\(config\.authenticated\)await refreshWallet\(\); \};/);
-  assert.match(j,/if \(hasCoupon\(cart, normalized\)\)/);
+  assert.match(j,/if \(!hasCoupon\(cart, normalized\)\)/);
   assert.match(j,/if \(hasCoupon\(cart, code\)\)/);
   assert.doesNotMatch(j,/node\('span',\s*'[^']*',\s*'Aplicado'\)/);
 });
