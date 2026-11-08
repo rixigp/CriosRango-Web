@@ -126,8 +126,7 @@
   const setButtonPending = (button,pending,label) => { if(!button)return; if(pending){button.dataset.crOriginalLabel=button.textContent;button.disabled=true;button.textContent=label||'Aplicando…';button.setAttribute('aria-busy','true');}else{button.disabled=false;button.textContent=button.dataset.crOriginalLabel||button.textContent;delete button.dataset.crOriginalLabel;button.removeAttribute('aria-busy');} };
   const applyCoupon = async (code, sourceLabel, button) => {
     const normalized = text(code).trim();
-    if (!normalized || busy) return;
-    busy = true;
+    if (!normalized) return;
     setButtonPending(button,true,'Aplicando…');
     clearFeedback();
     try {
@@ -146,12 +145,12 @@
     } catch (error) {
       showError(error.message);
     } finally {
-      busy = false; setButtonPending(button,false);
+      setButtonPending(button,false);
     }
   };
   const removeCoupon = async (code,button) => {
-    if (!code || busy) return;
-    busy = true; setButtonPending(button,true,'…'); clearFeedback();
+    if (!code) return;
+    setButtonPending(button,true,'…'); clearFeedback();
     try {
       const url = new URL(config.removeCouponUrl, window.location.origin);
       url.searchParams.set('code', code);
@@ -163,7 +162,7 @@
     } catch (error) {
       showError(error.message);
     } finally {
-      busy = false; setButtonPending(button,false);
+      setButtonPending(button,false);
     }
   };
   const knownCouponPresentation = (code) => {
