@@ -1408,7 +1408,7 @@ test('CART_SECONDARY_RAIL_CONTAINS_ALL_POST_PRODUCT_BLOCKS=PASS',()=>{
 });
 test('CART_PRODUCT_LIST_HAS_ONE_COMPACT_GAP_OWNER=PASS',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
- assert.match(c,/\.cr-cart-table tbody \{ display:grid; row-gap:8px; \}/);
+ assert.match(c,/\.cr-cart-table tbody \{ display:grid; \}/);
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\{\s*display:grid!important;\s*row-gap:8px!important;\s*\}/);
  assert.doesNotMatch(c,/@media[^{}]*\{[^{}]*\.cr-cart-table tbody[^{}]*gap:\s*(12|14|18)px/);
  assert.doesNotMatch(c,/\.cr-cart-table tbody \{[^}]*gap:\s*(12|14|18)px/);
