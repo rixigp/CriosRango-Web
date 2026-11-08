@@ -68,6 +68,17 @@
     if (value != null) element.textContent = text(value);
     return element;
   };
+  const cartIcon = (name, className) => {
+    const icon = node('span', className || 'cr-cart-icon', null);
+    icon.setAttribute('aria-hidden', 'true');
+    const paths = {
+      wallet: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 8h18M15 13h3"/></svg>',
+      info: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg>',
+      tag: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-7 7L3 12Z"/><circle cx="8" cy="8" r="1"/></svg>'
+    };
+    icon.innerHTML = paths[name] || '';
+    return icon;
+  };
   const formatWalletAmount = (value, currency) => {
     const amount = Number(text(value).trim().replace(',', '.'));
     return new Intl.NumberFormat('es-ES', {
@@ -173,8 +184,11 @@
       return;
     }
     visible.slice().sort((a, b) => Number(b.priority || 0) - Number(a.priority || 0)).forEach((promotion) => {
-      const card = node('article', 'cr-cart-promo-card');
+      const identity = text(promotion.title) + ' ' + text(promotion.description) + ' ' + text(promotion.code);
+      const isWelcome = /bienvenida|welcome/i.test(identity);
+      const card = node('article', 'cr-cart-promo-card' + (isWelcome ? ' cr-cart-promo-card--welcome' : ''));
       const body = node('div', 'cr-cart-promo-card__body');
+      if (isWelcome) body.appendChild(cartIcon('tag', 'cr-cart-promo-card__icon'));
       body.appendChild(node('h4', 'cr-cart-promo-card__title', promotion.title));
       if (promotion.description) body.appendChild(node('p', 'cr-cart-promo-card__description', promotion.description));
       if (promotion.expires_at) body.appendChild(node('p', 'cr-cart-promo-card__expiry', 'Válida hasta ' + promotion.expires_at));
@@ -265,10 +279,14 @@
     walletPanel.hidden = false;
     const summary = node('div', 'cr-cart-wallet__summary');
     const info = node('div', 'cr-cart-wallet__info');
-    info.appendChild(node('h3', 'cr-cart-wallet__title', 'Monedero'));
+    summary.appendChild(cartIcon('wallet', 'cr-cart-wallet__icon'));
+    summary.appendChild(info);
+    const walletHeading = node('div', 'cr-cart-wallet__heading');
+    walletHeading.appendChild(node('h3', 'cr-cart-wallet__title', 'Monedero'));
+    walletHeading.appendChild(cartIcon('info', 'cr-cart-wallet__info-icon'));
+    info.appendChild(walletHeading);
     info.appendChild(node('p', 'cr-cart-wallet__balance', formatWalletAmount(wallet.wallet_value || '0.00', wallet.currency) + ' disponibles'));
     info.appendChild(node('p', 'cr-cart-wallet__points', Number(wallet.points || 0) + ' puntos'));
-    summary.appendChild(info);
     walletPanel.appendChild(summary);
 
     const rewards = Array.isArray(wallet.pending_rewards) ? wallet.pending_rewards : [];
@@ -280,6 +298,7 @@
       rewards.forEach((reward) => {
         const row = node('div', 'cr-cart-reward');
         const label = node('div', 'cr-cart-reward__label');
+        label.appendChild(cartIcon('wallet', 'cr-cart-reward__icon'));
         label.appendChild(node('strong', '', 'Saldo de monedero · ' + formatWalletAmount(reward.amount, wallet.currency)));
         if (reward.expires_at) label.appendChild(node('small', '', 'Caduca: ' + reward.expires_at));
         row.appendChild(label);
