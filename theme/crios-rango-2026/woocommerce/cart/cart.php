@@ -25,7 +25,7 @@ do_action( 'woocommerce_before_cart' );
 
     <?php if ( WC()->cart->is_empty() ) : ?>
         <div class="cr-cart-empty-state">
-            <?php do_action( 'woocommerce_cart_is_empty' ); ?>
+            <?php wc_get_template( 'cart/cart-empty.php' ); ?>
         </div>
     <?php else : ?>
         <div class="cr-cart-layout">
@@ -58,7 +58,7 @@ do_action( 'woocommerce_before_cart' );
                                 );
                                 $thumbnail = apply_filters(
                                     'woocommerce_cart_item_thumbnail',
-                                    $_product->get_image( 'woocommerce_thumbnail' ),
+                                    $_product->get_image( 'woocommerce_thumbnail', array( 'class' => 'cr-cart-item__image-img', 'loading' => 'lazy', 'decoding' => 'async' ) ),
                                     $cart_item,
                                     $cart_item_key
                                 );
@@ -102,37 +102,43 @@ do_action( 'woocommerce_before_cart' );
                                 $remove_link = apply_filters( 'woocommerce_cart_item_remove_link', $remove_link, $cart_item_key );
                                 ?>
                                 <tr class="woocommerce-cart-form__cart-item cart_item cr-cart-item">
-                                    <td class="product-thumbnail cr-cart-item__image" data-title="<?php esc_attr_e( 'Producto', 'crios-rango-2026' ); ?>">
-                                        <?php if ( $product_permalink ) : ?>
-                                            <a href="<?php echo esc_url( $product_permalink ); ?>"><?php echo wp_kses_post( $thumbnail ); ?></a>
-                                        <?php else : ?>
-                                            <?php echo wp_kses_post( $thumbnail ); ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="product-name cr-cart-item__details" data-title="<?php esc_attr_e( 'Producto', 'crios-rango-2026' ); ?>">
-                                        <div class="cr-cart-item__name">
-                                            <?php if ( $product_permalink ) : ?>
-                                                <a href="<?php echo esc_url( $product_permalink ); ?>"><?php echo wp_kses_post( $product_name ); ?></a>
-                                            <?php else : ?>
-                                                <?php echo wp_kses_post( $product_name ); ?>
-                                            <?php endif; ?>
-                                        </div>
-                                        <?php echo wc_get_formatted_cart_item_data( $cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                                        <?php if ( $_product->backorders_require_notification() && $_product->is_on_backorder( $cart_item['quantity'] ) ) : ?>
-                                            <p class="backorder_notification"><?php esc_html_e( 'Disponible bajo pedido', 'crios-rango-2026' ); ?></p>
-                                        <?php endif; ?>
-                                        <div class="cr-cart-item__unit"><?php esc_html_e( 'Precio unitario', 'crios-rango-2026' ); ?>: <?php echo wp_kses_post( $product_price ); ?></div>
-                                        <div class="cr-cart-item__subtotal"><span><?php esc_html_e( 'Subtotal', 'crios-rango-2026' ); ?>:</span> <?php echo wp_kses_post( $product_subtotal ); ?></div>
-                                        <div class="cr-cart-item__controls">
-                                            <div class="cr-cart-quantity" data-cr-cart-quantity>
-                                                <button type="button" class="cr-cart-quantity__button" data-cr-qty-change="-1" aria-label="<?php esc_attr_e( 'Reducir cantidad', 'crios-rango-2026' ); ?>">−</button>
-                                                <?php echo $quantity_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                                                <button type="button" class="cr-cart-quantity__button" data-cr-qty-change="1" aria-label="<?php esc_attr_e( 'Aumentar cantidad', 'crios-rango-2026' ); ?>">+</button>
+                                    <td class="cr-cart-item-cell" colspan="6">
+                                        <article class="cr-cart-item__card">
+                                            <div class="cr-cart-item__main">
+                                                <div class="cr-cart-item__media">
+                                                    <?php if ( $product_permalink ) : ?>
+                                                        <a href="<?php echo esc_url( $product_permalink ); ?>"><?php echo wp_kses_post( $thumbnail ); ?></a>
+                                                    <?php else : ?>
+                                                        <?php echo wp_kses_post( $thumbnail ); ?>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="cr-cart-item__content">
+                                                    <div class="cr-cart-item__name">
+                                                        <?php if ( $product_permalink ) : ?>
+                                                            <a href="<?php echo esc_url( $product_permalink ); ?>"><?php echo wp_kses_post( $product_name ); ?></a>
+                                                        <?php else : ?>
+                                                            <?php echo wp_kses_post( $product_name ); ?>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="cr-cart-item__variations"><?php echo wc_get_formatted_cart_item_data( $cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+                                                    <?php if ( $_product->backorders_require_notification() && $_product->is_on_backorder( $cart_item['quantity'] ) ) : ?>
+                                                        <p class="backorder_notification"><?php esc_html_e( 'Disponible bajo pedido', 'crios-rango-2026' ); ?></p>
+                                                    <?php endif; ?>
+                                                    <div class="cr-cart-item__unit"><span><?php esc_html_e( 'Precio unitario', 'crios-rango-2026' ); ?></span> <?php echo wp_kses_post( $product_price ); ?></div>
+                                                    <div class="cr-cart-item__subtotal"><span><?php esc_html_e( 'Subtotal', 'crios-rango-2026' ); ?></span> <?php echo wp_kses_post( $product_subtotal ); ?></div>
+                                                </div>
                                             </div>
-                                            <?php echo $remove_link; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                                        </div>
+                                            <div class="cr-cart-item__actions">
+                                                <div class="cr-cart-quantity" data-cr-cart-quantity>
+                                                    <button type="button" class="cr-cart-quantity__button" data-cr-qty-change="-1" aria-label="<?php esc_attr_e( 'Reducir cantidad', 'crios-rango-2026' ); ?>">−</button>
+                                                    <?php echo $quantity_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                                                    <button type="button" class="cr-cart-quantity__button" data-cr-qty-change="1" aria-label="<?php esc_attr_e( 'Aumentar cantidad', 'crios-rango-2026' ); ?>">+</button>
+                                                </div>
+                                                <?php echo $remove_link; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                                            </div>
+                                        </article>
                                     </td>
-                                </tr>
+                                </tr>                           </tr>
                             <?php endforeach; ?>
                             <?php do_action( 'woocommerce_cart_contents' ); ?>
                             <?php do_action( 'woocommerce_after_cart_contents' ); ?>

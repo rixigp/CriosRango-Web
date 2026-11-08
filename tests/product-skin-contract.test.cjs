@@ -1024,3 +1024,31 @@ test('Shared bottom navigation uses the exact storefront canvas with no visible 
   assert.ok(globalCss.includes('.cr-mobile-bottom-nav::before,\n.cr-mobile-bottom-nav::after {\n  display: none !important;\n  content: none !important;'), 'BOTTOM_NAV_PSEUDO_SEPARATORS_REMOVED=PASS');
   assert.ok(globalCss.includes('.cr-mobile-bottom-nav__inner {\n  background: transparent !important;'), 'BOTTOM_NAV_INNER_TRANSPARENT=PASS');
 });
+
+ 
+test('mobile cart uses one WooCommerce table cell card and cart-only WPLoyalty filters', () => {
+  const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+  const cartHooks = fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8');
+  const pageTemplate = fs.readFileSync(path.join(theme, 'page.php'), 'utf8');
+  const footerTemplate = fs.readFileSync(path.join(theme, 'footer.php'), 'utf8');
+  const emptyTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-empty.php'), 'utf8');
+  assert.match(cartTemplate, /<tr class="woocommerce-cart-form__cart-item cart_item cr-cart-item">[\s\S]*?<td class="cr-cart-item-cell" colspan="6">[\s\S]*?<article class="cr-cart-item__card">[\s\S]*?<div class="cr-cart-item__main">[\s\S]*?cr-cart-item__media[\s\S]*?cr-cart-item__content[\s\S]*?<div class="cr-cart-item__actions">[\s\S]*?<\/article>[\s\S]*?<\/td>[\s\S]*?<\/tr>/);
+  assert.doesNotMatch(cartTemplate, /class="product-thumbnail cr-cart-item__image"|class="product-name cr-cart-item__details"/);
+  assert.match(cartTemplate, /\$product->get_image\( 'woocommerce_thumbnail', array\(/);
+  assert.match(cartTemplate, /wc_get_template\( 'cart\/cart-empty\.php' \)/);
+  assert.doesNotMatch(cartTemplate, /woocommerce_cart_is_empty/);
+  assert.match(cartHooks, /wlr_is_cart_earn_message_enabled/);
+  assert.match(cartHooks, /wlr_is_cart_redeem_message_enabled/);
+  assert.match(cartHooks, /function_exists\( 'is_cart' \) && is_cart\(\) \? false : \$enabled/);
+  assert.match(pageTemplate, /! function_exists\( 'is_cart' \) \|\| ! is_cart\(\)/);
+  assert.match(footerTemplate, /! function_exists\( 'is_cart' \) \|\| ! is_cart\(\)/);
+  assert.match(cartCss, /grid-template-columns:104px minmax\(0,1fr\)/);
+  assert.match(cartCss, /\.cr-cart-item__actions \{ display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; min-width:0; flex-wrap:nowrap; \}/);
+  assert.match(cartCss, /button\[name="update_cart"\].*clip-path:inset\(50%\)/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-footer \{ display:none!important; \}/);
+  assert.match(emptyTemplate, /Tu carrito está vacío/);
+  assert.match(emptyTemplate, /Añade algo que te guste para continuar/);
+  assert.match(emptyTemplate, /wc-backward/);
+  assert.doesNotMatch(emptyTemplate, /woocommerce_cart_is_empty/);
+});

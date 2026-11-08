@@ -29,3 +29,10 @@ function cr2026_handle_empty_cart() {
     exit;
 }
 add_action( 'template_redirect', 'cr2026_handle_empty_cart', 1 );
+
+/** Suppress WPLoyalty native cart notices only while rendering the cart. */
+function cr2026_cart_disable_wployalty_messages( $enabled ) {
+    return function_exists( 'is_cart' ) && is_cart() ? false : $enabled;
+}
+add_filter( 'wlr_is_cart_earn_message_enabled', 'cr2026_cart_disable_wployalty_messages', 10 );
+add_filter( 'wlr_is_cart_redeem_message_enabled', 'cr2026_cart_disable_wployalty_messages', 10 );
