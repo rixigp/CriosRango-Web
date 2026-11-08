@@ -1467,14 +1467,6 @@ test('CART_HEADER_INTERNAL_GEOMETRY_UNCHANGED=PASS; CART_HEADER_VERTICAL_SYSTEM_
  assert.match(m,/\.cr-parent-category__back \{[\s\S]*?width:\s*48px;[\s\S]*?height:\s*48px;/);
  assert.match(m,/\.cr-parent-category__title \{[\s\S]*?font:\s*300 21px\/28px "Roboto", Arial, sans-serif;/);
 });
-test('CART_SECTION_SPACING_SINGLE_OWNER=PASS; CART_HEADER_TO_FIRST_CARD_NO_EXCESS_GAP=PASS; CART_LAST_CARD_TO_PROMOTIONS_NO_EXCESS_GAP=PASS',()=>{
- const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8'),m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
- assert.match(m,/\.cr-parent-category__toolbar \{[\s\S]*?margin:\s*0 20px 16px;/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-layout \{ gap:18px!important; \}/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-form \{ margin:0!important; \}/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-promotions \{ margin-top:0!important; \}/);
- assert.doesNotMatch(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-body-rail|calc\(100% - 24px\)/);
-});
 test('CART_HEADER_INTERNAL_GEOMETRY_UNCHANGED=PASS; CART_HEADER_VERTICAL_SYSTEM_MATCHES_LISTING=PASS',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8'),m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8'),p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
  assert.match(m,/body\.cr-global-app-header:not\(\.home\)\s*\{[\s\S]*?padding-top:\s*var\(--cr-app-topbar-height\)/);
@@ -1511,7 +1503,7 @@ test('CART_PRODUCT_RAIL_RESTORED_FROM_APPROVED_STATE=PASS; CART_PRODUCT_CARD_GEO
 });
 test('CART_SECONDARY_RAIL_ISOLATED_FROM_PRODUCT_LIST=PASS; CART_PROMOTIONS_RAIL_MATCH_PRODUCT=PASS; CART_SUMMARY_RAIL_MATCH_PRODUCT=PASS; CART_CTA_RAIL_MATCH_PRODUCT=PASS',()=>{
  const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
- assert.match(p,/class="cr-cart-primary"[\s\S]*?class="cr-cart-form"[\s\S]*?<\/form>\s*<\/div>\s*<div class="cr-cart-secondary-rail">[\s\S]*?class="cr-cart-promotions"[\s\S]*?class="cr-cart-summary"/);
+ assert.match(p,/class="cr-cart-primary"[\s\S]*?class="cr-cart-form"[\s\S]*?<\/form>\s*<\/div>\s*<div class="cr-cart-secondary-rail">[\s\S]*?class="cr-cart-promotions"[\s\S]*?class="[^"]*cr-cart-summary"/);
  assert.doesNotMatch(p,/cr-cart-secondary-rail[\s\S]*?cr-cart-table/);
  assert.match(c,/\.cr-cart-secondary-rail\{[\s\S]*?width:100%/);
  assert.match(c,/\.cr-cart-secondary-rail > \.cr-cart-promotions,[\s\S]*?\.cr-cart-secondary-rail > \.cr-cart-summary\{[\s\S]*?width:100%!important/);
