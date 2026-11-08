@@ -170,7 +170,9 @@ if ( ! WC()->cart->is_empty() ) {
                     </div>
                     <?php do_action( 'woocommerce_after_cart_table' ); ?>
                 </form>
+            </div>
 
+            <div class="cr-cart-secondary-rail">
                 <section class="cr-cart-promotions" data-cr-cart-promotions aria-labelledby="cr-cart-promotions-title">
                     <h2 id="cr-cart-promotions-title"><?php esc_html_e( 'Promociones y descuentos', 'crios-rango-2026' ); ?></h2>
                     <div class="cr-cart-promotions__loading" data-cr-cart-loading><?php esc_html_e( 'Cargando promociones…', 'crios-rango-2026' ); ?></div>
