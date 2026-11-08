@@ -923,3 +923,91 @@ body.woocommerce-cart .cr-cart-content .cr-cart-applied {
   margin-inline:var(--cr-cart-card-inline-gutter);
   box-sizing:border-box;
 }
+
+
+/* Promotions and order summary align to the approved product-card gutter.
+   This is presentation-only: retain the existing DOM, Store API and checkout hooks. */
+body.woocommerce-cart .cr-cart-promotions > h2,
+body.woocommerce-cart .cr-cart-manual-coupon {
+  margin-inline:var(--cr-cart-card-inline-gutter);
+}
+body.woocommerce-cart .cr-cart-promotions > h2 {
+  font-weight:600;
+}
+body.woocommerce-cart .cr-cart-wallet__title,
+body.woocommerce-cart .cr-cart-promotions__subheading,
+body.woocommerce-cart .cr-cart-applied__title {
+  font-weight:600!important;
+}
+/* Keep balances, offer copy, amounts and action labels at their existing normal weights. */
+body.woocommerce-cart .cr-cart-wallet__balance,
+body.woocommerce-cart .cr-cart-promo-card__description,
+body.woocommerce-cart .cr-cart-applied__row,
+body.woocommerce-cart .cr-cart-apply-button,
+body.woocommerce-cart .cr-cart-redeem-button,
+body.woocommerce-cart .cr-cart-manual-coupon button {
+  font-weight:400!important;
+}
+
+/* The summary rows form one subtle card; the checkout CTA is a sibling-width control. */
+body.woocommerce-cart .cr-cart-content .cr-cart-summary .cr-cart-summary__rows {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  inline-size:auto!important;
+  width:auto!important;
+  min-inline-size:0;
+  margin:0 var(--cr-cart-card-inline-gutter) 14px!important;
+  padding:12px;
+  box-sizing:border-box;
+  border:1px solid rgba(53,95,75,.12);
+  border-radius:15px;
+  background:rgba(53,95,75,.045);
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row {
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
+  padding:7px 0;
+  border:0!important;
+  box-shadow:none!important;
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__label,
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__value {
+  min-width:0;
+  line-height:1.4;
+  font-weight:400!important;
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__value {
+  justify-self:end;
+  text-align:right;
+  white-space:nowrap;
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row--total {
+  margin-top:7px;
+  padding-top:8px;
+  border:0!important;
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row--total .cr-cart-summary__label,
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row--total .cr-cart-summary__value,
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row--total .cr-cart-summary__value strong {
+  color:var(--cr-green,#183B35);
+  font-size:17px;
+  font-weight:700!important;
+}
+body.woocommerce-cart .cr-cart-content .cr-cart-summary .wc-proceed-to-checkout {
+  inline-size:auto!important;
+  width:auto!important;
+  max-width:none!important;
+  min-width:0;
+  margin:0 var(--cr-cart-card-inline-gutter)!important;
+  padding:8px 0 0!important;
+  box-sizing:border-box;
+}
+body.woocommerce-cart .cr-cart-content .cr-cart-summary .checkout-button {
+  display:flex!important;
+  width:100%!important;
+  max-width:100%;
+  min-width:0;
+  margin:0!important;
+  box-sizing:border-box;
+}

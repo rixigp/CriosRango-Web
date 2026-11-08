@@ -1548,3 +1548,37 @@ test('CART_HEADER_HORIZONTAL_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_CARD_GEOMETRY
  assert.match(c,/body\.woocommerce-cart \.cr-cart-item__card \{[\s\S]*?padding: 15px;[\s\S]*?border-radius: 20px;/);
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-item__card\{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box\}/);
 });
+
+
+test('CART_PROMOTIONS_TITLE_USES_SHARED_GUTTER=PASS; CART_MANUAL_COUPON_USES_SHARED_GUTTER=PASS; CART_BOX_TITLES_BOLD=PASS; CART_SUMMARY_USES_SHARED_GUTTER=PASS; CART_SUMMARY_MATCHES_PRODUCT_WIDTH=PASS; CART_SUMMARY_NO_INTERNAL_ROW_BORDERS=PASS; CART_SUMMARY_TOTAL_EMPHASIZED=PASS; CART_CTA_MATCHES_PRODUCT_WIDTH=PASS; CART_PRODUCT_GEOMETRY_UNCHANGED=PASS; CART_DOM_ORDER_UNCHANGED=PASS; CART_FUNCTIONAL_LOGIC_UNCHANGED=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
+ const totals=fs.readFileSync(path.join(theme,'woocommerce/cart/cart-totals.php'),'utf8');
+ const j=fs.readFileSync(path.join(theme,'assets/js/cart-ui.js'),'utf8');
+ const refinement=c.slice(c.lastIndexOf('/* Promotions and order summary align to the approved product-card gutter.'));
+ assert.ok(refinement.length>0,'final presentation refinement exists');
+ assert.match(refinement,/\.cr-cart-promotions > h2,\s*body\.woocommerce-cart \.cr-cart-manual-coupon\s*\{\s*margin-inline:var\(--cr-cart-card-inline-gutter\);/);
+ assert.match(refinement,/\.cr-cart-promotions > h2\s*\{\s*font-weight:600;/);
+ for(const selector of ['.cr-cart-wallet__title','.cr-cart-promotions__subheading','.cr-cart-applied__title'])assert.ok(refinement.includes(selector),selector);
+ assert.match(refinement,/\.cr-cart-wallet__balance,[\s\S]*?font-weight:400!important/);
+ assert.match(refinement,/\.cr-cart-summary \.cr-cart-summary__rows\s*\{[\s\S]*?inline-size:auto!important;[\s\S]*?width:auto!important;[\s\S]*?margin:0 var\(--cr-cart-card-inline-gutter\) 14px!important;[\s\S]*?padding:12px;[\s\S]*?border-radius:15px;/);
+ assert.match(refinement,/\.cr-cart-summary \.cr-cart-summary__row\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) auto;[\s\S]*?border:0!important/);
+ assert.match(refinement,/\.cr-cart-summary \.cr-cart-summary__row--total\s*\{[\s\S]*?border:0!important/);
+ assert.match(refinement,/\.cr-cart-summary__row--total \.cr-cart-summary__value strong\s*\{[\s\S]*?font-weight:700!important/);
+ assert.match(refinement,/\.cr-cart-content \.cr-cart-summary \.wc-proceed-to-checkout\s*\{[\s\S]*?width:auto!important;[\s\S]*?margin:0 var\(--cr-cart-card-inline-gutter\)!important/);
+ assert.match(refinement,/\.cr-cart-content \.cr-cart-summary \.checkout-button\s*\{[\s\S]*?width:100%!important/);
+ assert.match(c,/body\.woocommerce-cart \{ --cr-cart-card-inline-gutter:16px; \}/);
+ assert.match(c,/--cr-cart-card-inline-gutter:11px/);
+ assert.match(c,/--cr-cart-card-inline-gutter:9px/);
+ assert.match(c,/\.cr-cart-content \.cr-cart-item__card\{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box\}/);
+ assert.match(c,/\.cr-cart-content \.cr-cart-table tbody\{\s*display:grid!important;\s*row-gap:8px!important;/);
+ assert.match(p,/class="cr-cart-header-shell"/);
+ assert.match(p,/class="cr-cart-item__card"/);
+ assert.match(p,/class="cr-cart-secondary-rail"[\s\S]*?class="cr-cart-promotions"[\s\S]*?class="cr-cart-manual-coupon"[\s\S]*?class="cart-collaterals cr-cart-summary"/);
+ assert.match(totals,/class="cr-cart-summary__rows"[\s\S]*?cr-cart-summary__row--subtotal[\s\S]*?cr-cart-summary__row--shipping[\s\S]*?cr-cart-summary__row--total/);
+ assert.match(totals,/do_action\( 'woocommerce_proceed_to_checkout' \)/);
+ assert.match(j,/applyCouponUrl[\s\S]*?method: 'POST'/);
+ assert.match(j,/removeCouponUrl[\s\S]*?method: 'POST'/);
+ assert.match(j,/const refreshCartUi = async \(cart\)/);
+ assert.match(totals,/get_cart_contents_total\(\)/);
+});
