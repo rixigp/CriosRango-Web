@@ -1395,7 +1395,7 @@ test('CART_RAILS_SHARE_EFFECTIVE_CONTAINING_BLOCK=PASS',()=>{
  assert.match(p,/<\/form>\s*<div class="cr-cart-secondary-rail">/);
  assert.doesNotMatch(p,/cr-cart-primary/);
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-form,\s*body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail\{[\s\S]*?flex:0 0 100%!important;[\s\S]*?width:100%!important;[\s\S]*?max-width:100%!important;[\s\S]*?margin:0!important;[\s\S]*?padding:0!important;[\s\S]*?box-sizing:border-box!important/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-layout\{[\s\S]*?width:100%!important;[\s\S]*?gap:12px!important;[\s\S]*?box-sizing:border-box/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-layout\{[\s\S]*?gap:12px!important;[\s\S]*?width:100%!important;[\s\S]*?box-sizing:border-box/);
 });
 test('CART_DOM_ORDER_HEADER_BEFORE_PRODUCTS=PASS',()=>{
  const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
