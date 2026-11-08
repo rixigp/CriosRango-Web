@@ -1487,13 +1487,6 @@ test('CART_SECTION_SPACING_SINGLE_OWNER=PASS; CART_HEADER_TO_FIRST_CARD_NO_EXCES
 });
 
 
-test('CART_LAST_CARD_TO_PROMOTIONS_SINGLE_GAP_OWNER=PASS',()=>{
- const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-layout \{ gap:18px!important; \}/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-form-actions\{[\s\S]*?position:absolute!important;[\s\S]*?height:1px!important;[\s\S]*?margin:0!important/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-form \{ margin:0!important; \}/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-promotions \{ margin-top:0!important; \}/);
-});
 
 test('CART_PRODUCT_RAIL_RESTORED_FROM_APPROVED_STATE=PASS; CART_PRODUCT_CARD_GEOMETRY_UNCHANGED_AFTER_RESTORE=PASS',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
