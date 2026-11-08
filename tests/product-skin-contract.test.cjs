@@ -1550,3 +1550,25 @@ test('CART_PRODUCTS_TO_PROMOTIONS_SINGLE_GAP_OWNER=PASS; CART_SECONDARY_RAIL_ISO
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-layout\s*\{\s*gap:14px!important/);
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-form,[\s\S]*?margin-block:0!important/);
 });
+
+
+test('CART_HEADER_VERTICAL_RULES_MATCH_OUTLET=PASS; CART_HEADER_NO_TRANSLATE_COMPENSATION=PASS; CART_HEADER_NO_NEGATIVE_MARGIN_COMPENSATION=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8'),m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
+ assert.match(m,/\.cr-parent-category__toolbar\s*\{[\s\S]*?min-height:\s*64px;[\s\S]*?margin:\s*0 20px 16px/);
+ assert.match(c,/body\.woocommerce-cart \.cr-main > \.cr-shell\.cr-page-shell,[\s\S]*?padding-block-start:0!important/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-header-shell > \.cr-parent-category__toolbar\s*\{\s*margin-block-start:0!important;\s*min-height:64px/);
+ assert.doesNotMatch(c,/cr-cart-header-shell[^}]*translate|cr-cart-header-shell[^}]*top\s*:\s*-|cr-cart-header-shell[^}]*margin-block-start\s*:\s*-/);
+});
+test('CART_PRODUCT_LIST_SINGLE_GAP_OWNER=PASS; CART_PRODUCT_LIST_GAP_REDUCED=PASS; CART_PRODUCT_TO_PROMOTIONS_SINGLE_SPACING_OWNER=PASS; CART_PRODUCT_TO_PROMOTIONS_GAP_REDUCED=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\s*\{\s*display:grid!important;\s*row-gap:8px!important/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-layout\s*\{\s*row-gap:12px!important/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-form,[\s\S]*?margin-block:0!important/);
+});
+test('CART_SECONDARY_RAIL_MATCHES_PRODUCT_RAIL_WITHOUT_TOUCHING_CARD_GEOMETRY=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8'),p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
+ assert.match(p,/class="cr-cart-primary"[\s\S]*?<\/form>\s*<\/div>\s*<div class="cr-cart-secondary-rail">/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail\s*\{[\s\S]*?inline-size:100%!important;[\s\S]*?padding-inline:0!important/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail > \.cr-cart-promotions,[\s\S]*?inline-size:100%!important/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\s*\{[\s\S]*?row-gap:8px!important/);
+});
