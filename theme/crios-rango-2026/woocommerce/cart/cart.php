@@ -33,8 +33,7 @@ if ( ! WC()->cart->is_empty() ) {
         </div>
     <?php else : ?>
         <div class="cr-cart-layout">
-            <div class="cr-cart-primary">
-                <form class="woocommerce-cart-form cr-cart-form" action="<?php echo esc_url( wc_get_cart_url() ); ?>" method="post">
+            <form class="woocommerce-cart-form cr-cart-form" action="<?php echo esc_url( wc_get_cart_url() ); ?>" method="post">
                     <?php do_action( 'woocommerce_before_cart_table' ); ?>
                     <table class="shop_table shop_table_responsive cart woocommerce-cart-form__contents cr-cart-table" cellspacing="0">
                         <thead class="screen-reader-text">
@@ -169,8 +168,7 @@ if ( ! WC()->cart->is_empty() ) {
                         <?php wp_nonce_field( 'woocommerce-cart', 'woocommerce-cart-nonce' ); ?>
                     </div>
                     <?php do_action( 'woocommerce_after_cart_table' ); ?>
-                </form>
-            </div>
+            </form>
 
             <div class="cr-cart-secondary-rail">
                 <section class="cr-cart-promotions" data-cr-cart-promotions aria-labelledby="cr-cart-promotions-title">
