@@ -1434,3 +1434,33 @@ test('CART_PAGE_NO_DUPLICATE_TOPBAR_PADDING=PASS',()=>{const c=fs.readFileSync(p
 test('CART_CONTENT_USES_AVAILABLE_PARENT_WIDTH=PASS; CART_CONTENT_NO_SECOND_MOBILE_GUTTER=PASS',()=>{const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');assert.match(c,/body\.woocommerce-cart \.cr-cart-content\{width:100%;max-width:1280px;min-width:0;margin-inline:auto;box-sizing:border-box\}/);assert.match(c,/@media\(min-width:768px\)\{body\.woocommerce-cart \.cr-cart-content\{width:100%\}\}/);assert.doesNotMatch(c,/\.cr-cart-content\{width:calc\(100% - (40|64)px\)/);});
 test('CART_MOBILE_EFFECTIVE_GUTTER_SINGLE=PASS; CART_BODY_NOT_SHRUNK=PASS',()=>{const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');assert.match(c,/body\.woocommerce-cart \.cr-main--woocommerce > \.cr-shell \{ width:100%; max-width:1360px; margin-inline:auto;/);assert.match(c,/body\.woocommerce-cart \.cr-cart-content\{width:100%;/);});
 test('CART_HEADER_SHELL_SEPARATE_FROM_BODY=PASS; CART_HEADER_ARROW_UNCHANGED=PASS; CART_HEADER_TITLE_UNCHANGED=PASS',()=>{const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8'),m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8'),h=p.indexOf('<div class="cr-cart-header-shell">'),b=p.indexOf('<div class="cr-cart-content">');assert.ok(h>=0&&b>h&&p.slice(h,b).includes('</div>'));assert.match(m,/\.cr-parent-category__back \{[^}]*width: 48px;[^}]*height: 48px;/);assert.match(m,/\.cr-parent-category__title \{[^}]*font: 300 21px\/28px "Roboto", Arial, sans-serif;/);});
+
+
+test('CART_PRODUCT_CARD_GEOMETRY_UNCHANGED=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-item__card \{\s*display: block;[\s\S]*?padding: 15px;[\s\S]*?border-radius: 20px;/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-item__card\{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box\}/);
+ assert.doesNotMatch(c,/cr-cart-body-rail[^}]*cr-cart-item__card|cr-cart-item__card[^}]*cr-cart-body-rail/);
+});
+test('CART_PROMOTIONS_RAIL_MATCH_PRODUCT=PASS; CART_WALLET_RAIL_MATCH_PRODUCT=PASS; CART_REWARDS_RAIL_MATCH_PRODUCT=PASS; CART_APPLIED_DISCOUNTS_RAIL_MATCH_PRODUCT=PASS; CART_MANUAL_COUPON_RAIL_MATCH_PRODUCT=PASS',()=>{
+ const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ assert.match(p,/class="cr-cart-promotions cr-cart-body-rail"[\\s\\S]*?class="cr-cart-wallet"[\\s\\S]*?class="cr-cart-applied"[\\s\\S]*?class="cr-cart-manual-coupon"/);
+ assert.match(c,/body\\.woocommerce-cart \\.cr-cart-content \\.cr-cart-body-rail\\{[\\s\\S]*?flex:0 0 calc\\(100% - 24px\\)!important;[\\s\\S]*?width:calc\\(100% - 24px\\)!important;[\\s\\S]*?margin-inline:auto!important;/);
+});
+test('CART_SUMMARY_RAIL_MATCH_PRODUCT=PASS; CART_CTA_RAIL_MATCH_PRODUCT=PASS',()=>{
+ const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ assert.match(p,/class="cart-collaterals cr-cart-summary cr-cart-body-rail"/);
+ assert.match(c,/body\\.woocommerce-cart \\.cr-cart-summary \\.checkout-button\\{[\\s\\S]*?width:100%!important/);
+ assert.match(c,/body\\.woocommerce-cart \\.cr-cart-content \\.cr-cart-body-rail\\{[\\s\\S]*?width:calc\\(100% - 24px\\)!important/);
+});
+test('CART_HEADER_INTERNAL_GEOMETRY_UNCHANGED=PASS; CART_HEADER_VERTICAL_OFFSET_MATCH_CATEGORY=PASS; CART_HEADER_NO_EXCESS_TOP_GAP=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8'),m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
+ assert.match(m,/body\\.cr-global-app-header:not\\(\\.home\\)\\s*\\{[\\s\\S]*?padding-top:\\s*var\\(--cr-app-topbar-height\\)/);
+ assert.match(m,/body\\.cr-parent-category-view \\.cr-parent-category__canvas,\\s*body\\.cr-app-nav-shell \\.cr-category-hub \\{\\s*padding-top:\\s*0 !important;/);
+ assert.match(m,/\\.cr-parent-category__toolbar \\{[\\s\\S]*?min-height:\\s*64px;[\\s\\S]*?margin:\\s*0 20px 16px;/);
+ assert.match(c,/body\\.woocommerce-cart \\.cr-main--woocommerce\\{padding-top:0!important;\\}/);
+ assert.match(m,/\\.cr-parent-category__back \\{[\\s\\S]*?width:\\s*48px;[\\s\\S]*?height:\\s*48px;/);
+ assert.match(m,/\\.cr-parent-category__title \\{[\\s\\S]*?font:\\s*300 21px\\/28px "Roboto", Arial, sans-serif;/);
+ assert.doesNotMatch(c,/cr-parent-category__toolbar|cr-parent-category__back|cr-parent-category__title/);
+ assert.match(m,/\\.cr-main--woocommerce \\{ padding-block: clamp\\(30px, 5vw, 70px\\); \\}/);
+});
