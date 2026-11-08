@@ -1595,7 +1595,7 @@ test('CART_PROMOTIONS_LOADING_TEXT_NOT_VISUALLY_RENDERED=PASS; CART_PROMOTIONS_L
  assert.equal((loading[0].match(/class="cr-cart-promotions__skeleton-bar/g)||[]).length,2,'two decorative skeleton bars');
  assert.match(loading[0],/aria-hidden="true"/);
  const skeleton=c.slice(c.lastIndexOf('/* Promotions loading state:'));
- assert.match(skeleton,/\.cr-cart-promotions__loading\\s*\\{[\\s\\S]*?min-height:68px;[\\s\\S]*?margin-inline:var\\(--cr-cart-card-inline-gutter\\);[\\s\\S]*?border-radius:13px;[\\s\\S]*?background:rgba\\(53,95,75,\\.055\\)/);
+ assert.match(skeleton,/\.cr-cart-promotions__loading\s*\{[\s\S]*?min-height:68px;[\s\S]*?margin-inline:var\(--cr-cart-card-inline-gutter\);[\s\S]*?border-radius:13px;[\s\S]*?background:rgba\(53,95,75,\.055\)/);
  assert.match(skeleton,/\.cr-cart-promotions__skeleton-bar--title\s*\{\s*width:42%;/);
  assert.match(skeleton,/\.cr-cart-promotions__skeleton-bar--copy\s*\{\s*width:29%;/);
  assert.match(skeleton,/@media \(prefers-reduced-motion:reduce\)\s*\{[\s\S]*?animation:none!important/);
