@@ -240,3 +240,151 @@ test('delivery styling is scoped to checkout and excludes notes and transactiona
   ]) assert.equal(checkoutCss.includes(forbidden), false, forbidden + ' must remain outside delivery styling');
 });
 
+
+
+test('WooCommerce address locale overrides are normalized before native address-i18n runs', () => {
+  const localeDefaultStart = woocommercePhp.indexOf('function cr2026_checkout_default_address_locale(');
+  const localeDefaultEnd = woocommercePhp.indexOf("add_filter( 'woocommerce_get_country_locale_default'", localeDefaultStart);
+  const localeDefaultFn = woocommercePhp.slice(localeDefaultStart, localeDefaultEnd);
+  const countryLocaleStart = woocommercePhp.indexOf('function cr2026_checkout_country_address_locale(');
+  const countryLocaleEnd = woocommercePhp.indexOf("add_filter( 'woocommerce_get_country_locale'", countryLocaleStart);
+  const countryLocaleFn = woocommercePhp.slice(countryLocaleStart, countryLocaleEnd);
+
+  assert.ok(localeDefaultStart >= 0 && localeDefaultEnd > localeDefaultStart);
+  assert.ok(countryLocaleStart >= 0 && countryLocaleEnd > countryLocaleStart);
+  assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale_default', 'cr2026_checkout_default_address_locale', 9999 \)/);
+  assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale', 'cr2026_checkout_country_address_locale', 9999 \)/);
+  assert.doesNotMatch(woocommercePhp, /add_filter\( 'woocommerce_default_address_fields'/);
+  assert.doesNotMatch(woocommercePhp, /add_filter\( 'woocommerce_checkout_fields'/);
+
+  for (const [key, priority, label] of [
+    ['first_name', 10, 'Nombre'], ['last_name', 20, 'Apellidos'],
+    ['address_1', 50, 'Dirección'], ['state', 60, 'Provincia'],
+    ['city', 70, 'Localidad'], ['postcode', 80, 'Código postal'],
+    ['country', 90, 'País']
+  ]) {
+    assert.ok(localeDefaultFn.includes("'" + key + "' => array"));
+    assert.ok(localeDefaultFn.includes("'priority' => " + priority));
+    assert.ok(localeDefaultFn.includes("__( '" + label + "'"));
+  }
+  for (const [key, priority, label] of [
+    ['state', 60, 'Provincia'], ['city', 70, 'Localidad'],
+    ['postcode', 80, 'Código postal'], ['country', 90, 'País']
+  ]) {
+    assert.ok(countryLocaleFn.includes("'" + key + "' => array"));
+    assert.ok(countryLocaleFn.includes("'priority' => " + priority));
+    assert.ok(countryLocaleFn.includes("__( '" + label + "'"));
+  }
+});
+
+test('runtime pipeline simulation preserves final billing DOM order after ES locale and native JS sorting', () => {
+  const expected = [
+    ['billing_first_name', 10, 'Nombre'],
+    ['billing_last_name', 20, 'Apellidos'],
+    ['billing_email', 30, 'Email'],
+    ['billing_phone', 40, 'Teléfono'],
+    ['billing_address_1', 50, 'Dirección'],
+    ['billing_state', 60, 'Provincia'],
+    ['billing_city', 70, 'Localidad'],
+    ['billing_postcode', 80, 'Código postal'],
+    ['billing_country', 90, 'País']
+  ];
+
+  // WooCommerce core definitions before theme filters (simplified to the
+  // native fields involved in the delivery section).
+  const defaults = {
+    first_name: { label: 'First name', priority: 10 },
+    last_name: { label: 'Last name', priority: 20 },
+    country: { label: 'Country / Region', priority: 40 },
+    address_1: { label: 'Street address', priority: 50 },
+    address_2: { label: 'Apartment, suite, unit, etc.', priority: 60 },
+    city: { label: 'Town / City', priority: 70 },
+    state: { label: 'State / County', priority: 80 },
+    postcode: { label: 'Postcode / ZIP', priority: 90 }
+  };
+  // Core ES overlay before theme locale filters.
+  const esBefore = {
+    postcode: { priority: 65 },
+    state: { label: 'Province' }
+  };
+  const normalizedDefault = structuredClone(defaults);
+  const normalizedEs = structuredClone(esBefore);
+  const localeValues = {
+    first_name: ['Nombre', 10], last_name: ['Apellidos', 20],
+    address_1: ['Dirección', 50], state: ['Provincia', 60],
+    city: ['Localidad', 70], postcode: ['Código postal', 80],
+    country: ['País', 90]
+  };
+  for (const [key, [label, priority]] of Object.entries(localeValues)) {
+    normalizedDefault[key] = { ...normalizedDefault[key], label, priority };
+  }
+  for (const [key, [label, priority]] of Object.entries({
+    state: ['Provincia', 60], city: ['Localidad', 70],
+    postcode: ['Código postal', 80], country: ['País', 90]
+  })) {
+    normalizedEs[key] = { ...normalizedEs[key], label, priority };
+  }
+
+  // get_address_fields overlays ES on defaults, adds email/phone, applies
+  // woocommerce_billing_fields, then PHP uasort runs.
+  const billing = {};
+  for (const [key, value] of Object.entries(normalizedDefault)) {
+    billing['billing_' + key] = { ...value };
+  }
+  billing.billing_email = { label: 'Email address', priority: 110, type: 'email' };
+  billing.billing_phone = { label: 'Phone', priority: 100, type: 'tel' };
+  for (const [key, value] of Object.entries(normalizedEs)) {
+    if (billing['billing_' + key]) billing['billing_' + key] = { ...billing['billing_' + key], ...value };
+  }
+
+  // Theme's billing filter (the actual PHP map is asserted above and below).
+  for (const [key, priority, label] of expected) {
+    if (billing[key]) {
+      billing[key].priority = priority;
+      billing[key].label = label;
+    }
+  }
+  const phpSorted = Object.entries(billing).sort((a, b) => a[1].priority - b[1].priority);
+
+  // Native address-i18n.js merges default+country locale, rewrites locale
+  // labels/priorities, then sorts wrapper rows. Contact fields are not locale
+  // address keys and retain their billing-filter priorities.
+  const localeKeys = ['first_name', 'last_name', 'country', 'address_1', 'city', 'state', 'postcode'];
+  const runtime = phpSorted.map(([key, field]) => [key, { ...field }]);
+  for (const key of localeKeys) {
+    const fieldKey = 'billing_' + key;
+    const row = runtime.find(([name]) => name === fieldKey);
+    if (!row) continue;
+    const merged = { ...(normalizedDefault[key] || {}), ...(normalizedEs[key] || {}) };
+    if (merged.label !== undefined) row[1].label = merged.label;
+    if (merged.priority !== undefined) row[1].priority = merged.priority;
+  }
+  runtime.sort((a, b) => a[1].priority - b[1].priority);
+
+  const knownOrder = runtime.map(([key]) => key).filter(key => expected.some(([known]) => known === key));
+  assert.deepEqual(knownOrder, expected.map(([key]) => key));
+  const labels = Object.fromEntries(runtime.map(([key, field]) => [key, field.label]));
+  assert.equal(labels.billing_country, 'País');
+  assert.equal(labels.billing_city, 'Localidad');
+  assert.equal(labels.billing_postcode, 'Código postal');
+  assert.equal(labels.billing_state, 'Provincia');
+  assert.equal(labels.billing_phone, 'Teléfono');
+  assert.equal(labels.billing_email, 'Email');
+
+  // The checkout CSS makes unknown rows full width by default; native company
+  // and address_2 rows are not removed or rewritten by the theme callback.
+  assert.ok(checkoutCss.includes('grid-column: 1 / -1;'));
+  assert.doesNotMatch(woocommercePhp, /billing_company|billing_address_2|unset\s*\(/);
+});
+
+test('delivery layout keeps semantic full/half rows independent of WooCommerce legacy floats', () => {
+  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
+  const fn = woocommercePhp.slice(start, end);
+  assert.ok(fn.includes("'cr-delivery-field--' . $presentation['layout']"));
+  assert.ok(checkoutCss.includes('grid-template-columns: repeat(2, minmax(0, 1fr));'));
+  assert.ok(checkoutCss.includes('grid-column: 1 / -1;'));
+  assert.ok(checkoutCss.includes('grid-column: auto;'));
+  assert.doesNotMatch(checkoutCss, /^[ \t]*order[ \t]*:/m);
+  assert.doesNotMatch(woocommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
+});

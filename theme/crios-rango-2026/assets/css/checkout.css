@@ -140,6 +140,8 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   min-width: 0;
 }
 
+/* Every unrecognized/plugin row defaults to a full-width grid row.
+   Only the four explicitly semantic half-width billing rows occupy one track. */
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row {
   position: relative;
   box-sizing: border-box;
