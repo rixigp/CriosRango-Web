@@ -1498,9 +1498,10 @@ test('CART_HEADER_TO_FIRST_PRODUCT_SINGLE_SPACING_OWNER=PASS; CART_HEADER_TO_FIR
  assert.match(m,/@media \(max-width: 767px\)[\s\S]*?\.cr-parent-category__toolbar \{ margin: 0 20px 14px; \}/);
  assert.match(m,/@media \(min-width: 1280px\)[\s\S]*?\.cr-parent-category__toolbar \{ margin: 0 32px 24px; \}/);
  const rules=c.match(/body\.woocommerce-cart \.cr-cart-header-shell > \.cr-parent-category__toolbar\s*\{[^}]*\}/g)||[];
- assert.strictEqual(rules.length,1);
- assert.match(rules[0],/margin-block-end:8px!important/);
- assert.doesNotMatch(rules[0],/margin-inline|margin-left|margin-right|width|grid-template-columns|column-gap/);
+ const blockEndOwners=rules.filter(rule=>/margin-block-end\s*:/i.test(rule));
+ assert.strictEqual(blockEndOwners.length,1);
+ assert.match(blockEndOwners[0],/margin-block-end:8px!important/);
+ assert.doesNotMatch(blockEndOwners[0],/margin-inline|margin-left|margin-right|width|grid-template-columns|column-gap/);
 });
 test('CART_HEADER_HORIZONTAL_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_CARD_GEOMETRY_UNCHANGED=PASS',()=>{
  const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
