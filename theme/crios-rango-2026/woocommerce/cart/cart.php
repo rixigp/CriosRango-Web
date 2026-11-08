@@ -9,20 +9,22 @@ defined( 'ABSPATH' ) || exit;
 
 do_action( 'woocommerce_before_cart' );
 ?>
+<?php
+$cart_empty_action = '';
+if ( ! WC()->cart->is_empty() ) {
+    ob_start();
+    ?>
+    <form class="cr-cart-empty-form" method="post" action="<?php echo esc_url( wc_get_cart_url() ); ?>">
+        <?php wp_nonce_field( 'cr2026_empty_cart', 'cr2026_empty_cart_nonce' ); ?>
+        <button type="submit" name="cr2026_empty_cart" value="1"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m3 3v7m6-7v7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><?php esc_html_e( 'Vaciar carrito', 'crios-rango-2026' ); ?></span></button>
+    </form>
+    <?php
+    $cart_empty_action = ob_get_clean();
+}
+?>
 <section class="cr-cart-page" aria-labelledby="cr-cart-title">
     <div class="cr-cart-content">
-    <div class="cr-cart-heading">
-        <a class="cr-cart-back" href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>" aria-label="<?php esc_attr_e( 'Volver a la tienda', 'crios-rango-2026' ); ?>">
-            <span aria-hidden="true">←</span>
-        </a>
-        <h1 id="cr-cart-title"><?php esc_html_e( 'Tu carrito', 'crios-rango-2026' ); ?></h1>
-        <?php if ( ! WC()->cart->is_empty() ) : ?>
-            <form class="cr-cart-empty-form" method="post" action="<?php echo esc_url( wc_get_cart_url() ); ?>">
-                <?php wp_nonce_field( 'cr2026_empty_cart', 'cr2026_empty_cart_nonce' ); ?>
-                <button type="submit" name="cr2026_empty_cart" value="1"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m3 3v7m6-7v7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><?php esc_html_e( 'Vaciar carrito', 'crios-rango-2026' ); ?></span></button>
-            </form>
-        <?php endif; ?>
-    </div>
+        <?php cr2026_render_category_toolbar( __( 'Tu carrito', 'crios-rango-2026' ), wc_get_page_permalink( 'shop' ), 'cart', false, $cart_empty_action, 'cr-cart-title' ); ?>
 
     <?php if ( WC()->cart->is_empty() ) : ?>
         <div class="cr-cart-empty-state">

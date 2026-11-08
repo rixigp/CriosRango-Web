@@ -160,11 +160,14 @@ function cr2026_product_card_image_attributes( $attr, $attachment, $size ) {
 add_filter( 'wp_get_attachment_image_attributes', 'cr2026_product_card_image_attributes', 20, 3 );
 
 /** Render the one shared toolbar markup for shop hub and category landings. */
-function cr2026_render_category_toolbar( $title, $back_url, $filter_context = 'parent', $show_filters = true ) {
+function cr2026_render_category_toolbar( $title, $back_url, $filter_context = 'parent', $show_filters = true, $right_action_html = '', $title_id = '' ) {
+    $title_id_attribute = '' !== $title_id ? ' id="' . esc_attr( $title_id ) . '"' : '';
     echo '<div class="cr-parent-category__toolbar">';
     echo '<a class="cr-parent-category__back" href="' . esc_url( $back_url ) . '" aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
-    echo '<h1 class="cr-parent-category__title">' . esc_html( $title ) . '</h1>';
-    if ( $show_filters ) {
+    echo '<h1 class="cr-parent-category__title"' . $title_id_attribute . '>' . esc_html( $title ) . '</h1>';
+    if ( '' !== $right_action_html ) {
+        echo $right_action_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- locally generated action control.
+    } elseif ( $show_filters ) {
         echo '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
     }
     echo '</div>';
