@@ -1067,7 +1067,7 @@ test('full cart physical defect contracts: WPLoyalty, image, remove, overflow an
   assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
   assert.match(cartTemplate, /class="cr-cart-remove"/);
   assert.doesNotMatch(cartTemplate, /class="remove cr-cart-remove"/);
-  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item \)/);
+  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item, false, \$cart_display_name \)/);
   assert.match(cartCss, /table\.cart \.cr-cart-item__media img\.cr-cart-item__image-img/);
   assert.match(cartCss, /width:104px; height:128px; min-width:104px; max-width:104px/);
   assert.match(cartCss, /width:100%; height:100%; max-width:none; display:block; object-fit:cover/);
@@ -1089,7 +1089,7 @@ test('final cart presentation uses parent variation title and native structured 
   const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
   assert.match(cartTemplate, /\$_product->is_type\( 'variation' \)[\s\S]{0,300}\$parent_product = wc_get_product\( \$_product->get_parent_id\(\) \)/);
   assert.match(cartTemplate, /\$cart_display_name = \$parent_product->get_name\(\)/);
-  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item \)/);
+  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item, false, \$cart_display_name \)/);
   assert.match(cartTemplate, /\$cart_display_name/);
   assert.doesNotMatch(cartTemplate, /preg_replace|explode\(\s*['"][,;]/);
 });
@@ -1160,7 +1160,7 @@ test('cart item price, variation display, remove icon, compact stepper and CTA a
   const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   assert.match(cartTemplate, /cr-cart-item__unit-label[^>]*>\/ ud\./);
-  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item \)/);
+  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item, false, \$cart_display_name \)/);
   assert.match(cartCss, /\.cr-cart-item__main \{ grid-template-columns: 88px minmax\(0,1fr\)/);
   assert.match(cartCss, /\.cr-cart-quantity\s*\{[^}]*border: 0;[^}]*border-radius: 0;/);
   assert.match(cartCss, /\.cr-cart-remove span \{ display:none!important; \}/);
@@ -1194,7 +1194,7 @@ test('cart final app refinement: light header, compact products, structured vari
   assert.match(cartCss, /\.cr-cart-back \{[^}]*width: 44px;[^}]*height: 44px;[^}]*border: 0;[^}]*border-radius: 0;/);
   assert.match(cartCss, /\.cr-cart-item__card \{ gap: 8px; padding: 9px;/);
   assert.match(cartCss, /\.cr-cart-item__media,[\s\S]*?width: 82px; height: 98px;/);
-  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item \)/);
+  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item, false, \$cart_display_name \)/);
   assert.match(cartCss, /\.cr-cart-item__variations dl\.variation \{[\s\S]*?display: flex!important/);
   assert.match(cartCss, /\.cr-cart-item__variations dl\.variation:empty \{ display: none!important; \}/);
 
