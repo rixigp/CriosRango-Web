@@ -95,3 +95,31 @@ function cr2026_cart_remove_updated_success_notice() {
     }
 }
 add_action( 'wp', 'cr2026_cart_remove_updated_success_notice', 99 );
+
+/**
+ * Mark WooCommerce's native removed-item notice while it is being composed.
+ * This filter is reached only by the user-requested cart-item removal flow.
+ */
+function cr2026_cart_mark_removed_item_notice( $item_title, $cart_item ) {
+    if ( function_exists( 'is_cart' ) && is_cart() ) {
+        $GLOBALS['cr2026_cart_removed_item_notice_pending'] = true;
+    }
+    return $item_title;
+}
+add_filter( 'woocommerce_cart_item_removed_title', 'cr2026_cart_mark_removed_item_notice', PHP_INT_MAX, 2 );
+
+/**
+ * Prevent only that marked removal success notice from entering the WooCommerce
+ * session. Returning an empty message makes wc_add_notice() skip storage.
+ */
+function cr2026_cart_suppress_removed_item_success_notice( $message ) {
+    if ( empty( $GLOBALS['cr2026_cart_removed_item_notice_pending'] )
+        || ! function_exists( 'is_cart' ) || ! is_cart() ) {
+        return $message;
+    }
+
+    unset( $GLOBALS['cr2026_cart_removed_item_notice_pending'] );
+    return '';
+}
+add_filter( 'woocommerce_add_message', 'cr2026_cart_suppress_removed_item_success_notice', PHP_INT_MAX );
+

@@ -1606,3 +1606,25 @@ test('CART_PROMOTIONS_LOADING_TEXT_NOT_VISUALLY_RENDERED=PASS; CART_PROMOTIONS_L
  assert.match(p,/class="cr-cart-promotions__loading"[\s\S]*?class="cr-cart-wallet"/);
  assert.match(p,/class="cr-cart-wallet"[\s\S]*?data-cr-cart-promotions-list[\s\S]*?data-cr-cart-applied/);
 });
+
+test('CART_REMOVE_PRODUCT_NOTICE_SUPPRESSED=PASS; CART_REMOVE_PRODUCT_UNDO_NOT_RENDERED=PASS; CART_REMOVE_PRODUCT_ACTION_PRESERVED=PASS; CART_REMOVE_UPDATES_CART_COUNT=PASS; CART_ERROR_NOTICES_PRESERVED=PASS; CART_COUPON_ERROR_NOTICES_PRESERVED=PASS; CART_STOCK_ERROR_NOTICES_PRESERVED=PASS; CART_LAYOUT_UNCHANGED=PASS; CART_PRODUCT_GEOMETRY_UNCHANGED=PASS',()=>{
+ const cart=fs.readFileSync(path.join(theme,'inc/cart.php'),'utf8');
+ const template=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
+ const css=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ const notices=cart.slice(cart.indexOf('function cr2026_cart_mark_removed_item_notice'));
+ assert.match(notices,/add_filter\( 'woocommerce_cart_item_removed_title', 'cr2026_cart_mark_removed_item_notice', PHP_INT_MAX, 2 \)/,'only the native removal-title boundary marks this notice');
+ assert.match(notices,/function cr2026_cart_suppress_removed_item_success_notice\( \$message \)/);
+ assert.match(notices,/woocommerce_add_message/,'success notice is intercepted before wc_add_notice stores it');
+ assert.match(notices,/empty\( \$GLOBALS\['cr2026_cart_removed_item_notice_pending'\] \)/);
+ assert.match(notices,/return '';/,'the notice including its Undo anchor is discarded before session storage');
+ assert.doesNotMatch(notices,/woocommerce_add_error|wc_clear_notices|wc_set_notices/,'no global notice clearing or error filter');
+ assert.match(template,/wc_get_cart_remove_url\( \$cart_item_key \)/,'native product removal URL remains active');
+ assert.match(template,/woocommerce_cart_item_remove_link/,'native remove-link extension point remains active');
+ assert.match(woocommerce,/\\$fragments\\['span\\[data-cr-cart-count\\]'\\]/,'header and bottom-nav cart count fragment remains active');
+ assert.match(woocommerce,/add_filter\\( 'woocommerce_add_to_cart_fragments', 'cr2026_cart_count_fragment' \\)/);
+ assert.match(css,/body\\.woocommerce-cart \\.cr-cart-item__card/,'cart product-card geometry rules remain');
+ assert.match(template,/class="cr-cart-item__card"/,'cart product-card markup remains');
+ assert.match(template,/class="cr-cart-promotions"/,'promotions block remains');
+ assert.match(template,/class="cart-collaterals cr-cart-summary"/,'summary block remains');
+});
+
