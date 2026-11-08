@@ -888,3 +888,60 @@ body.woocommerce-cart .woocommerce{margin-top:0!important;padding-top:0!importan
 
 /* One owner for the product-list to secondary-rail separation. */
 body.woocommerce-cart .cr-cart-form{margin:0!important}
+
+
+/* Align the cart toolbar to the same full canvas origin as the Outlet toolbar.
+   The page shell contributes 20px desktop / 12px mobile side gutters; expand
+   only this isolated header wrapper by that exact shell gutter. */
+body.woocommerce-cart .cr-cart-header-shell{
+  width:min(calc(100% + 40px),1360px);
+  max-width:1360px;
+  margin-inline:-20px;
+  box-sizing:border-box;
+}
+@media(max-width:767px){
+  body.woocommerce-cart .cr-cart-header-shell{
+    width:min(calc(100% + 24px),1360px);
+    margin-inline:-12px;
+  }
+}
+
+/* Keep the approved product-card width untouched; make the list and secondary
+   rail explicit equal-width siblings, and give each vertical rhythm one owner. */
+body.woocommerce-cart .cr-cart-content .cr-cart-primary{
+  display:block!important;
+  flex:0 0 100%;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  margin:0!important;
+}
+body.woocommerce-cart .cr-cart-content .cr-cart-form{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  margin:0!important;
+}
+body.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail{
+  display:flex!important;
+  flex:0 0 100%;
+  width:100%!important;
+  max-width:100%;
+  min-width:0;
+  align-self:stretch;
+  margin:0!important;
+  box-sizing:border-box;
+}
+body.woocommerce-cart .cr-cart-content .cr-cart-table tbody{
+  display:grid;
+  gap:10px!important;
+}
+body.woocommerce-cart .cr-cart-content .cr-cart-layout{
+  gap:14px!important;
+}
+body.woocommerce-cart .cr-cart-content .cr-cart-form,
+body.woocommerce-cart .cr-cart-content .cr-cart-promotions,
+body.woocommerce-cart .cr-cart-content .cr-cart-summary{
+  margin-block:0!important;
+}
