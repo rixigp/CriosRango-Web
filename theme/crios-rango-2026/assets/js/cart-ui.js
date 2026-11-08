@@ -110,7 +110,8 @@
     const t=cart&&cart.totals; if(!t)return;
     const gross=minorValue(t.total_items)+minorValue(t.total_items_tax);
     const discount=minorValue(t.total_discount)+minorValue(t.total_discount_tax);
-    const net=gross>discount?gross-discount:0n;
+    const fees=minorValue(t.total_fees)+minorValue(t.total_fees_tax);
+    const net=(gross>discount?gross-discount:0n)+fees;
     const threshold=50n*(10n**BigInt(Number(t.currency_minor_unit||2)));
     const sub=document.querySelector('[data-cr-summary-subtotal]'), dc=document.querySelector('[data-cr-summary-discount]'), dr=dc&&dc.closest('tr');
     const ship=document.querySelector('[data-cr-summary-shipping]'), total=document.querySelector('[data-cr-summary-total]');

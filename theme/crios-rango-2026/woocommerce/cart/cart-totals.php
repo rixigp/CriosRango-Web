@@ -8,7 +8,7 @@ $cr_cart = WC()->cart;
 $cr_merchandise_before_shipping = (float) $cr_cart->get_subtotal() + (float) $cr_cart->get_subtotal_tax();
 $cr_shipping_is_presented_free = $cr_merchandise_before_shipping > 50;
 $cr_discount_amount = (float) $cr_cart->get_discount_total() + (float) $cr_cart->get_discount_tax();
-$cr_merchandise_after_discounts = (float) $cr_cart->get_cart_contents_total() + (float) $cr_cart->get_cart_contents_tax();
+$cr_merchandise_after_discounts = (float) $cr_cart->get_cart_contents_total() + (float) $cr_cart->get_cart_contents_tax() + (float) $cr_cart->get_fee_total() + (float) $cr_cart->get_fee_tax();
 ?>
 <div class="cart_totals<?php echo WC()->customer->has_calculated_shipping() ? ' calculated_shipping' : ''; ?>" data-cr-cart-summary>
  <?php do_action( 'woocommerce_before_cart_totals' ); ?>
