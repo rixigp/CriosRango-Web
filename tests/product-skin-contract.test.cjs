@@ -1526,3 +1526,27 @@ test('CART_SECTION_SPACING_SINGLE_OWNER_AFTER_RESTORE=PASS',()=>{
  assert.match(c,/body\.woocommerce-cart \.cr-cart-form\{margin:0!important\}/);
  assert.match(c,/\.cr-cart-secondary-rail > \.cr-cart-promotions,[\s\S]*?margin:0!important/);
 });
+
+
+test('CART_HEADER_LEFT_RULE_MATCHES_OUTLET=PASS; CART_BACK_LEFT_EDGE_MATCHES_OUTLET=PASS; CART_TITLE_LAYOUT_MATCHES_OUTLET=PASS; CART_HEADER_VERTICAL_POSITION_UNCHANGED=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8'),m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
+ assert.match(m,/\.cr-parent-category__toolbar\s*\{[\s\S]*?margin:\s*0 20px 16px;[\s\S]*?grid-template-columns:\s*48px minmax\(0, 1fr\) auto/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-header-shell\s*\{[\s\S]*?width:min\(calc\(100% \+ 40px\),1360px\);[\s\S]*?margin-inline:-20px/);
+ assert.match(c,/@media\(max-width:767px\)\{\s*body\.woocommerce-cart \.cr-cart-header-shell\s*\{[\s\S]*?width:min\(calc\(100% \+ 24px\),1360px\);[\s\S]*?margin-inline:-12px/);
+ assert.doesNotMatch(c,/cr-cart-header-shell[^}]*padding-top|cr-cart-header-shell[^}]*margin-top|cr-cart-header-shell[^}]*top\s*:/);
+});
+test('CART_PRODUCT_CARD_HORIZONTAL_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_LIST_SINGLE_GAP_OWNER=PASS; CART_PRODUCT_LIST_GAP_COMPACT=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\s*\{\s*display:grid;\s*gap:10px!important;\s*\}/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-item__card\{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box\}/);
+ assert.match(c,/\.cr-cart-item-cell \{ display:block!important; width:100%; min-width:0; padding:0!important/);
+ assert.doesNotMatch(c,/cr-cart-item__card\s*\{[^}]*width\s*:\s*calc\(|cr-cart-item__card\s*\{[^}]*margin-inline/);
+});
+test('CART_PRODUCTS_TO_PROMOTIONS_SINGLE_GAP_OWNER=PASS; CART_SECONDARY_RAIL_ISOLATED=PASS; CART_SECONDARY_RAIL_MATCHES_PRODUCT_WIDTH=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8'),p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
+ assert.match(p,/class="cr-cart-primary"[\s\S]*?<\/form>\s*<\/div>\s*<div class="cr-cart-secondary-rail">/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-primary\s*\{[\s\S]*?display:block!important;[\s\S]*?flex:0 0 100%;[\s\S]*?width:100%/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail\s*\{[\s\S]*?flex:0 0 100%;[\s\S]*?width:100%!important/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-layout\s*\{\s*gap:14px!important/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-form,[\s\S]*?margin-block:0!important/);
+});
