@@ -1076,7 +1076,7 @@ test('full cart physical defect contracts: WPLoyalty, image, remove, overflow an
   assert.match(cartCss, /cr-cart-item__content[\s\S]{0,220}min-width:0/);
   assert.doesNotMatch(cartCss, /body\s*\{[^}]*overflow-x\s*:\s*hidden/i);
   assert.match(cartTotals, /wc_cart_totals_subtotal_html\(\)/);
-  assert.match(cartTotals, /wc_cart_totals_order_total_html\(\)/);
+  assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
   assert.match(cartTotals, /woocommerce_cart_totals_before_shipping/);
   assert.match(cartTotals, /woocommerce_proceed_to_checkout/);
   assert.match(cartCss, /includes_tax/);
@@ -1134,7 +1134,7 @@ test('cart visual pass preserves loyalty, promotions endpoints, auth and native 
   const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
   const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
   assert.match(cartJs, /config\.promotionsUrl/);
-  assert.match(cartJs, /config\.walletUrl/);
+  assert.match(cartJs, /config\.loyaltyUrl/);
   assert.match(cartJs, /config\.redeemUrl/);
   assert.match(cartJs, /config\.authenticated/);
   assert.match(cartTemplate, /name="cr2026_empty_cart"/);
