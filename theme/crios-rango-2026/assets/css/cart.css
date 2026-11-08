@@ -341,3 +341,13 @@ body.woocommerce-cart .cr-cart-summary .checkout-button::after {
   body.woocommerce-cart table.cart .cr-cart-item__media { width:84px; height:100px; min-width:84px; max-width:84px; flex-basis:84px; }
   body.woocommerce-cart .cr-cart-summary .cart_totals { padding:0!important; }
 }
+
+/* Inline wallet/reward/promo icons use fixed authored SVGs from cart-ui.js. */
+body.woocommerce-cart .cr-cart-wallet__summary { gap: 10px; }
+body.woocommerce-cart .cr-cart-wallet__icon { display:inline-flex; flex:0 0 24px; color:#0F5C4D; }
+body.woocommerce-cart .cr-cart-wallet__heading { display:flex; align-items:center; gap:8px; }
+body.woocommerce-cart .cr-cart-wallet__info-icon { display:inline-flex; color:#315B52; }
+body.woocommerce-cart .cr-cart-reward__label { display:flex; align-items:center; gap:8px; }
+body.woocommerce-cart .cr-cart-reward__icon { display:inline-flex; flex:0 0 18px; color:#7961A8; }
+body.woocommerce-cart .cr-cart-promo-card__icon { display:inline-flex; margin-bottom:6px; color:#3D78C4; }
+body.woocommerce-cart .cr-cart-promo-card--welcome .cr-cart-promo-card__title { font-weight:500; }
