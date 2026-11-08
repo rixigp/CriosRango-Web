@@ -1054,3 +1054,30 @@ body.woocommerce-cart .cr-cart-promotions__skeleton-bar--copy {
     animation:none!important;
   }
 }
+
+
+/* Promotion card content is a three-zone row: icon, copy, then the native action. */
+body.woocommerce-cart .cr-cart-promo-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+body.woocommerce-cart .cr-cart-promo-card > .cr-cart-promo-card__icon {
+  display: block;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  align-self: center;
+}
+body.woocommerce-cart .cr-cart-promo-card > .cr-cart-promo-card__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+body.woocommerce-cart .cr-cart-promo-card > .cr-cart-apply-button {
+  flex: 0 0 auto;
+  align-self: center;
+}
+body.woocommerce-cart .cr-cart-promotions__available {
+  margin: 0;
+}

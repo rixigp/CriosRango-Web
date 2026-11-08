@@ -203,7 +203,6 @@
       promotionsList.hidden = true;
       return;
     }
-    promotionsList.appendChild(node('h3', 'cr-cart-promotions__subheading', 'Promociones disponibles'));
     if (!visible.length) {
       promotionsList.appendChild(node('p', 'cr-cart-muted', 'No hay promociones disponibles en este momento.'));
       return;
@@ -213,7 +212,7 @@
       const isWelcome = /bienvenida|welcome/i.test(identity);
       const card = node('article', 'cr-cart-promo-card' + (isWelcome ? ' cr-cart-promo-card--welcome' : ''));
       const body = node('div', 'cr-cart-promo-card__body');
-      if (isWelcome) body.appendChild(cartIcon('tag', 'cr-cart-promo-card__icon'));
+      if (isWelcome) card.appendChild(cartIcon('tag', 'cr-cart-promo-card__icon'));
       body.appendChild(node('h4', 'cr-cart-promo-card__title', promotion.title));
       if (promotion.description) body.appendChild(node('p', 'cr-cart-promo-card__description', promotion.description));
       if (promotion.expires_at) body.appendChild(node('p', 'cr-cart-promo-card__expiry', 'Válida hasta ' + promotion.expires_at));
