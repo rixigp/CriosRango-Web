@@ -103,6 +103,8 @@ do_action( 'woocommerce_before_cart' );
                                 // Pass the parent display name so WooCommerce does not suppress attributes
                                 // already embedded in the variation's own title.
                                 $variation_html = wc_get_formatted_cart_item_data( $cart_item, false, $cart_display_name );
+                                // Singular visual label only; WooCommerce attribute data/taxonomy stays untouched.
+                                $variation_html = str_replace( 'Tallas:', 'Talla:', $variation_html );
                                 $remove_url = wc_get_cart_remove_url( $cart_item_key );
                                 $remove_link = sprintf(
                                     '<a href="%s" class="cr-cart-remove" aria-label="%s"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m3 3v7m6-7v7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>%s</span></a>',
@@ -139,19 +141,19 @@ do_action( 'woocommerce_before_cart' );
                                                     <?php endif; ?>
                                                     <div class="cr-cart-item__unit"><span class="screen-reader-text"><?php esc_html_e( 'Precio unitario', 'crios-rango-2026' ); ?></span><?php echo wp_kses_post( $product_price ); ?> <span class="cr-cart-item__unit-label">/ ud.</span></div>
                                                     <div class="cr-cart-item__subtotal"><span><?php esc_html_e( 'Subtotal', 'crios-rango-2026' ); ?></span> <?php echo wp_kses_post( $product_subtotal ); ?></div>
+                                                    <div class="cr-cart-item__actions">
+                                                        <div class="cr-cart-quantity" data-cr-cart-quantity>
+                                                            <button type="button" class="cr-cart-quantity__button" data-cr-qty-change="-1" aria-label="<?php esc_attr_e( 'Reducir cantidad', 'crios-rango-2026' ); ?>">−</button>
+                                                            <?php echo $quantity_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                                                            <button type="button" class="cr-cart-quantity__button" data-cr-qty-change="1" aria-label="<?php esc_attr_e( 'Aumentar cantidad', 'crios-rango-2026' ); ?>">+</button>
+                                                        </div>
+                                                        <?php echo $remove_link; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="cr-cart-item__actions">
-                                                <div class="cr-cart-quantity" data-cr-cart-quantity>
-                                                    <button type="button" class="cr-cart-quantity__button" data-cr-qty-change="-1" aria-label="<?php esc_attr_e( 'Reducir cantidad', 'crios-rango-2026' ); ?>">−</button>
-                                                    <?php echo $quantity_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                                                    <button type="button" class="cr-cart-quantity__button" data-cr-qty-change="1" aria-label="<?php esc_attr_e( 'Aumentar cantidad', 'crios-rango-2026' ); ?>">+</button>
-                                                </div>
-                                                <?php echo $remove_link; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                                             </div>
                                         </article>
                                     </td>
-                                </tr>                           </tr>
+                                </tr>
                             <?php endforeach; ?>
                             <?php do_action( 'woocommerce_cart_contents' ); ?>
                             <?php do_action( 'woocommerce_after_cart_contents' ); ?>

@@ -1260,16 +1260,75 @@ test('cart updated notice suppression leaves other success and all error notices
 });
 
 
-test('cart product cards are moderately compacted without reducing image or touch targets', () => {
+test('cart product cards keep the requested moderate compact layout and preserve controls', () => {
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__card \{\s*gap:4px;\s*padding:6px 8px;/);
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__name \{ margin-bottom:2px; \}/);
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__variations dl\.variation \{ margin:1px 0 2px; \}/);
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__unit \{ margin:1px 0; \}/);
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__subtotal \{ margin:0 0 2px; \}/);
-  // Existing image sizing is unchanged; no compact-card rule targets media dimensions.
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__media,[\s\S]*?width: 76px; height: 92px;/);
-  // Keep the currently shipped interactive target dimensions intact.
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-quantity__button \{[^}]*width: 30px; height: 30px;/);
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-remove \{\s*width: 42px; min-width: 42px; height: 42px; min-height: 42px;/);
+  assert.match(cartCss, /grid-template-columns: 100px minmax\(0, 1fr\);/);
+  assert.match(cartCss, /width: 100px;\s*height: 120px;/);
+  assert.match(cartCss, /padding: 15px;[\s\S]*?border-radius: 20px;/);
+  assert.match(cartCss, /min-height: 0 !important;[\s\S]*?height: auto;/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-table tbody \{ gap: 18px; \}/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-quantity__button \{[\s\S]*?width: 30px;[\s\S]*?height: 30px;/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-remove \{[\s\S]*?width: 42px;[\s\S]*?height: 42px;[\s\S]*?min-height: 42px;/);
+});
+
+
+test('mobile cart final density, variation label, summary grid and checkout label contracts', () => {
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+  const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
+  const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
+  const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
+
+  // Product card, image, text hierarchy and spacing.
+  assert.match(cartCss, /padding: 15px;[\s\S]*?border-radius: 20px;[\s\S]*?box-shadow: none;/, 'CART_PRODUCT_CARD_COMPACTED=PASS');
+  assert.match(cartCss, /min-height: 0 !important;[\s\S]*?height: auto;/, 'CART_PRODUCT_CARD_NO_LARGE_MIN_HEIGHT=PASS');
+  assert.match(cartCss, /width: 100px;[\s\S]*?height: 120px;/, 'CART_IMAGE_COMPACT_SIZE=PASS');
+  assert.match(cartCss, /font-size: 14px;[\s\S]*?line-height: 1\.25;[\s\S]*?font-weight: 500;/, 'CART_PRODUCT_NAME_MEDIUM_WEIGHT=PASS');
+  assert.match(cartCss, /gap: 0 15px;/, 'CART_IMAGE_TEXT_GAP=PASS');
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-table tbody \{ gap: 18px; \}/, 'CART_PRODUCT_GAP_REDUCED=PASS');
+
+  // Structured WooCommerce variation data remains the source; only the visible plural label is singularized.
+  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item, false, \$cart_display_name \)/);
+  assert.match(cartTemplate, /str_replace\( 'Tallas:', 'Talla:', \$variation_html \)/, 'CART_VARIATION_TALLA_SINGULAR_LABEL=PASS');
+  assert.match(cartCss, /dd:not\(:last-of-type\)::after[\s\S]*?content: "\\u00b7"|dd:not\(:last-of-type\)::after[\s\S]*?content: "·"/, 'CART_VARIATION_NO_ORPHAN_SEPARATOR=PASS');
+
+  // Controls are inside the text content, after the subtotal; WooCommerce handlers/targets remain.
+  const contentAt = cartTemplate.indexOf('class="cr-cart-item__content"');
+  const subtotalAt = cartTemplate.indexOf('class="cr-cart-item__subtotal"', contentAt);
+  const actionsAt = cartTemplate.indexOf('class="cr-cart-item__actions"', contentAt);
+  const mainCloseAt = cartTemplate.indexOf('</div>\n                                            </div>', actionsAt);
+  assert.ok(contentAt >= 0 && subtotalAt > contentAt && actionsAt > subtotalAt && mainCloseAt > actionsAt, 'CART_ACTION_ROW_CLOSE_TO_CONTENT=PASS');
+  assert.match(cartTemplate, /aria-label="[^"]*Eliminar %s del carrito|aria-label="<\?php esc_attr\( sprintf\( __\( 'Eliminar %s del carrito'/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-quantity__button \{[\s\S]*?width: 30px;[\s\S]*?height: 30px;/, 'CART_TOUCH_TARGETS_PRESERVED=PASS');
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-remove \{[\s\S]*?width: 42px;[\s\S]*?height: 42px;[\s\S]*?min-height: 42px;/);
+
+  // Real two-column summary, no responsive label colon, and only the allowed shipping display text.
+  assert.match(cartCss, /grid-template-columns: minmax\(0, 1fr\) auto;[\s\S]*?align-items: center;[\s\S]*?width: 100% !important;/, 'CART_SUMMARY_FULL_WIDTH=PASS');
+  assert.match(cartCss, /table\.shop_table tr \{[\s\S]*?display: grid !important;[\s\S]*?grid-template-columns: minmax\(0, 1fr\) auto;/, 'CART_SUMMARY_TWO_COLUMN_LAYOUT=PASS');
+  assert.match(cartCss, /table\.shop_table td::before \{\s*content: none !important;/, 'CART_SUBTOTAL_NO_CONCATENATED_COLON=PASS');
+  assert.match(cartCss, /table\.shop_table td::before \{\s*content: none !important;/, 'CART_SHIPPING_NO_CONCATENATED_COLON=PASS');
+  assert.match(cartCss, /table\.shop_table td::before \{\s*content: none !important;/, 'CART_TOTAL_NO_CONCATENATED_COLON=PASS');
+  assert.match(cartTotals, /wc_cart_totals_subtotal_html\(\)/);
+  assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
+  assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
+  assert.match(cartJs, /selectedAmount\s*\?\s*selectedAmount\.textContent[\s\S]*?:\s*\(\/\\b\(\?:gratis\|gratuito\|free\)\\b\/i\.test\(selectedLabel\)\s*\?\s*'Gratis'\s*:\s*'Se calcula en el checkout'\)/);
+  assert.doesNotMatch(cartJs, /selectedText\.textContent\s*=\s*selectedLabel/, 'CART_SHIPPING_NO_METHOD_NAME=PASS');
+
+  // Label is visual-only; the checkout destination continues to be emitted by WooCommerce's native hook.
+  assert.match(cartCss, /checkout-button::after\s*\{\s*content: "Finalizar compra";/);
+  assert.match(cartTemplate, /do_action\( 'woocommerce_cart_collaterals' \)/);
+  assert.match(cartTotals, /do_action\( 'woocommerce_proceed_to_checkout' \)/);
+  assert.match(cartCss, /checkout-button::after[\s\S]*?Finalizar compra/, 'CART_CTA_FINALIZAR_COMPRA=PASS');
+  assert.match(cartTotals, /woocommerce_proceed_to_checkout/ , 'CART_CTA_ACTION_UNCHANGED=PASS');
+
+  // Native cart logic, shipping/tax calculations and checkout hooks remain in place.
+  assert.match(cartTemplate, /wp_nonce_field\( 'woocommerce-cart'/);
+  assert.match(cartTemplate, /woocommerce_quantity_input\(/);
+  assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
+  assert.match(cartTemplate, /woocommerce_before_cart_contents/);
+  assert.match(cartTotals, /WC\(\)->cart->get_total\( 'edit' \)/);
+  assert.match(cartTotals, /woocommerce_cart_totals_before_shipping/);
+  assert.match(cartJs, /input\.shipping_method:checked/);
+  assert.match(cartJs, /requestSubmit\(submit \|\| undefined\)/);
+  assert.match(cartJs, /config\.promotionsUrl[\s\S]*?config\.loyaltyUrl[\s\S]*?config\.redeemUrl/);
+  assert.ok(!cartJs.includes('woocommerce_cart_totals_calculate'), 'CART_FUNCTIONAL_LOGIC_UNCHANGED=PASS');
 });
