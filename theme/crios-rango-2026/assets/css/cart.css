@@ -899,3 +899,9 @@ body.woocommerce-cart .cr-cart-header-shell > .cr-parent-category__toolbar{
   margin-block-start:0!important;
   min-height:64px;
 }
+
+
+/* Cart toolbar to first product: one reduced block-spacing owner; horizontal toolbar geometry remains shared. */
+body.woocommerce-cart .cr-cart-header-shell > .cr-parent-category__toolbar{
+  margin-block-end:8px!important;
+}
