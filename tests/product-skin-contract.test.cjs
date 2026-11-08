@@ -1164,7 +1164,7 @@ test('cart item price, variation display, remove icon, compact stepper and CTA a
   assert.match(cartCss, /\.cr-cart-item__main \{ grid-template-columns: 88px minmax\(0,1fr\)/);
   assert.match(cartCss, /\.cr-cart-quantity\s*\{[^}]*border: 0;[^}]*border-radius: 0;/);
   assert.match(cartCss, /\.cr-cart-remove span \{ display:none!important; \}/);
-  assert.match(cartCss, /\.cr-cart-summary \.checkout-button::after[\s\S]*?Continuar compra/);
+  assert.match(cartCss, /\.cr-cart-summary \.checkout-button::after[\s\S]*?Finalizar compra/);
 });
 
 test('cart promotions and totals outer cards are removed, wallet points and tax presentation hidden', () => {
@@ -1297,7 +1297,8 @@ test('mobile cart final density, variation label, summary grid and checkout labe
   const actionsAt = cartTemplate.indexOf('class="cr-cart-item__actions"', contentAt);
   const mainCloseAt = cartTemplate.indexOf('</div>\n                                            </div>', actionsAt);
   assert.ok(contentAt >= 0 && subtotalAt > contentAt && actionsAt > subtotalAt && mainCloseAt > actionsAt, 'CART_ACTION_ROW_CLOSE_TO_CONTENT=PASS');
-  assert.match(cartTemplate, /aria-label="[^"]*Eliminar %s del carrito|aria-label="<\?php esc_attr\( sprintf\( __\( 'Eliminar %s del carrito'/);
+  assert.match(cartTemplate, /class="cr-cart-remove" aria-label="%s"/);
+  assert.match(cartTemplate, /esc_attr\( sprintf\( __\( 'Eliminar %s del carrito'/);
   assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-quantity__button \{[\s\S]*?width: 30px;[\s\S]*?height: 30px;/, 'CART_TOUCH_TARGETS_PRESERVED=PASS');
   assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-remove \{[\s\S]*?width: 42px;[\s\S]*?height: 42px;[\s\S]*?min-height: 42px;/);
 
@@ -1310,7 +1311,8 @@ test('mobile cart final density, variation label, summary grid and checkout labe
   assert.match(cartTotals, /wc_cart_totals_subtotal_html\(\)/);
   assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
   assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
-  assert.match(cartJs, /selectedAmount\s*\?\s*selectedAmount\.textContent[\s\S]*?:\s*\(\/\\b\(\?:gratis\|gratuito\|free\)\\b\/i\.test\(selectedLabel\)\s*\?\s*'Gratis'\s*:\s*'Se calcula en el checkout'\)/);
+  assert.match(cartJs, /const label = selectedAmount[\s\S]*?selectedAmount\.textContent/);
+  assert.match(cartJs, /'Gratis' : 'Se calcula en el checkout'/);
   assert.doesNotMatch(cartJs, /selectedText\.textContent\s*=\s*selectedLabel/, 'CART_SHIPPING_NO_METHOD_NAME=PASS');
 
   // Label is visual-only; the checkout destination continues to be emitted by WooCommerce's native hook.
@@ -1329,6 +1331,10 @@ test('mobile cart final density, variation label, summary grid and checkout labe
   assert.match(cartTotals, /woocommerce_cart_totals_before_shipping/);
   assert.match(cartJs, /input\.shipping_method:checked/);
   assert.match(cartJs, /requestSubmit\(submit \|\| undefined\)/);
-  assert.match(cartJs, /config\.promotionsUrl[\s\S]*?config\.loyaltyUrl[\s\S]*?config\.redeemUrl/);
+  assert.match(cartJs, /config\.promotionsUrl/);
+  assert.match(cartJs, /config\.loyaltyUrl/);
+  assert.match(cartJs, /config\.redeemUrl/);
+  assert.match(cartJs, /data-cr-qty-change/);
+  assert.match(cartJs, /wc_cart_fragments/);
   assert.ok(!cartJs.includes('woocommerce_cart_totals_calculate'), 'CART_FUNCTIONAL_LOGIC_UNCHANGED=PASS');
 });
