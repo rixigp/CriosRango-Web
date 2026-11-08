@@ -96,9 +96,11 @@
     return button;
   };
   const couponsFrom = (cart) => Array.isArray(cart && cart.coupons) ? cart.coupons : [];
-  const hasCoupon = (cart, code) => couponsFrom(cart).some((coupon) =>
-    text(coupon.code).toLowerCase() === text(code).toLowerCase()
-  );
+  const normalizeCouponCode = (code) => text(code).trim().replace(/\s+/g, ' ').toLowerCase();
+  const hasCoupon = (cart, code) => {
+    const wanted = normalizeCouponCode(code);
+    return !!wanted && couponsFrom(cart).some((coupon) => normalizeCouponCode(coupon.code) === wanted);
+  };
   const minorValue = (v) => { try { return BigInt(text(v || '0')); } catch (_) { return 0n; } };
   const formatStoreMoney = (minor, t) => {
     const digits=Number(t.currency_minor_unit||2), divisor=10n**BigInt(digits), neg=minor<0n, abs=neg?-minor:minor;
@@ -200,8 +202,9 @@
     promotionsList.hidden = false;
     promotionsList.replaceChildren();
     const list = Array.isArray(payload) ? payload : (Array.isArray(payload.promotions) ? payload.promotions : []);
-    const visible = config.authenticated ? list : list.filter(guestPromotionVisible);
-    if (!visible.length && !config.authenticated) {
+    const visible = (config.authenticated ? list : list.filter(guestPromotionVisible))
+      .filter((promotion) => !hasCoupon(currentCart, promotion.code));
+    if (!visible.length) {
       promotionsList.hidden = true;
       return;
     }
@@ -331,12 +334,11 @@
     walletPanel.appendChild(summary);
 
     const rewards = Array.isArray(wallet.pending_rewards) ? wallet.pending_rewards : [];
-    const rewardSection = node('div', 'cr-cart-wallet__rewards');
-    rewardSection.appendChild(node('h4', 'cr-cart-promotions__subheading', 'Saldo listo para usar'));
-    if (!rewards.length) {
-      rewardSection.appendChild(node('p', 'cr-cart-muted', 'No tienes saldos listos para usar.'));
-    } else {
-      rewards.filter((reward)=>!hasCoupon(currentCart,reward.code)).forEach((reward) => {
+    const availableRewards = rewards.filter((reward) => reward.code && !hasCoupon(currentCart, reward.code));
+    if (availableRewards.length) {
+      const rewardSection = node('div', 'cr-cart-wallet__rewards');
+      rewardSection.appendChild(node('h4', 'cr-cart-promotions__subheading', 'Saldo listo para usar'));
+      availableRewards.forEach((reward) => {
         const row = node('div', 'cr-cart-reward');
         const label = node('div', 'cr-cart-reward__label');
         label.appendChild(cartIcon('wallet', 'cr-cart-reward__icon'));
@@ -346,8 +348,8 @@
         row.appendChild(createButton('Aplicar','cr-cart-apply-button',(event)=>applyCoupon(reward.code,'Crédito',event.currentTarget)));
         rewardSection.appendChild(row);
       });
+      walletPanel.appendChild(rewardSection);
     }
-    walletPanel.appendChild(rewardSection);
 
     const eligible = currentCart ? cartEligibleSubtotal(currentCart) : null;
     const options = currentCart ? redeemableOptions(wallet, eligible) : [];

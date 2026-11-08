@@ -1339,3 +1339,16 @@ test('cart maps rewards/promotions to friendly coupon labels and hides native co
 test('cart coupon apply/remove are Store API confirmed and do not reload the page',()=>{const j=fs.readFileSync(path.join(theme,'assets/js/cart-ui.js'),'utf8');assert.match(j,/applyCouponUrl[\s\S]*?method: 'POST'[\s\S]*?hasCoupon\(cart, normalized\)/);assert.match(j,/removeCouponUrl[\s\S]*?method: 'POST'[\s\S]*?!hasCoupon\(cart, code\)/);assert.match(j,/await refreshCartUi\(cart\)/);assert.match(j,/style\.setProperty\('display',discount<=0n\?'none':'grid','important'\)/);assert.doesNotMatch(j,/location\.reload|location\.assign/);assert.match(j,/setButtonPending\(button,true,'Aplicando…'\)/);});
 test('cart wallet information modal contains approved copy and accessible dialog semantics',()=>{const j=fs.readFileSync(path.join(theme,'assets/js/cart-ui.js'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');assert.match(j,/role="dialog" aria-modal="true"/);assert.match(j,/¿Cómo funciona tu monedero\?/);assert.match(j,/1 € gastado = 1 punto/);assert.match(j,/Cuando acumules 100 puntos, podrás convertirlos en 5 € de saldo para tus compras\./);assert.match(j,/La barra te indica cuánto te falta para desbloquear el saldo\./);assert.match(j,/Cuando tengas saldo disponible, pulsa “Usar” para elegir cuánto quieres aplicar a tu compra\./);assert.match(j,/Entendido/);assert.doesNotMatch(j,/alert\s*\(/);assert.match(c,/cr-cart-wallet-dialog__backdrop/);});
 test('cart shipping summary uses strict pre-shipping threshold and excludes shipping from displayed total',()=>{const t=fs.readFileSync(path.join(theme,'woocommerce/cart/cart-totals.php'),'utf8'),j=fs.readFileSync(path.join(theme,'assets/js/cart-ui.js'),'utf8');assert.match(t,/get_subtotal\(\)[\s\S]*?get_subtotal_tax\(\)[\s\S]*?> 50/);assert.match(t,/get_cart_contents_total\(\)[\s\S]*?get_cart_contents_tax\(\)/);assert.match(t,/Se calcula en el checkout/);assert.match(j,/50n\*\(10n\*\*BigInt\(Number\(t\.currency_minor_unit/);assert.match(j,/formatStoreMoney\(net,t\)/);assert.doesNotMatch(t,/wc_cart_totals_shipping_html\(\)/);});
+
+test('cart removes applied rewards and promotions from available lists and restores them from Store API cart state',()=>{
+  const j=fs.readFileSync(path.join(theme,'assets/js/cart-ui.js'),'utf8');
+  assert.match(j,/const normalizeCouponCode = \(code\) => text\(code\)\.trim\(\)\.replace\(\/\\s\+\/g, ' '\)\.toLowerCase\(\)/);
+  assert.match(j,/const availableRewards = rewards\.filter\(\(reward\) => reward\.code && !hasCoupon\(currentCart, reward\.code\)\)/);
+  assert.match(j,/if \(availableRewards\.length\) \{/);
+  assert.match(j,/\.filter\(\(promotion\) => !hasCoupon\(currentCart, promotion\.code\)\)/);
+  assert.match(j,/if \(!visible\.length\) \{\s*promotionsList\.hidden = true;/);
+  assert.match(j,/const refreshCartUi = async \(cart\) => \{ currentCart=cart; renderAppliedCoupons\(cart\); renderCartSummary\(cart\); if\(promotionsPayload\)renderPromotions\(promotionsPayload\); if\(config\.authenticated\)await refreshWallet\(\); \};/);
+  assert.match(j,/if \(hasCoupon\(cart, normalized\)\)/);
+  assert.match(j,/if \(hasCoupon\(cart, code\)\)/);
+  assert.doesNotMatch(j,/node\('span',\s*'[^']*',\s*'Aplicado'\)/);
+});
