@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
         <tbody>
             <tr class="cart-subtotal">
                 <th><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></th>
-                <td data-title="<?php esc_attr_e( 'Subtotal', 'woocommerce' ); ?>"><?php wc_cart_totals_subtotal_html(); ?></td>
+                <td><?php wc_cart_totals_subtotal_html(); ?></td>
             </tr>
             <?php foreach ( WC()->cart->get_coupons() as $code => $coupon ) : ?>
                 <tr class="cart-discount coupon-<?php echo esc_attr( sanitize_title( $code ) ); ?>">
