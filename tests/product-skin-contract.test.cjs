@@ -1053,7 +1053,6 @@ test('mobile cart uses one WooCommerce table cell card and cart-only WPLoyalty f
   assert.doesNotMatch(emptyTemplate, /woocommerce_cart_is_empty/);
 });
 
-
 test('full cart physical defect contracts: WPLoyalty, image, remove, overflow and native totals', () => {
   const cartTotals = fs.existsSync(path.join(theme, 'woocommerce/cart/cart-totals.php'))
     ? fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8') : '';

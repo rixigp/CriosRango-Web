@@ -43,10 +43,8 @@ function cr2026_cart_product_image_attributes( $attr, $attachment, $size ) {
         || empty( $attr['class'] ) || false === strpos( $attr['class'], 'cr-cart-item__image-img' ) ) {
         return $attr;
     }
-
     $attachment_id = isset( $attachment->ID ) ? absint( $attachment->ID ) : 0;
     if ( ! $attachment_id ) { return $attr; }
-
     $canonical_url = cr2026_attachment_public_url( $attachment_id );
     if ( $canonical_url ) {
         $attr['src'] = $canonical_url;
