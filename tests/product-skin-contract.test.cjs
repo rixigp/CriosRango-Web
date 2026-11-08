@@ -1582,3 +1582,27 @@ test('CART_PROMOTIONS_TITLE_USES_SHARED_GUTTER=PASS; CART_MANUAL_COUPON_USES_SHA
  assert.match(j,/const refreshCartUi = async \(cart\)/);
  assert.match(totals,/get_cart_contents_total\(\)/);
 });
+
+
+test('CART_PROMOTIONS_LOADING_TEXT_NOT_VISUALLY_RENDERED=PASS; CART_PROMOTIONS_LOADING_SKELETON_PRESENT=PASS; CART_PROMOTIONS_LOADING_SKELETON_USES_SHARED_GUTTER=PASS; CART_PROMOTIONS_LOADING_SUCCESS_REPLACEMENT_UNCHANGED=PASS; CART_PROMOTIONS_LOADING_EMPTY_STATE_UNCHANGED=PASS; CART_PROMOTIONS_FUNCTIONAL_LOGIC_UNCHANGED=PASS',()=>{
+ const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ const j=fs.readFileSync(path.join(theme,'assets/js/cart-ui.js'),'utf8');
+ const loading=p.match(/<div class="cr-cart-promotions__loading"[\s\S]*?<\/div>/);
+ assert.ok(loading,'single promotions loading element remains');
+ assert.doesNotMatch(loading[0],/>\s*Cargando promociones(?:…|\.\.\.)?\s*</i,'loading copy is not rendered as visible text');
+ assert.match(loading[0],/role="status" aria-live="polite" aria-label="<\?php esc_attr_e\( 'Cargando promociones'/,'accessible loading announcement retained');
+ assert.equal((loading[0].match(/cr-cart-promotions__skeleton-bar/g)||[]).length,2,'two decorative skeleton bars');
+ assert.match(loading[0],/aria-hidden="true"/);
+ const skeleton=c.slice(c.lastIndexOf('/* Promotions loading state:'));
+ assert.match(skeleton,/\.cr-cart-promotions__loading\s*\{[\s\S]*?margin-inline:var\(--cr-cart-card-inline-gutter\);[\s\S]*?min-height:68px;[\s\S]*?border-radius:13px;[\s\S]*?background:rgba\(53,95,75,\.055\)/);
+ assert.match(skeleton,/\.cr-cart-promotions__skeleton-bar--title\s*\{\s*width:42%;/);
+ assert.match(skeleton,/\.cr-cart-promotions__skeleton-bar--copy\s*\{\s*width:29%;/);
+ assert.match(skeleton,/@media \(prefers-reduced-motion:reduce\)\s*\{[\s\S]*?animation:none!important/);
+ assert.match(j,/\.then\(\(payload\) => \{ promotionsPayload=payload; promotionsLoaded=true; renderPromotions\(payload\); if\(currentCart\)renderAppliedCoupons\(currentCart\); \}\)/);
+ assert.match(j,/\.finally\(\(\) => \{ loading\.hidden = true; \}\)/);
+ assert.match(j,/if \(!visible\.length\) \{\s*promotionsList\.hidden = true;/);
+ assert.match(j,/\.catch\(\(error\) => promotionsList\.replaceChildren\(node\('p', 'cr-cart-feedback is-error', error\.message\)\)\)/);
+ assert.match(p,/class="cr-cart-promotions__loading"[\s\S]*?class="cr-cart-wallet"/);
+ assert.match(p,/class="cr-cart-wallet"[\s\S]*?data-cr-cart-promotions-list[\s\S]*?data-cr-cart-applied/);
+});

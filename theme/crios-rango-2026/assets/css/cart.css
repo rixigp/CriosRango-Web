@@ -1011,3 +1011,46 @@ body.woocommerce-cart .cr-cart-content .cr-cart-summary .checkout-button {
   margin:0!important;
   box-sizing:border-box;
 }
+
+
+/* Promotions loading state: a single compact skeleton card on the approved card rail. */
+body.woocommerce-cart .cr-cart-promotions .cr-cart-promotions__loading {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:9px;
+  min-height:68px;
+  margin-inline:var(--cr-cart-card-inline-gutter);
+  padding:14px;
+  box-sizing:border-box;
+  overflow:hidden;
+  border-radius:13px;
+  background:rgba(53,95,75,.055);
+}
+body.woocommerce-cart .cr-cart-promotions .cr-cart-promotions__loading[hidden] {
+  display:none!important;
+}
+body.woocommerce-cart .cr-cart-promotions__skeleton-bar {
+  display:block;
+  height:7px;
+  border-radius:999px;
+  background:linear-gradient(90deg,rgba(53,95,75,.07) 0%,rgba(53,95,75,.12) 45%,rgba(53,95,75,.07) 100%);
+  background-size:200% 100%;
+  animation:cr-cart-promotions-shimmer 2.4s ease-in-out infinite;
+}
+body.woocommerce-cart .cr-cart-promotions__skeleton-bar--title {
+  width:42%;
+}
+body.woocommerce-cart .cr-cart-promotions__skeleton-bar--copy {
+  width:29%;
+  opacity:.78;
+}
+@keyframes cr-cart-promotions-shimmer {
+  0%,100% { background-position:100% 0; }
+  50% { background-position:0 0; }
+}
+@media (prefers-reduced-motion:reduce) {
+  body.woocommerce-cart .cr-cart-promotions__skeleton-bar {
+    animation:none!important;
+  }
+}

@@ -173,7 +173,10 @@ if ( ! WC()->cart->is_empty() ) {
             <div class="cr-cart-secondary-rail">
                 <section class="cr-cart-promotions" data-cr-cart-promotions aria-labelledby="cr-cart-promotions-title">
                     <h2 id="cr-cart-promotions-title"><?php esc_html_e( 'Promociones y descuentos', 'crios-rango-2026' ); ?></h2>
-                    <div class="cr-cart-promotions__loading" data-cr-cart-loading><?php esc_html_e( 'Cargando promociones…', 'crios-rango-2026' ); ?></div>
+                    <div class="cr-cart-promotions__loading" data-cr-cart-loading role="status" aria-live="polite" aria-label="<?php esc_attr_e( 'Cargando promociones', 'crios-rango-2026' ); ?>">
+                        <span class="cr-cart-promotions__skeleton-bar cr-cart-promotions__skeleton-bar--title" aria-hidden="true"></span>
+                        <span class="cr-cart-promotions__skeleton-bar cr-cart-promotions__skeleton-bar--copy" aria-hidden="true"></span>
+                    </div>
                     <div class="cr-cart-wallet" data-cr-cart-wallet hidden></div>
                     <div class="cr-cart-promotions__available" data-cr-cart-promotions-list></div>
                     <div class="cr-cart-applied" data-cr-cart-applied hidden></div>
