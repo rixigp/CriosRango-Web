@@ -1441,7 +1441,7 @@ test('CART_HEADER_VERTICAL_PARENT_CHAIN_MATCHES_OUTLET_CANVAS=PASS',()=>{
  const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
  const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
  assert.match(m,/body\.cr-global-app-header:not\(\.home\)\s*\{[\s\S]*?padding-top:\s*var\(--cr-app-topbar-height\)/);
- assert.match(m,/body\.cr-parent-category-view \.cr-parent-category__canvas,\s*body\.cr-app-nav-shell \.cr-category-hub\s*\{\s*padding-top:0 !important/);
+ assert.match(m,/body\.cr-parent-category-view \.cr-parent-category__canvas,\s*body\.cr-app-nav-shell \.cr-category-hub\s*\{\s*padding-top:\s*0 !important/);
  assert.match(m,/\.cr-parent-category__canvas\s*\{[\s\S]*?flex:\s*1 0 auto;[\s\S]*?padding:\s*0;/);
  assert.match(p,/class="cr-cart-header-shell"[\s\S]*?cr2026_render_category_toolbar\( __\( 'Tu carrito'/);
  assert.match(c,/body\.woocommerce-cart \.cr-main > \.cr-shell\.cr-page-shell,\s*body\.woocommerce-cart \.cr-page,\s*body\.woocommerce-cart \.cr-prose,\s*body\.woocommerce-cart \.woocommerce,\s*body\.woocommerce-cart \.cr-cart-page,\s*body\.woocommerce-cart \.cr-cart-header-shell\{\s*margin-block-start:0!important;\s*padding-block-start:0!important;\s*\}/);
