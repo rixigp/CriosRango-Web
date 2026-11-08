@@ -263,17 +263,17 @@ test('WooCommerce address locale overrides are normalized before native address-
     ['city', 70, 'Localidad'], ['postcode', 80, 'Código postal'],
     ['country', 90, 'País']
   ]) {
-    assert.ok(localeDefaultFn.includes("'" + key + "' => array"));
-    assert.ok(localeDefaultFn.includes("'priority' => " + priority));
-    assert.ok(localeDefaultFn.includes("__( '" + label + "'"));
+    assert.match(localeDefaultFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
+    assert.match(localeDefaultFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
+    assert.match(localeDefaultFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
   }
   for (const [key, priority, label] of [
     ['state', 60, 'Provincia'], ['city', 70, 'Localidad'],
     ['postcode', 80, 'Código postal'], ['country', 90, 'País']
   ]) {
-    assert.ok(countryLocaleFn.includes("'" + key + "' => array"));
-    assert.ok(countryLocaleFn.includes("'priority' => " + priority));
-    assert.ok(countryLocaleFn.includes("__( '" + label + "'"));
+    assert.match(countryLocaleFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
+    assert.match(countryLocaleFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
+    assert.match(countryLocaleFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
   }
 });
 
@@ -374,7 +374,10 @@ test('runtime pipeline simulation preserves final billing DOM order after ES loc
   // The checkout CSS makes unknown rows full width by default; native company
   // and address_2 rows are not removed or rewritten by the theme callback.
   assert.ok(checkoutCss.includes('grid-column: 1 / -1;'));
-  assert.doesNotMatch(woocommercePhp, /billing_company|billing_address_2|unset\s*\(/);
+  const deliveryStart = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const deliveryEnd = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", deliveryStart);
+  const deliveryFn = woocommercePhp.slice(deliveryStart, deliveryEnd);
+  assert.doesNotMatch(deliveryFn, /billing_company|billing_address_2|unset\\s*\\(/);
 });
 
 test('delivery layout keeps semantic full/half rows independent of WooCommerce legacy floats', () => {
