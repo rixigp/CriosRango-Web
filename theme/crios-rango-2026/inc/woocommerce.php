@@ -727,8 +727,16 @@ add_action( 'wp', 'cr2026_remove_loyalty_messages_from_product_loops', 100 );
  * Adapt only the known native billing fields for the delivery section.
  * Unknown fields and every non-visual WooCommerce field property are preserved.
  */
-function cr2026_checkout_delivery_fields( $fields ) {
-    if ( ! is_array( $fields ) || ! isset( $fields['billing'] ) || ! is_array( $fields['billing'] ) ) {
+/**
+ * Set the nine native billing-field labels, priorities and layout classes
+ * before WooCommerce sorts the billing fields by priority.
+ *
+ * woocommerce_billing_fields runs after country locale/default-address
+ * definitions have been applied and before WC_Countries::get_address_fields()
+ * performs its priority sort.
+ */
+function cr2026_checkout_delivery_fields( $fields, $country = '' ) {
+    if ( ! is_array( $fields ) ) {
         return $fields;
     }
 
@@ -745,31 +753,27 @@ function cr2026_checkout_delivery_fields( $fields ) {
     );
 
     foreach ( $delivery_fields as $key => $presentation ) {
-        if ( ! isset( $fields['billing'][ $key ] ) || ! is_array( $fields['billing'][ $key ] ) ) {
+        if ( ! isset( $fields[ $key ] ) || ! is_array( $fields[ $key ] ) ) {
             continue;
         }
 
-        $fields['billing'][ $key ]['label'] = $presentation['label'];
-        $fields['billing'][ $key ]['priority'] = $presentation['priority'];
+        $fields[ $key ]['label'] = $presentation['label'];
+        $fields[ $key ]['priority'] = $presentation['priority'];
 
-        if ( ! isset( $fields['billing'][ $key ]['class'] ) ) {
-            $fields['billing'][ $key ]['class'] = array();
-        }
-
-        if ( is_array( $fields['billing'][ $key ]['class'] ) ) {
-            $classes = array_diff(
-                $fields['billing'][ $key ]['class'],
-                array( 'form-row-first', 'form-row-last', 'form-row-wide', 'cr-delivery-field', 'cr-delivery-field--full', 'cr-delivery-field--half' )
-            );
-            $classes[] = 'cr-delivery-field';
-            $classes[] = 'cr-delivery-field--' . $presentation['layout'];
-            $fields['billing'][ $key ]['class'] = array_values( array_unique( $classes ) );
-        }
+        $classes = isset( $fields[ $key ]['class'] ) ? (array) $fields[ $key ]['class'] : array();
+        $classes = array_diff(
+            $classes,
+            array( 'form-row-first', 'form-row-last', 'form-row-wide', 'cr-delivery-field', 'cr-delivery-field--full', 'cr-delivery-field--half' )
+        );
+        $classes[] = 'cr-delivery-field';
+        $classes[] = 'cr-delivery-field--' . $presentation['layout'];
+        $fields[ $key ]['class'] = array_values( array_unique( $classes ) );
     }
 
     return $fields;
 }
-add_filter( 'woocommerce_checkout_fields', 'cr2026_checkout_delivery_fields', 20 );
+add_filter( 'woocommerce_billing_fields', 'cr2026_checkout_delivery_fields', 9999, 2 );
+
 
 /** Add the app-style delivery heading without replacing WooCommerce markup. */
 function cr2026_checkout_render_delivery_heading( $checkout ) {

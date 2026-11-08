@@ -107,54 +107,62 @@ test('checkout toolbar horizontal geometry remains delegated to the shared toolb
 
 const woocommercePhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
 
-test('delivery filter is guarded and restricted to the nine approved native billing keys', () => {
-  assert.match(woocommercePhp, /function cr2026_checkout_delivery_fields\( \$fields \)/);
-  assert.match(woocommercePhp, /if \( ! is_array\( \$fields \) \|\| ! isset\( \$fields\['billing'\] \) \|\| ! is_array\( \$fields\['billing'\] \) \)/);
-  const fn = woocommercePhp.slice(woocommercePhp.indexOf('function cr2026_checkout_delivery_fields('), woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'"));
-  assert.match(fn, /if \( ! isset\( \$fields\['billing'\]\[ \$key \] \) \|\| ! is_array\( \$fields\['billing'\]\[ \$key \] \) \)/);
+test('billing-field filter runs after locale defaults and before WooCommerce priority sorting', () => {
+  assert.match(woocommercePhp, /function cr2026_checkout_delivery_fields\( \$fields, \$country = '' \)/);
+  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
+  const fn = woocommercePhp.slice(start, end);
+  assert.match(fn, /if \( ! is_array\( \$fields \) \)/);
+  assert.match(woocommercePhp, /add_filter\( 'woocommerce_billing_fields', 'cr2026_checkout_delivery_fields', 9999, 2 \)/);
+  assert.doesNotMatch(woocommercePhp, /add_filter\( 'woocommerce_checkout_fields'/);
+  assert.doesNotMatch(woocommercePhp, /add_filter\( 'woocommerce_default_address_fields'/);
   const allowlist = [...fn.matchAll(/^\s*'(billing_[a-z0-9_]+)'\s*=>/gm)].map(match => match[1]);
   assert.deepEqual(allowlist, [
     'billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone',
     'billing_address_1', 'billing_state', 'billing_city', 'billing_postcode', 'billing_country'
   ]);
-  assert.match(woocommercePhp, /add_filter\( 'woocommerce_checkout_fields', 'cr2026_checkout_delivery_fields', 20 \)/);
 });
 
-test('delivery filter changes only label, priority and wrapper classes', () => {
+test('billing presentation filter changes only label, priority and wrapper classes', () => {
   const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
   const fn = woocommercePhp.slice(start, end);
-  for (const property of ['label', 'priority', 'class']) assert.match(fn, new RegExp("\\['" + property + "'\\]"));
+  for (const property of ['label', 'priority', 'class']) assert.ok(fn.includes("['" + property + "']"));
   for (const forbidden of ['required', 'validate', 'autocomplete', 'options', 'default', 'custom_attributes', "['type']", "['name']", "['id']"]) {
     assert.equal(fn.includes(forbidden), false, 'must not modify ' + forbidden);
   }
   assert.match(fn, /return \$fields;/);
 });
 
-test('unknown billing fields and address line 2 are not named or removed by the delivery filter', () => {
+test('unknown billing fields remain untouched and address line 2 is not targeted', () => {
   const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
   const fn = woocommercePhp.slice(start, end);
   assert.doesNotMatch(fn, /unset\s*\(/);
   assert.doesNotMatch(fn, /billing_address_2|shipping_/);
   assert.match(fn, /foreach \( \$delivery_fields as \$key => \$presentation \)/);
-  assert.match(fn, /if \( ! isset\( \$fields\['billing'\]\[ \$key \] \)/);
+  assert.match(fn, /if \( ! isset\( \$fields\[ \$key \] \) \|\| ! is_array\( \$fields\[ \$key \] \) \)/);
 });
 
-test('delivery field order and Spanish labels are declared in the approved priority map', () => {
+test('each known billing field has its exact deterministic priority and label', () => {
   const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
   const fn = woocommercePhp.slice(start, end);
-  const keys = [...fn.matchAll(/^\s*'(billing_[a-z0-9_]+)'\s*=>/gm)].map(match => match[1]);
-  assert.deepEqual(keys, [
-    'billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone',
-    'billing_address_1', 'billing_state', 'billing_city', 'billing_postcode', 'billing_country'
-  ]);
-  for (const label of ['Nombre', 'Apellidos', 'Email', 'Teléfono', 'Dirección', 'Provincia', 'Localidad', 'Código postal', 'País']) {
-    assert.ok(fn.includes("__('" + label) || fn.includes("__( '" + label), 'missing label ' + label);
+  const expected = [
+    ['billing_first_name', 10, 'Nombre'],
+    ['billing_last_name', 20, 'Apellidos'],
+    ['billing_email', 30, 'Email'],
+    ['billing_phone', 40, 'Teléfono'],
+    ['billing_address_1', 50, 'Dirección'],
+    ['billing_state', 60, 'Provincia'],
+    ['billing_city', 70, 'Localidad'],
+    ['billing_postcode', 80, 'Código postal'],
+    ['billing_country', 90, 'País']
+  ];
+  for (const [key, priority, label] of expected) {
+    assert.match(fn, new RegExp("'" + key + "'\\s*=>[^\\n]*'priority' => " + priority));
+    assert.ok(fn.includes("__( '" + label + "'"), 'missing exact label for ' + key);
   }
-  assert.match(fn, /'priority' => 10/);
-  assert.match(fn, /'priority' => 90/);
 });
 
 test('delivery section heading is appended through the native billing hook', () => {
@@ -167,7 +175,7 @@ test('delivery section heading is appended through the native billing hook', () 
 
 test('delivery field semantics define five full-width fields and two half-width rows', () => {
   const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
   const fn = woocommercePhp.slice(start, end);
   const full = ['billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone', 'billing_address_1'];
   const half = ['billing_state', 'billing_city', 'billing_postcode', 'billing_country'];
@@ -179,8 +187,8 @@ test('delivery field semantics define five full-width fields and two half-width 
   assert.ok(checkoutCss.includes("grid-template-columns: repeat(2, minmax(0, 1fr));"));
   assert.ok(checkoutCss.includes(".form-row.cr-delivery-field--full"));
   assert.ok(checkoutCss.includes(".form-row.cr-delivery-field--half"));
-  assert.ok(checkoutCss.includes("@media (max-width: 340px)"));
-  assert.ok(checkoutCss.includes("grid-template-columns: minmax(0, 1fr);"));
+  assert.doesNotMatch(checkoutCss, /max-width:\s*340px/);
+  assert.doesNotMatch(checkoutCss, /grid-template-columns:\s*minmax\(0, 1fr\)/);
   const orderDeclarationPattern = new RegExp("^[ \\t]*order[ \\t]*:", "m");
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
 });
@@ -192,7 +200,7 @@ test('delivery labels float over native controls and retain the real WooCommerce
   assert.ok(checkoutCss.includes("background: var(--cr-app-canvas);"));
   assert.ok(checkoutCss.includes("pointer-events: none;"));
   assert.ok(checkoutCss.includes(".form-row input.input-text"));
-  assert.ok(woocommercePhp.includes("$fields['billing'][ $key ]['label'] = $presentation['label'];"));
+  assert.ok(woocommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
 });
 
 test('native delivery controls and Select2 remain presentation-only with no DOM replacement', () => {
@@ -217,7 +225,7 @@ test('ship to different address native control remains present and receives supe
   assert.match(checkoutCss, /\.woocommerce-shipping-fields/);
   assert.match(checkoutCss, /\.woocommerce-form__label-for-checkbox/);
   const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
   assert.doesNotMatch(woocommercePhp.slice(start, end), /ship_to_different_address|shipping_/);
 });
 
