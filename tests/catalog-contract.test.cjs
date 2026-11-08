@@ -939,8 +939,8 @@ test('CART_APP_STYLE_LAYOUT=PASS', () => {
   assert.match(cartTemplate, /class="[^"]*cr-cart-item/);
   assert.match(cartTemplate, /class="cr-cart-promotions(?: cr-cart-body-rail)?"/);
   assert.match(cartTemplate, /class="[^"]*cr-cart-summary/);
-  assert.match(cartCss, /grid-template-columns:minmax\(0,1fr\) minmax\(290px,360px\)/);
-  assert.match(cartCss, /@media \(max-width:767px\)[\s\S]*?grid-template-columns:minmax\(0,1fr\)/);
+  assert.match(cartCss, /\.cr-cart-layout \{ display:flex; flex-direction:column; align-items:stretch; \}/);
+  assert.doesNotMatch(cartCss, /@media \(max-width:767px\)[\s\S]*?\.cr-cart-layout \{[^}]*grid-template-columns/);
 });
 
 test('CART_NATIVE_CALCULATIONS_PRESERVED=PASS', () => {
