@@ -1054,6 +1054,9 @@ test('mobile cart uses one WooCommerce table cell card and cart-only WPLoyalty f
 });
 
 test('full cart physical defect contracts: WPLoyalty, image, remove, overflow and native totals', () => {
+  const cartHooks = fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8');
+  const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   const cartTotals = fs.existsSync(path.join(theme, 'woocommerce/cart/cart-totals.php'))
     ? fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8') : '';
   assert.match(cartHooks, /wlr_is_cart_earn_message_enabled/);
