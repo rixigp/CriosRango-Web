@@ -324,13 +324,13 @@
     summary.appendChild(info);
     const walletHeading = node('div', 'cr-cart-wallet__heading');
     walletHeading.appendChild(node('h3', 'cr-cart-wallet__title', 'Monedero'));
-    const infoButton = createButton('i', 'cr-cart-wallet__info-icon', openWalletInfo);
-    infoButton.setAttribute('aria-label', 'Cómo funciona tu monedero');
-    infoButton.setAttribute('aria-haspopup', 'dialog');
-    walletHeading.appendChild(infoButton);
     info.appendChild(walletHeading);
     info.appendChild(node('p', 'cr-cart-wallet__balance', formatWalletAmount(wallet.wallet_value || '0.00', wallet.currency) + ' disponibles'));
     info.appendChild(node('p', 'cr-cart-wallet__points', Number(wallet.points || 0) + ' puntos'));
+    const infoButton = createButton('i', 'cr-cart-wallet__info-icon', openWalletInfo);
+    infoButton.setAttribute('aria-label', 'Cómo funciona tu monedero');
+    infoButton.setAttribute('aria-haspopup', 'dialog');
+    summary.appendChild(infoButton);
     walletPanel.appendChild(summary);
 
     const rewards = Array.isArray(wallet.pending_rewards) ? wallet.pending_rewards : [];
