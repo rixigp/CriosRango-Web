@@ -116,7 +116,7 @@
     const sub=document.querySelector('[data-cr-summary-subtotal]'), dc=document.querySelector('[data-cr-summary-discount]'), dr=dc&&dc.closest('tr');
     const ship=document.querySelector('[data-cr-summary-shipping]'), total=document.querySelector('[data-cr-summary-total]');
     if(sub)sub.textContent=formatStoreMoney(gross,t);
-    if(dr)dr.hidden=discount<=0n;
+    if(dr)dr.style.setProperty('display',discount<=0n?'none':'grid','important');
     if(dc&&discount>0n)dc.textContent='-'+formatStoreMoney(discount,t);
     if(!dr&&discount>0n&&sub){const row=document.createElement('tr');row.className='cart-discount cr-cart-summary-discount';const th=document.createElement('th');th.textContent='Descuentos';const td=document.createElement('td');td.dataset.crSummaryDiscount='';td.textContent='-'+formatStoreMoney(discount,t);row.append(th,td);sub.closest('tr').after(row);}
     if(ship)ship.textContent=gross>threshold?'Gratis':'Se calcula en el checkout';
