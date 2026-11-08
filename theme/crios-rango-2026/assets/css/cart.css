@@ -905,3 +905,17 @@ body.woocommerce-cart .cr-cart-header-shell > .cr-parent-category__toolbar{
 body.woocommerce-cart .cr-cart-header-shell > .cr-parent-category__toolbar{
   margin-block-end:8px!important;
 }
+
+/* Visual card surfaces on the secondary rail share the product-card outer width.
+   Auto-width block surfaces already stretch to this rail; this makes that contract
+   explicit without touching the rail/container padding or the product card itself. */
+body.woocommerce-cart .cr-cart-content .cr-cart-wallet__summary,
+body.woocommerce-cart .cr-cart-content .cr-cart-wallet__rewards,
+body.woocommerce-cart .cr-cart-content .cr-cart-promo-card,
+body.woocommerce-cart .cr-cart-content .cr-cart-applied {
+  width:100%!important;
+  max-width:100%;
+  min-width:0;
+  margin-inline:0!important;
+  box-sizing:border-box;
+}
