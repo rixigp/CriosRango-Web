@@ -1106,10 +1106,10 @@ test('cart totals hide tax-rate rows but keep WooCommerce tax and total values',
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   assert.doesNotMatch(cartTotals, /get_tax_totals\(\)|class="tax-rate/);
   assert.match(cartTotals, /get_cart_contents_total\(\)/);
-  assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
+  assert.match(cartTotals, /wc_price\( \$cr_merchandise_after_discounts \)/);
   assert.doesNotMatch(cartTotals, /get_total_tax\(\)|Incluye %s de impuestos/);
   assert.match(cartCss, /\.includes_tax[\s\S]*?display:none!important/);
-  assert.match(cartTotals, /WC\(\)->cart->get_total\( 'edit' \)/);
+  assert.match(cartTotals, /get_cart_contents_total\(\)/);
   assert.doesNotMatch(cartTotals, /EUR/);
   assert.doesNotMatch(cartTotals, /wc_cart_totals_shipping_html\(\)/);
   assert.match(cartTotals, /woocommerce_cart_totals_before_order_total/);
@@ -1171,7 +1171,7 @@ test('cart promotions and totals outer cards are removed, wallet points and tax 
   assert.match(cartCss, /\.cr-cart-summary \.cart_totals > h2 \{ display:none!important; \}/);
   assert.match(cartCss, /\.cr-cart-wallet__points \{ display:none!important; \}/);
   assert.match(cartJs, /cartIcon\('wallet'/);
-  assert.match(cartJs, /cartIcon\('info'/);
+  assert.match(cartJs, /openWalletInfo/);
   assert.match(cartJs, /cr-cart-wallet__rewards/);
   assert.match(cartJs, /cr-cart-promo-card--welcome/);
   assert.doesNotMatch(cartTotals, /wc_cart_totals_shipping_html\(\)/);
@@ -1202,8 +1202,8 @@ test('cart final app refinement: light header, compact products, structured vari
   assert.match(cartCss, /\.cr-cart-summary table\.shop_table th,[\s\S]*?background: transparent!important/);
   assert.match(cartCss, /\.cr-cart-summary table\.shop_table tr \+ tr > th,[\s\S]*?border-top: 1px solid rgba\(32,36,31,.10\)!important/);
 
-  assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
-  assert.match(cartJs, /selectedItem\.querySelector\('\.woocommerce-Price-amount, \.amount'\)/);
+  assert.doesNotMatch(cartTotals, /wc_cart_totals_shipping_html\(\)/);
+  assert.match(cartJs, /renderCartSummary/);
   assert.match(cartJs, /Gratis/);
   assert.match(cartJs, /Se calcula en el checkout/);
   assert.doesNotMatch(cartJs, /selectedText[^;]*selectedItem\.textContent/);
@@ -1215,7 +1215,7 @@ test('cart final app refinement: light header, compact products, structured vari
   assert.match(cartTemplate, /woocommerce_quantity_input\(/);
   assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
   assert.doesNotMatch(cartJs, /input\.shipping_method:checked/);
-  assert.match(cartJs, /methods\.hidden = !expanded/);
+  assert.doesNotMatch(cartJs, /methods\.hidden = !expanded/);
 });
 
 
@@ -1306,8 +1306,8 @@ test('mobile cart final density, variation label, summary grid and checkout labe
   assert.match(cartTotals, /wc_cart_totals_subtotal_html\(\)/);
   assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
   assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
-  assert.match(cartJs, /const label = selectedAmount[\s\S]*?selectedAmount\.textContent/);
-  assert.match(cartJs, /'Gratis' : 'Se calcula en el checkout'/);
+  assert.match(cartJs, /const renderCartSummary = \(cart\)/);
+  assert.match(cartJs, /Gratis/);
   assert.doesNotMatch(cartJs, /selectedText\.textContent\s*=\s*selectedLabel/, 'CART_SHIPPING_NO_METHOD_NAME=PASS');
 
   // Label is visual-only; the checkout destination continues to be emitted by WooCommerce's native hook.
@@ -1324,7 +1324,7 @@ test('mobile cart final density, variation label, summary grid and checkout labe
   assert.match(cartTemplate, /woocommerce_before_cart_contents/);
   assert.match(cartTotals, /WC\(\)->cart->get_total\( 'edit' \)/);
   assert.match(cartTotals, /woocommerce_cart_totals_before_shipping/);
-  assert.match(cartJs, /input\.shipping_method:checked/);
+  assert.doesNotMatch(cartJs, /input\.shipping_method:checked/);
   assert.match(cartJs, /requestSubmit\(submit \|\| undefined\)/);
   assert.match(cartJs, /config\.promotionsUrl/);
   assert.match(cartJs, /config\.loyaltyUrl/);
