@@ -1166,7 +1166,7 @@ test('cart promotions and totals outer cards are removed, wallet points and tax 
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
   const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
-  assert.match(cartCss, /\.cr-cart-promotions \{ margin-top: 16px; padding: 0; border: 0; border-radius: 0;/);
+  assert.match(cartCss, /\.cr-cart-promotions \{ padding: 0; border: 0; border-radius: 0;/);
   assert.match(cartCss, /\.cr-cart-summary \.cart_totals[\s\S]*?background: transparent!important/);
   assert.match(cartCss, /\.cr-cart-summary \.cart_totals > h2 \{ display:none!important; \}/);
   assert.match(cartCss, /\.cr-cart-wallet__points \{ display:none!important; \}/);
@@ -1262,7 +1262,7 @@ test('cart product cards keep the requested moderate compact layout and preserve
   assert.match(cartCss, /width: 100px;\s*height: 120px;/);
   assert.match(cartCss, /padding: 15px;[\s\S]*?border-radius: 20px;/);
   assert.match(cartCss, /min-height: 0 !important;[\s\S]*?height: auto;/);
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-table tbody \{ gap: 18px; \}/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\{[\s\S]*?row-gap:8px!important/);
   assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-quantity__button \{[\s\S]*?width: 30px;[\s\S]*?height: 30px;/);
   assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-remove \{[\s\S]*?width: 42px;[\s\S]*?height: 42px;[\s\S]*?min-height: 42px;/);
 });
@@ -1280,7 +1280,7 @@ test('mobile cart final density, variation label, summary grid and checkout labe
   assert.match(cartCss, /width: 100px;[\s\S]*?height: 120px;/, 'CART_IMAGE_COMPACT_SIZE=PASS');
   assert.match(cartCss, /font-size: 14px;[\s\S]*?line-height: 1\.25;[\s\S]*?font-weight: 500;/, 'CART_PRODUCT_NAME_MEDIUM_WEIGHT=PASS');
   assert.match(cartCss, /gap: 0 15px;/, 'CART_IMAGE_TEXT_GAP=PASS');
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-table tbody \{ gap: 18px; \}/, 'CART_PRODUCT_GAP_REDUCED=PASS');
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\{[\s\S]*?row-gap:8px!important/);
 
   // Structured WooCommerce variation data remains the source; only the visible plural label is singularized.
   assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item, false, \$cart_display_name \)/);
