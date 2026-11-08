@@ -522,3 +522,15 @@ body.woocommerce-cart .cr-cart-summary table.shop_table tr.order-total > td stro
   text-align:right;
 }
 body.woocommerce-cart .cr-cart-summary .checkout-button { font-weight:500!important; }
+
+
+/* Moderate final card-height reduction: trim vertical whitespace, not media or controls. */
+body.woocommerce-cart .cr-cart-item__card {
+  gap:4px;
+  padding:6px 8px;
+}
+body.woocommerce-cart .cr-cart-item__name { margin-bottom:2px; }
+body.woocommerce-cart .cr-cart-item__variations dl.variation { margin:1px 0 2px; }
+body.woocommerce-cart .cr-cart-item__unit { margin:1px 0; }
+body.woocommerce-cart .cr-cart-item__subtotal { margin:0 0 2px; }
+/* Preserve the existing 30px quantity buttons and 42px remove target. */

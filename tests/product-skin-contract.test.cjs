@@ -1258,3 +1258,18 @@ test('cart updated notice suppression leaves other success and all error notices
   assert.doesNotMatch(fn, /unset\( \$notices\['error'\]|unset\( \$notices\['notice'\]|unset\( \$notices\['info'\]/);
   assert.match(fn, /if \( \$removed \) \{\s*wc_set_notices\( \$notices \);/);
 });
+
+
+test('cart product cards are moderately compacted without reducing image or touch targets', () => {
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__card \{\s*gap:4px;\s*padding:6px 8px;/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__name \{ margin-bottom:2px; \}/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__variations dl\.variation \{ margin:1px 0 2px; \}/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__unit \{ margin:1px 0; \}/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__subtotal \{ margin:0 0 2px; \}/);
+  // Existing image sizing is unchanged; no compact-card rule targets media dimensions.
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-item__media,[\s\S]*?width: 76px; height: 92px;/);
+  // Keep the currently shipped interactive target dimensions intact.
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-quantity__button \{[^}]*width: 30px; height: 30px;/);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-remove \{\s*width: 42px; min-width: 42px; height: 42px; min-height: 42px;/);
+});
