@@ -1411,8 +1411,8 @@ test('CART_DOM_ORDER_SECONDARY_BEFORE_SUMMARY=PASS',()=>{
 });
 test('CART_DOM_ORDER_SUMMARY_BEFORE_CTA=PASS',()=>{
  const totals=fs.readFileSync(path.join(theme,'woocommerce/cart/cart-totals.php'),'utf8');
- assert.ok(totals.indexOf('Resumen') < totals.indexOf('wc-proceed-to-checkout'));
- assert.ok(totals.indexOf('wc-proceed-to-checkout') < totals.indexOf('checkout-button'));
+ assert.match(totals,/<h2>[^<]*Resumen[\\s\\S]*?<\\/h2>[\\s\\S]*?<div class="cr-cart-summary__rows"/);
+ assert.match(totals,/<div class="cr-cart-summary__row cr-cart-summary__row--total"[\\s\\S]*?<\\/div>[\\s\\S]*?<div class="wc-proceed-to-checkout">[\\s\\S]*?do_action\\( 'woocommerce_proceed_to_checkout' \\)/);
 });
 test('CART_NO_CSS_VISUAL_REORDERING=PASS',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
