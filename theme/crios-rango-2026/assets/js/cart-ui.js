@@ -215,11 +215,8 @@
       if (promotion.description) body.appendChild(node('p', 'cr-cart-promo-card__description', promotion.description));
       if (promotion.expires_at) body.appendChild(node('p', 'cr-cart-promo-card__expiry', 'Válida hasta ' + promotion.expires_at));
       card.appendChild(body);
-      if (promotion.code) {
-        const applied = hasCoupon(currentCart, promotion.code);
-        card.appendChild(applied
-          ? node('span', 'cr-cart-applied-label', 'Aplicada')
-          : createButton('Aplicar', 'cr-cart-apply-button', () => applyCoupon(promotion.code, 'Promoción')));
+      if (promotion.code && !hasCoupon(currentCart, promotion.code)) {
+        card.appendChild(createButton('Aplicar', 'cr-cart-apply-button', (event) => applyCoupon(promotion.code, 'Promoción', event.currentTarget)));
       }
       promotionsList.appendChild(card);
     });
@@ -319,7 +316,10 @@
     summary.appendChild(info);
     const walletHeading = node('div', 'cr-cart-wallet__heading');
     walletHeading.appendChild(node('h3', 'cr-cart-wallet__title', 'Monedero'));
-    walletHeading.appendChild(cartIcon('info', 'cr-cart-wallet__info-icon'));
+    const infoButton = createButton('i', 'cr-cart-wallet__info-icon', openWalletInfo);
+    infoButton.setAttribute('aria-label', 'Cómo funciona tu monedero');
+    infoButton.setAttribute('aria-haspopup', 'dialog');
+    walletHeading.appendChild(infoButton);
     info.appendChild(walletHeading);
     info.appendChild(node('p', 'cr-cart-wallet__balance', formatWalletAmount(wallet.wallet_value || '0.00', wallet.currency) + ' disponibles'));
     info.appendChild(node('p', 'cr-cart-wallet__points', Number(wallet.points || 0) + ' puntos'));
