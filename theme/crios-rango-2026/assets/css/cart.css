@@ -778,3 +778,37 @@ body.woocommerce-cart .cr-cart-wallet-dialog__panel h2{margin:0 0 18px;font-size
 body.woocommerce-cart .cr-cart-wallet-dialog__panel p{margin:0 0 13px;font-size:14px;line-height:1.55;font-weight:400}
 body.woocommerce-cart .cr-cart-wallet-dialog__confirm{display:block;width:100%;min-height:52px;margin-top:20px;border:0;border-radius:16px;background:var(--cr-green);color:#fff;font-size:15px;font-weight:500;cursor:pointer}
 body.cr-cart-dialog-open{overflow:hidden}
+
+/* App-owned cart totals: two columns, no inherited WooCommerce table cells. */
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__rows {
+  display:grid; grid-template-columns:minmax(0,1fr); gap:0;
+  width:100%; min-width:0; box-sizing:border-box; margin:0 0 14px;
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row {
+  display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px;
+  width:100%; min-width:0; box-sizing:border-box; padding:8px 0;
+  border:0!important; background:transparent!important; box-shadow:none!important;
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__label,
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__value {
+  display:block; min-width:0; margin:0; padding:0; border:0!important;
+  background:transparent!important; box-shadow:none!important;
+  font-size:13px; font-weight:400!important; line-height:1.4;
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__value {
+  justify-self:end; text-align:right; white-space:nowrap;
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row--total {
+  margin-top:5px; padding-top:13px; border-top:1px solid rgba(32,36,31,.10)!important;
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row--total .cr-cart-summary__label,
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row--total .cr-cart-summary__value {
+  color:var(--cr-green,#183B35); font-size:17px; font-weight:500!important;
+}
+body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row--total .cr-cart-summary__value strong {
+  font-size:inherit; font-weight:inherit;
+}
+body.woocommerce-cart .cr-cart-wallet__info-icon { color:#315B52; background:transparent!important; }
+body.woocommerce-cart .cr-cart-wallet__info-svg,
+body.woocommerce-cart .cr-cart-wallet__info-svg svg { display:block; width:25px; height:25px; }
+body.woocommerce-cart .cr-cart-wallet__info-icon:focus-visible { outline:2px solid currentColor; outline-offset:2px; }

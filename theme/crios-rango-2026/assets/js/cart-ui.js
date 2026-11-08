@@ -26,11 +26,6 @@
     feedback.hidden = false;
     feedback.classList.add('is-error');
   };
-  const showMessage = (message) => {
-    feedback.textContent = text(message);
-    feedback.hidden = false;
-    feedback.classList.remove('is-error');
-  };
   const clearFeedback = () => {
     feedback.textContent = '';
     feedback.hidden = true;
@@ -76,7 +71,7 @@
     icon.setAttribute('aria-hidden', 'true');
     const paths = {
       wallet: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 8h18M15 13h3"/></svg>',
-      info: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg>',
+      info: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg>',
       tag: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-7 7L3 12Z"/><circle cx="8" cy="8" r="1"/></svg>'
     };
     icon.innerHTML = paths[name] || '';
@@ -115,12 +110,12 @@
     const fees=minorValue(t.total_fees)+minorValue(t.total_fees_tax);
     const net=(gross>discount?gross-discount:0n)+fees;
     const threshold=50n*(10n**BigInt(Number(t.currency_minor_unit||2)));
-    const sub=document.querySelector('[data-cr-summary-subtotal]'), dc=document.querySelector('[data-cr-summary-discount]'), dr=dc&&dc.closest('tr');
+    const sub=document.querySelector('[data-cr-summary-subtotal]'), dc=document.querySelector('[data-cr-summary-discount]'), dr=dc&&dc.closest('.cr-cart-summary__row');
     const ship=document.querySelector('[data-cr-summary-shipping]'), total=document.querySelector('[data-cr-summary-total]');
     if(sub)sub.textContent=formatStoreMoney(gross,t);
     if(dr)dr.style.setProperty('display',discount<=0n?'none':'grid','important');
     if(dc&&discount>0n)dc.textContent='-'+formatStoreMoney(discount,t);
-    if(!dr&&discount>0n&&sub){const row=document.createElement('tr');row.className='cart-discount cr-cart-summary-discount';const th=document.createElement('th');th.textContent='Descuentos';const td=document.createElement('td');td.dataset.crSummaryDiscount='';td.textContent='-'+formatStoreMoney(discount,t);row.append(th,td);sub.closest('tr').after(row);}
+    if(!dr&&discount>0n&&sub){const row=document.createElement('div');row.className='cr-cart-summary__row cr-cart-summary__row--discount';const label=document.createElement('span');label.className='cr-cart-summary__label';label.textContent='Descuentos';const value=document.createElement('span');value.className='cr-cart-summary__value';value.dataset.crSummaryDiscount='';value.textContent='-'+formatStoreMoney(discount,t);row.append(label,value);sub.closest('.cr-cart-summary__row').after(row);}
     if(ship)ship.textContent=gross>threshold?'Gratis':'Se calcula en el checkout';
     if(total)total.textContent=formatStoreMoney(net,t);
   };
@@ -143,7 +138,7 @@
       }
       await refreshCartUi(cart);
       if(button&&button.closest('[data-cr-cart-manual-form]')){const input=button.closest('[data-cr-cart-manual-form]').querySelector('[name="code"]');if(input)input.value='';}
-      showMessage((sourceLabel || 'Descuento') + ' aplicado correctamente.');
+      clearFeedback();
     } catch (error) {
       showError(error.message);
     } finally {
@@ -160,7 +155,7 @@
       if (hasCoupon(cart, code)) {
         throw new Error('WooCommerce no ha confirmado la eliminación de este descuento.');
       }
-      await refreshCartUi(cart); showMessage('Descuento eliminado.');
+      await refreshCartUi(cart); clearFeedback();
     } catch (error) {
       showError(error.message);
     } finally {
@@ -327,9 +322,10 @@
     info.appendChild(walletHeading);
     info.appendChild(node('p', 'cr-cart-wallet__balance', formatWalletAmount(wallet.wallet_value || '0.00', wallet.currency) + ' disponibles'));
     info.appendChild(node('p', 'cr-cart-wallet__points', Number(wallet.points || 0) + ' puntos'));
-    const infoButton = createButton('i', 'cr-cart-wallet__info-icon', openWalletInfo);
+    const infoButton = createButton('', 'cr-cart-wallet__info-icon', openWalletInfo);
     infoButton.setAttribute('aria-label', 'Cómo funciona tu monedero');
     infoButton.setAttribute('aria-haspopup', 'dialog');
+    infoButton.appendChild(cartIcon('info', 'cr-cart-wallet__info-svg'));
     summary.appendChild(infoButton);
     walletPanel.appendChild(summary);
 
@@ -399,7 +395,7 @@
         url.searchParams.set('code', code);
         const cart = await request(url.toString(), { method: 'POST' }, 'store');
         if (!hasCoupon(cart, code)) throw new Error('El crédito se ha creado, pero WooCommerce no ha confirmado su aplicación. Puedes encontrarlo en «Saldo listo para usar».');
-        await refreshCartUi(cart); showMessage('Crédito aplicado correctamente.');
+        await refreshCartUi(cart); clearFeedback();
       } catch (error) {
         await refreshWallet();
         showError(error.message);
