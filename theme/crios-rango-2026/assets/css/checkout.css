@@ -266,3 +266,114 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-shipping
   line-height: 1.4;
 }
 
+
+/* Checkout Phase 3: style WooCommerce's native classic-checkout shipping rates. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading-row > th {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading {
+  margin: 22px 0 14px;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 64px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1.5px solid var(--cr-checkout-field-border);
+  border-radius: var(--cr-checkout-field-radius);
+  background: var(--cr-app-canvas);
+  color: var(--cr-ink);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"] {
+  display: block;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  margin: 0 12px 0 0;
+  accent-color: var(--cr-green);
+  cursor: pointer;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li > label {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 61px;
+  margin: 0;
+  padding: 12px 0;
+  color: var(--cr-ink);
+  font: inherit;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li > label .woocommerce-Price-amount,
+body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li > label .amount {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--cr-green);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li:has(> input.shipping_method[type="radio"]:checked) {
+  border-color: var(--cr-green);
+  background: color-mix(in srgb, var(--cr-green) 5%, var(--cr-app-canvas));
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"]:focus-visible {
+  outline: 2px solid var(--cr-green);
+  outline-offset: 3px;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li:has(> input.shipping_method[type="radio"]:focus-visible) {
+  outline: 2px solid color-mix(in srgb, var(--cr-green) 28%, transparent);
+  outline-offset: 2px;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="hidden"] {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li {
+    min-height: 64px;
+    padding-inline: 12px;
+  }
+
+  body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"] {
+    margin-right: 10px;
+  }
+
+  body.woocommerce-checkout:not(.woocommerce-order-received) #shipping_method.woocommerce-shipping-methods > li > label {
+    gap: 8px;
+    overflow-wrap: anywhere;
+  }
+}

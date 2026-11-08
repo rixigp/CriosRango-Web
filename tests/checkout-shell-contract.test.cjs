@@ -51,7 +51,7 @@ test('checkout shell uses the shared canvas token and existing toolbar geometry'
 });
 
 test('checkout shell does not style or replace native transactional controls', () => {
-  for (const forbidden of ['#payment', '#order_review', 'payment_method_', 'shipping_method', 'place_order', 'checkout_coupon', 'woocommerce-checkout-review-order-table']) {
+  for (const forbidden of ['#payment', '#order_review', 'payment_method_', 'place_order', 'checkout_coupon', 'woocommerce-checkout-review-order-table']) {
     assert.equal(checkoutCss.includes(forbidden), false, forbidden + ' must remain outside Phase 1 CSS');
   }
   assert.match(checkoutCss, /\.cr-footer\s*\{\s*display:\s*none !important;/);
@@ -106,6 +106,8 @@ test('checkout toolbar horizontal geometry remains delegated to the shared toolb
 });
 
 const woocommercePhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
+const cartPhp = fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8');
+const helpersPhp = fs.readFileSync(path.join(theme, 'inc/helpers.php'), 'utf8');
 
 test('billing-field filter runs after locale defaults and before WooCommerce priority sorting', () => {
   assert.match(woocommercePhp, /function cr2026_checkout_delivery_fields\( \$fields, \$country = '' \)/);
@@ -236,7 +238,7 @@ test('delivery styling is scoped to checkout and excludes notes and transactiona
   ]) assert.ok(checkoutCss.includes(selector), 'missing scoped selector ' + selector);
   for (const forbidden of [
     '.woocommerce-additional-fields', 'order_review', '#payment', 'payment_method_',
-    'shipping_method', 'checkout_coupon', 'place_order', 'wployalty', 'wc-ajax'
+    'checkout_coupon', 'place_order', 'wployalty', 'wc-ajax'
   ]) assert.equal(checkoutCss.includes(forbidden), false, forbidden + ' must remain outside delivery styling');
 });
 
@@ -392,4 +394,50 @@ test('delivery layout keeps semantic full/half rows independent of WooCommerce l
   assert.ok(checkoutCss.includes('grid-column: auto;'));
   assert.doesNotMatch(checkoutCss, /^[ \t]*order[ \t]*:/m);
   assert.doesNotMatch(woocommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
+});
+
+test('shipping step heading is inserted through the classic order-review hook and reuses Delivery heading styles', () => {
+  assert.match(woocommercePhp, /function cr2026_checkout_render_shipping_heading\(\)/);
+  assert.match(woocommercePhp, /woocommerce_review_order_before_shipping', 'cr2026_checkout_render_shipping_heading', 5/);
+  assert.match(woocommercePhp, /cr-checkout-delivery-heading cr-checkout-shipping-heading/);
+  assert.match(woocommercePhp, /esc_html__\( 'Envío'/);
+  assert.match(woocommercePhp, /colspan="2"/);
+  assert.match(checkoutCss, /\.cr-checkout-shipping-heading-row > th/);
+});
+
+test('shipping presentation targets only the native WooCommerce rate list and radio inputs', () => {
+  assert.match(checkoutCss, /#shipping_method\.woocommerce-shipping-methods/);
+  assert.match(checkoutCss, /input\.shipping_method\[type="radio"\]/);
+  assert.match(checkoutCss, /#shipping_method\.woocommerce-shipping-methods > li > label/);
+  assert.match(checkoutCss, /label \.woocommerce-Price-amount/);
+  assert.match(checkoutCss, /:has\(> input\.shipping_method\[type="radio"\]:checked\)/);
+  assert.match(checkoutCss, /input\.shipping_method\[type="radio"\]:focus-visible/);
+  assert.doesNotMatch(woocommercePhp, /<input[^>]+type=["']radio|shipping_method\[[^]]+\]\s*=/i);
+  assert.doesNotMatch(woocommercePhp, /woocommerce_package_rates|woocommerce_shipping_rate_cost|woocommerce_shipping_methods/);
+});
+
+test('shipping heading and styles do not alter WooCommerce rate identity, selection, or availability', () => {
+  const start = woocommercePhp.indexOf('function cr2026_checkout_render_shipping_heading(');
+  const end = woocommercePhp.indexOf("add_action( 'woocommerce_review_order_before_shipping'", start);
+  const fn = woocommercePhp.slice(start, end);
+  assert.match(fn, /needs_shipping\(\)/);
+  assert.match(fn, /show_shipping\(\)/);
+  for (const forbidden of ['shipping_method[', 'instance_id', 'flat_rate', 'local_pickup', 'free_shipping', 'set_chosen_shipping_method', 'calculate_shipping']) {
+    assert.equal(fn.includes(forbidden), false, 'shipping heading must not change ' + forbidden);
+  }
+  assert.doesNotMatch(checkoutCss, /shipping_method\[[0-9]+\]|instance_id|flat_rate|local_pickup|free_shipping/);
+  assert.doesNotMatch(woocommercePhp, /appendChild|insertBefore|insertAdjacentElement|update_checkout|updated_checkout/);
+});
+
+test('shipping methods remain CSS-only across WooCommerce update_checkout fragment replacement', () => {
+  assert.match(checkoutCss, /#shipping_method\.woocommerce-shipping-methods > li/);
+  assert.match(checkoutCss, /\.woocommerce-Price-amount/);
+  assert.match(woocommercePhp, /woocommerce_review_order_before_shipping/);
+  assert.doesNotMatch(woocommercePhp, /wp_enqueue_script|wp_add_inline_script|update_checkout|updated_checkout/);
+});
+
+test('free-shipping progress is deferred because the cart has no shared threshold/subtotal progress source', () => {
+  assert.doesNotMatch(cartPhp, /free.?shipping|env[ií]o gratis|shipping.?threshold|amount_for_free/i);
+  assert.doesNotMatch(helpersPhp, /free.?shipping|env[ií]o gratis|shipping.?threshold|amount_for_free/i);
+  assert.doesNotMatch(woocommercePhp, /free.?shipping|env[ií]o gratis|shipping.?threshold|amount_for_free/i);
 });

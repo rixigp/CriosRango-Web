@@ -851,3 +851,24 @@ function cr2026_checkout_render_delivery_heading( $checkout ) {
 }
 add_action( 'woocommerce_before_checkout_billing_form', 'cr2026_checkout_render_delivery_heading', 5, 1 );
 
+/**
+ * Add the app-style shipping step immediately before WooCommerce's native
+ * shipping row in the classic checkout order-review table.
+ *
+ * WooCommerce still renders the shipping package, rates, native inputs,
+ * selected value and costs through cart/cart-shipping.php.
+ */
+function cr2026_checkout_render_shipping_heading() {
+    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() )
+        || ! function_exists( 'WC' ) || ! WC() || ! WC()->cart
+        || ! WC()->cart->needs_shipping() || ! WC()->cart->show_shipping() ) {
+        return;
+    }
+
+    echo '<tr class="cr-checkout-shipping-heading-row"><th colspan="2"><div class="cr-checkout-delivery-heading cr-checkout-shipping-heading"><span class="cr-checkout-delivery-heading__step" aria-hidden="true">2</span><h2>'
+        . esc_html__( 'Envío', 'crios-rango-2026' )
+        . '</h2></div></th></tr>';
+}
+add_action( 'woocommerce_review_order_before_shipping', 'cr2026_checkout_render_shipping_heading', 5 );
+
