@@ -159,9 +159,14 @@
     return true;
   };
   const renderPromotions = (payload) => {
+    promotionsList.hidden = false;
     promotionsList.replaceChildren();
     const list = Array.isArray(payload) ? payload : (Array.isArray(payload.promotions) ? payload.promotions : []);
     const visible = config.authenticated ? list : list.filter(guestPromotionVisible);
+    if (!visible.length && !config.authenticated) {
+      promotionsList.hidden = true;
+      return;
+    }
     promotionsList.appendChild(node('h3', 'cr-cart-promotions__subheading', 'Promociones disponibles'));
     if (!visible.length) {
       promotionsList.appendChild(node('p', 'cr-cart-muted', 'No hay promociones disponibles en este momento.'));
@@ -406,4 +411,58 @@
       }, 350);
     });
   });
+
+  // Presentation-only shipping summary: keep WooCommerce's native radios and submission flow.
+  const initShippingPresentation = () => {
+    const row = document.querySelector('tr.woocommerce-shipping-totals.shipping, tr.shipping:not(.cr-cart-shipping-pending)');
+    if (!row) return;
+    const cell = row.querySelector('td');
+    const methods = cell && cell.querySelector('ul#shipping_method');
+    if (!methods) return;
+
+    let summary = cell.querySelector('.cr-cart-shipping-summary');
+    if (!summary) {
+      summary = document.createElement('div');
+      summary.className = 'cr-cart-shipping-summary';
+      const selectedText = document.createElement('span');
+      selectedText.className = 'cr-cart-shipping-summary__selected';
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'cr-cart-shipping-summary__toggle';
+      toggle.textContent = 'Cambiar método';
+      toggle.addEventListener('click', () => {
+        const expanded = row.classList.toggle('is-expanded');
+        methods.hidden = !expanded;
+        toggle.textContent = expanded ? 'Ocultar métodos' : 'Cambiar método';
+      });
+      summary.append(selectedText, toggle);
+      cell.insertBefore(summary, methods);
+    }
+
+    const selected = methods.querySelector('input.shipping_method:checked, input[type="radio"]:checked');
+    const selectedItem = selected && selected.closest('li');
+    const label = selectedItem ? selectedItem.textContent.replace(/\\s+/g, ' ').trim() : 'Se calcula en el checkout';
+    const selectedText = summary.querySelector('.cr-cart-shipping-summary__selected');
+    if (selectedText && selectedText.textContent !== label) selectedText.textContent = label;
+    const toggle = summary.querySelector('.cr-cart-shipping-summary__toggle');
+    const expanded = row.classList.contains('is-expanded');
+    methods.hidden = !expanded;
+    if (toggle) {
+      const nextLabel = expanded ? 'Ocultar métodos' : 'Cambiar método';
+      if (toggle.textContent !== nextLabel) toggle.textContent = nextLabel;
+    }
+  };
+
+  document.addEventListener('change', (event) => {
+    if (!event.target.matches('input.shipping_method, input[name^="shipping_method"]')) return;
+    const row = event.target.closest('tr.woocommerce-shipping-totals.shipping, tr.shipping');
+    if (!row) return;
+    row.classList.remove('is-expanded');
+    const methods = row.querySelector('ul#shipping_method');
+    if (methods) methods.hidden = true;
+    initShippingPresentation();
+  });
+  initShippingPresentation();
+  const shippingObserver = new MutationObserver(initShippingPresentation);
+  shippingObserver.observe(document.body, { childList: true, subtree: true });
 })();

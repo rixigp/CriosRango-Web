@@ -18,7 +18,7 @@ do_action( 'woocommerce_before_cart' );
         <?php if ( ! WC()->cart->is_empty() ) : ?>
             <form class="cr-cart-empty-form" method="post" action="<?php echo esc_url( wc_get_cart_url() ); ?>">
                 <?php wp_nonce_field( 'cr2026_empty_cart', 'cr2026_empty_cart_nonce' ); ?>
-                <button type="submit" name="cr2026_empty_cart" value="1"><?php esc_html_e( 'Vaciar carrito', 'crios-rango-2026' ); ?></button>
+                <button type="submit" name="cr2026_empty_cart" value="1"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m3 3v7m6-7v7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><?php esc_html_e( 'Vaciar carrito', 'crios-rango-2026' ); ?></span></button>
             </form>
         <?php endif; ?>
     </div>
@@ -68,6 +68,14 @@ do_action( 'woocommerce_before_cart' );
                                     $cart_item,
                                     $cart_item_key
                                 );
+                                // Display the parent product title for variations; keep the stored cart item untouched.
+                                $cart_display_name = $product_name;
+                                if ( $_product->is_type( 'variation' ) && $_product->get_parent_id() ) {
+                                    $parent_product = wc_get_product( $_product->get_parent_id() );
+                                    if ( $parent_product instanceof WC_Product && $parent_product->exists() ) {
+                                        $cart_display_name = $parent_product->get_name();
+                                    }
+                                }
                                 $product_price = apply_filters(
                                     'woocommerce_cart_item_price',
                                     WC()->cart->get_product_price( $_product ),
@@ -115,9 +123,9 @@ do_action( 'woocommerce_before_cart' );
                                                 <div class="cr-cart-item__content">
                                                     <div class="cr-cart-item__name">
                                                         <?php if ( $product_permalink ) : ?>
-                                                            <a href="<?php echo esc_url( $product_permalink ); ?>"><?php echo wp_kses_post( $product_name ); ?></a>
+                                                            <a href="<?php echo esc_url( $product_permalink ); ?>"><?php echo wp_kses_post( $cart_display_name ); ?></a>
                                                         <?php else : ?>
-                                                            <?php echo wp_kses_post( $product_name ); ?>
+                                                            <?php echo wp_kses_post( $cart_display_name ); ?>
                                                         <?php endif; ?>
                                                     </div>
                                                     <div class="cr-cart-item__variations"><?php echo wc_get_formatted_cart_item_data( $cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>

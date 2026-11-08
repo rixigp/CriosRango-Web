@@ -30,22 +30,29 @@ defined( 'ABSPATH' ) || exit;
                 <?php do_action( 'woocommerce_cart_totals_before_shipping' ); ?>
                 <?php wc_cart_totals_shipping_html(); ?>
                 <?php do_action( 'woocommerce_cart_totals_after_shipping' ); ?>
-            <?php elseif ( WC()->cart->needs_shipping() && 'yes' === get_option( 'woocommerce_enable_shipping_calc' ) ) : ?>
-                <tr class="shipping">
+            <?php elseif ( WC()->cart->needs_shipping() ) : ?>
+                <tr class="shipping cr-cart-shipping-pending">
                     <th><?php esc_html_e( 'Envío', 'woocommerce' ); ?></th>
-                    <td data-title="<?php esc_attr_e( 'Envío', 'woocommerce' ); ?>"><?php woocommerce_shipping_calculator(); ?></td>
+                    <td data-title="<?php esc_attr_e( 'Envío', 'woocommerce' ); ?>">
+                        <span class="cr-cart-shipping-pending__label"><?php esc_html_e( 'Se calcula en el checkout', 'crios-rango-2026' ); ?></span>
+                        <?php if ( 'yes' === get_option( 'woocommerce_enable_shipping_calc' ) ) : ?>
+                            <details class="cr-cart-shipping-calculator">
+                                <summary><?php esc_html_e( 'Cambiar dirección', 'crios-rango-2026' ); ?></summary>
+                                <?php woocommerce_shipping_calculator(); ?>
+                            </details>
+                        <?php endif; ?>
+                    </td>
                 </tr>
             <?php endif; ?>
-            <?php foreach ( WC()->cart->get_tax_totals() as $code => $tax ) : ?>
-                <tr class="tax-rate tax-rate-<?php echo esc_attr( sanitize_title( $code ) ); ?>">
-                    <th><?php echo esc_html( $tax->label ); ?></th>
-                    <td data-title="<?php echo esc_attr( $tax->label ); ?>"><?php echo wp_kses_post( $tax->formatted_amount ); ?></td>
-                </tr>
-            <?php endforeach; ?>
             <?php do_action( 'woocommerce_cart_totals_before_order_total' ); ?>
             <tr class="order-total">
                 <th><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
-                <td data-title="<?php esc_attr_e( 'Total', 'woocommerce' ); ?>"><?php wc_cart_totals_order_total_html(); ?></td>
+                <td data-title="<?php esc_attr_e( 'Total', 'woocommerce' ); ?>">
+                    <strong><?php echo wp_kses_post( wc_price( WC()->cart->get_total( 'edit' ) ) ); ?></strong>
+                    <?php if ( WC()->cart->get_total_tax() > 0 ) : ?>
+                        <small class="includes_tax"><?php echo wp_kses_post( sprintf( __( 'Incluye %s de impuestos', 'crios-rango-2026' ), wc_price( WC()->cart->get_total_tax() ) ) ); ?></small>
+                    <?php endif; ?>
+                </td>
             </tr>
             <?php do_action( 'woocommerce_cart_totals_after_order_total' ); ?>
         </tbody>

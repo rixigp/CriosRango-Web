@@ -1083,3 +1083,61 @@ test('full cart physical defect contracts: WPLoyalty, image, remove, overflow an
   assert.match(cartTotals, /Resumen/);
   assert.match(cartTotals, /woocommerce_cart_totals_after_order_total/);
 });
+
+
+test('final cart presentation uses parent variation title and native structured attributes', () => {
+  const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
+  assert.match(cartTemplate, /\$_product->is_type\( 'variation' \)[\s\S]{0,300}\$parent_product = wc_get_product\( \$_product->get_parent_id\(\) \)/);
+  assert.match(cartTemplate, /\$cart_display_name = \$parent_product->get_name\(\)/);
+  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item \)/);
+  assert.match(cartTemplate, /\$cart_display_name/);
+  assert.doesNotMatch(cartTemplate, /preg_replace|explode\(\s*['"][,;]/);
+});
+
+test('guest empty promotions stay collapsed without changing authenticated rewards and promotions', () => {
+  const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
+  assert.match(cartJs, /if \(!visible\.length && !config\.authenticated\)\s*\{\s*promotionsList\.hidden = true;/);
+  assert.match(cartJs, /const visible = config\.authenticated \? list : list\.filter\(guestPromotionVisible\)/);
+  assert.match(cartJs, /renderPromotions\(promotionsPayload\)/);
+});
+
+test('cart totals hide tax-rate rows but keep WooCommerce tax and total values', () => {
+  const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
+  assert.doesNotMatch(cartTotals, /get_tax_totals\(\)|class="tax-rate/);
+  assert.match(cartTotals, /WC\(\)->cart->get_total\( 'edit' \)/);
+  assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
+  assert.match(cartTotals, /WC\(\)->cart->get_total_tax\(\)/);
+  assert.match(cartTotals, /Incluye %s de impuestos/);
+  assert.doesNotMatch(cartTotals, /EUR/);
+  assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
+  assert.match(cartTotals, /woocommerce_cart_totals_before_order_total/);
+  assert.match(cartTotals, /woocommerce_cart_totals_after_order_total/);
+  assert.match(cartTotals, /woocommerce_proceed_to_checkout/);
+});
+
+test('shipping method summary collapses native WooCommerce options without replacing its calculation flow', () => {
+  const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
+  const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+  assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
+  assert.match(cartJs, /input\.shipping_method:checked/);
+  assert.match(cartJs, /Cambiar método/);
+  assert.match(cartJs, /methods\.hidden = !expanded/);
+  assert.match(cartJs, /initShippingPresentation/);
+  assert.match(cartCss, /cr-cart-shipping-summary__selected/);
+  assert.match(cartCss, /ul#shipping_method\[hidden\]/);
+  assert.match(cartTotals, /Se calcula en el checkout/);
+  assert.match(cartTotals, /woocommerce_shipping_calculator\(\)/);
+});
+
+test('cart visual pass preserves loyalty, promotions endpoints, auth and native cart actions', () => {
+  const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
+  const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
+  assert.match(cartJs, /config\.promotionsUrl/);
+  assert.match(cartJs, /config\.walletUrl/);
+  assert.match(cartJs, /config\.redeemUrl/);
+  assert.match(cartJs, /config\.authenticated/);
+  assert.match(cartTemplate, /name="cr2026_empty_cart"/);
+  assert.match(cartTemplate, /wp_nonce_field\( 'cr2026_empty_cart'/);
+  assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
+});
