@@ -1035,7 +1035,7 @@ test('mobile cart uses one WooCommerce table cell card and cart-only WPLoyalty f
   const emptyTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-empty.php'), 'utf8');
   assert.match(cartTemplate, /<tr class="woocommerce-cart-form__cart-item cart_item cr-cart-item">[\s\S]*?<td class="cr-cart-item-cell" colspan="6">[\s\S]*?<article class="cr-cart-item__card">[\s\S]*?<div class="cr-cart-item__main">[\s\S]*?cr-cart-item__media[\s\S]*?cr-cart-item__content[\s\S]*?<div class="cr-cart-item__actions">[\s\S]*?<\/article>[\s\S]*?<\/td>[\s\S]*?<\/tr>/);
   assert.doesNotMatch(cartTemplate, /class="product-thumbnail cr-cart-item__image"|class="product-name cr-cart-item__details"/);
-  assert.match(cartTemplate, /\$product->get_image\( 'woocommerce_thumbnail', array\(/);
+  assert.match(cartTemplate, /\$_product->get_image\( 'woocommerce_thumbnail', array\(/);
   assert.match(cartTemplate, /wc_get_template\( 'cart\/cart-empty\.php' \)/);
   assert.doesNotMatch(cartTemplate, /woocommerce_cart_is_empty/);
   assert.match(cartHooks, /wlr_is_cart_earn_message_enabled/);
