@@ -7,7 +7,6 @@ body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; max-width:
 .cr-cart-empty-form { margin:0; }
 .cr-cart-empty-form button { border:0; padding:8px 0; background:transparent; color:#68716C; font:500 13px/20px Arial,sans-serif; text-decoration:underline; cursor:pointer; }
 .cr-cart-layout { display:flex; flex-direction:column; align-items:stretch; }
-.cr-cart-primary { min-width:0; }
 .cr-cart-table { display:block; width:100%; margin:0!important; border:0!important; border-radius:0!important; background:transparent!important; overflow:visible!important; }
 .cr-cart-table thead { display:none; }
 .cr-cart-table tbody { display:grid; }
@@ -129,7 +128,6 @@ body.woocommerce-cart .cr-main--woocommerce > .cr-shell,
 body.woocommerce-cart .cr-cart-form,
 body.woocommerce-cart .cr-cart-page,
 body.woocommerce-cart .cr-cart-layout,
-body.woocommerce-cart .cr-cart-primary,
 body.woocommerce-cart .cr-cart-summary,
 body.woocommerce-cart .cr-cart-item__card,
 body.woocommerce-cart .cr-cart-item__main,
@@ -233,7 +231,6 @@ body.woocommerce-cart .cr-main--woocommerce,
 body.woocommerce-cart .cr-main--woocommerce > .cr-shell,
 body.woocommerce-cart .cr-cart-page,
 body.woocommerce-cart .cr-cart-layout,
-body.woocommerce-cart .cr-cart-primary,
 body.woocommerce-cart .cr-cart-summary,
 body.woocommerce-cart .cr-cart-form,
 body.woocommerce-cart .cr-cart-promotions {
@@ -737,7 +734,6 @@ body.woocommerce-cart{--cr-app-topbar-height:64px}
 body.woocommerce-cart .cr-cart-content{width:100%;max-width:1280px;min-width:0;margin-inline:auto;box-sizing:border-box}
 body.woocommerce-cart .cr-cart-header-shell{width:min(100%,1360px);margin-inline:auto;box-sizing:border-box}
 body.woocommerce-cart .cr-cart-content>.cr-cart-layout,
-body.woocommerce-cart .cr-cart-content .cr-cart-primary,
 body.woocommerce-cart .cr-cart-content .cr-cart-form,
 body.woocommerce-cart .cr-cart-content .cr-cart-promotions,
 body.woocommerce-cart .cr-cart-content .cr-cart-summary,
@@ -758,10 +754,6 @@ body.woocommerce-cart .cr-cart-content .checkout-button{width:100%!important;max
 body.woocommerce-cart .cr-cart-empty-form{display:flex;align-items:center;justify-content:flex-end;width:max-content;max-width:100%;min-width:0;margin:0}
 body.woocommerce-cart .cr-cart-empty-form button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:0;border:0;border-radius:0;background:transparent;color:#68716C;font:400 13px/20px "Roboto",Arial,sans-serif;text-decoration:none;white-space:nowrap;cursor:pointer}
 body.woocommerce-cart .cr-cart-empty-form button svg{display:block;width:15px;height:15px;flex:0 0 15px}
-body.woocommerce-cart .cr-cart-content .cr-cart-primary{display:contents!important}
-body.woocommerce-cart .cr-cart-content .cr-cart-form{order:1}
-body.woocommerce-cart .cr-cart-content .cr-cart-promotions{order:2}
-body.woocommerce-cart .cr-cart-content .cr-cart-summary{order:3}
 body.woocommerce-cart .cr-cart-summary tr.cart-discount:not(.cr-cart-summary-discount){display:none!important}
 body.woocommerce-cart .cr-cart-summary tr.woocommerce-shipping-totals,
 body.woocommerce-cart .cr-cart-summary ul#shipping_method,
@@ -832,9 +824,8 @@ body.woocommerce-cart .cr-cart-wallet__info-svg svg { display:block; width:25px;
 body.woocommerce-cart .cr-cart-wallet__info-icon:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
 
 
-/* Cart rails share one containing block: the product form and secondary rail
-   become sibling flex items of .cr-cart-layout. The product table/card geometry
-   remains untouched; only the wrapper box is removed from layout. */
+/* Cart rails share one containing block: products and the secondary rail are
+   direct sibling flex items of .cr-cart-layout in their actual DOM order. */
 body.woocommerce-cart .cr-cart-content .cr-cart-layout{
   display:flex!important;
   flex-direction:column!important;
@@ -844,7 +835,6 @@ body.woocommerce-cart .cr-cart-content .cr-cart-layout{
   min-width:0;
   box-sizing:border-box;
 }
-body.woocommerce-cart .cr-cart-content .cr-cart-primary{display:contents!important}
 body.woocommerce-cart .cr-cart-content .cr-cart-form,
 body.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail{
   display:block;
