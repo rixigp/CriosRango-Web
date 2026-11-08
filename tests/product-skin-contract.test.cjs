@@ -1182,3 +1182,43 @@ test('cart promotions and totals outer cards are removed, wallet points and tax 
   assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
   assert.doesNotMatch(cartTotals, /woocommerce_shipping_calculator\(\)|get_total_tax\(\)|Incluye %s de impuestos/);
 });
+
+
+test('cart final app refinement: light header, compact products, structured variations, light promotions and transparent totals', () => {
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+  const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
+  const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
+  const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
+
+  assert.match(cartCss, /\.cr-cart-heading h1 \{[^}]*font-weight: 500;/);
+  assert.match(cartCss, /\.cr-cart-back \{[^}]*width: 44px;[^}]*height: 44px;[^}]*border: 0;[^}]*border-radius: 0;/);
+  assert.match(cartCss, /\.cr-cart-item__card \{ gap: 8px; padding: 9px;/);
+  assert.match(cartCss, /\.cr-cart-item__media,[\s\S]*?width: 82px; height: 98px;/);
+  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item \)/);
+  assert.match(cartCss, /\.cr-cart-item__variations dl\.variation \{[\s\S]*?display: flex!important/);
+  assert.match(cartCss, /\.cr-cart-item__variations dl\.variation:empty \{ display: none!important; \}/);
+
+  assert.match(cartCss, /\.cr-cart-promotions > h2,[\s\S]*?font-weight: 400;/);
+  assert.match(cartCss, /\.cr-cart-reward__icon \{ color: var\(--cr-green/);
+  assert.match(cartCss, /\.cr-cart-promo-card__icon \{ color: #C58A2A;/);
+  assert.match(cartCss, /\.cr-cart-apply-button,[\s\S]*?font-weight: 500!important;/);
+
+  assert.match(cartCss, /\.cr-cart-summary \.cart_totals,[\s\S]*?background: transparent!important/);
+  assert.match(cartCss, /\.cr-cart-summary table\.shop_table th,[\s\S]*?background: transparent!important/);
+  assert.match(cartCss, /\.cr-cart-summary table\.shop_table tr \+ tr > th,[\s\S]*?border-top: 1px solid rgba\(32,36,31,.10\)!important/);
+
+  assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
+  assert.match(cartJs, /selectedItem\.querySelector\('\.woocommerce-Price-amount, \.amount'\)/);
+  assert.match(cartJs, /Gratis/);
+  assert.match(cartJs, /Se calcula en el checkout/);
+  assert.doesNotMatch(cartJs, /selectedText[^;]*selectedItem\.textContent/);
+  assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
+  assert.doesNotMatch(cartTotals, /EUR/);
+
+  // Native cart operations and shipping selection remain authoritative and unchanged.
+  assert.match(cartTemplate, /wp_nonce_field\( 'woocommerce-cart'/);
+  assert.match(cartTemplate, /woocommerce_quantity_input\(/);
+  assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
+  assert.match(cartJs, /input\.shipping_method:checked/);
+  assert.match(cartJs, /methods\.hidden = !expanded/);
+});

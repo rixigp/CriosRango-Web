@@ -460,7 +460,11 @@
 
     const selected = methods.querySelector('input.shipping_method:checked, input[type="radio"]:checked');
     const selectedItem = selected && selected.closest('li');
-    const label = selectedItem ? selectedItem.textContent.replace(/\\s+/g, ' ').trim() : 'Se calcula en el checkout';
+    const selectedLabel = selectedItem ? selectedItem.textContent.replace(/\s+/g, ' ').trim() : '';
+    const selectedAmount = selectedItem && selectedItem.querySelector('.woocommerce-Price-amount, .amount');
+    const label = selectedAmount
+      ? selectedAmount.textContent.replace(/\s+/g, ' ').trim()
+      : (/\b(?:gratis|gratuito|free)\b/i.test(selectedLabel) ? 'Gratis' : 'Se calcula en el checkout');
     const selectedText = summary.querySelector('.cr-cart-shipping-summary__selected');
     if (selectedText && selectedText.textContent !== label) selectedText.textContent = label;
     const toggle = summary.querySelector('.cr-cart-shipping-summary__toggle');

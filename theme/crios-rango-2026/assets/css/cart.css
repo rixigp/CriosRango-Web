@@ -351,3 +351,74 @@ body.woocommerce-cart .cr-cart-reward__label { display:flex; align-items:center;
 body.woocommerce-cart .cr-cart-reward__icon { display:inline-flex; flex:0 0 18px; color:#7961A8; }
 body.woocommerce-cart .cr-cart-promo-card__icon { display:inline-flex; margin-bottom:6px; color:#3D78C4; }
 body.woocommerce-cart .cr-cart-promo-card--welcome .cr-cart-promo-card__title { font-weight:500; }
+
+
+/* Cart-only final visual refinement. Global canvas and all non-cart surfaces stay untouched. */
+body.woocommerce-cart .cr-cart-heading { gap: 8px; }
+body.woocommerce-cart .cr-cart-heading h1 { font-weight: 500; }
+body.woocommerce-cart .cr-cart-back {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; min-width: 44px; flex: 0 0 44px;
+  border: 0; border-radius: 0; background: transparent;
+  font-size: 26px; font-weight: 400; line-height: 1;
+}
+body.woocommerce-cart .cr-cart-empty-form button { font-weight: 400; }
+body.woocommerce-cart .cr-cart-item__card { gap: 8px; padding: 9px; }
+body.woocommerce-cart .cr-cart-item__main { grid-template-columns: 82px minmax(0,1fr); gap: 0 9px; }
+body.woocommerce-cart .cr-cart-item__media,
+body.woocommerce-cart table.cart .cr-cart-item__media {
+  width: 82px; height: 98px; min-width: 82px; max-width: 82px; flex-basis: 82px;
+}
+body.woocommerce-cart .cr-cart-item__name { font-weight: 400; }
+body.woocommerce-cart .cr-cart-item__unit,
+body.woocommerce-cart .cr-cart-item__subtotal { font-weight: 400; }
+body.woocommerce-cart .cr-cart-item__variations { display: block!important; visibility: visible!important; }
+body.woocommerce-cart .cr-cart-item__variations dl.variation {
+  display: flex!important; flex-wrap: wrap; align-items: baseline;
+  margin: 3px 0 5px; font-size: 11px; line-height: 1.35; font-weight: 400;
+}
+body.woocommerce-cart .cr-cart-item__variations dl.variation:empty { display: none!important; }
+body.woocommerce-cart .cr-cart-item__variations dl.variation dt,
+body.woocommerce-cart .cr-cart-item__variations dl.variation dd { font-weight: 400; }
+body.woocommerce-cart .cr-cart-quantity { gap: 5px; }
+body.woocommerce-cart .cr-cart-promotions > h2,
+body.woocommerce-cart .cr-cart-promotions__subheading,
+body.woocommerce-cart .cr-cart-wallet__title,
+body.woocommerce-cart .cr-cart-wallet__balance,
+body.woocommerce-cart .cr-cart-promo-card__title,
+body.woocommerce-cart .cr-cart-manual-coupon summary,
+body.woocommerce-cart .cr-cart-reward__label strong { font-weight: 400; }
+body.woocommerce-cart .cr-cart-reward__icon { color: var(--cr-green, #0F5C4D); }
+body.woocommerce-cart .cr-cart-promo-card__icon { color: #C58A2A; }
+body.woocommerce-cart .cr-cart-apply-button,
+body.woocommerce-cart .cr-cart-redeem-button,
+body.woocommerce-cart .cr-cart-manual-coupon button { font-weight: 500!important; }
+
+/* Totals are printed directly on the approved app canvas, without a white table surface. */
+body.woocommerce-cart .cr-cart-summary .cart_totals,
+body.woocommerce-cart .cr-cart-summary table.shop_table,
+body.woocommerce-cart .cr-cart-summary table.shop_table tbody,
+body.woocommerce-cart .cr-cart-summary table.shop_table tr,
+body.woocommerce-cart .cr-cart-summary table.shop_table th,
+body.woocommerce-cart .cr-cart-summary table.shop_table td {
+  background: transparent!important; background-image: none!important; box-shadow: none!important;
+}
+body.woocommerce-cart .cr-cart-summary table.shop_table th,
+body.woocommerce-cart .cr-cart-summary table.shop_table td { border: 0!important; }
+body.woocommerce-cart .cr-cart-summary table.shop_table tr + tr > th,
+body.woocommerce-cart .cr-cart-summary table.shop_table tr + tr > td {
+  border-top: 1px solid rgba(32,36,31,.10)!important;
+}
+body.woocommerce-cart .cr-cart-summary table.shop_table th,
+body.woocommerce-cart .cr-cart-summary table.shop_table td { font-weight: 400!important; }
+body.woocommerce-cart .cr-cart-summary .cr-cart-shipping-summary__selected { font-weight: 400; }
+body.woocommerce-cart .cr-cart-summary .order-total th,
+body.woocommerce-cart .cr-cart-summary .order-total td { font-size: 17px!important; font-weight: 500!important; }
+body.woocommerce-cart .cr-cart-summary .order-total td strong { font-size: 17px; font-weight: 500; }
+@media (max-width: 767px) {
+  body.woocommerce-cart .cr-cart-item__main { grid-template-columns: 76px minmax(0,1fr); gap: 0 8px; }
+  body.woocommerce-cart .cr-cart-item__media,
+  body.woocommerce-cart table.cart .cr-cart-item__media {
+    width: 76px; height: 92px; min-width: 76px; max-width: 76px; flex-basis: 76px;
+  }
+}
