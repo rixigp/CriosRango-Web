@@ -837,15 +837,10 @@ body.woocommerce-cart .cr-cart-wallet__info-svg svg { display:block; width:25px;
 body.woocommerce-cart .cr-cart-wallet__info-icon:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
 
 
-/* Match every secondary cart surface to the existing product-card inset rail. */
-body.woocommerce-cart .cr-cart-content .cr-cart-body-rail{
-  flex:0 0 calc(100% - 24px)!important;
-  width:calc(100% - 24px)!important;
-  max-width:calc(100% - 24px)!important;
-  min-width:0;
-  margin-inline:auto!important;
-  box-sizing:border-box;
-}
+/* One owner for the vertical gap between cart sections. */
+body.woocommerce-cart .cr-cart-content .cr-cart-layout { gap:18px!important; }
+body.woocommerce-cart .cr-cart-content .cr-cart-form { margin:0!important; }
+body.woocommerce-cart .cr-cart-content .cr-cart-promotions { margin-top:0!important; }
 
 /* The global body already reserves the fixed app-header height; category and cart rows start at the same block position. */
 body.woocommerce-cart .cr-main--woocommerce{padding-top:0!important;}
