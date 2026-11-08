@@ -14,7 +14,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main {
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell {
   margin-inline: auto;
-  padding-block-start: var(--cr-app-topbar-height);
+  padding-block-start: 0;
   padding-block-end: calc(88px + env(safe-area-inset-bottom));
   background: var(--cr-app-canvas);
 }

@@ -58,3 +58,49 @@ test('checkout shell does not style or replace native transactional controls', (
   assert.doesNotMatch(checkoutCss, /\.cr-mobile-bottom-nav|\.cr-app-bottom-nav/);
   assert.doesNotMatch(checkoutCss, /body\.woocommerce-cart/);
 });
+
+
+function cssRuleBody(css, selector) {
+  const marker = selector + ' {';
+  const start = css.indexOf(marker);
+  assert.notEqual(start, -1, 'Missing CSS rule for ' + selector);
+  const bodyStart = start + marker.length;
+  const bodyEnd = css.indexOf('}', bodyStart);
+  assert.notEqual(bodyEnd, -1, 'Unclosed CSS rule for ' + selector);
+  return css.slice(bodyStart, bodyEnd);
+}
+
+test('checkout toolbar uses only the global header top reservation', () => {
+  const globalHeader = cssRuleBody(mainCss, 'body.cr-global-app-header:not(.home)');
+  assert.match(globalHeader, /padding-top:\s*var\(--cr-app-topbar-height\)/);
+
+  const outletSelector = 'body.cr-parent-category-view .cr-parent-category__canvas,';
+  const outletStart = mainCss.indexOf(outletSelector);
+  assert.notEqual(outletStart, -1, 'Outlet/category reservation reset must remain present');
+  const outletOpen = mainCss.indexOf('{', outletStart);
+  const outletClose = mainCss.indexOf('}', outletOpen);
+  assert.ok(outletOpen > outletStart && outletClose > outletOpen);
+  assert.match(mainCss.slice(outletOpen + 1, outletClose), /padding-top:\s*0\s*!important/);
+
+  const checkoutShell = cssRuleBody(
+    checkoutCss,
+    'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell'
+  );
+  assert.match(checkoutShell, /padding-block-start:\s*0\s*;/);
+  assert.doesNotMatch(checkoutShell, /padding-block-start:\s*var\(--cr-app-topbar-height\)/);
+
+  const checkoutTopReservations = [...checkoutCss.matchAll(/padding-block-start\s*:\s*([^;]+);/g)]
+    .map(match => match[1].trim());
+  assert.deepEqual(checkoutTopReservations, ['0'], 'Checkout must not add a second header-height reservation');
+});
+
+test('checkout toolbar horizontal geometry remains delegated to the shared toolbar styles', () => {
+  const toolbarRule = cssRuleBody(
+    checkoutCss,
+    'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell > .cr-parent-category__toolbar'
+  );
+  assert.match(toolbarRule, /min-height:\s*64px/);
+  assert.match(toolbarRule, /margin:\s*0 20px 16px/);
+  assert.match(checkoutCss, /margin: 0 20px 14px/);
+  assert.match(checkoutCss, /margin: 0 32px 24px/);
+});
