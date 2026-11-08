@@ -844,3 +844,29 @@ body.woocommerce-cart .cr-cart-content .cr-cart-promotions { margin-top:0!import
 
 /* The global body already reserves the fixed app-header height; category and cart rows start at the same block position. */
 body.woocommerce-cart .cr-main--woocommerce{padding-top:0!important;}
+
+/* Physical cart audit: the table/form must not add a private inset to the shared content rail. */
+body.woocommerce-cart .cr-cart-content .cr-cart-form{
+  padding-inline:0!important;
+  border:0!important;
+  box-sizing:border-box;
+}
+body.woocommerce-cart .cr-cart-content .cr-cart-table,
+body.woocommerce-cart .cr-cart-content .cr-cart-table tbody,
+body.woocommerce-cart .cr-cart-content .cr-cart-table tr,
+body.woocommerce-cart .cr-cart-content .cr-cart-item-cell{
+  padding-inline:0!important;
+  margin-inline:0!important;
+  box-sizing:border-box;
+}
+body.woocommerce-cart .cr-cart-content .cr-cart-form-actions{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  clip-path:inset(50%)!important;
+  white-space:nowrap!important;
+}
