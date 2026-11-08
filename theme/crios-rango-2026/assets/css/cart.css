@@ -1,5 +1,6 @@
 /* Cart app convergence — scoped to the WooCommerce cart only. */
-body.woocommerce-cart .cr-main--woocommerce { background: var(--cr-app-canvas, #FCFAF7); }
+body.woocommerce-cart { background: var(--cr-app-canvas); }
+body.woocommerce-cart .cr-main--woocommerce { background: transparent; }
 body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width: min(calc(100% - 32px), 1240px); padding-top: 18px; padding-bottom: 100px; }
 .cr-cart-page { color: var(--cr-ink, #183B35); }
 .cr-cart-heading { display:flex; align-items:center; gap:12px; margin:0 0 20px; min-height:46px; }
@@ -230,4 +231,113 @@ body.woocommerce-cart .cr-cart-shipping-pending__label {
 body.woocommerce-cart .cr-cart-shipping-calculator { margin-top:6px; }
 body.woocommerce-cart .cr-cart-shipping-calculator > summary {
   color:#315B52; font-size:11px; cursor:pointer;
+}
+
+
+/* Cart app canvas and visual convergence — presentation only. */
+body.woocommerce-cart,
+body.woocommerce-cart #page,
+body.woocommerce-cart .site,
+body.woocommerce-cart .cr-main--woocommerce,
+body.woocommerce-cart .cr-main--woocommerce > .cr-shell,
+body.woocommerce-cart .cr-cart-page,
+body.woocommerce-cart .cr-cart-layout,
+body.woocommerce-cart .cr-cart-primary,
+body.woocommerce-cart .cr-cart-summary,
+body.woocommerce-cart .cr-cart-form,
+body.woocommerce-cart .cr-cart-promotions {
+  background: transparent;
+}
+body.woocommerce-cart { background: var(--cr-app-canvas) !important; }
+body.woocommerce-cart .cr-main--woocommerce { background: transparent !important; }
+
+/* Product rows remain component surfaces, softly tinted from the existing brand token. */
+body.woocommerce-cart .cr-cart-item__card {
+  background: rgba(53, 95, 75, .045);
+  border-color: rgba(53, 95, 75, .12);
+  border-radius: 15px;
+  padding: 11px;
+}
+body.woocommerce-cart .cr-cart-item__main { grid-template-columns: 88px minmax(0,1fr); gap: 0 11px; }
+body.woocommerce-cart .cr-cart-item__media,
+body.woocommerce-cart table.cart .cr-cart-item__media {
+  width: 88px; height: 104px; min-width: 88px; max-width: 88px; flex: 0 0 88px;
+}
+body.woocommerce-cart .cr-cart-item__name { font-weight: 500; }
+body.woocommerce-cart .cr-cart-item__unit { font-size: 13px; color: var(--cr-ink); font-weight: 400; }
+body.woocommerce-cart .cr-cart-item__unit > span:first-child { display:none; }
+body.woocommerce-cart .cr-cart-item__subtotal { font-size: 12px; color: #68716C; font-weight: 400; }
+body.woocommerce-cart .cr-cart-item__variations dl.variation { font-size: 11px; font-weight: 400; }
+body.woocommerce-cart .cr-cart-item__variations dl.variation dt { font-weight: 400; }
+
+/* Simple inline stepper; keep existing buttons and WooCommerce quantity input untouched. */
+body.woocommerce-cart .cr-cart-quantity {
+  min-height: 36px; padding: 0; gap: 8px; border: 0; border-radius: 0; background: transparent;
+}
+body.woocommerce-cart .cr-cart-quantity__button {
+  width: 30px; height: 30px; border-radius: 8px; background: transparent; font-weight: 400;
+}
+body.woocommerce-cart .cr-cart-quantity input.qty { width: 30px!important; min-width: 30px; font-weight: 400; }
+body.woocommerce-cart .cr-cart-remove {
+  width: 42px; min-width: 42px; height: 42px; min-height: 42px; padding: 0;
+  border: 0; border-radius: 10px; background: transparent;
+}
+body.woocommerce-cart .cr-cart-remove span { display:none!important; }
+body.woocommerce-cart .cr-cart-remove svg { width: 20px; height: 20px; }
+body.woocommerce-cart .cr-cart-empty-form button { text-decoration:none; font-weight:400; }
+
+/* Promotion blocks sit on the page canvas; component panels remain independently tinted. */
+body.woocommerce-cart .cr-cart-promotions { margin-top: 16px; padding: 0; border: 0; border-radius: 0; }
+body.woocommerce-cart .cr-cart-promotions > h2 { font-size: 16px; font-weight: 500; margin-bottom: 10px; }
+body.woocommerce-cart .cr-cart-promotions__subheading { font-size: 13px; font-weight: 500; }
+body.woocommerce-cart .cr-cart-wallet__summary { background: #E8F5EF; }
+body.woocommerce-cart .cr-cart-wallet__points { display:none!important; }
+body.woocommerce-cart .cr-cart-wallet__title { font-weight: 500; }
+body.woocommerce-cart .cr-cart-wallet__balance { font-weight: 400; }
+body.woocommerce-cart .cr-cart-wallet__rewards {
+  padding: 10px 12px; border-radius: 13px; background: rgba(132, 104, 190, .09);
+}
+body.woocommerce-cart .cr-cart-wallet__rewards .cr-cart-promotions__subheading { margin-top: 0; }
+body.woocommerce-cart .cr-cart-reward { border-top: 0; padding: 7px 0; }
+body.woocommerce-cart .cr-cart-reward + .cr-cart-reward { border-top: 1px solid rgba(132,104,190,.13); }
+body.woocommerce-cart .cr-cart-promo-card { border-top: 0; padding: 12px; border-radius: 13px; background: rgba(53,95,75,.055); }
+body.woocommerce-cart .cr-cart-promo-card--welcome { background: rgba(90,145,220,.12); }
+body.woocommerce-cart .cr-cart-promo-card__title { font-weight: 500; }
+body.woocommerce-cart .cr-cart-apply-button { background: #2F8A57!important; font-weight: 500!important; }
+body.woocommerce-cart .cr-cart-manual-coupon { border-top: 0; padding-top: 10px; }
+body.woocommerce-cart .cr-cart-manual-coupon summary { display:flex; align-items:center; gap:8px; font-weight:400; list-style:none; }
+body.woocommerce-cart .cr-cart-manual-coupon summary::-webkit-details-marker { display:none; }
+body.woocommerce-cart .cr-cart-manual-coupon summary::before { content:"+"; font-size:19px; font-weight:400; }
+body.woocommerce-cart .cr-cart-manual-coupon summary::after {
+  content:""; width:7px; height:7px; margin-left:auto; border-right:1.5px solid currentColor;
+  border-bottom:1.5px solid currentColor; transform:rotate(45deg); transition:transform 150ms ease;
+}
+body.woocommerce-cart .cr-cart-manual-coupon[open] summary::after { transform:rotate(225deg); }
+
+/* Totals use the canvas; only the checkout CTA remains a distinct control. */
+body.woocommerce-cart .cr-cart-summary .cart_totals {
+  padding: 0!important; border: 0!important; border-radius: 0!important; background: transparent!important;
+}
+body.woocommerce-cart .cr-cart-summary .cart_totals > h2 { display:none!important; }
+body.woocommerce-cart .cr-cart-summary table.shop_table th,
+body.woocommerce-cart .cr-cart-summary table.shop_table td { border-top:0!important; padding:8px 0!important; font-weight:400!important; }
+body.woocommerce-cart .cr-cart-summary .order-total th,
+body.woocommerce-cart .cr-cart-summary .order-total td { border-top:1px solid rgba(32,36,31,.12)!important; padding-top:13px!important; font-weight:600!important; }
+body.woocommerce-cart .cr-cart-summary .includes_tax,
+body.woocommerce-cart .cr-cart-summary tr.tax-rate,
+body.woocommerce-cart .cr-cart-summary tr.tax-total,
+body.woocommerce-cart .cr-cart-summary .woocommerce-shipping-destination,
+body.woocommerce-cart .cr-cart-summary .shipping-calculator-form,
+body.woocommerce-cart .cr-cart-summary .cr-cart-shipping-calculator { display:none!important; }
+body.woocommerce-cart .cr-cart-shipping-summary__toggle { display:none!important; }
+body.woocommerce-cart .cr-cart-summary ul#shipping_method { display:none!important; }
+body.woocommerce-cart .cr-cart-summary .checkout-button { font-size:0!important; font-weight:500!important; }
+body.woocommerce-cart .cr-cart-summary .checkout-button::after {
+  content:"Continuar compra"; font-size:15px; font-weight:500;
+}
+@media (max-width:767px) {
+  body.woocommerce-cart .cr-cart-item__main { grid-template-columns:84px minmax(0,1fr); }
+  body.woocommerce-cart .cr-cart-item__media,
+  body.woocommerce-cart table.cart .cr-cart-item__media { width:84px; height:100px; min-width:84px; max-width:84px; flex-basis:84px; }
+  body.woocommerce-cart .cr-cart-summary .cart_totals { padding:0!important; }
 }
