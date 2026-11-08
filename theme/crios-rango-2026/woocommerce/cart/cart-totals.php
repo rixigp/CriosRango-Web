@@ -14,7 +14,7 @@ $cr_merchandise_after_discounts = (float) $cr_cart->get_cart_contents_total() + 
  <?php do_action( 'woocommerce_before_cart_totals' ); ?>
  <h2><?php esc_html_e( 'Resumen', 'crios-rango-2026' ); ?></h2>
  <table class="shop_table shop_table_responsive"><tbody>
-  <tr class="cart-subtotal"><th><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></th><td data-cr-summary-subtotal><?php wc_cart_totals_subtotal_html(); ?></td></tr>
+  <tr class="cart-subtotal"><th><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></th><td data-cr-summary-subtotal><?php echo wp_kses_post( wc_price( $cr_merchandise_before_shipping ) ); ?></td></tr>
   <?php if ( $cr_discount_amount > 0 ) : ?><tr class="cart-discount cr-cart-summary-discount"><th><?php esc_html_e( 'Descuentos', 'crios-rango-2026' ); ?></th><td data-cr-summary-discount>-<?php echo wp_kses_post( wc_price( $cr_discount_amount ) ); ?></td></tr><?php endif; ?>
   <?php foreach ( $cr_cart->get_fees() as $fee ) : ?><tr class="fee"><th><?php echo esc_html( $fee->name ); ?></th><td><?php wc_cart_totals_fee_html( $fee ); ?></td></tr><?php endforeach; ?>
   <?php do_action( 'woocommerce_cart_totals_before_shipping' ); ?>
