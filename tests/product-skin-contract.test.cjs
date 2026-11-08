@@ -1391,11 +1391,34 @@ test('CART_CTA_LEFT_EDGE_MATCH_PRODUCT=PASS and CART_CTA_RIGHT_EDGE_MATCH_PRODUC
 test('CART_RAILS_SHARE_EFFECTIVE_CONTAINING_BLOCK=PASS',()=>{
  const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
- assert.match(p,/class="cr-cart-layout">\s*<div class="cr-cart-primary">\s*<form[^>]*class="woocommerce-cart-form cr-cart-form"/);
- assert.match(p,/<\/form>\s*<\/div>\s*<div class="cr-cart-secondary-rail">/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-primary\{display:contents!important\}/);
+ assert.match(p,/class="cr-cart-layout">\s*<form[^>]*class="woocommerce-cart-form cr-cart-form"/);
+ assert.match(p,/<\/form>\s*<div class="cr-cart-secondary-rail">/);
+ assert.doesNotMatch(p,/cr-cart-primary/);
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-form,\s*body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail\{[\s\S]*?flex:0 0 100%!important;[\s\S]*?width:100%!important;[\s\S]*?max-width:100%!important;[\s\S]*?margin:0!important;[\s\S]*?padding:0!important;[\s\S]*?box-sizing:border-box!important/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-layout\{[\s\S]*?width:100%!important;[\s\S]*?box-sizing:border-box/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-layout\{[\s\S]*?width:100%!important;[\s\S]*?gap:12px!important;[\s\S]*?box-sizing:border-box/);
+});
+test('CART_DOM_ORDER_HEADER_BEFORE_PRODUCTS=PASS',()=>{
+ const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
+ assert.ok(p.indexOf('class="cr-cart-header-shell"') < p.indexOf('class="cr-cart-item__card"'));
+});
+test('CART_DOM_ORDER_PRODUCTS_BEFORE_SECONDARY=PASS',()=>{
+ const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
+ assert.match(p,/class="cr-cart-layout">\s*<form[^>]*cr-cart-form[\s\S]*?<\/form>\s*<div class="cr-cart-secondary-rail">/);
+});
+test('CART_DOM_ORDER_SECONDARY_BEFORE_SUMMARY=PASS',()=>{
+ const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
+ assert.ok(p.indexOf('class="cr-cart-secondary-rail"') < p.indexOf('class="cart-collaterals cr-cart-summary"'));
+});
+test('CART_DOM_ORDER_SUMMARY_BEFORE_CTA=PASS',()=>{
+ const totals=fs.readFileSync(path.join(theme,'woocommerce/cart/cart-totals.php'),'utf8');
+ assert.ok(totals.indexOf('Resumen') < totals.indexOf('wc-proceed-to-checkout'));
+ assert.ok(totals.indexOf('wc-proceed-to-checkout') < totals.indexOf('checkout-button'));
+});
+test('CART_NO_CSS_VISUAL_REORDERING=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ assert.doesNotMatch(c, /\border\s*:/);
+ assert.doesNotMatch(c, /grid-template-areas/);
+ assert.doesNotMatch(c, /display\s*:\s*contents/);
 });
 test('CART_SECONDARY_RAIL_CONTAINS_ALL_POST_PRODUCT_BLOCKS=PASS',()=>{
  const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
