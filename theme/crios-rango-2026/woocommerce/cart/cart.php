@@ -100,6 +100,9 @@ do_action( 'woocommerce_before_cart' );
                                     false
                                 );
                                 $quantity_html = apply_filters( 'woocommerce_cart_item_quantity', $quantity_html, $cart_item_key, $cart_item );
+                                // Pass the parent display name so WooCommerce does not suppress attributes
+                                // already embedded in the variation's own title.
+                                $variation_html = wc_get_formatted_cart_item_data( $cart_item, false, $cart_display_name );
                                 $remove_url = wc_get_cart_remove_url( $cart_item_key );
                                 $remove_link = sprintf(
                                     '<a href="%s" class="cr-cart-remove" aria-label="%s"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m3 3v7m6-7v7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>%s</span></a>',
@@ -128,7 +131,9 @@ do_action( 'woocommerce_before_cart' );
                                                             <?php echo wp_kses_post( $cart_display_name ); ?>
                                                         <?php endif; ?>
                                                     </div>
-                                                    <div class="cr-cart-item__variations"><?php echo wc_get_formatted_cart_item_data( $cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+                                                    <?php if ( ! empty( $variation_html ) ) : ?>
+                                                        <div class="cr-cart-item__variations"><?php echo $variation_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+                                                    <?php endif; ?>
                                                     <?php if ( $_product->backorders_require_notification() && $_product->is_on_backorder( $cart_item['quantity'] ) ) : ?>
                                                         <p class="backorder_notification"><?php esc_html_e( 'Disponible bajo pedido', 'crios-rango-2026' ); ?></p>
                                                     <?php endif; ?>

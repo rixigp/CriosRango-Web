@@ -1222,3 +1222,39 @@ test('cart final app refinement: light header, compact products, structured vari
   assert.match(cartJs, /input\.shipping_method:checked/);
   assert.match(cartJs, /methods\.hidden = !expanded/);
 });
+
+
+test('cart variation attributes use WooCommerce native formatter with parent title and omit empty simple-product markup', () => {
+  const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
+  assert.match(cartTemplate, /\$variation_html = wc_get_formatted_cart_item_data\( \$cart_item, false, \$cart_display_name \)/);
+  assert.match(cartTemplate, /if \( ! empty\( \$variation_html \) \) : \?>[\s\S]*?class="cr-cart-item__variations"[\s\S]*?\$variation_html/);
+  assert.doesNotMatch(cartTemplate, /preg_replace|explode\(\s*['"][,;]/);
+  // WooCommerce's formatter retains taxonomy labels, terms, custom attributes and extension item-data filters.
+  assert.doesNotMatch(cartTemplate, /attribute_pa_color|attribute_pa_size|['"]Azul['"]|['"]42['"]/);
+});
+
+test('cart removes only the translated Cart updated success notice on cart requests', () => {
+  const cart = fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8');
+  assert.match(cart, /function cr2026_cart_remove_updated_success_notice\(\)/);
+  assert.match(cart, /! is_cart\(\)/);
+  assert.match(cart, /wc_get_notices\(\)/);
+  assert.match(cart, /wc_set_notices\( \$notices \)/);
+  assert.match(cart, /__\( 'Cart updated\.', 'woocommerce' \)/);
+  assert.match(cart, /trim\( wp_strip_all_tags\( \$notice\['notice'\] \) \) === \$updated_message/);
+  assert.match(cart, /unset\( \$notices\['success'\]\[ \$notice_key \] \)/);
+  assert.match(cart, /add_action\( 'wp', 'cr2026_cart_remove_updated_success_notice', 99 \)/);
+  assert.doesNotMatch(cart, /wc_clear_notices\(\)/);
+  assert.doesNotMatch(cart, /unset\( \$notices\['(?:error|notice|info)'\]/);
+  assert.doesNotMatch(cart, /wc_set_notices\(\s*\[\s*\]\s*\)/);
+  assert.doesNotMatch(cart, /woocommerce-message\s*\{[^}]*display\s*:\s*none/i);
+  assert.doesNotMatch(cart, /woocommerce-error\s*\{[^}]*display\s*:\s*none/i);
+});
+
+test('cart updated notice suppression leaves other success and all error notices intact', () => {
+  const cart = fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8');
+  const fn = cart.slice(cart.indexOf('function cr2026_cart_remove_updated_success_notice'));
+  assert.match(fn, /foreach \( \$notices\['success'\] as \$notice_key => \$notice \)/);
+  assert.match(fn, /unset\( \$notices\['success'\]\[ \$notice_key \] \)/);
+  assert.doesNotMatch(fn, /unset\( \$notices\['error'\]|unset\( \$notices\['notice'\]|unset\( \$notices\['info'\]/);
+  assert.match(fn, /if \( \$removed \) \{\s*wc_set_notices\( \$notices \);/);
+});

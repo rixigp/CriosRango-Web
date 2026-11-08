@@ -59,3 +59,39 @@ function cr2026_cart_product_image_attributes( $attr, $attachment, $size ) {
     return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'cr2026_cart_product_image_attributes', 20, 3 );
+
+
+/**
+ * Remove only WooCommerce's generic cart-updated success notice on the cart page.
+ * Keep all errors and every other success/info notice intact.
+ */
+function cr2026_cart_remove_updated_success_notice() {
+    if ( ! function_exists( 'is_cart' ) || ! is_cart()
+        || ! function_exists( 'wc_get_notices' ) || ! function_exists( 'wc_set_notices' ) ) {
+        return;
+    }
+
+    $notices = wc_get_notices();
+    if ( empty( $notices['success'] ) || ! is_array( $notices['success'] ) ) {
+        return;
+    }
+
+    $updated_message = trim( __( 'Cart updated.', 'woocommerce' ) );
+    $removed = false;
+
+    foreach ( $notices['success'] as $notice_key => $notice ) {
+        if ( ! isset( $notice['notice'] ) || ! is_string( $notice['notice'] ) ) {
+            continue;
+        }
+
+        if ( trim( wp_strip_all_tags( $notice['notice'] ) ) === $updated_message ) {
+            unset( $notices['success'][ $notice_key ] );
+            $removed = true;
+        }
+    }
+
+    if ( $removed ) {
+        wc_set_notices( $notices );
+    }
+}
+add_action( 'wp', 'cr2026_cart_remove_updated_success_notice', 99 );
