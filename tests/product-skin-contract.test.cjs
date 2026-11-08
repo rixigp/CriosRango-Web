@@ -1166,7 +1166,7 @@ test('cart promotions and totals outer cards are removed, wallet points and tax 
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
   const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
-  assert.match(cartCss, /\.cr-cart-promotions \{ padding: 0; border: 0; border-radius: 0;/);
+  assert.match(cartCss, /\.cr-cart-promotions \{ padding:\s*0; border:\s*0; border-radius:\s*0;/);
   assert.match(cartCss, /\.cr-cart-summary \.cart_totals[\s\S]*?background: transparent!important/);
   assert.match(cartCss, /\.cr-cart-summary \.cart_totals > h2 \{ display:none!important; \}/);
   assert.match(cartCss, /\.cr-cart-wallet__points \{ display:none!important; \}/);
