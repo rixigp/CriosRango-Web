@@ -1335,6 +1335,6 @@ test('mobile cart final density, variation label, summary grid and checkout labe
   assert.match(cartJs, /config\.loyaltyUrl/);
   assert.match(cartJs, /config\.redeemUrl/);
   assert.match(cartJs, /data-cr-qty-change/);
-  assert.match(cartJs, /wc_cart_fragments/);
+  assert.match(cartJs, /form\.requestSubmit/);
   assert.ok(!cartJs.includes('woocommerce_cart_totals_calculate'), 'CART_FUNCTIONAL_LOGIC_UNCHANGED=PASS');
 });
