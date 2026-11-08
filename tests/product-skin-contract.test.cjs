@@ -1103,6 +1103,7 @@ test('guest empty promotions stay collapsed without changing authenticated rewar
 
 test('cart totals hide tax-rate rows but keep WooCommerce tax and total values', () => {
   const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   assert.doesNotMatch(cartTotals, /get_tax_totals\(\)|class="tax-rate/);
   assert.match(cartTotals, /WC\(\)->cart->get_total\( 'edit' \)/);
   assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
