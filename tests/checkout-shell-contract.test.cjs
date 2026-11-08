@@ -263,17 +263,17 @@ test('WooCommerce address locale overrides are normalized before native address-
     ['city', 70, 'Localidad'], ['postcode', 80, 'Código postal'],
     ['country', 90, 'País']
   ]) {
-    assert.match(localeDefaultFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
-    assert.match(localeDefaultFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
-    assert.match(localeDefaultFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
+    assert.ok(localeDefaultFn.includes("'" + key + "'"), 'missing default locale key ' + key);
+    assert.ok(localeDefaultFn.includes("'priority' => " + priority), 'missing default locale priority ' + priority);
+    assert.ok(localeDefaultFn.includes("__( '" + label + "'"), 'missing default locale label ' + label);
   }
   for (const [key, priority, label] of [
     ['state', 60, 'Provincia'], ['city', 70, 'Localidad'],
     ['postcode', 80, 'Código postal'], ['country', 90, 'País']
   ]) {
-    assert.match(countryLocaleFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
-    assert.match(countryLocaleFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
-    assert.match(countryLocaleFn, new RegExp("'" + key + "'\\s*=>\\s*array"));
+    assert.ok(countryLocaleFn.includes("'" + key + "'"), 'missing ES locale key ' + key);
+    assert.ok(countryLocaleFn.includes("'priority' => " + priority), 'missing ES locale priority ' + priority);
+    assert.ok(countryLocaleFn.includes("__( '" + label + "'"), 'missing ES locale label ' + label);
   }
 });
 
@@ -377,7 +377,9 @@ test('runtime pipeline simulation preserves final billing DOM order after ES loc
   const deliveryStart = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
   const deliveryEnd = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", deliveryStart);
   const deliveryFn = woocommercePhp.slice(deliveryStart, deliveryEnd);
-  assert.doesNotMatch(deliveryFn, /billing_company|billing_address_2|unset\\s*\\(/);
+  assert.equal(deliveryFn.includes('billing_company'), false);
+  assert.equal(deliveryFn.includes('billing_address_2'), false);
+  assert.equal(deliveryFn.includes('unset('), false);
 });
 
 test('delivery layout keeps semantic full/half rows independent of WooCommerce legacy floats', () => {
