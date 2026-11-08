@@ -732,9 +732,15 @@ body.woocommerce-cart .cr-cart-item__subtotal { margin:0 0 2px; }
   }
 }
 
+/* The listing toolbar begins exactly below the fixed global app header. */
+body.woocommerce-cart{--cr-app-topbar-height:64px}
+body.woocommerce-cart .cr-cart-page{padding-top:var(--cr-app-topbar-height)}
+@media(min-width:768px) and (max-width:1279px){body.woocommerce-cart{--cr-app-topbar-height:82px}}
+@media(min-width:1280px){body.woocommerce-cart{--cr-app-topbar-height:88px}}
+
 /* One shared content rail for product cards, promotions, summary and checkout. */
 body.woocommerce-cart .cr-cart-content{width:calc(100% - 40px);max-width:1280px;min-width:0;margin-inline:auto;box-sizing:border-box}
-body.woocommerce-cart .cr-cart-content>.cr-parent-category__toolbar{margin:0 0 16px!important}
+body.woocommerce-cart .cr-cart-header-shell{width:min(100%,1360px);margin-inline:auto;box-sizing:border-box}
 body.woocommerce-cart .cr-cart-content>.cr-cart-layout,
 body.woocommerce-cart .cr-cart-content .cr-cart-primary,
 body.woocommerce-cart .cr-cart-content .cr-cart-form,
@@ -810,6 +816,20 @@ body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row--total .cr-cart-sum
 }
 body.woocommerce-cart .cr-cart-summary .cr-cart-summary__row--total .cr-cart-summary__value strong {
   font-size:inherit; font-weight:inherit;
+}
+/* Summary rows and checkout use the shared rail without a private side inset. */
+body.woocommerce-cart .cr-cart-summary .cart_totals{
+  width:100%!important;max-width:100%!important;min-width:0;box-sizing:border-box;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+}
+body.woocommerce-cart .cr-cart-summary .wc-proceed-to-checkout{
+  width:100%!important;max-width:100%;min-width:0;margin:0!important;padding:8px 0 0!important;
+  box-sizing:border-box;
+}
+body.woocommerce-cart .cr-cart-summary .checkout-button{
+  display:flex!important;width:100%!important;max-width:100%;min-width:0;margin:0!important;
+  box-sizing:border-box;
 }
 body.woocommerce-cart .cr-cart-wallet__info-icon { color:#315B52; background:transparent!important; }
 body.woocommerce-cart .cr-cart-wallet__info-svg,

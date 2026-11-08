@@ -23,9 +23,10 @@ if ( ! WC()->cart->is_empty() ) {
 }
 ?>
 <section class="cr-cart-page" aria-labelledby="cr-cart-title">
-    <div class="cr-cart-content">
+    <div class="cr-cart-header-shell">
         <?php cr2026_render_category_toolbar( __( 'Tu carrito', 'crios-rango-2026' ), wc_get_page_permalink( 'shop' ), 'cart', false, $cart_empty_action, 'cr-cart-title' ); ?>
-
+    </div>
+    <div class="cr-cart-content">
     <?php if ( WC()->cart->is_empty() ) : ?>
         <div class="cr-cart-empty-state">
             <?php wc_get_template( 'cart/cart-empty.php' ); ?>

@@ -11,7 +11,8 @@ function cr2026_asset_version( $relative_path ) {
 function cr2026_enqueue_assets() {
     $uses_app_category_components = is_front_page()
         || ( function_exists( 'is_shop' ) && is_shop() )
-        || ( function_exists( 'is_product_category' ) && is_product_category() );
+        || ( function_exists( 'is_product_category' ) && is_product_category() )
+        || ( function_exists( 'is_cart' ) && is_cart() );
 
     $uses_product_detail_skin = function_exists( 'is_product' ) && is_product();
 
