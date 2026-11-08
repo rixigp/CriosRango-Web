@@ -885,3 +885,6 @@ body.woocommerce-cart .cr-prose,
 body.woocommerce-cart .woocommerce{margin-top:0!important;padding-top:0!important;}
 
 /* Keep product cards frozen to the approved 86839831 rail; secondary blocks are isolated siblings. */
+
+/* One owner for the product-list to secondary-rail separation. */
+body.woocommerce-cart .cr-cart-form{margin:0!important}

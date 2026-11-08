@@ -1519,3 +1519,10 @@ test('CART_SECONDARY_RAIL_CONTAINS_PROMOTIONS_AND_SUMMARY=PASS',()=>{
  assert.match(rail,/class="cart-collaterals cr-cart-summary"/);
  assert.match(p,/class="cr-cart-primary"[\s\S]*?<\/form>\s*<\/div>\s*<div class="cr-cart-secondary-rail">/);
 });
+
+test('CART_SECTION_SPACING_SINGLE_OWNER_AFTER_RESTORE=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-layout\{[\s\S]*?gap:18px!important/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-form\{margin:0!important\}/);
+ assert.match(c,/\.cr-cart-secondary-rail > \.cr-cart-promotions,[\s\S]*?margin:0!important/);
+});
