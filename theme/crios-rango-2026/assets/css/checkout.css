@@ -194,7 +194,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   width: 100%;
   min-width: 0;
   min-height: var(--cr-checkout-field-height);
-  border: 1px solid var(--cr-checkout-field-border);
+  border: 1.5px solid var(--cr-checkout-field-border);
   border-radius: var(--cr-checkout-field-radius);
   background: var(--cr-app-canvas);
   color: var(--cr-ink);
@@ -228,7 +228,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   align-items: center;
   width: 100%;
   height: var(--cr-checkout-field-height);
-  border: 1px solid var(--cr-checkout-field-border);
+  border: 1.5px solid var(--cr-checkout-field-border);
   border-radius: var(--cr-checkout-field-radius);
   background: var(--cr-app-canvas);
   box-shadow: none;
