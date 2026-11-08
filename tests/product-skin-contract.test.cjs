@@ -1185,8 +1185,9 @@ test('cart final app refinement: light header, compact products, structured vari
   const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
   const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
 
-  assert.match(cartCss, /\.cr-cart-heading h1 \{[^}]*font-weight: 500;/);
-  assert.match(cartCss, /\.cr-cart-back \{[^}]*width: 44px;[^}]*height: 44px;[^}]*border: 0;[^}]*border-radius: 0;/);
+  // Cart heading now reuses the canonical Categories/Outlet toolbar; legacy cart-only header rules must stay absent.
+  assert.match(cartTemplate, /class="cr-cart-header-shell"[\s\S]*?cr2026_render_category_toolbar\( __( 'Tu carrito'/);
+  assert.doesNotMatch(cartCss, /\.cr-cart-heading|\.cr-cart-back/);
   assert.match(cartCss, /\.cr-cart-item__card \{ gap: 8px; padding: 9px;/);
   assert.match(cartCss, /\.cr-cart-item__media,[\s\S]*?width: 82px; height: 98px;/);
   assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item, false, \$cart_display_name \)/);
@@ -1377,7 +1378,7 @@ test('CART_SUMMARY_USES_PRODUCT_CARD_GUTTER=PASS; summary and CTA use the cart c
 test('CART_SUMMARY_LEFT_EDGE_MATCH_PRODUCT=PASS and CART_SUMMARY_RIGHT_EDGE_MATCH_PRODUCT=PASS',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
  assert.ok(c.includes('body.woocommerce-cart .cr-cart-content{width:calc(100% - 40px)'));
- assert.ok(c.includes('body.woocommerce-cart .cr-cart-summary .cart_totals{width:100%!important'));
+ assert.ok(c.includes('body.woocommerce-cart .cr-cart-content .cr-cart-summary .cart_totals{width:100%!important'));
  assert.ok(c.includes('body.woocommerce-cart .cr-cart-summary .cr-cart-summary__rows'));
  assert.ok(c.includes('width:100%; min-width:0; box-sizing:border-box;'));
 });
