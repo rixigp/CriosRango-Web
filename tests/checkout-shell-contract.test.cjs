@@ -51,7 +51,7 @@ test('checkout shell uses the shared canvas token and existing toolbar geometry'
 });
 
 test('checkout shell does not style or replace native transactional controls', () => {
-  for (const forbidden of ['#payment', '#order_review', 'payment_method_', 'shipping_method', 'place_order', 'form-row', 'checkout_coupon', 'woocommerce-checkout-review-order-table']) {
+  for (const forbidden of ['#payment', '#order_review', 'payment_method_', 'shipping_method', 'place_order', 'checkout_coupon', 'woocommerce-checkout-review-order-table']) {
     assert.equal(checkoutCss.includes(forbidden), false, forbidden + ' must remain outside Phase 1 CSS');
   }
   assert.match(checkoutCss, /\.cr-footer\s*\{\s*display:\s*none !important;/);
@@ -104,3 +104,103 @@ test('checkout toolbar horizontal geometry remains delegated to the shared toolb
   assert.match(checkoutCss, /margin: 0 20px 14px/);
   assert.match(checkoutCss, /margin: 0 32px 24px/);
 });
+
+const woocommercePhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
+
+test('delivery filter is guarded and restricted to the nine approved native billing keys', () => {
+  assert.match(woocommercePhp, /function cr2026_checkout_delivery_fields\( \$fields \)/);
+  assert.match(woocommercePhp, /if \( ! is_array\( \$fields \) \|\| ! isset\( \$fields\['billing'\] \) \|\| ! is_array\( \$fields\['billing'\] \) \)/);
+  const fn = woocommercePhp.slice(woocommercePhp.indexOf('function cr2026_checkout_delivery_fields('), woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'"));
+  assert.match(fn, /if \( ! isset\( \$fields\['billing'\]\[ \$key \] \) \|\| ! is_array\( \$fields\['billing'\]\[ \$key \] \) \)/);
+  const allowlist = [...fn.matchAll(/^\s*'(billing_[a-z0-9_]+)'\s*=>/gm)].map(match => match[1]);
+  assert.deepEqual(allowlist, [
+    'billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone',
+    'billing_address_1', 'billing_state', 'billing_city', 'billing_postcode', 'billing_country'
+  ]);
+  assert.match(woocommercePhp, /add_filter\( 'woocommerce_checkout_fields', 'cr2026_checkout_delivery_fields', 20 \)/);
+});
+
+test('delivery filter changes only label, priority and wrapper classes', () => {
+  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const fn = woocommercePhp.slice(start, end);
+  for (const property of ['label', 'priority', 'class']) assert.match(fn, new RegExp("\\['" + property + "'\\]"));
+  for (const forbidden of ['required', 'validate', 'autocomplete', 'options', 'default', 'custom_attributes', "['type']", "['name']", "['id']"]) {
+    assert.equal(fn.includes(forbidden), false, 'must not modify ' + forbidden);
+  }
+  assert.match(fn, /return \$fields;/);
+});
+
+test('unknown billing fields and address line 2 are not named or removed by the delivery filter', () => {
+  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const fn = woocommercePhp.slice(start, end);
+  assert.doesNotMatch(fn, /unset\s*\(/);
+  assert.doesNotMatch(fn, /billing_address_2|shipping_/);
+  assert.match(fn, /foreach \( \$delivery_fields as \$key => \$presentation \)/);
+  assert.match(fn, /if \( ! isset\( \$fields\['billing'\]\[ \$key \] \)/);
+});
+
+test('delivery field order and Spanish labels are declared in the approved priority map', () => {
+  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const fn = woocommercePhp.slice(start, end);
+  const keys = [...fn.matchAll(/^\s*'(billing_[a-z0-9_]+)'\s*=>/gm)].map(match => match[1]);
+  assert.deepEqual(keys, [
+    'billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone',
+    'billing_address_1', 'billing_state', 'billing_city', 'billing_postcode', 'billing_country'
+  ]);
+  for (const label of ['Nombre', 'Apellidos', 'Email', 'Teléfono', 'Dirección', 'Provincia', 'Localidad', 'Código postal', 'País']) {
+    assert.ok(fn.includes("__('" + label) || fn.includes("__( '" + label), 'missing label ' + label);
+  }
+  assert.match(fn, /'priority' => 10/);
+  assert.match(fn, /'priority' => 90/);
+});
+
+test('delivery section heading is appended through the native billing hook', () => {
+  assert.match(woocommercePhp, /function cr2026_checkout_render_delivery_heading\( \$checkout \)/);
+  assert.match(woocommercePhp, /woocommerce_before_checkout_billing_form', 'cr2026_checkout_render_delivery_heading', 5, 1/);
+  assert.match(woocommercePhp, /cr-checkout-delivery-heading__step/);
+  assert.match(woocommercePhp, /esc_html__\( 'Entrega'/);
+  assert.match(checkoutCss, /\.woocommerce-billing-fields > h3\s*\{\s*display:\s*none;/);
+});
+
+test('delivery grid uses native wrapper classes and a narrow-screen single-column fallback', () => {
+  assert.match(woocommercePhp, /'layout' => 'form-row-first'/);
+  assert.match(woocommercePhp, /'layout' => 'form-row-last'/);
+  assert.match(woocommercePhp, /'layout' => 'form-row-wide'/);
+  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper\s*\{[^}]*display:\s*grid/s);
+  assert.match(checkoutCss, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(checkoutCss, /@media \(max-width:\s*360px\)[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  assert.doesNotMatch(checkoutCss, /\border\s*:/);
+  assert.doesNotMatch(checkoutCss, /order\s*:/);
+});
+
+test('country and state remain native WooCommerce selects with Select2 presentation only', () => {
+  assert.match(woocommercePhp, /billing_state/);
+  assert.match(woocommercePhp, /billing_country/);
+  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper \.select2-container/);
+  assert.match(checkoutCss, /\.select2-selection--single/);
+  assert.match(checkoutCss, /\.select2-container--open\s*\{\s*z-index:/);
+  assert.doesNotMatch(woocommercePhp, /select2|wp_dequeue_script|woocommerce_form_field/);
+});
+
+test('ship to different address native control remains present and receives superficial styling only', () => {
+  assert.match(checkoutCss, /\.woocommerce-shipping-fields/);
+  assert.match(checkoutCss, /\.woocommerce-form__label-for-checkbox/);
+  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  assert.doesNotMatch(woocommercePhp.slice(start, end), /ship_to_different_address|shipping_/);
+});
+
+test('delivery styling is scoped to checkout and excludes notes and transactional sections', () => {
+  for (const selector of [
+    'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper',
+    'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-shipping-fields'
+  ]) assert.ok(checkoutCss.includes(selector), 'missing scoped selector ' + selector);
+  for (const forbidden of [
+    '.woocommerce-additional-fields', 'order_review', '#payment', 'payment_method_',
+    'shipping_method', 'checkout_coupon', 'place_order', 'wployalty', 'wc-ajax'
+  ]) assert.equal(checkoutCss.includes(forbidden), false, forbidden + ' must remain outside delivery styling');
+});
+

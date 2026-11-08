@@ -722,3 +722,65 @@ function cr2026_remove_loyalty_messages_from_product_loops() {
     }
 }
 add_action( 'wp', 'cr2026_remove_loyalty_messages_from_product_loops', 100 );
+
+/**
+ * Adapt only the known native billing fields for the delivery section.
+ * Unknown fields and every non-visual WooCommerce field property are preserved.
+ */
+function cr2026_checkout_delivery_fields( $fields ) {
+    if ( ! is_array( $fields ) || ! isset( $fields['billing'] ) || ! is_array( $fields['billing'] ) ) {
+        return $fields;
+    }
+
+    $delivery_fields = array(
+        'billing_first_name' => array( 'label' => __( 'Nombre', 'crios-rango-2026' ), 'priority' => 10, 'layout' => 'form-row-first' ),
+        'billing_last_name'  => array( 'label' => __( 'Apellidos', 'crios-rango-2026' ), 'priority' => 20, 'layout' => 'form-row-last' ),
+        'billing_email'      => array( 'label' => __( 'Email', 'crios-rango-2026' ), 'priority' => 30, 'layout' => 'form-row-first' ),
+        'billing_phone'      => array( 'label' => __( 'Teléfono', 'crios-rango-2026' ), 'priority' => 40, 'layout' => 'form-row-last' ),
+        'billing_address_1'  => array( 'label' => __( 'Dirección', 'crios-rango-2026' ), 'priority' => 50, 'layout' => 'form-row-wide' ),
+        'billing_state'      => array( 'label' => __( 'Provincia', 'crios-rango-2026' ), 'priority' => 60, 'layout' => 'form-row-first' ),
+        'billing_city'       => array( 'label' => __( 'Localidad', 'crios-rango-2026' ), 'priority' => 70, 'layout' => 'form-row-last' ),
+        'billing_postcode'   => array( 'label' => __( 'Código postal', 'crios-rango-2026' ), 'priority' => 80, 'layout' => 'form-row-first' ),
+        'billing_country'    => array( 'label' => __( 'País', 'crios-rango-2026' ), 'priority' => 90, 'layout' => 'form-row-last' ),
+    );
+
+    foreach ( $delivery_fields as $key => $presentation ) {
+        if ( ! isset( $fields['billing'][ $key ] ) || ! is_array( $fields['billing'][ $key ] ) ) {
+            continue;
+        }
+
+        $fields['billing'][ $key ]['label'] = $presentation['label'];
+        $fields['billing'][ $key ]['priority'] = $presentation['priority'];
+
+        if ( ! isset( $fields['billing'][ $key ]['class'] ) ) {
+            $fields['billing'][ $key ]['class'] = array();
+        }
+
+        if ( is_array( $fields['billing'][ $key ]['class'] ) ) {
+            $classes = array_diff(
+                $fields['billing'][ $key ]['class'],
+                array( 'form-row-first', 'form-row-last', 'form-row-wide' )
+            );
+            $classes[] = $presentation['layout'];
+            $classes[] = 'cr-delivery-field';
+            $fields['billing'][ $key ]['class'] = array_values( array_unique( $classes ) );
+        }
+    }
+
+    return $fields;
+}
+add_filter( 'woocommerce_checkout_fields', 'cr2026_checkout_delivery_fields', 20 );
+
+/** Add the app-style delivery heading without replacing WooCommerce markup. */
+function cr2026_checkout_render_delivery_heading( $checkout ) {
+    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
+        return;
+    }
+
+    echo '<div class="cr-checkout-delivery-heading"><span class="cr-checkout-delivery-heading__step" aria-hidden="true">1</span><h2>'
+        . esc_html__( 'Entrega', 'crios-rango-2026' )
+        . '</h2></div>';
+}
+add_action( 'woocommerce_before_checkout_billing_form', 'cr2026_checkout_render_delivery_heading', 5, 1 );
+
