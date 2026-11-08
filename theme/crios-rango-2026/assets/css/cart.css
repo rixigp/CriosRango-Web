@@ -826,3 +826,19 @@ body.woocommerce-cart .cr-cart-content .cr-cart-promotions { margin-top:0!import
 
 /* The global body already reserves the fixed app-header height; category and cart rows start at the same block position. */
 body.woocommerce-cart .cr-main--woocommerce{padding-top:0!important;}
+
+/* The product form and the isolated secondary rail are peers in one vertical layout. */
+body.woocommerce-cart .cr-cart-layout{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:18px!important;
+}
+body.woocommerce-cart .cr-cart-primary,
+body.woocommerce-cart .cr-cart-secondary-rail{
+  width:100%;
+  min-width:0;
+  margin:0!important;
+  box-sizing:border-box;
+}
+body.woocommerce-cart .cr-cart-form{margin:0!important;}

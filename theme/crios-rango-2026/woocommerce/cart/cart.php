@@ -189,12 +189,12 @@ if ( ! WC()->cart->is_empty() ) {
                     </details>
                     <p class="cr-cart-feedback" data-cr-cart-feedback role="status" aria-live="polite" hidden></p>
                 </section>
-            </div>
 
-            <?php do_action( 'woocommerce_before_cart_collaterals' ); ?>
-            <aside class="cart-collaterals cr-cart-summary" aria-label="<?php esc_attr_e( 'Resumen del carrito', 'crios-rango-2026' ); ?>">
-                <?php do_action( 'woocommerce_cart_collaterals' ); ?>
-            </aside>
+                <?php do_action( 'woocommerce_before_cart_collaterals' ); ?>
+                <aside class="cart-collaterals cr-cart-summary" aria-label="<?php esc_attr_e( 'Resumen del carrito', 'crios-rango-2026' ); ?>">
+                    <?php do_action( 'woocommerce_cart_collaterals' ); ?>
+                </aside>
+            </div>
         </div>
     <?php endif; ?>
     </div>

@@ -1524,3 +1524,13 @@ test('CART_VERTICAL_DOM_CHAIN_AUDITED=PASS; CART_FIRST_VERTICAL_DIVERGENCE_IDENT
  assert.match(c,/body\.woocommerce-cart \.cr-main > \.cr-shell\.cr-page-shell\s*\{\s*padding-top:0!important/);
  assert.doesNotMatch(c,/translateY|top:\s*-|margin-top:\s*-/);
 });
+
+test('CART_SECONDARY_RAIL_CONTAINS_PROMOTIONS_AND_SUMMARY=PASS',()=>{
+ const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
+ const start=p.indexOf('<div class="cr-cart-secondary-rail">'),end=p.indexOf('</div>\n        </div>',start);
+ const rail=p.slice(start,end);
+ assert.ok(start>=0 && end>start);
+ assert.match(rail,/class="cr-cart-promotions"/);
+ assert.match(rail,/class="cart-collaterals cr-cart-summary"/);
+ assert.match(p,/class="cr-cart-primary"[\s\S]*?<\/form>\s*<\/div>\s*<div class="cr-cart-secondary-rail">/);
+});
