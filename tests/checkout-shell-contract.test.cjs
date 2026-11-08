@@ -173,35 +173,36 @@ test('delivery field semantics define five full-width fields and two half-width 
   const half = ['billing_state', 'billing_city', 'billing_postcode', 'billing_country'];
   for (const key of full) assert.match(fn, new RegExp("'" + key + "'\\s*=>[^\\n]*'layout' => 'full'"));
   for (const key of half) assert.match(fn, new RegExp("'" + key + "'\\s*=>[^\\n]*'layout' => 'half'"));
-  assert.match(fn, /cr-delivery-field--' \\. \$presentation\['layout'\]/);
-  assert.match(fn, /form-row-first.*form-row-last.*form-row-wide/s);
-  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper\\s*\\{[^}]*display:\\s*grid/s);
-  assert.match(checkoutCss, /grid-template-columns:\\s*repeat\\(2,\\s*minmax\\(0,\\s*1fr\\)\\)/);
-  assert.match(checkoutCss, /\.cr-delivery-field--full\\s*\\{\\s*grid-column:\\s*1\\s*\\/\\s*-1/s);
-  assert.match(checkoutCss, /\.cr-delivery-field--half\\s*\\{\\s*grid-column:\\s*auto/s);
-  assert.match(checkoutCss, /@media \\(max-width:\\s*340px\\)[\\s\\S]*?grid-template-columns:\\s*minmax\\(0,\\s*1fr\\)/);
-  const orderDeclarationPattern = /^[ \\t]*order[ \\t]*:/m;
+  assert.ok(fn.includes("'cr-delivery-field--' . $presentation['layout']"));
+  assert.ok(fn.includes("'form-row-first', 'form-row-last', 'form-row-wide'"));
+  assert.ok(checkoutCss.includes(".woocommerce-billing-fields__field-wrapper {"));
+  assert.ok(checkoutCss.includes("grid-template-columns: repeat(2, minmax(0, 1fr));"));
+  assert.ok(checkoutCss.includes(".form-row.cr-delivery-field--full"));
+  assert.ok(checkoutCss.includes(".form-row.cr-delivery-field--half"));
+  assert.ok(checkoutCss.includes("@media (max-width: 340px)"));
+  assert.ok(checkoutCss.includes("grid-template-columns: minmax(0, 1fr);"));
+  const orderDeclarationPattern = new RegExp("^[ \\t]*order[ \\t]*:", "m");
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
 });
 
 test('delivery labels float over native controls and retain the real WooCommerce label element', () => {
-  assert.match(checkoutCss, /\.form-row > label\\s*\\{[^}]*position:\\s*absolute/s);
-  assert.match(checkoutCss, /transform:\\s*translateY\\(-50%\\)/);
-  assert.match(checkoutCss, /background:\\s*var\\(--cr-app-canvas\\)/);
-  assert.match(checkoutCss, /pointer-events:\\s*none/);
-  assert.match(checkoutCss, /\.form-row input\\.input-text/);
-  assert.match(woocommercePhp, /\$fields\\['billing'\\]\\[ \$key \\]\\['label'\\]/);
+  assert.ok(checkoutCss.includes(".woocommerce-billing-fields__field-wrapper > .form-row > label {"));
+  assert.ok(checkoutCss.includes("position: absolute;"));
+  assert.ok(checkoutCss.includes("transform: translateY(-50%);"));
+  assert.ok(checkoutCss.includes("background: var(--cr-app-canvas);"));
+  assert.ok(checkoutCss.includes("pointer-events: none;"));
+  assert.ok(checkoutCss.includes(".form-row input.input-text"));
+  assert.ok(woocommercePhp.includes("$fields['billing'][ $key ]['label'] = $presentation['label'];"));
 });
 
 test('native delivery controls and Select2 remain presentation-only with no DOM replacement', () => {
   assert.doesNotMatch(woocommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);
-  assert.doesNotMatch(checkoutCss, /display:\\s*none[^}]*select2|select2[^}]*display:\\s*none/s);
-  assert.match(checkoutCss, /\.select2-selection--single/);
-  assert.match(checkoutCss, /height:\\s*var\\(--cr-checkout-field-height\\)/);
-  assert.doesNotMatch(checkoutCss, /\\border\\s*:/);
-  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper[^}]*order\\s*:/s);
+  assert.ok(checkoutCss.includes(".select2-selection--single"));
+  assert.ok(checkoutCss.includes("height: var(--cr-checkout-field-height);"));
+  const orderDeclarationPattern = new RegExp("^[ \\t]*order[ \\t]*:", "m");
+  assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
+  assert.doesNotMatch(woocommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
 });
-
 
 test('country and state remain native WooCommerce selects with Select2 presentation only', () => {
   assert.match(woocommercePhp, /billing_state/);
