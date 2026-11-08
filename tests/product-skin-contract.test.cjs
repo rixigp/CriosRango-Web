@@ -1186,7 +1186,7 @@ test('cart final app refinement: light header, compact products, structured vari
   const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
 
   // Cart heading now reuses the canonical Categories/Outlet toolbar; legacy cart-only header rules must stay absent.
-  assert.match(cartTemplate, /class="cr-cart-header-shell"[\s\S]*?cr2026_render_category_toolbar\( __( 'Tu carrito'/);
+  assert.ok(cartTemplate.includes('class="cr-cart-header-shell"') && cartTemplate.includes("cr2026_render_category_toolbar( __( 'Tu carrito'"));
   assert.doesNotMatch(cartCss, /\.cr-cart-heading|\.cr-cart-back/);
   assert.match(cartCss, /\.cr-cart-item__card \{ gap: 8px; padding: 9px;/);
   assert.match(cartCss, /\.cr-cart-item__media,[\s\S]*?width: 82px; height: 98px;/);
