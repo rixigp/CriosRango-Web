@@ -15,6 +15,8 @@
   let currentCart = null;
   let promotionsPayload = null;
   let walletPayload = null;
+  let walletLoaded = false;
+  let promotionsLoaded = false;
   let pendingRedemption = null;
   let busy = false;
 
@@ -169,6 +171,8 @@
     const promotions=Array.isArray(promotionsPayload)?promotionsPayload:(promotionsPayload&&Array.isArray(promotionsPayload.promotions)?promotionsPayload.promotions:[]);
     const promotion=promotions.find(x=>text(x.code).toLowerCase()===normalized);
     if(promotion)return {kind:'tag',label:text(promotion.title)||'Promoción'};
+    if(/^cr[-_]monedero/i.test(normalized))return {kind:'wallet',label:'Saldo de monedero'};
+    if(!walletLoaded||!promotionsLoaded)return {kind:'pending',label:'Descuento aplicado'};
     return {kind:'manual',label:text(code)};
   };
   const renderAppliedCoupons = (cart) => {
@@ -359,7 +363,7 @@
   const refreshWallet = async () => {
     if (!config.authenticated) return;
     try {
-      const wallet = await request(config.loyaltyUrl, { method: 'GET' }, 'wp'); walletPayload=wallet; renderWallet(wallet); if(currentCart)renderAppliedCoupons(currentCart);
+      const wallet = await request(config.loyaltyUrl, { method: 'GET' }, 'wp'); walletPayload=wallet; walletLoaded=true; renderWallet(wallet); if(currentCart)renderAppliedCoupons(currentCart);
     } catch (error) {
       walletPanel.hidden = false;
       walletPanel.replaceChildren(node('p', 'cr-cart-feedback is-error', error.message));
@@ -410,7 +414,7 @@
       .then((cart) => { currentCart=cart; renderAppliedCoupons(cart); renderCartSummary(cart); if(promotionsPayload)renderPromotions(promotionsPayload); })
       .catch((error) => showError(error.message));
     const promotionsPromise = request(config.promotionsUrl, { method: 'GET' }, config.authenticated ? 'wp' : 'public')
-      .then((payload) => { promotionsPayload=payload; renderPromotions(payload); if(currentCart)renderAppliedCoupons(currentCart); })
+      .then((payload) => { promotionsPayload=payload; promotionsLoaded=true; renderPromotions(payload); if(currentCart)renderAppliedCoupons(currentCart); })
       .catch((error) => promotionsList.replaceChildren(node('p', 'cr-cart-feedback is-error', error.message)))
       .finally(() => { loading.hidden = true; });
     if (config.authenticated) {
@@ -418,6 +422,7 @@
       // loyalty request remains independent of promotions and page rendering.
       cartPromise.then(() => refreshWallet());
     } else {
+      walletLoaded = true;
       walletPanel.hidden = true;
     }
     await Promise.allSettled([cartPromise, promotionsPromise]);

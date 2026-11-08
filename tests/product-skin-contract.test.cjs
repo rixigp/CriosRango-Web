@@ -1076,7 +1076,7 @@ test('full cart physical defect contracts: WPLoyalty, image, remove, overflow an
   assert.match(cartCss, /cr-cart-item__content[\s\S]{0,220}min-width:0/);
   assert.doesNotMatch(cartCss, /body\s*\{[^}]*overflow-x\s*:\s*hidden/i);
   assert.match(cartTotals, /wc_cart_totals_subtotal_html\(\)/);
-  assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
+  assert.match(cartTotals, /wc_price\( \$cr_merchandise_after_discounts \)/);
   assert.match(cartTotals, /woocommerce_cart_totals_before_shipping/);
   assert.match(cartTotals, /woocommerce_proceed_to_checkout/);
   assert.match(cartCss, /includes_tax/);
@@ -1105,31 +1105,26 @@ test('cart totals hide tax-rate rows but keep WooCommerce tax and total values',
   const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   assert.doesNotMatch(cartTotals, /get_tax_totals\(\)|class="tax-rate/);
-  assert.match(cartTotals, /WC\(\)->cart->get_total\( 'edit' \)/);
+  assert.match(cartTotals, /get_cart_contents_total\(\)/);
   assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
   assert.doesNotMatch(cartTotals, /get_total_tax\(\)|Incluye %s de impuestos/);
   assert.match(cartCss, /\.includes_tax[\s\S]*?display:none!important/);
   assert.match(cartTotals, /WC\(\)->cart->get_total\( 'edit' \)/);
   assert.doesNotMatch(cartTotals, /EUR/);
-  assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
+  assert.doesNotMatch(cartTotals, /wc_cart_totals_shipping_html\(\)/);
   assert.match(cartTotals, /woocommerce_cart_totals_before_order_total/);
   assert.match(cartTotals, /woocommerce_cart_totals_after_order_total/);
   assert.match(cartTotals, /woocommerce_proceed_to_checkout/);
 });
 
-test('shipping method summary collapses native WooCommerce options without replacing its calculation flow', () => {
+test('cart hides shipping methods and leaves method selection to checkout', () => {
   const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
   const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
-  assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
-  assert.match(cartJs, /input\.shipping_method:checked/);
-  assert.match(cartJs, /Cambiar método/);
-  assert.match(cartJs, /methods\.hidden = !expanded/);
-  assert.match(cartJs, /initShippingPresentation/);
-  assert.match(cartCss, /cr-cart-shipping-summary__selected/);
-  assert.match(cartCss, /ul#shipping_method\[hidden\]/);
-  assert.match(cartCss, /cr-cart-shipping-summary__toggle \{ display:none!important; \}/);
+  assert.doesNotMatch(cartTotals, /wc_cart_totals_shipping_html\(\)/);
+  assert.doesNotMatch(cartJs, /Cambiar método|initShippingPresentation|input\.shipping_method:checked/);
   assert.match(cartTotals, /Se calcula en el checkout/);
+  assert.match(cartCss, /\.cr-cart-summary ul#shipping_method[\s\S]*?display:none!important/);
   assert.doesNotMatch(cartTotals, /woocommerce_shipping_calculator\(\)/);
 });
 
@@ -1179,7 +1174,7 @@ test('cart promotions and totals outer cards are removed, wallet points and tax 
   assert.match(cartJs, /cartIcon\('info'/);
   assert.match(cartJs, /cr-cart-wallet__rewards/);
   assert.match(cartJs, /cr-cart-promo-card--welcome/);
-  assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
+  assert.doesNotMatch(cartTotals, /wc_cart_totals_shipping_html\(\)/);
   assert.doesNotMatch(cartTotals, /woocommerce_shipping_calculator\(\)|get_total_tax\(\)|Incluye %s de impuestos/);
 });
 
@@ -1219,7 +1214,7 @@ test('cart final app refinement: light header, compact products, structured vari
   assert.match(cartTemplate, /wp_nonce_field\( 'woocommerce-cart'/);
   assert.match(cartTemplate, /woocommerce_quantity_input\(/);
   assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
-  assert.match(cartJs, /input\.shipping_method:checked/);
+  assert.doesNotMatch(cartJs, /input\.shipping_method:checked/);
   assert.match(cartJs, /methods\.hidden = !expanded/);
 });
 
