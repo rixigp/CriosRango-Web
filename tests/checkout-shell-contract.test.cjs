@@ -17,7 +17,7 @@ test('classic checkout heading delegates to the existing shared toolbar componen
   assert.match(helpers, /add_action\( 'woocommerce_before_checkout_form', 'cr2026_checkout_render_toolbar', 5 \)/);
   assert.match(helpers, /cr2026_render_category_toolbar\( __\( 'Finalizar compra'/);
   assert.match(helpers, /wc_get_cart_url\(\)/);
-  assert.match(helpers, /'parent', false\)/);
+  assert.match(helpers, /'parent', false \\)/);
   assert.doesNotMatch(helpers, /function cr2026_checkout_render_toolbar[\s\S]*?<h1|function cr2026_checkout_render_toolbar[\s\S]*?cr2026_icon\(/);
 });
 
