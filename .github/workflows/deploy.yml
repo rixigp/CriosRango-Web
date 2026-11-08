@@ -378,6 +378,9 @@ jobs:
       - name: Run product skin contract tests
         run: node --test tests/product-skin-contract.test.cjs
 
+      - name: Run checkout shell contract tests
+        run: node --test tests/checkout-shell-contract.test.cjs
+
       - name: Install validation and FTP tools
         shell: bash
         run: |

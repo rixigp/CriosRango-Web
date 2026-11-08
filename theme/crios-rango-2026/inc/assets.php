@@ -15,6 +15,8 @@ function cr2026_enqueue_assets() {
         || ( function_exists( 'is_cart' ) && is_cart() );
 
     $uses_product_detail_skin = function_exists( 'is_product' ) && is_product();
+    $uses_checkout_shell = function_exists( 'is_checkout' ) && is_checkout()
+        && ( ! function_exists( 'is_order_received_page' ) || ! is_order_received_page() );
 
     $main_style_dependencies = array();
 
@@ -28,7 +30,7 @@ function cr2026_enqueue_assets() {
         $main_style_dependencies[] = 'cr2026-roboto';
     }
 
-    if ( $uses_app_category_components ) {
+    if ( $uses_app_category_components || $uses_checkout_shell ) {
         wp_enqueue_style(
             'cr2026-roboto',
             'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
@@ -44,6 +46,15 @@ function cr2026_enqueue_assets() {
         $main_style_dependencies,
         cr2026_asset_version( 'assets/css/main.css' )
     );
+
+    if ( $uses_checkout_shell ) {
+        wp_enqueue_style(
+            'cr2026-checkout',
+            CR2026_URI . '/assets/css/checkout.css',
+            array( 'cr2026-main', 'cr2026-roboto' ),
+            cr2026_asset_version( 'assets/css/checkout.css' )
+        );
+    }
 
     if ( $uses_product_detail_skin ) {
         wp_enqueue_style(

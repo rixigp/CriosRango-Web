@@ -160,6 +160,20 @@ function cr2026_product_card_image_attributes( $attr, $attachment, $size ) {
 add_filter( 'wp_get_attachment_image_attributes', 'cr2026_product_card_image_attributes', 20, 3 );
 
 /** Render the one shared toolbar markup for shop hub and category landings. */
+/** Render the checkout heading through the same toolbar used by Categories, Outlet and Cart. */
+function cr2026_checkout_render_toolbar() {
+    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
+        return;
+    }
+
+    $back_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/' );
+    echo '<div class="cr-checkout-header-shell">';
+    cr2026_render_category_toolbar( __( 'Finalizar compra', 'crios-rango-2026' ), $back_url, 'parent', false );
+    echo '</div>';
+}
+add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_render_toolbar', 5 );
+
 function cr2026_render_category_toolbar( $title, $back_url, $filter_context = 'parent', $show_filters = true, $right_action_html = '', $title_id = '' ) {
     $title_id_attribute = '' !== $title_id ? ' id="' . esc_attr( $title_id ) . '"' : '';
     echo '<div class="cr-parent-category__toolbar">';
