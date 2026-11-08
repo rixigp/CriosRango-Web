@@ -1503,6 +1503,23 @@ test('CART_HEADER_TO_FIRST_PRODUCT_SINGLE_SPACING_OWNER=PASS; CART_HEADER_TO_FIR
  assert.match(blockEndOwners[0],/margin-block-end:8px!important/);
  assert.doesNotMatch(blockEndOwners[0],/margin-inline|margin-left|margin-right|width|grid-template-columns|column-gap/);
 });
+test('CART_PRODUCT_ROW_VERTICAL_PADDING_ZERO=PASS; CART_PRODUCT_LIST_GAP_REMAINS_8PX=PASS; CART_EFFECTIVE_CARD_TO_CARD_SPACING_8PX=PASS; CART_PRODUCT_CARD_INTERNAL_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_CARD_HORIZONTAL_GEOMETRY_UNCHANGED=PASS',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ const rowRules=c.match(/\.cr-cart-table tr\.cr-cart-item\s*\{[^}]*\}/g)||[];
+ assert.ok(rowRules.length>=4,'base and all responsive row rules remain explicit');
+ for(const rule of rowRules){
+  assert.doesNotMatch(rule,/padding-(?:top|bottom|block)\s*:/i,'row rule must not introduce vertical padding');
+ }
+ assert.match(c,/\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:16px;/);
+ assert.match(c,/@media \(max-width:767px\)[\s\S]*?\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:11px;/);
+ assert.match(c,/@media \(max-width:360px\)[\s\S]*?\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:9px;/);
+ const gapOwners=c.match(/body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\s*\{[^}]*row-gap\s*:\s*8px!important[^}]*\}/g)||[];
+ assert.equal(gapOwners.length,1,'one 8px product-list gap owner');
+ assert.equal(8+0+0,8,'zero vertical row padding makes effective spacing equal to tbody gap');
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-item__card \{\s*gap:4px;\s*padding:6px 8px;/);
+ assert.match(c,/@media \(max-width: 767px\) \{[\s\S]*?body\.woocommerce-cart \.cr-cart-item__card \{[\s\S]*?padding: 15px;/);
+});
+
 test('CART_HEADER_HORIZONTAL_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_CARD_GEOMETRY_UNCHANGED=PASS',()=>{
  const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
  assert.match(m,/\.cr-parent-category__toolbar \{[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;[\s\S]*?column-gap: 10px;/);
