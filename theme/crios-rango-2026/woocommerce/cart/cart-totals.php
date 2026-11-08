@@ -35,12 +35,7 @@ defined( 'ABSPATH' ) || exit;
                     <th><?php esc_html_e( 'Envío', 'woocommerce' ); ?></th>
                     <td data-title="<?php esc_attr_e( 'Envío', 'woocommerce' ); ?>">
                         <span class="cr-cart-shipping-pending__label"><?php esc_html_e( 'Se calcula en el checkout', 'crios-rango-2026' ); ?></span>
-                        <?php if ( 'yes' === get_option( 'woocommerce_enable_shipping_calc' ) ) : ?>
-                            <details class="cr-cart-shipping-calculator">
-                                <summary><?php esc_html_e( 'Cambiar dirección', 'crios-rango-2026' ); ?></summary>
-                                <?php woocommerce_shipping_calculator(); ?>
-                            </details>
-                        <?php endif; ?>
+
                     </td>
                 </tr>
             <?php endif; ?>
@@ -49,9 +44,7 @@ defined( 'ABSPATH' ) || exit;
                 <th><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
                 <td data-title="<?php esc_attr_e( 'Total', 'woocommerce' ); ?>">
                     <strong><?php echo wp_kses_post( wc_price( WC()->cart->get_total( 'edit' ) ) ); ?></strong>
-                    <?php if ( WC()->cart->get_total_tax() > 0 ) : ?>
-                        <small class="includes_tax"><?php echo wp_kses_post( sprintf( __( 'Incluye %s de impuestos', 'crios-rango-2026' ), wc_price( WC()->cart->get_total_tax() ) ) ); ?></small>
-                    <?php endif; ?>
+
                 </td>
             </tr>
             <?php do_action( 'woocommerce_cart_totals_after_order_total' ); ?>
