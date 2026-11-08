@@ -14,6 +14,7 @@
   let storeNonce = config.storeNonce || '';
   let currentCart = null;
   let promotionsPayload = null;
+  let walletPayload = null;
   let pendingRedemption = null;
   let busy = false;
 
@@ -96,72 +97,93 @@
   const hasCoupon = (cart, code) => couponsFrom(cart).some((coupon) =>
     text(coupon.code).toLowerCase() === text(code).toLowerCase()
   );
-  const applyCoupon = async (code, sourceLabel) => {
+  const minorValue = (v) => { try { return BigInt(text(v || '0')); } catch (_) { return 0n; } };
+  const formatStoreMoney = (minor, t) => {
+    const digits=Number(t.currency_minor_unit||2), divisor=10n**BigInt(digits), neg=minor<0n, abs=neg?-minor:minor;
+    const whole=(abs/divisor).toString(), frac=digits?(abs%divisor).toString().padStart(digits,'0'):'';
+    const grouped=whole.replace(/\B(?=(\d{3})+(?!\d))/g,t.currency_thousand_separator||'.');
+    return (neg?'-':'')+(t.currency_prefix||'')+grouped+(digits?(t.currency_decimal_separator||',')+frac:'')+(t.currency_suffix||'');
+  };
+  const renderCartSummary = (cart) => {
+    const t=cart&&cart.totals; if(!t)return;
+    const net=minorValue(t.total_items)+minorValue(t.total_items_tax);
+    const discount=minorValue(t.total_discount)+minorValue(t.total_discount_tax), gross=net+discount;
+    const threshold=50n*(10n**BigInt(Number(t.currency_minor_unit||2)));
+    const sub=document.querySelector('[data-cr-summary-subtotal]'), dc=document.querySelector('[data-cr-summary-discount]'), dr=dc&&dc.closest('tr');
+    const ship=document.querySelector('[data-cr-summary-shipping]'), total=document.querySelector('[data-cr-summary-total]');
+    if(sub)sub.textContent=formatStoreMoney(gross,t);
+    if(dr)dr.hidden=discount<=0n;
+    if(dc&&discount>0n)dc.textContent='-'+formatStoreMoney(discount,t);
+    if(!dr&&discount>0n&&sub){const row=document.createElement('tr');row.className='cart-discount cr-cart-summary-discount';const th=document.createElement('th');th.textContent='Descuentos';const td=document.createElement('td');td.dataset.crSummaryDiscount='';td.textContent='-'+formatStoreMoney(discount,t);row.append(th,td);sub.closest('tr').after(row);}
+    if(ship)ship.textContent=gross>threshold?'Gratis':'Se calcula en el checkout';
+    if(total)total.textContent=formatStoreMoney(net,t);
+  };
+  const refreshCartUi = async (cart) => { currentCart=cart; renderAppliedCoupons(cart); renderCartSummary(cart); if(promotionsPayload)renderPromotions(promotionsPayload); if(config.authenticated)await refreshWallet(); };
+  const setButtonPending = (button,pending,label) => { if(!button)return; if(pending){button.dataset.crOriginalLabel=button.textContent;button.disabled=true;button.textContent=label||'Aplicando…';button.setAttribute('aria-busy','true');}else{button.disabled=false;button.textContent=button.dataset.crOriginalLabel||button.textContent;delete button.dataset.crOriginalLabel;button.removeAttribute('aria-busy');} };
+  const applyCoupon = async (code, sourceLabel, button) => {
     const normalized = text(code).trim();
     if (!normalized || busy) return;
     busy = true;
+    setButtonPending(button,true,'Aplicando…');
     clearFeedback();
-    root.classList.add('is-busy');
     try {
       const url = new URL(config.applyCouponUrl, window.location.origin);
       url.searchParams.set('code', normalized);
       const cart = await request(url.toString(), { method: 'POST' }, 'store');
-      currentCart = cart;
       if (!hasCoupon(cart, normalized)) {
         const backendMessage = Array.isArray(cart.errors) && cart.errors.length
           ? cart.errors.map((error) => error.message).filter(Boolean).join(' ')
           : 'WooCommerce no ha confirmado la aplicación de este descuento.';
         throw new Error(backendMessage);
       }
+      await refreshCartUi(cart);
+      if(button&&button.closest('[data-cr-cart-manual-form]')){const input=button.closest('[data-cr-cart-manual-form]').querySelector('[name="code"]');if(input)input.value='';}
       showMessage((sourceLabel || 'Descuento') + ' aplicado correctamente.');
-      window.setTimeout(() => window.location.reload(), 250);
     } catch (error) {
       showError(error.message);
     } finally {
-      busy = false;
-      root.classList.remove('is-busy');
+      busy = false; setButtonPending(button,false);
     }
   };
-  const removeCoupon = async (code) => {
+  const removeCoupon = async (code,button) => {
     if (!code || busy) return;
-    busy = true;
-    clearFeedback();
-    root.classList.add('is-busy');
+    busy = true; setButtonPending(button,true,'…'); clearFeedback();
     try {
       const url = new URL(config.removeCouponUrl, window.location.origin);
       url.searchParams.set('code', code);
       const cart = await request(url.toString(), { method: 'POST' }, 'store');
-      currentCart = cart;
       if (hasCoupon(cart, code)) {
         throw new Error('WooCommerce no ha confirmado la eliminación de este descuento.');
       }
-      showMessage('Descuento eliminado.');
-      window.setTimeout(() => window.location.reload(), 250);
+      await refreshCartUi(cart); showMessage('Descuento eliminado.');
     } catch (error) {
       showError(error.message);
     } finally {
-      busy = false;
-      root.classList.remove('is-busy');
+      busy = false; setButtonPending(button,false);
     }
+  };
+  const knownCouponPresentation = (code) => {
+    const normalized=text(code).toLowerCase(), rewards=walletPayload&&Array.isArray(walletPayload.pending_rewards)?walletPayload.pending_rewards:[];
+    const reward=rewards.find(x=>text(x.code).toLowerCase()===normalized);
+    if(reward)return {kind:'wallet',label:'Saldo de monedero · '+formatWalletAmount(reward.amount,walletPayload.currency)};
+    const promotions=Array.isArray(promotionsPayload)?promotionsPayload:(promotionsPayload&&Array.isArray(promotionsPayload.promotions)?promotionsPayload.promotions:[]);
+    const promotion=promotions.find(x=>text(x.code).toLowerCase()===normalized);
+    if(promotion)return {kind:'tag',label:text(promotion.title)||'Promoción'};
+    return {kind:'manual',label:text(code)};
   };
   const renderAppliedCoupons = (cart) => {
-    appliedPanel.replaceChildren();
-    const coupons = couponsFrom(cart);
-    if (!coupons.length) {
-      appliedPanel.hidden = true;
-      return;
-    }
-    appliedPanel.hidden = false;
-    appliedPanel.appendChild(node('h3', 'cr-cart-applied__title', 'Descuentos aplicados'));
-    coupons.forEach((coupon) => {
-      const row = node('div', 'cr-cart-applied__row');
-      const label = node('span', 'cr-cart-applied__code', coupon.label || coupon.code);
-      const remove = createButton('Quitar', 'cr-cart-action-link', () => removeCoupon(coupon.code));
-      row.append(label, remove);
-      appliedPanel.appendChild(row);
+    appliedPanel.replaceChildren(); const coupons=couponsFrom(cart);
+    if(!coupons.length){appliedPanel.hidden=true;return;}
+    appliedPanel.hidden=false; appliedPanel.appendChild(node('h3','cr-cart-applied__title','Descuentos aplicados'));
+    coupons.forEach((coupon)=>{
+      const p=knownCouponPresentation(coupon.code), row=node('div','cr-cart-applied__row'), label=node('span','cr-cart-applied__code',p.label);
+      if(p.kind==='wallet')label.prepend(cartIcon('wallet','cr-cart-reward__icon'));
+      if(p.kind==='tag')label.prepend(cartIcon('tag','cr-cart-promo-card__icon'));
+      const remove=createButton('×','cr-cart-action-link cr-cart-applied__remove',()=>removeCoupon(coupon.code,remove));
+      remove.setAttribute('aria-label','Quitar descuento');row.append(label,remove);appliedPanel.appendChild(row);
     });
   };
-  const guestPromotionVisible = (promotion) => {
+    const guestPromotionVisible = (promotion) => {
     if (promotion.personal || promotion.requires_login) return false;
     const identity = (text(promotion.id) + ' ' + text(promotion.code) + ' ' + text(promotion.title)).toLowerCase().trim();
     if (identity.includes('bienvenida') || identity.includes('welcome')) return false;
@@ -274,6 +296,20 @@
     const discount = ((BigInt(text(totals.total_discount || '0')) || 0n) + (BigInt(text(totals.total_discount_tax || '0')) || 0n)).toString();
     return subtractMoneyAmounts(subtotal, discount);
   };
+  let walletDialog = null;
+  let walletDialogReturnFocus = null;
+  const closeWalletInfo = () => { if (!walletDialog) return; walletDialog.hidden = true; document.body.classList.remove('cr-cart-dialog-open'); if (walletDialogReturnFocus && walletDialogReturnFocus.focus) walletDialogReturnFocus.focus(); };
+  const openWalletInfo = (event) => {
+    if (!walletDialog) {
+      walletDialog = node('div', 'cr-cart-wallet-dialog'); walletDialog.hidden = true;
+      walletDialog.innerHTML = '<div class="cr-cart-wallet-dialog__backdrop" data-cr-wallet-dialog-close></div><section class="cr-cart-wallet-dialog__panel" role="dialog" aria-modal="true" aria-labelledby="cr-cart-wallet-dialog-title" tabindex="-1"><h2 id="cr-cart-wallet-dialog-title">¿Cómo funciona tu monedero?</h2><p>1 € gastado = 1 punto</p><p>Cuando acumules 100 puntos, podrás convertirlos en 5 € de saldo para tus compras.</p><p>La barra te indica cuánto te falta para desbloquear el saldo.</p><p>Cuando tengas saldo disponible, pulsa “Usar” para elegir cuánto quieres aplicar a tu compra.</p><button type="button" class="cr-cart-wallet-dialog__confirm">Entendido</button></section>';
+      document.body.appendChild(walletDialog);
+      walletDialog.addEventListener('click', (e) => { if (e.target.matches('[data-cr-wallet-dialog-close], .cr-cart-wallet-dialog__confirm')) closeWalletInfo(); });
+      walletDialog.querySelector('.cr-cart-wallet-dialog__panel').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); closeWalletInfo(); } });
+    }
+    walletDialogReturnFocus = event && event.currentTarget ? event.currentTarget : document.activeElement;
+    walletDialog.hidden = false; document.body.classList.add('cr-cart-dialog-open'); walletDialog.querySelector('.cr-cart-wallet-dialog__confirm').focus();
+  };
   const renderWallet = (wallet) => {
     walletPanel.replaceChildren();
     walletPanel.hidden = false;
@@ -295,15 +331,14 @@
     if (!rewards.length) {
       rewardSection.appendChild(node('p', 'cr-cart-muted', 'No tienes saldos listos para usar.'));
     } else {
-      rewards.forEach((reward) => {
+      rewards.filter((reward)=>!hasCoupon(currentCart,reward.code)).forEach((reward) => {
         const row = node('div', 'cr-cart-reward');
         const label = node('div', 'cr-cart-reward__label');
         label.appendChild(cartIcon('wallet', 'cr-cart-reward__icon'));
         label.appendChild(node('strong', '', 'Saldo de monedero · ' + formatWalletAmount(reward.amount, wallet.currency)));
         if (reward.expires_at) label.appendChild(node('small', '', 'Caduca: ' + reward.expires_at));
         row.appendChild(label);
-        if (hasCoupon(currentCart, reward.code)) row.appendChild(node('span', 'cr-cart-applied-label', 'Aplicado'));
-        else row.appendChild(createButton('Aplicar', 'cr-cart-apply-button', () => applyCoupon(reward.code, 'Crédito')));
+        row.appendChild(createButton('Aplicar','cr-cart-apply-button',(event)=>applyCoupon(reward.code,'Crédito',event.currentTarget)));
         rewardSection.appendChild(row);
       });
     }
@@ -324,8 +359,7 @@
   const refreshWallet = async () => {
     if (!config.authenticated) return;
     try {
-      const wallet = await request(config.loyaltyUrl, { method: 'GET' }, 'wp');
-      renderWallet(wallet);
+      const wallet = await request(config.loyaltyUrl, { method: 'GET' }, 'wp'); walletPayload=wallet; renderWallet(wallet); if(currentCart)renderAppliedCoupons(currentCart);
     } catch (error) {
       walletPanel.hidden = false;
       walletPanel.replaceChildren(node('p', 'cr-cart-feedback is-error', error.message));
@@ -339,7 +373,6 @@
     }
     busy = true;
     clearFeedback();
-    root.classList.add('is-busy');
     try {
       const result = await request(config.redeemUrl, {
         method: 'POST',
@@ -358,10 +391,8 @@
         const url = new URL(config.applyCouponUrl, window.location.origin);
         url.searchParams.set('code', code);
         const cart = await request(url.toString(), { method: 'POST' }, 'store');
-        currentCart = cart;
         if (!hasCoupon(cart, code)) throw new Error('El crédito se ha creado, pero WooCommerce no ha confirmado su aplicación. Puedes encontrarlo en «Saldo listo para usar».');
-        showMessage('Crédito aplicado correctamente.');
-        window.setTimeout(() => window.location.reload(), 250);
+        await refreshCartUi(cart); showMessage('Crédito aplicado correctamente.');
       } catch (error) {
         await refreshWallet();
         showError(error.message);
@@ -371,16 +402,15 @@
       showError(error.message);
     } finally {
       busy = false;
-      root.classList.remove('is-busy');
     }
   };
 
   const loadCart = async () => {
     const cartPromise = request(config.storeCartUrl, { method: 'GET' }, 'store')
-      .then((cart) => { currentCart = cart; renderAppliedCoupons(cart); if (promotionsPayload) renderPromotions(promotionsPayload); })
+      .then((cart) => { currentCart=cart; renderAppliedCoupons(cart); renderCartSummary(cart); if(promotionsPayload)renderPromotions(promotionsPayload); })
       .catch((error) => showError(error.message));
     const promotionsPromise = request(config.promotionsUrl, { method: 'GET' }, config.authenticated ? 'wp' : 'public')
-      .then((payload) => { promotionsPayload = payload; renderPromotions(payload); })
+      .then((payload) => { promotionsPayload=payload; renderPromotions(payload); if(currentCart)renderAppliedCoupons(currentCart); })
       .catch((error) => promotionsList.replaceChildren(node('p', 'cr-cart-feedback is-error', error.message)))
       .finally(() => { loading.hidden = true; });
     if (config.authenticated) {
@@ -397,7 +427,7 @@
     manualForm.addEventListener('submit', (event) => {
       event.preventDefault();
       const input = manualForm.querySelector('[name="code"]');
-      if (input) applyCoupon(input.value, 'Cupón');
+      if(input)applyCoupon(input.value,'Cupón',manualForm.querySelector('button[type="submit"]'));
     });
   }
 
@@ -431,61 +461,5 @@
     });
   });
 
-  // Presentation-only shipping summary: keep WooCommerce's native radios and submission flow.
-  const initShippingPresentation = () => {
-    const row = document.querySelector('tr.woocommerce-shipping-totals.shipping, tr.shipping:not(.cr-cart-shipping-pending)');
-    if (!row) return;
-    const cell = row.querySelector('td');
-    const methods = cell && cell.querySelector('ul#shipping_method');
-    if (!methods) return;
-
-    let summary = cell.querySelector('.cr-cart-shipping-summary');
-    if (!summary) {
-      summary = document.createElement('div');
-      summary.className = 'cr-cart-shipping-summary';
-      const selectedText = document.createElement('span');
-      selectedText.className = 'cr-cart-shipping-summary__selected';
-      const toggle = document.createElement('button');
-      toggle.type = 'button';
-      toggle.className = 'cr-cart-shipping-summary__toggle';
-      toggle.textContent = 'Cambiar método';
-      toggle.addEventListener('click', () => {
-        const expanded = row.classList.toggle('is-expanded');
-        methods.hidden = !expanded;
-        toggle.textContent = expanded ? 'Ocultar métodos' : 'Cambiar método';
-      });
-      summary.append(selectedText, toggle);
-      cell.insertBefore(summary, methods);
-    }
-
-    const selected = methods.querySelector('input.shipping_method:checked, input[type="radio"]:checked');
-    const selectedItem = selected && selected.closest('li');
-    const selectedLabel = selectedItem ? selectedItem.textContent.replace(/\s+/g, ' ').trim() : '';
-    const selectedAmount = selectedItem && selectedItem.querySelector('.woocommerce-Price-amount, .amount');
-    const label = selectedAmount
-      ? selectedAmount.textContent.replace(/\s+/g, ' ').trim()
-      : (/\b(?:gratis|gratuito|free)\b/i.test(selectedLabel) ? 'Gratis' : 'Se calcula en el checkout');
-    const selectedText = summary.querySelector('.cr-cart-shipping-summary__selected');
-    if (selectedText && selectedText.textContent !== label) selectedText.textContent = label;
-    const toggle = summary.querySelector('.cr-cart-shipping-summary__toggle');
-    const expanded = row.classList.contains('is-expanded');
-    methods.hidden = !expanded;
-    if (toggle) {
-      const nextLabel = expanded ? 'Ocultar métodos' : 'Cambiar método';
-      if (toggle.textContent !== nextLabel) toggle.textContent = nextLabel;
-    }
-  };
-
-  document.addEventListener('change', (event) => {
-    if (!event.target.matches('input.shipping_method, input[name^="shipping_method"]')) return;
-    const row = event.target.closest('tr.woocommerce-shipping-totals.shipping, tr.shipping');
-    if (!row) return;
-    row.classList.remove('is-expanded');
-    const methods = row.querySelector('ul#shipping_method');
-    if (methods) methods.hidden = true;
-    initShippingPresentation();
-  });
-  initShippingPresentation();
-  const shippingObserver = new MutationObserver(initShippingPresentation);
-  shippingObserver.observe(document.body, { childList: true, subtree: true });
+  // Shipping method labels and selectors stay in checkout only.
 })();

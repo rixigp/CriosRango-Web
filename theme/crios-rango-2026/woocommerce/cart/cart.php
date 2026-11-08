@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 do_action( 'woocommerce_before_cart' );
 ?>
 <section class="cr-cart-page" aria-labelledby="cr-cart-title">
+    <div class="cr-cart-content">
     <div class="cr-cart-heading">
         <a class="cr-cart-back" href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>" aria-label="<?php esc_attr_e( 'Volver a la tienda', 'crios-rango-2026' ); ?>">
             <span aria-hidden="true">←</span>
@@ -191,5 +192,6 @@ do_action( 'woocommerce_before_cart' );
             </aside>
         </div>
     <?php endif; ?>
+    </div>
 </section>
 <?php do_action( 'woocommerce_after_cart' ); ?>
