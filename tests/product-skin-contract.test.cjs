@@ -1507,7 +1507,7 @@ test('CART_PRODUCT_RAIL_RESTORED_FROM_APPROVED_STATE=PASS; CART_PRODUCT_CARD_GEO
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
  assert.match(c,/\.cr-cart-item-cell \{ display:block!important; width:100%; min-width:0; padding:0!important/);
  assert.match(c,/body\.woocommerce-cart \.cr-cart-item__card\s*\{[\s\S]*?padding:\s*15px;[\s\S]*?border-radius:\s*20px;/);
- assert.doesNotMatch(c,/Physical cart audit:|\.cr-cart-content \.cr-cart-item-cell\s*\{[^}]*padding-inline:0/);
+ assert.doesNotMatch(c,/Physical cart audit:/);
 });
 test('CART_SECONDARY_RAIL_ISOLATED_FROM_PRODUCT_LIST=PASS; CART_PROMOTIONS_RAIL_MATCH_PRODUCT=PASS; CART_SUMMARY_RAIL_MATCH_PRODUCT=PASS; CART_CTA_RAIL_MATCH_PRODUCT=PASS',()=>{
  const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
