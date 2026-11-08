@@ -1496,7 +1496,7 @@ test('CART_PRODUCT_RAIL_RESTORED_FROM_APPROVED_STATE=PASS; CART_PRODUCT_CARD_GEO
 });
 test('CART_SECONDARY_RAIL_ISOLATED_FROM_PRODUCT_LIST=PASS; CART_PROMOTIONS_RAIL_MATCH_PRODUCT=PASS; CART_SUMMARY_RAIL_MATCH_PRODUCT=PASS; CART_CTA_RAIL_MATCH_PRODUCT=PASS',()=>{
  const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
- assert.match(p,/class="cr-cart-primary"[\s\S]*?class="cr-cart-form"[\s\S]*?<\/form>\s*<\/div>\s*<div class="cr-cart-secondary-rail">[\s\S]*?class="cr-cart-promotions"[\s\S]*?class="[^"]*cr-cart-summary"/);
+ assert.match(p,/class="cr-cart-primary"[\s\S]*?class="[^"]*cr-cart-form"[\s\S]*?<\/form>\s*<\/div>\s*<div class="cr-cart-secondary-rail">[\s\S]*?class="cr-cart-promotions"[\s\S]*?class="[^"]*cr-cart-summary"/);
  assert.doesNotMatch(p,/cr-cart-secondary-rail[\s\S]*?cr-cart-table/);
  assert.match(c,/\.cr-cart-secondary-rail\{[\s\S]*?width:100%/);
  assert.match(c,/\.cr-cart-secondary-rail > \.cr-cart-promotions,[\s\S]*?\.cr-cart-secondary-rail > \.cr-cart-summary\{[\s\S]*?width:100%!important/);
