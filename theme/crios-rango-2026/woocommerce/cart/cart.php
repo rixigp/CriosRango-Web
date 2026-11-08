@@ -132,7 +132,7 @@ do_action( 'woocommerce_before_cart' );
                                                     <?php if ( $_product->backorders_require_notification() && $_product->is_on_backorder( $cart_item['quantity'] ) ) : ?>
                                                         <p class="backorder_notification"><?php esc_html_e( 'Disponible bajo pedido', 'crios-rango-2026' ); ?></p>
                                                     <?php endif; ?>
-                                                    <div class="cr-cart-item__unit"><span><?php esc_html_e( 'Precio unitario', 'crios-rango-2026' ); ?></span> <?php echo wp_kses_post( $product_price ); ?></div>
+                                                    <div class="cr-cart-item__unit"><span class="screen-reader-text"><?php esc_html_e( 'Precio unitario', 'crios-rango-2026' ); ?></span><?php echo wp_kses_post( $product_price ); ?> <span class="cr-cart-item__unit-label">/ ud.</span></div>
                                                     <div class="cr-cart-item__subtotal"><span><?php esc_html_e( 'Subtotal', 'crios-rango-2026' ); ?></span> <?php echo wp_kses_post( $product_subtotal ); ?></div>
                                                 </div>
                                             </div>
