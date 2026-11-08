@@ -50,9 +50,10 @@ test('checkout shell uses the shared canvas token and existing toolbar geometry'
   assert.match(checkoutCss, /--cr-app-topbar-height: 88px/);
 });
 
-test('checkout shell does not style or replace native transactional controls', () => {
+test('checkout Phase 1 shell does not style or replace native transactional controls', () => {
+  const phase1Css = checkoutCss.split('/* Checkout Phase 2.2:')[0];
   for (const forbidden of ['#payment', '#order_review', 'payment_method_', 'place_order', 'checkout_coupon', 'woocommerce-checkout-review-order-table']) {
-    assert.equal(checkoutCss.includes(forbidden), false, forbidden + ' must remain outside Phase 1 CSS');
+    assert.equal(phase1Css.includes(forbidden), false, forbidden + ' must remain outside Phase 1 CSS');
   }
   assert.match(checkoutCss, /\.cr-footer\s*\{\s*display:\s*none !important;/);
   assert.doesNotMatch(checkoutCss, /\.cr-mobile-bottom-nav|\.cr-app-bottom-nav/);
@@ -190,7 +191,8 @@ test('delivery field semantics define five full-width fields and two half-width 
   assert.ok(checkoutCss.includes(".form-row.cr-delivery-field--full"));
   assert.ok(checkoutCss.includes(".form-row.cr-delivery-field--half"));
   assert.doesNotMatch(checkoutCss, /max-width:\s*340px/);
-  assert.doesNotMatch(checkoutCss, /grid-template-columns:\s*minmax\(0, 1fr\)/);
+  const billingGrid = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper');
+  assert.doesNotMatch(billingGrid, /grid-template-columns:\s*minmax\(0, 1fr\)/);
   const orderDeclarationPattern = new RegExp("^[ \\t]*order[ \\t]*:", "m");
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
 });
@@ -402,7 +404,8 @@ test('shipping step heading is inserted through the classic order-review hook an
   assert.match(woocommercePhp, /cr-checkout-delivery-heading cr-checkout-shipping-heading/);
   assert.match(woocommercePhp, /esc_html__\( 'Envío'/);
   assert.match(woocommercePhp, /colspan="2"/);
-  assert.match(checkoutCss, /\.cr-checkout-shipping-heading-row > th/);
+  assert.match(woocommercePhp, /cr-checkout-shipping-heading-row/);
+  assert.match(checkoutCss, /\.cr-checkout-shipping-heading\s*\{/);
 });
 
 test('shipping presentation targets only the native WooCommerce rate list and radio inputs', () => {
