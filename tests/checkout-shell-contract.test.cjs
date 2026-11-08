@@ -441,3 +441,48 @@ test('free-shipping progress is deferred because the cart has no shared threshol
   assert.doesNotMatch(helpersPhp, /free.?shipping|env[ií]o gratis|shipping.?threshold|amount_for_free/i);
   assert.doesNotMatch(woocommercePhp, /free.?shipping|env[ií]o gratis|shipping.?threshold|amount_for_free/i);
 });
+
+
+test('shipping native review row becomes a full-width checkout-only block without removing WooCommerce nodes', () => {
+  const row = 'tr.woocommerce-shipping-totals.shipping';
+  const table = '.woocommerce-checkout-review-order-table';
+  assert.match(checkoutCss, new RegExp(table.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + ' ' + row.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '\\s*\\{[^}]*display:\\s*block;[^}]*width:\\s*100%;', 's'));
+  assert.match(checkoutCss, /\.woocommerce-checkout-review-order-table tr\.woocommerce-shipping-totals\.shipping > th\s*\{\s*display:\s*none;/);
+  assert.match(checkoutCss, /\.woocommerce-checkout-review-order-table tr\.woocommerce-shipping-totals\.shipping > td\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;/s);
+  assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\)/);
+  assert.doesNotMatch(checkoutCss, /\.woocommerce-cart[^\n]*woocommerce-shipping-totals/);
+});
+
+test('shipping native list and each method card use the complete review rail width', () => {
+  assert.match(checkoutCss, /\.woocommerce-checkout-review-order-table #shipping_method\.woocommerce-shipping-methods\s*\{[^}]*display:\s*grid;[^}]*width:\s*100%;/s);
+  assert.match(checkoutCss, /#shipping_method\.woocommerce-shipping-methods > li\s*\{[^}]*display:\s*grid;[^}]*width:\s*100%;[^}]*min-width:\s*0;/s);
+  assert.match(checkoutCss, /grid-template-columns:\s*18px\s+minmax\(0, 1fr\)\s+auto/);
+  assert.match(checkoutCss, /li > label\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)\s+auto/);
+});
+
+test('shipping labels never use forced mid-word wrapping or narrow fixed widths', () => {
+  assert.match(checkoutCss, /word-break:\s*normal/);
+  assert.match(checkoutCss, /overflow-wrap:\s*normal/);
+  assert.doesNotMatch(checkoutCss, /overflow-wrap:\s*anywhere|word-break:\s*break-all/);
+  assert.doesNotMatch(checkoutCss, /#shipping_method[^}]*max-width:\s*\d+px/);
+});
+
+test('shipping native th is visually suppressed but the native row, radios and labels are not replaced', () => {
+  assert.match(checkoutCss, /tr\.woocommerce-shipping-totals\.shipping > th\s*\{\s*display:\s*none;/);
+  assert.doesNotMatch(woocommercePhp, /<input[^>]+type=["']radio|shipping_method\[[^]]+\]\s*=/i);
+  assert.doesNotMatch(woocommercePhp, /woocommerce_package_rates|woocommerce_shipping_rate_cost|woocommerce_shipping_methods/);
+  assert.doesNotMatch(woocommercePhp, /appendChild|insertBefore|insertAdjacentElement|update_checkout|updated_checkout/);
+});
+
+test('shipping section remains in the native order-review hook position and is not DOM-reordered', () => {
+  assert.match(woocommercePhp, /woocommerce_review_order_before_shipping', 'cr2026_checkout_render_shipping_heading'/);
+  assert.doesNotMatch(woocommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
+  // WooCommerce prints the shipping row in the order-review table after subtotal;
+  // moving it ahead of the summary would require replacing the core review template.
+  assert.match(checkoutCss, /woocommerce-checkout-review-order-table/);
+});
+
+test('shipping checkout layout changes are isolated from cart shipping presentation', () => {
+  assert.doesNotMatch(checkoutCss, /\.woocommerce-cart\s+\.woocommerce-checkout-review-order-table/);
+  assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\)/);
+});
