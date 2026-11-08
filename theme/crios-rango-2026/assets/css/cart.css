@@ -6,12 +6,12 @@ body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; max-width:
 /* Cart heading reuses the canonical listing toolbar from main.css. */
 .cr-cart-empty-form { margin:0; }
 .cr-cart-empty-form button { border:0; padding:8px 0; background:transparent; color:#68716C; font:500 13px/20px Arial,sans-serif; text-decoration:underline; cursor:pointer; }
-.cr-cart-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(290px,360px); align-items:start; gap:22px; }
+.cr-cart-layout { display:flex; flex-direction:column; align-items:stretch; gap:12px; }
 .cr-cart-primary { min-width:0; }
-.cr-cart-form { margin:0 0 18px; }
+.cr-cart-form { margin:0; }
 .cr-cart-table { display:block; width:100%; margin:0!important; border:0!important; border-radius:0!important; background:transparent!important; overflow:visible!important; }
 .cr-cart-table thead { display:none; }
-.cr-cart-table tbody { display:grid; gap:12px; }
+.cr-cart-table tbody { display:grid; row-gap:8px; }
 .cr-cart-table tr.cr-cart-item { display:block; margin:0; padding:0; border:0; background:transparent; }
 .cr-cart-item-cell { display:block!important; width:100%; min-width:0; padding:0!important; border:0!important; background:transparent!important; }
 .cr-cart-item-cell::before { display:none!important; content:none!important; }
@@ -43,7 +43,7 @@ body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; max-width:
 .cr-cart-item__price,.cr-cart-item__line-subtotal { display:none!important; }
 .cr-cart-form-actions { display:flex; justify-content:flex-end; align-items:center; gap:10px; margin:12px 0 0; }
 .cr-cart-form-actions button[name="update_cart"] { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:clip!important; clip-path:inset(50%)!important; white-space:nowrap!important; border:0!important; }
-.cr-cart-promotions { margin-top:18px; padding:16px; border:1px solid var(--cr-border); border-radius:18px; background:#fff; }
+.cr-cart-promotions { margin-top:0; padding:16px; border:1px solid var(--cr-border); border-radius:18px; background:#fff; }
 .cr-cart-promotions > h2 { margin:0 0 12px; color:var(--cr-green); font-size:17px; line-height:1.3; font-weight:750; }
 .cr-cart-promotions__loading { padding:10px 0; color:#6B746F; font-size:13px; }
 .cr-cart-promotions__subheading { margin:14px 0 8px; color:var(--cr-green); font-size:14px; font-weight:750; }
@@ -97,8 +97,6 @@ body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; max-width:
 .cr-cart-promotions.is-busy { opacity:.72; pointer-events:none; }
 @media (min-width:768px) {
   body.woocommerce-cart .cr-main--woocommerce > .cr-shell { padding-top:0; }
-  .cr-cart-layout { gap:28px; }
-  .cr-cart-table tbody { gap:14px; }
   .cr-cart-table tr.cr-cart-item { grid-template-columns:116px minmax(0,1fr); gap:0 18px; padding:16px; }
   
   .cr-cart-item__name { font-size:16px; }
@@ -108,7 +106,6 @@ body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; max-width:
 @media (max-width:767px) {
   body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; padding-top:0; padding-bottom:calc(92px + env(safe-area-inset-bottom)); }
   .cr-cart-empty-form button { font-size:11px; }
-  .cr-cart-layout { grid-template-columns:minmax(0,1fr); gap:16px; }
   .cr-cart-table tr.cr-cart-item { grid-template-columns:84px minmax(0,1fr); gap:0 11px; padding:11px; border-radius:15px; }
   
   .cr-cart-item__name { font-size:13px; }
@@ -116,7 +113,7 @@ body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; max-width:
   .cr-cart-quantity { min-height:38px; }
   .cr-cart-quantity__button { width:30px; height:30px; }
   .cr-cart-remove { min-height:38px; padding-inline:8px; }
-  .cr-cart-promotions { margin-top:14px; padding:13px; }
+  .cr-cart-promotions { padding:13px; }
   .cr-cart-summary .cart_totals { padding:15px!important; }
 }
 @media (max-width:360px) {
@@ -282,7 +279,7 @@ body.woocommerce-cart .cr-cart-remove svg { width: 20px; height: 20px; }
 body.woocommerce-cart .cr-cart-empty-form button { text-decoration:none; font-weight:400; }
 
 /* Promotion blocks sit on the page canvas; component panels remain independently tinted. */
-body.woocommerce-cart .cr-cart-promotions { margin-top: 16px; padding: 0; border: 0; border-radius: 0; }
+body.woocommerce-cart .cr-cart-promotions { margin-top:0; padding:0; border:0; border-radius:0; }
 body.woocommerce-cart .cr-cart-promotions > h2 { font-size: 16px; font-weight: 500; margin-bottom: 10px; }
 body.woocommerce-cart .cr-cart-promotions__subheading { font-size: 13px; font-weight: 500; }
 body.woocommerce-cart .cr-cart-wallet__summary { background: #E8F5EF; }
@@ -526,7 +523,6 @@ body.woocommerce-cart .cr-cart-item__subtotal { margin:0 0 2px; }
 
 /* Mobile cart refinement: tighter card composition with controls in the text column. */
 @media (max-width: 767px) {
-  body.woocommerce-cart .cr-cart-table tbody { gap: 18px; }
   body.woocommerce-cart .cr-cart-item__card {
     display: block;
     min-height: 0 !important;
@@ -747,7 +743,7 @@ body.woocommerce-cart .cr-cart-content .cr-cart-form,
 body.woocommerce-cart .cr-cart-content .cr-cart-promotions,
 body.woocommerce-cart .cr-cart-content .cr-cart-summary,
 body.woocommerce-cart .cr-cart-content .cr-cart-summary .cart_totals{width:100%!important;max-width:none!important;min-width:0;margin-inline:0!important;box-sizing:border-box}
-body.woocommerce-cart .cr-cart-content .cr-cart-layout{display:flex!important;flex-direction:column!important;gap:18px!important;width:100%!important;min-width:0;box-sizing:border-box}
+body.woocommerce-cart .cr-cart-content .cr-cart-layout{display:flex!important;flex-direction:column!important;gap:12px!important;width:100%!important;min-width:0;box-sizing:border-box}
 body.woocommerce-cart .cr-cart-content .cr-cart-form,
 body.woocommerce-cart .cr-cart-content .cr-cart-promotions,
 body.woocommerce-cart .cr-cart-content .cr-cart-summary{flex:0 0 100%;align-self:stretch}
@@ -763,7 +759,7 @@ body.woocommerce-cart .cr-cart-content .checkout-button{width:100%!important;max
 body.woocommerce-cart .cr-cart-empty-form{display:flex;align-items:center;justify-content:flex-end;width:max-content;max-width:100%;min-width:0;margin:0}
 body.woocommerce-cart .cr-cart-empty-form button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:0;border:0;border-radius:0;background:transparent;color:#68716C;font:400 13px/20px "Roboto",Arial,sans-serif;text-decoration:none;white-space:nowrap;cursor:pointer}
 body.woocommerce-cart .cr-cart-empty-form button svg{display:block;width:15px;height:15px;flex:0 0 15px}
-body.woocommerce-cart .cr-cart-content .cr-cart-primary{display:contents}
+body.woocommerce-cart .cr-cart-content .cr-cart-primary{display:contents!important}
 body.woocommerce-cart .cr-cart-content .cr-cart-form{order:1}
 body.woocommerce-cart .cr-cart-content .cr-cart-promotions{order:2}
 body.woocommerce-cart .cr-cart-content .cr-cart-summary{order:3}
@@ -837,152 +833,54 @@ body.woocommerce-cart .cr-cart-wallet__info-svg svg { display:block; width:25px;
 body.woocommerce-cart .cr-cart-wallet__info-icon:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
 
 
-/* One owner for the vertical gap between cart sections. */
-body.woocommerce-cart .cr-cart-content .cr-cart-layout { gap:18px!important; }
-body.woocommerce-cart .cr-cart-content .cr-cart-form { margin:0!important; }
-body.woocommerce-cart .cr-cart-content .cr-cart-promotions { margin-top:0!important; }
-
-/* The global body already reserves the fixed app-header height; category and cart rows start at the same block position. */
-body.woocommerce-cart .cr-main--woocommerce{padding-top:0!important;}
-
-/* Secondary rail is isolated after the product list; card geometry remains the approved 868 state. */
-body.woocommerce-cart .cr-cart-layout{
+/* Cart rails share one containing block: the product form and secondary rail
+   become sibling flex items of .cr-cart-layout. The product table/card geometry
+   remains untouched; only the wrapper box is removed from layout. */
+body.woocommerce-cart .cr-cart-content .cr-cart-layout{
   display:flex!important;
   flex-direction:column!important;
   align-items:stretch!important;
-  gap:18px!important;
-}
-body.woocommerce-cart .cr-cart-primary{
-  display:block!important;
-  width:100%;
+  gap:12px!important;
+  width:100%!important;
   min-width:0;
-  margin:0!important;
-}
-body.woocommerce-cart .cr-cart-secondary-rail{
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:stretch!important;
-  gap:18px!important;
-  width:100%;
-  min-width:0;
-  margin:0!important;
-  padding:0;
   box-sizing:border-box;
 }
-body.woocommerce-cart .cr-cart-secondary-rail > .cr-cart-promotions,
-body.woocommerce-cart .cr-cart-secondary-rail > .cr-cart-summary{
+body.woocommerce-cart .cr-cart-content .cr-cart-primary{display:contents!important}
+body.woocommerce-cart .cr-cart-content .cr-cart-form,
+body.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail{
+  display:block;
+  flex:0 0 100%!important;
+  align-self:stretch!important;
   width:100%!important;
   max-width:100%!important;
-  min-width:0;
+  min-width:0!important;
   margin:0!important;
-  box-sizing:border-box;
-}
-/* Cart shortcode is inside page.php: remove its page-shell top padding, the
-   first spacing divergence from the category canvas toolbar. */
-body.woocommerce-cart .cr-main > .cr-shell.cr-page-shell{padding-top:0!important;}
-body.woocommerce-cart .cr-page,
-body.woocommerce-cart .cr-prose,
-body.woocommerce-cart .woocommerce{margin-top:0!important;padding-top:0!important;}
-
-/* Keep product cards frozen to the approved 86839831 rail; secondary blocks are isolated siblings. */
-
-/* One owner for the product-list to secondary-rail separation. */
-body.woocommerce-cart .cr-cart-form{margin:0!important}
-
-
-/* Align the cart toolbar to the same full canvas origin as the Outlet toolbar.
-   The page shell contributes 20px desktop / 12px mobile side gutters; expand
-   only this isolated header wrapper by that exact shell gutter. */
-body.woocommerce-cart .cr-cart-header-shell{
-  width:min(calc(100% + 40px),1360px);
-  max-width:1360px;
-  margin-inline:-20px;
-  box-sizing:border-box;
-}
-@media(max-width:767px){
-  body.woocommerce-cart .cr-cart-header-shell{
-    width:min(calc(100% + 24px),1360px);
-    margin-inline:-12px;
-  }
-}
-
-/* Keep the approved product-card width untouched; make the list and secondary
-   rail explicit equal-width siblings, and give each vertical rhythm one owner. */
-body.woocommerce-cart .cr-cart-content .cr-cart-primary{
-  display:block!important;
-  flex:0 0 100%;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  margin:0!important;
-}
-body.woocommerce-cart .cr-cart-content .cr-cart-form{
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
 }
 body.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail{
   display:flex!important;
-  flex:0 0 100%;
-  width:100%!important;
-  max-width:100%;
-  min-width:0;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:12px!important;
+}
+body.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail > .cr-cart-promotions,
+body.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail > .cr-cart-summary{
+  flex:0 0 auto;
   align-self:stretch;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
   margin:0!important;
-  box-sizing:border-box;
+  box-sizing:border-box!important;
 }
-body.woocommerce-cart .cr-cart-content .cr-cart-table tbody{
-  display:grid;
-  gap:10px!important;
-}
-body.woocommerce-cart .cr-cart-content .cr-cart-layout{
-  gap:14px!important;
-}
-body.woocommerce-cart .cr-cart-content .cr-cart-form,
-body.woocommerce-cart .cr-cart-content .cr-cart-promotions,
-body.woocommerce-cart .cr-cart-content .cr-cart-summary{
-  margin-block:0!important;
-}
-
-
-/* Final spacing ownership: preserve the product rail; tighten only list/section rhythm. */
+/* One product-list gap owner at every breakpoint. */
 body.woocommerce-cart .cr-cart-content .cr-cart-table tbody{
   display:grid!important;
   row-gap:8px!important;
 }
-body.woocommerce-cart .cr-cart-content .cr-cart-layout{
-  row-gap:12px!important;
-}
-body.woocommerce-cart .cr-cart-content .cr-cart-form,
-body.woocommerce-cart .cr-cart-content .cr-cart-primary,
-body.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail,
-body.woocommerce-cart .cr-cart-content .cr-cart-promotions,
-body.woocommerce-cart .cr-cart-content .cr-cart-summary{
-  margin-block:0!important;
-}
-body.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail{
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:stretch!important;
-  align-self:stretch!important;
-  flex:0 0 100%!important;
-  inline-size:100%!important;
-  max-inline-size:100%!important;
-  min-inline-size:0!important;
-  padding-inline:0!important;
-  box-sizing:border-box!important;
-}
-body.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail > .cr-cart-promotions,
-body.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail > .cr-cart-summary{
-  inline-size:100%!important;
-  max-inline-size:100%!important;
-  min-inline-size:0!important;
-  margin-inline:0!important;
-  box-sizing:border-box!important;
-}
-/* Match the category canvas start: no page-shell/article/prose top spacing before toolbar. */
+/* Outlet's canvas starts after the shared body topbar reservation with no
+   additional parent block-start spacing. Mirror that zero-spacing chain here. */
 body.woocommerce-cart .cr-main > .cr-shell.cr-page-shell,
 body.woocommerce-cart .cr-page,
 body.woocommerce-cart .cr-prose,
@@ -994,6 +892,4 @@ body.woocommerce-cart .cr-cart-header-shell{
 }
 body.woocommerce-cart .cr-cart-header-shell > .cr-parent-category__toolbar{
   margin-block-start:0!important;
-  min-height:64px;
 }
-@media(min-width:768px){body.woocommerce-cart .cr-cart-header-shell > .cr-parent-category__toolbar{min-height:64px}}
