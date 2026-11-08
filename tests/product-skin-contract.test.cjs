@@ -1106,8 +1106,9 @@ test('cart totals hide tax-rate rows but keep WooCommerce tax and total values',
   assert.doesNotMatch(cartTotals, /get_tax_totals\(\)|class="tax-rate/);
   assert.match(cartTotals, /WC\(\)->cart->get_total\( 'edit' \)/);
   assert.match(cartTotals, /wc_price\( WC\(\)->cart->get_total\( 'edit' \) \)/);
-  assert.match(cartTotals, /WC\(\)->cart->get_total_tax\(\)/);
-  assert.match(cartTotals, /Incluye %s de impuestos/);
+  assert.doesNotMatch(cartTotals, /get_total_tax\(\)|Incluye %s de impuestos/);
+  assert.match(cartCss, /\.includes_tax[\s\S]*?display:none!important/);
+  assert.match(cartTotals, /WC\(\)->cart->get_total\( 'edit' \)/);
   assert.doesNotMatch(cartTotals, /EUR/);
   assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
   assert.match(cartTotals, /woocommerce_cart_totals_before_order_total/);
@@ -1126,8 +1127,9 @@ test('shipping method summary collapses native WooCommerce options without repla
   assert.match(cartJs, /initShippingPresentation/);
   assert.match(cartCss, /cr-cart-shipping-summary__selected/);
   assert.match(cartCss, /ul#shipping_method\[hidden\]/);
+  assert.match(cartCss, /cr-cart-shipping-summary__toggle \{ display:none!important; \}/);
   assert.match(cartTotals, /Se calcula en el checkout/);
-  assert.match(cartTotals, /woocommerce_shipping_calculator\(\)/);
+  assert.doesNotMatch(cartTotals, /woocommerce_shipping_calculator\(\)/);
 });
 
 test('cart visual pass preserves loyalty, promotions endpoints, auth and native cart actions', () => {
@@ -1140,4 +1142,42 @@ test('cart visual pass preserves loyalty, promotions endpoints, auth and native 
   assert.match(cartTemplate, /name="cr2026_empty_cart"/);
   assert.match(cartTemplate, /wp_nonce_field\( 'cr2026_empty_cart'/);
   assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
+});
+
+
+test('cart page canvas is the global app token with transparent wrappers and no fallback', () => {
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+  const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
+  assert.match(mainCss, /--cr-app-canvas:\s*#FCFAF7/i);
+  assert.match(cartCss, /body\.woocommerce-cart\s*\{\s*background:\s*var\(--cr-app-canvas\)\s*!important;/);
+  assert.doesNotMatch(cartCss, /var\(--cr-app-canvas,\s*#FCFAF7\)/i);
+  assert.match(cartCss, /body\.woocommerce-cart \.cr-main--woocommerce\s*\{\s*background:\s*transparent\s*!important;/);
+  assert.doesNotMatch(cartCss, /--cart-page-background|--cr-page-canvas/);
+});
+
+test('cart item price, variation display, remove icon, compact stepper and CTA are app-aligned', () => {
+  const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+  assert.match(cartTemplate, /cr-cart-item__unit-label[^>]*>\/ ud\./);
+  assert.match(cartTemplate, /wc_get_formatted_cart_item_data\( \$cart_item \)/);
+  assert.match(cartCss, /\.cr-cart-item__main \{ grid-template-columns: 88px minmax\(0,1fr\)/);
+  assert.match(cartCss, /\.cr-cart-quantity\s*\{[^}]*border: 0;[^}]*border-radius: 0;/);
+  assert.match(cartCss, /\.cr-cart-remove span \{ display:none!important; \}/);
+  assert.match(cartCss, /\.cr-cart-summary \.checkout-button::after[\s\S]*?Continuar compra/);
+});
+
+test('cart promotions and totals outer cards are removed, wallet points and tax presentation hidden', () => {
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+  const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
+  const cartTotals = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
+  assert.match(cartCss, /\.cr-cart-promotions \{ margin-top: 16px; padding: 0; border: 0; border-radius: 0;/);
+  assert.match(cartCss, /\.cr-cart-summary \.cart_totals[\s\S]*?background: transparent!important/);
+  assert.match(cartCss, /\.cr-cart-summary \.cart_totals > h2 \{ display:none!important; \}/);
+  assert.match(cartCss, /\.cr-cart-wallet__points \{ display:none!important; \}/);
+  assert.match(cartJs, /cartIcon\('wallet'/);
+  assert.match(cartJs, /cartIcon\('info'/);
+  assert.match(cartJs, /cr-cart-wallet__rewards/);
+  assert.match(cartJs, /cr-cart-promo-card--welcome/);
+  assert.match(cartTotals, /wc_cart_totals_shipping_html\(\)/);
+  assert.doesNotMatch(cartTotals, /woocommerce_shipping_calculator\(\)|get_total_tax\(\)|Incluye %s de impuestos/);
 });
