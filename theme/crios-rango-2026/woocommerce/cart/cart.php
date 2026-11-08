@@ -94,7 +94,7 @@ do_action( 'woocommerce_before_cart' );
                                 $quantity_html = apply_filters( 'woocommerce_cart_item_quantity', $quantity_html, $cart_item_key, $cart_item );
                                 $remove_url = wc_get_cart_remove_url( $cart_item_key );
                                 $remove_link = sprintf(
-                                    '<a href="%s" class="remove cr-cart-remove" aria-label="%s"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m3 3v7m6-7v7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>%s</span></a>',
+                                    '<a href="%s" class="cr-cart-remove" aria-label="%s"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m3 3v7m6-7v7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>%s</span></a>',
                                     esc_url( $remove_url ),
                                     esc_attr( sprintf( __( 'Eliminar %s del carrito', 'crios-rango-2026' ), wp_strip_all_tags( $_product->get_name() ) ) ),
                                     esc_html__( 'Eliminar', 'crios-rango-2026' )
