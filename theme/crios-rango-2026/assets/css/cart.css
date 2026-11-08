@@ -883,3 +883,5 @@ body.woocommerce-cart .cr-main > .cr-shell.cr-page-shell{padding-top:0!important
 body.woocommerce-cart .cr-page,
 body.woocommerce-cart .cr-prose,
 body.woocommerce-cart .woocommerce{margin-top:0!important;padding-top:0!important;}
+
+/* Keep product cards frozen to the approved 86839831 rail; secondary blocks are isolated siblings. */
