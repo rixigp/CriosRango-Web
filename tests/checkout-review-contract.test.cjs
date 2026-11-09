@@ -44,6 +44,20 @@ test('shipping stays in one native renderer and is not recreated inside the summ
   assert.match(review, /woocommerce_review_order_after_shipping/);
 });
 
+
+test('summary product, discount and total monetary amounts never wrap', () => {
+  assert.match(checkoutCss, /\.cr-checkout-summary-products > tr\.cart_item > td\.product-name\s*\{[^}]*flex:\s*1 1 0;[^}]*min-width:\s*0;/);
+  assert.match(checkoutCss, /\.cr-checkout-summary-products > tr\.cart_item > td\.product-total\s*\{[^}]*flex:\s*0 0 auto;[^}]*white-space:\s*nowrap;/);
+  assert.match(checkoutCss, /\.cr-checkout-summary-totals \.woocommerce-Price-amount\s*\{\s*white-space:\s*nowrap;/);
+  assert.match(checkoutCss, /\.cr-checkout-summary-totals > tr > td\s*\{[^}]*white-space:\s*nowrap;/);
+  assert.match(checkoutCss, /\.cr-checkout-summary-products a\.remove[\s\S]*?text-decoration:\s*none/);
+});
+
+test('WooCommerce includes-tax detail stays secondary and full-width beneath the total', () => {
+  assert.match(checkoutCss, /tr\.order-total > td > small\.includes_tax\s*\{[^}]*display:\s*block;[^}]*flex:\s*1 0 100%;[^}]*color:\s*var\(--cr-muted\)/);
+  assert.match(checkoutCss, /tr\.order-total > td > strong[\s\S]*?white-space:\s*nowrap/);
+});
+
 test('summary card consumes global border, radius and canonical rail with mobile-safe wrapping', () => {
   assert.match(checkoutCss, /\.cr-checkout-summary-products\s*,[\s\S]*?\.cr-checkout-summary-totals\s*\{[\s\S]*?margin-inline:\s*var\(--cr-card-inline-inset\)/);
   assert.match(checkoutCss, /\.cr-checkout-summary-products\s*\{[\s\S]*?border:\s*var\(--cr-card-border-width\) solid var\(--cr-border\)/);

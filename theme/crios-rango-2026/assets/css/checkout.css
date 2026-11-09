@@ -1020,3 +1020,93 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-
     max-width: 40%;
   }
 }
+
+
+/* Phase 4B: internal summary content polish only.
+   Preserve the review fragment, summary card surface and canonical rail. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr.cart_item {
+  align-items: flex-start;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr.cart_item > td.product-name {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+  overflow-wrap: anywhere;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr.cart_item > td.product-total {
+  flex: 0 0 auto;
+  min-width: max-content;
+  max-width: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  text-align: right;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products .woocommerce-Price-amount,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals .woocommerce-Price-amount,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals .amount {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr > th {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr > td {
+  flex: 0 0 auto;
+  min-width: max-content;
+  max-width: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  text-align: right;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr.order-total > td {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: max-content;
+  white-space: normal;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr.order-total > td > strong,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr.order-total > td > strong .woocommerce-Price-amount {
+  white-space: nowrap;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr.order-total > td > small.includes_tax {
+  display: block;
+  flex: 1 0 100%;
+  max-width: 100%;
+  margin-top: 4px;
+  color: var(--cr-muted);
+  font-size: .78rem;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: right;
+  white-space: normal;
+  overflow-wrap: normal;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products a.remove,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products a.remove:hover,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products a.remove:focus {
+  color: var(--cr-muted);
+  font-size: .78rem;
+  font-weight: 400;
+  text-decoration: none;
+  text-underline-offset: 0;
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products a.remove:hover,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products a.remove:focus {
+  color: var(--cr-ink);
+  text-decoration: underline;
+}
