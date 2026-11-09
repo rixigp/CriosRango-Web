@@ -22,17 +22,53 @@ test('summary heading, product rows and totals form the summary-only card withou
   assert.doesNotMatch(review, /<div[^>]*woocommerce-checkout-review-order-table/);
 });
 
-test('all native and extension-generated economic rows remain available', () => {
+test('summary totals use numeric WooCommerce coupon and applied-fee values', () => {
   for (const token of [
-    'cart-subtotal', 'cart-discount', 'class="fee"', 'class="tax-rate',
-    'class="tax-total"', 'class="order-total"',
-    'foreach ( WC()->cart->get_coupons()', 'foreach ( WC()->cart->get_fees()',
-    'get_tax_totals()', 'wc_cart_totals_subtotal_html()',
-    'wc_cart_totals_coupon_html(', 'wc_cart_totals_fee_html(',
-    'wc_cart_totals_taxes_total_html()', 'wc_cart_totals_order_total_html()',
-    'woocommerce_review_order_before_order_total', 'woocommerce_review_order_after_order_total'
-  ]) assert.ok(review.includes(token), 'missing dynamic WooCommerce summary contract: ' + token);
+    'get_discount_total()', 'get_discount_tax()', 'get_fees()',
+    '$fee->total', '$fee->tax', 'wc_price( -$summary_discount_total )',
+    'wc_cart_totals_subtotal_html()', 'wc_cart_totals_fee_html(',
+    'get_shipping_total()', 'get_shipping_tax()',
+    'get_tax_totals()', 'wc_cart_totals_taxes_total_html()',
+    'wc_cart_totals_order_total_html()', 'woocommerce_review_order_before_order_total',
+    'woocommerce_review_order_after_order_total'
+  ]) assert.ok(review.includes(token), 'missing numeric WooCommerce summary contract: ' + token);
+  assert.doesNotMatch(review, /foreach\s*\(\s*WC\(\)->cart->get_coupons\(\)/);
+  assert.doesNotMatch(review, /wc_cart_totals_coupon_html\(/);
+  assert.doesNotMatch(review, /class="cart-discount/);
   assert.doesNotMatch(checkoutCss, /cr-checkout-summary-(?:products|totals)[^}]*display:\s*none/i);
+});
+
+function summarizeFixture({ couponDiscount = 0, couponTax = 0, fees = [], shipping = 0, shippingTax = 0, includesTax = false }) {
+  let discounts = couponDiscount + (includesTax ? couponTax : 0);
+  const visibleFees = [];
+  for (const fee of fees) {
+    if (fee.total < 0) discounts += Math.abs(fee.total) + (includesTax ? Math.abs(fee.tax || 0) : 0);
+    else visibleFees.push(fee);
+  }
+  const displayedShipping = shipping + (includesTax ? shippingTax : 0);
+  return {
+    discountRow: discounts > 0 ? Number(discounts.toFixed(2)) : null,
+    visibleFees,
+    shippingRow: displayedShipping > 0 ? Number(displayedShipping.toFixed(2)) : null
+  };
+}
+
+test('A/B/C: discount row is absent at zero and consolidates coupon plus wallet negative fee', () => {
+  assert.equal(summarizeFixture({}).discountRow, null);
+  assert.equal(summarizeFixture({ couponDiscount: 7.48 }).discountRow, 7.48);
+  assert.equal(summarizeFixture({ couponDiscount: 7.48, fees: [{ total: -5.30, tax: 0 }] }).discountRow, 12.78);
+});
+
+test('D/E: free shipping is omitted and paid shipping is displayed at its WooCommerce amount', () => {
+  assert.equal(summarizeFixture({ shipping: 0 }).shippingRow, null);
+  assert.equal(summarizeFixture({ shipping: 5 }).shippingRow, 5);
+  assert.equal(summarizeFixture({ shipping: 5, shippingTax: 1, includesTax: true }).shippingRow, 6);
+});
+
+test('F: positive fees remain separate while negative fees are consolidated', () => {
+  const result = summarizeFixture({ fees: [{ total: -5.30, tax: 0 }, { total: 2.50, tax: 0 }] });
+  assert.equal(result.discountRow, 5.30);
+  assert.deepEqual(result.visibleFees.map(fee => fee.total), [2.50]);
 });
 
 test('shipping stays in one native renderer and is not recreated inside the summary', () => {
@@ -72,4 +108,11 @@ test('summary card consumes global border, radius and canonical rail with mobile
   assert.match(checkoutCss, /\.cr-checkout-summary-totals > tr\.order-total/);
   assert.match(checkoutCss, /@media\s*\(max-width:\s*420px\)[\s\S]*?\.cr-checkout-summary-products > tr/);
   assert.doesNotMatch(checkoutCss, /\.cr-checkout-summary-(?:products|totals)[^}]*border-(?:left|right):/);
+});
+
+
+test('G: AJAX review fragment remains singular and all totals are server-rendered on refresh', () => {
+  assert.equal((review.match(/woocommerce-checkout-review-order-table/g) || []).length, 1);
+  assert.match(review, /get_discount_total\(\)[\s\S]*?get_fees\(\)[\s\S]*?get_shipping_total\(\)[\s\S]*?wc_cart_totals_order_total_html\(\)/);
+  assert.doesNotMatch(review, /addEventListener|MutationObserver|updated_checkout|localStorage/);
 });
