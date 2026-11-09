@@ -117,7 +117,7 @@ test('billing-field filter runs after locale defaults and before WooCommerce pri
   const fn = woocommercePhp.slice(start, end);
   assert.match(fn, /if \( ! is_array\( \$fields \) \)/);
   assert.match(woocommercePhp, /add_filter\( 'woocommerce_billing_fields', 'cr2026_checkout_delivery_fields', 9999, 2 \)/);
-  assert.doesNotMatch(woocommercePhp, /add_filter\( 'woocommerce_checkout_fields'/);
+  assert.deepEqual([...woocommercePhp.matchAll(/add_filter\( 'woocommerce_checkout_fields', '([^']+)'/g)].map(match => match[1]), ['cr2026_checkout_stabilize_phone_field_order']);
   assert.doesNotMatch(woocommercePhp, /add_filter\( 'woocommerce_default_address_fields'/);
   const allowlist = [...fn.matchAll(/^\s*'(billing_[a-z0-9_]+)'\s*=>/gm)].map(match => match[1]);
   assert.deepEqual(allowlist, [
@@ -272,7 +272,7 @@ test('WooCommerce address locale overrides are normalized before native address-
   assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale_default', 'cr2026_checkout_default_address_locale', 9999 \)/);
   assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale', 'cr2026_checkout_country_address_locale', 9999 \)/);
   assert.doesNotMatch(woocommercePhp, /add_filter\( 'woocommerce_default_address_fields'/);
-  assert.doesNotMatch(woocommercePhp, /add_filter\( 'woocommerce_checkout_fields'/);
+  assert.deepEqual([...woocommercePhp.matchAll(/add_filter\( 'woocommerce_checkout_fields', '([^']+)'/g)].map(match => match[1]), ['cr2026_checkout_stabilize_phone_field_order']);
 
   for (const [key, priority, label] of [
     ['first_name', 10, 'Nombre'], ['last_name', 20, 'Apellidos'],
