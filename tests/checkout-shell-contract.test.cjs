@@ -496,8 +496,9 @@ test('shipping methods share one bordered container and native list items are ro
   const selected = cssRuleBody(checkoutCss, selectedSelector);
   assert.match(selected, /background:\s*color-mix/);
   assert.doesNotMatch(selected, /border/);
-  const outerSection = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section');
-  for (const neutral of ['border: 0;', 'border-radius: 0;', 'padding: 0;', 'background: transparent;', 'box-shadow: none;']) assert.ok(outerSection.includes(neutral));
+  const outerSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section';
+  const outerRules = checkoutCss.split(outerSelector + ' {').slice(1).map(rule => rule.slice(0, rule.indexOf('}')));
+  assert.ok(outerRules.some(rule => ['border: 0;', 'border-radius: 0;', 'padding: 0;', 'background: transparent;', 'box-shadow: none;'].every(neutral => rule.includes(neutral))), 'a checkout-scoped later rule must neutralize the outer shipping surface');
 });
 
 test('native WooCommerce shipping radios and rate labels remain scoped to checkout', () => {
