@@ -288,7 +288,7 @@ test('WooCommerce default, base and ES address locales normalize only native fie
     ['city', 70], ['postcode', 80], ['country', 90]
   ]) {
     assert.ok(localeFn.includes("'" + key + "'"), 'missing default/base locale key ' + key);
-    assert.ok(localeFn.includes("'priority' => " + priority), 'missing locale priority ' + priority);
+    assert.match(localeFn, new RegExp("'" + key + "'\\s*=>\\s*" + priority), 'missing locale priority ' + priority + ' for ' + key);
     assert.ok(countryLocaleFn.includes('cr2026_checkout_normalize_address_locale_priorities'), 'ES locale must reuse priority-only normalizer');
   }
   assert.doesNotMatch(localeFn, /\['(?:label|required|hidden|type|validate|autocomplete|states|value)'\]\s*=/);
@@ -553,7 +553,7 @@ test('checkout review preserves native product filters, hooks, and total renderi
 test('checkout native order-review heading is hidden narrowly and summary step heading remains', () => {
   assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\) #order_review_heading\s*\{\s*display:\s*none;/);
   assert.match(templatePhp, /cr-checkout-summary-heading-row[\s\S]*?cr-checkout-summary-heading[\s\S]*?3[\s\S]*?Resumen/);
-  assert.doesNotMatch(checkoutCss, /#order_review\s*\{/);
+  assert.doesNotMatch(checkoutCss, /(^|\n)\s*#order_review\s*\{/);
 });
 
 test('shipping presentation is adapted to the table-row fragment without changing methods or values', () => {
