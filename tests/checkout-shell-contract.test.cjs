@@ -505,7 +505,7 @@ test('shipping methods share one bordered container and native list items are ro
   assert.match(cssRuleBody(checkoutCss, dividerSelector), /border-top:\s*1px solid/);
   const selectedSelector = listSelector + ' > li:has(> input.shipping_method[type="radio"]:checked)';
   const selected = cssRuleBody(checkoutCss, selectedSelector);
-  assert.match(selected, /background:\s*color-mix/);
+  assert.ok(selected.includes('background: var(--cr-white);'));
   assert.doesNotMatch(selected, /border/);
   const outerSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section';
   const outerRules = checkoutCss.split(outerSelector + ' {').slice(1).map(rule => rule.slice(0, rule.indexOf('}')));
