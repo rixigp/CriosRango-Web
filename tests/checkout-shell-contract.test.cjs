@@ -129,11 +129,11 @@ test('billing-field filter runs after locale defaults and before WooCommerce pri
 
 test('final checkout_fields filter reasserts phone position after later billing pipeline changes without altering field semantics', () => {
   assert.match(woocommercePhp, /function cr2026_checkout_stabilize_phone_field_order\( \$fields \)/);
-  assert.match(woocommercePhp, /add_filter\( 'woocommerce_checkout_fields', 'cr2026_checkout_stabilize_phone_field_order', 99999 \)/);
+  assert.match(woocommercePhp, /add_filter\( 'woocommerce_checkout_fields', 'cr2026_checkout_stabilize_phone_field_order', PHP_INT_MAX \)/);
   const start = woocommercePhp.indexOf('function cr2026_checkout_stabilize_phone_field_order(');
   const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
   const fn = woocommercePhp.slice(start, end);
-  assert.match(fn, /\$fields\['billing'\]\['billing_phone'\]\['priority'\] = 40/);
+  assert.match(fn, /'billing_phone'\s*=>\s*40/);
   for (const forbidden of ['type', 'required', 'validate', 'autocomplete', 'class', 'label', 'unset(']) {
     assert.equal(fn.includes(forbidden), false, 'must not alter ' + forbidden);
   }

@@ -838,25 +838,43 @@ function cr2026_checkout_delivery_fields( $fields, $country = '' ) {
 add_filter( 'woocommerce_billing_fields', 'cr2026_checkout_delivery_fields', 9999, 2 );
 
 /**
- * Reassert the native phone field priority at the final classic-checkout
- * field pipeline. Third-party checkout_fields callbacks may alter the
- * priority after woocommerce_billing_fields has already been sorted.
+ * Finalize native billing field priorities after checkout_fields callbacks.
+ * WooCommerce sorts the billing array by priority immediately after this
+ * filter returns. The maximum hook priority prevents ordinary theme/plugin
+ * callbacks from moving billing_phone back behind the address fields.
  *
- * Only the priority is changed; type, validation, required state and all
- * other native field properties remain untouched.
+ * Only the targeted fields' priority values are normalized. In particular,
+ * billing_phone key, id, name, type, required, validate, autocomplete and
+ * value are left exactly as supplied by WooCommerce and other integrations.
  */
 function cr2026_checkout_stabilize_phone_field_order( $fields ) {
     if ( ! is_array( $fields )
-        || ! isset( $fields['billing'], $fields['billing']['billing_phone'] )
-        || ! is_array( $fields['billing']['billing_phone'] ) ) {
+        || ! isset( $fields['billing'] )
+        || ! is_array( $fields['billing'] ) ) {
         return $fields;
     }
 
-    $fields['billing']['billing_phone']['priority'] = 40;
+    $priorities = array(
+        'billing_first_name' => 10,
+        'billing_last_name'  => 20,
+        'billing_email'      => 30,
+        'billing_phone'      => 40,
+        'billing_address_1'  => 50,
+        'billing_state'      => 60,
+        'billing_city'       => 70,
+        'billing_postcode'   => 80,
+        'billing_country'    => 90,
+    );
+
+    foreach ( $priorities as $key => $priority ) {
+        if ( isset( $fields['billing'][ $key ] ) && is_array( $fields['billing'][ $key ] ) ) {
+            $fields['billing'][ $key ]['priority'] = $priority;
+        }
+    }
 
     return $fields;
 }
-add_filter( 'woocommerce_checkout_fields', 'cr2026_checkout_stabilize_phone_field_order', 99999 );
+add_filter( 'woocommerce_checkout_fields', 'cr2026_checkout_stabilize_phone_field_order', PHP_INT_MAX );
 
 
 /** Add the app-style delivery heading without replacing WooCommerce markup. */
