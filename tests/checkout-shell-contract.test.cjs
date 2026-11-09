@@ -709,3 +709,55 @@ test('shipping remains the only visible method card and native AJAX root is pres
   assert.equal([...templatePhp.matchAll(/<table class="shop_table woocommerce-checkout-review-order-table">/g)].length, 1);
   assert.equal(rail.includes('billing_phone'), false);
 });
+
+
+test('checkout shipping mini-table is flattened to block sizing without changing its gutter or AJAX root', () => {
+  const tableSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table';
+  const tbodySelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody';
+  const rowSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping';
+  const thSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > th';
+  const tdSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > td';
+  const sectionSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section';
+
+  const table = cssLastRuleBody(checkoutCss, tableSelector);
+  const tbody = cssLastRuleBody(checkoutCss, tbodySelector);
+  const row = cssLastRuleBody(checkoutCss, rowSelector);
+  const th = cssLastRuleBody(checkoutCss, thSelector);
+  const td = cssLastRuleBody(checkoutCss, tdSelector);
+  const section = cssLastRuleBody(checkoutCss, sectionSelector);
+
+  assert.match(table, /display:\s*block/);
+  assert.match(table, /width:\s*100%/);
+  assert.match(table, /max-width:\s*none/);
+  assert.doesNotMatch(table, /table-layout\s*:/);
+  assert.match(tbody, /display:\s*block/);
+  assert.match(tbody, /width:\s*100%/);
+  assert.match(tbody, /max-width:\s*none/);
+  assert.match(tbody, /min-width:\s*0/);
+  assert.match(row, /display:\s*block/);
+  assert.match(row, /width:\s*100%/);
+  assert.match(row, /max-width:\s*none/);
+  assert.match(row, /min-width:\s*0/);
+  assert.match(th, /display:\s*none/);
+  assert.match(td, /display:\s*block/);
+  assert.match(td, /width:\s*100%/);
+  assert.match(td, /max-width:\s*none/);
+  assert.match(td, /min-width:\s*0/);
+  assert.match(td, /padding:\s*0/);
+  assert.match(td, /margin:\s*0/);
+  assert.match(section, /width:\s*100%/);
+  assert.match(section, /max-width:\s*none/);
+  assert.match(section, /min-width:\s*0/);
+
+  const methods = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
+  assert.match(methods, /max-width:\s*none/);
+  assert.match(methods, /margin-inline:\s*var\(--cr-cart-card-inline-gutter\)/);
+  assert.equal(methods.includes('padding-inline'), false);
+  assert.equal(methods.includes('margin-left'), false);
+  assert.equal(methods.includes('margin-right'), false);
+
+  const reviewRoot = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .woocommerce-checkout-review-order-table');
+  assert.match(reviewRoot, /display:\s*table/);
+  assert.match(reviewRoot, /width:\s*100%/);
+  assert.match(checkoutCss, /#order_review > \.woocommerce-checkout-review-order-table/);
+});

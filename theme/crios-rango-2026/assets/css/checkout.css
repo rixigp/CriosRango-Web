@@ -649,7 +649,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section {
   display: block;
   width: 100%;
-  max-width: 100%;
+  max-width: none;
   min-width: 0;
   margin: 0 0 24px;
   padding: 0;
@@ -661,8 +661,9 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table {
+  display: block;
   width: 100%;
-  max-width: 100%;
+  max-width: none;
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -672,12 +673,15 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   background: transparent;
   box-shadow: none;
   overflow: visible;
-  table-layout: fixed;
   box-sizing: border-box;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody {
+  display: block;
   width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
   border: 0;
@@ -689,6 +693,8 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping {
   display: block;
   width: 100%;
+  max-width: none;
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
@@ -698,10 +704,14 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   box-sizing: border-box;
 }
 
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > th {
+  display: none;
+}
+
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > td {
   display: block;
   width: 100%;
-  max-width: 100%;
+  max-width: none;
   min-width: 0;
   margin: 0;
   padding: 0;
