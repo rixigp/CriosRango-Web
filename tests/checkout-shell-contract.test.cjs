@@ -300,10 +300,11 @@ test('delivery styling is scoped to checkout and excludes notes and transactiona
     'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper',
     'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-shipping-fields'
   ]) assert.ok(checkoutCss.includes(selector), 'missing scoped selector ' + selector);
+  const deliveryCss = checkoutCss.split('/* Checkout payment methods:')[0];
   for (const forbidden of [
     '.woocommerce-additional-fields', '#payment', 'payment_method_',
     'checkout_coupon', 'place_order', 'wployalty', 'wc-ajax'
-  ]) assert.equal(checkoutCss.includes(forbidden), false, forbidden + ' must remain outside delivery styling');
+  ]) assert.equal(deliveryCss.includes(forbidden), false, forbidden + ' must remain outside delivery styling');
 });
 
 
@@ -890,4 +891,90 @@ test('Checkout shell inherits the global responsive shell width instead of forci
   const mobileShellRule = mainCss.match(/@media\s*\(max-width:\s*767px\)[\s\S]*?\.cr-shell\s*\{([^}]*)\}/);
   assert.ok(mobileShellRule, 'The existing responsive global shell rule must remain present');
   assert.match(mobileShellRule[1], /width:\s*min\(calc\(100%\s*-\s*24px\),\s*var\(--cr-shell\)\)/);
+});
+
+
+const checkoutPaymentJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-payment.js'), 'utf8');
+
+test('Checkout payment methods use the native WooCommerce list as one shared white card', () => {
+  const listSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) #payment > ul.wc_payment_methods';
+  const list = cssLastRuleBody(checkoutCss, listSelector);
+  for (const property of [
+    'width: auto;',
+    'margin: 0 var(--cr-card-inline-inset) 24px;',
+    'border: var(--cr-card-border-width) solid var(--cr-border);',
+    'border-radius: var(--cr-card-radius);',
+    'overflow: hidden;',
+    'background: var(--cr-white);'
+  ]) assert.ok(list.includes(property), 'payment methods card must preserve the shared card contract: ' + property);
+
+  assert.ok(checkoutCss.includes('#payment > ul.wc_payment_methods > li.wc_payment_method + li.wc_payment_method'));
+  assert.ok(checkoutCss.includes('border-top: 1px solid var(--cr-checkout-field-border);'));
+  const row = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) #payment > ul.wc_payment_methods > li.wc_payment_method');
+  assert.ok(row.includes('background: var(--cr-white);'));
+  assert.ok(row.includes('grid-template-columns: 18px minmax(0, 1fr);'));
+  assert.ok(checkoutCss.includes('.cr-checkout-delivery-heading cr-checkout-payment-heading') === false);
+  assert.ok(checkoutPaymentJs.includes('cr-checkout-delivery-heading cr-checkout-payment-heading'));
+  assert.ok(checkoutPaymentJs.includes("step.textContent = '4'"));
+  assert.ok(checkoutPaymentJs.includes("title.textContent = 'Pago'"));
+});
+
+test('payment radios retain the exact native radio presentation contract used by Shipping', () => {
+  const shippingRadio = cssRuleBody(
+    checkoutCss,
+    'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"]'
+  );
+  const paymentRadio = cssLastRuleBody(
+    checkoutCss,
+    'body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method > input[name="payment_method"][type="radio"]'
+  );
+  for (const property of [
+    'display: block;',
+    'grid-column: 1;',
+    'grid-row: 1;',
+    'width: 18px;',
+    'height: 18px;',
+    'min-width: 18px;',
+    'margin: 0;',
+    'accent-color: var(--cr-green);',
+    'cursor: pointer;'
+  ]) {
+    assert.ok(shippingRadio.includes(property), 'Shipping radio contract missing ' + property);
+    assert.ok(paymentRadio.includes(property), 'Payment radio contract missing ' + property);
+  }
+  assert.match(checkoutPaymentJs, /radio\.type !== 'radio'/);
+  assert.doesNotMatch(checkoutPaymentJs, /radio\.(?:value|checked)\s*=|setAttribute\(\s*['"](?:name|value|checked)/);
+  assert.doesNotMatch(checkoutPaymentJs, /preventDefault\(|\.trigger\(/);
+});
+
+test('card and Bizum receive visual-only titles, subtitles and currentColor SVG icons', () => {
+  assert.match(checkoutPaymentJs, /Pago con tarjeta/);
+  assert.match(checkoutPaymentJs, /Pago seguro con tarjeta/);
+  assert.match(checkoutPaymentJs, /Recibirás las instrucciones de pago al finalizar el pedido/);
+  assert.match(checkoutPaymentJs, /kind === 'card'/);
+  assert.match(checkoutPaymentJs, /kind === 'bizum'/);
+  assert.match(checkoutPaymentJs, /stroke="currentColor"/);
+  assert.match(checkoutPaymentJs, /fill="none"/);
+  assert.match(checkoutPaymentJs, /unicaja\|cecabank/);
+  assert.match(checkoutCss, /\.cr-payment-brand-logo\s*\{\s*display:\s*none !important;/);
+  assert.match(checkoutCss, /\.wc_payment_method > \.payment_box/);
+  assert.match(checkoutCss, /\.wc_payment_method > \.payment_box::before\s*\{\s*display:\s*none;/);
+  const paymentBox = cssLastRuleBody(
+    checkoutCss,
+    'body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method > .payment_box'
+  );
+  assert.ok(paymentBox.includes('background: var(--cr-white);'));
+  assert.ok(paymentBox.includes('grid-column: 1 / -1;'));
+  assert.equal(paymentBox.includes('display: none;'), false);
+});
+
+test('generic payment gateways remain visible and the visual enhancer is idempotent across updated_checkout', () => {
+  assert.match(checkoutPaymentJs, /: 'generic'/);
+  assert.match(checkoutPaymentJs, /: kind === 'bizum' \? 'Bizum' : nativeText/);
+  assert.match(checkoutPaymentJs, /row\.dataset\.crPaymentPresentation === 'true'/);
+  assert.match(checkoutPaymentJs, /updated_checkout\.crPaymentPresentation/);
+  assert.match(checkoutPaymentJs, /createElement\('span'\)/);
+  assert.doesNotMatch(checkoutPaymentJs, /createElement\('li'\)|methods\.appendChild|methods\.insertBefore|rows\.push/);
+  assert.match(assets, /cr2026-checkout-payment[\s\S]*?assets\/js\/checkout-payment\.js/);
+  assert.doesNotMatch(checkoutPaymentJs + checkoutCss, /#place_order|place_order|checkout_place_order/);
 });
