@@ -15,6 +15,7 @@ on:
       - "tests/catalog-contract.test.cjs"
       - "tests/product-skin-contract.test.cjs"
       - "tests/checkout-shell-contract.test.cjs"
+      - "tests/checkout-review-contract.test.cjs"
       - "tests/cart-promotions-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
@@ -383,6 +384,9 @@ jobs:
 
       - name: Run checkout shell contract tests
         run: node --test tests/checkout-shell-contract.test.cjs
+
+      - name: Run checkout review/AJAX root contract tests
+        run: node --test tests/checkout-review-contract.test.cjs
 
       - name: Run cart promotions contract tests
         run: node --test tests/cart-promotions-contract.test.cjs
