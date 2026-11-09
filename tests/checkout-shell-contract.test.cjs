@@ -600,3 +600,22 @@ test('shipping native TD padding is the actual width inset and method cards fill
   assert.ok(label.includes('word-break: normal;'));
   assert.ok(label.includes('overflow-wrap: normal;'));
 });
+
+
+test('checkout review wrapper and root table lose only their inherited outer card surfaces', () => {
+  const wrapperSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) #order_review';
+  const tableSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .woocommerce-checkout-review-order-table';
+  const wrapper = cssRuleBody(checkoutCss, wrapperSelector);
+  const table = cssRuleBody(checkoutCss, tableSelector);
+  for (const [name, rule] of [['wrapper', wrapper], ['root table', table]]) {
+    for (const neutral of ['border: 0;', 'border-radius: 0;', 'background: transparent;', 'box-shadow: none;', 'overflow: visible;']) {
+      assert.ok(rule.includes(neutral), name + ' must neutralize ' + neutral);
+    }
+  }
+  assert.ok(wrapper.includes('padding: 0;'), 'remove only the exterior review card padding');
+  assert.ok(table.includes('margin: 0;'), 'remove outer table margin without changing inner summary cells');
+  assert.match(templatePhp, /<table class="shop_table woocommerce-checkout-review-order-table">/);
+  assert.equal([...templatePhp.matchAll(/<table class="shop_table woocommerce-checkout-review-order-table">/g)].length, 1);
+  assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\) #order_review/);
+  assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\) #order_review > \.woocommerce-checkout-review-order-table/);
+});

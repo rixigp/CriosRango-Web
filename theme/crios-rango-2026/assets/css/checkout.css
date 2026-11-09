@@ -498,3 +498,26 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > thead {
   display: none;
 }
+
+
+/* Checkout-only: remove the two inherited outer review surfaces.
+   #order_review owns the large card padding/border/background; the native
+   review table also inherits the global shop_table border/radius/background.
+   Keep the existing review-order table as the sole AJAX fragment root. */
+body.woocommerce-checkout:not(.woocommerce-order-received) #order_review {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  padding: 0;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .woocommerce-checkout-review-order-table {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  margin: 0;
+}
