@@ -324,10 +324,10 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   min-width: 0;
   margin: 0;
   padding: 0;
-  border: 1.5px solid var(--cr-checkout-field-border);
-  border-radius: var(--cr-checkout-field-radius);
+  border: var(--cr-card-border-width) solid var(--cr-border);
+  border-radius: var(--cr-card-radius);
   overflow: hidden;
-  background: var(--cr-app-canvas);
+  background: var(--cr-white);
   list-style: none;
 }
 
@@ -758,10 +758,10 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   margin-inline: var(--cr-checkout-visible-field-inset);
   margin-block: 0;
   padding: 0;
-  border: 1.5px solid var(--cr-checkout-field-border);
-  border-radius: var(--cr-checkout-field-radius);
+  border: var(--cr-card-border-width) solid var(--cr-border);
+  border-radius: var(--cr-card-radius);
   overflow: hidden;
-  background: var(--cr-app-canvas);
+  background: var(--cr-white);
   list-style: none;
   box-sizing: border-box;
 }
@@ -774,9 +774,9 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-addition
   margin: 0 0 22px;
   margin-inline: var(--cr-checkout-visible-field-inset);
   overflow: hidden;
-  border: 1px solid var(--cr-product-border, var(--cr-checkout-field-border));
-  border-radius: 16px;
-  background: #fff;
+  border: var(--cr-card-border-width) solid var(--cr-border);
+  border-radius: var(--cr-card-radius);
+  background: var(--cr-white);
 }
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__toggle {
   display: flex;

@@ -12,6 +12,8 @@
   --cr-muted: #71766f;
   --cr-white: #fff;
   --cr-border: rgba(32, 36, 31, .1);
+  --cr-card-border-width: 1px;
+  --cr-card-radius: 18px;
   --cr-shadow: 0 14px 40px rgba(31, 43, 35, .08);
   --cr-radius-s: 14px;
   --cr-radius-m: 22px;
