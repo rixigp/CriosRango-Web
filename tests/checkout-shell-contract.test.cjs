@@ -474,7 +474,7 @@ test('summary preserves coupons, fees, taxes, totals and before/after total hook
 test('shipping methods share one bordered container and native list items are rows, not cards', () => {
   const listSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
   const list = cssRuleBody(checkoutCss, listSelector);
-  for (const required of ['width: 100%;', 'box-sizing: border-box;', 'border: 1.5px solid var(--cr-checkout-field-border);', 'border-radius: var(--cr-checkout-field-radius);', 'overflow: hidden;', 'margin: 0;', 'padding: 0;', 'background: var(--cr-app-canvas);']) {
+  for (const required of ['width: 100%;', 'box-sizing: border-box;', 'border: var(--cr-card-border-width) solid var(--cr-border);', 'border-radius: var(--cr-card-radius);', 'overflow: hidden;', 'margin: 0;', 'padding: 0;', 'background: var(--cr-white);']) {
     assert.ok(list.includes(required), 'missing single-container property: ' + required);
   }
   const itemSelector = listSelector + ' > li';
@@ -596,8 +596,8 @@ test('shipping native TD padding is the actual width inset and method cards fill
   const list = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
   assert.ok(list.includes('width: 100%;'));
   assert.ok(list.includes('min-width: 0;'));
-  assert.ok(list.includes('border: 1.5px solid var(--cr-checkout-field-border);'));
-  assert.ok(list.includes('border-radius: var(--cr-checkout-field-radius);'));
+  assert.ok(list.includes('border: var(--cr-card-border-width) solid var(--cr-border);'));
+  assert.ok(list.includes('border-radius: var(--cr-card-radius);'));
   assert.ok(list.includes('overflow: hidden;'));
   assert.ok(list.includes('padding: 0;'));
   const li = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li');
@@ -701,7 +701,7 @@ test('shipping remains the only visible method card and native AJAX root is pres
   const rail = checkoutCss.slice(checkoutCss.lastIndexOf('/* Checkout rail: reuse Cart'));
   const listSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
   const list = cssRuleBody(checkoutCss, listSelector);
-  for (const property of ['width: 100%;', 'box-sizing: border-box;', 'border: 1.5px solid var(--cr-checkout-field-border);', 'border-radius: var(--cr-checkout-field-radius);', 'overflow: hidden;', 'margin: 0;', 'padding: 0;']) {
+  for (const property of ['width: 100%;', 'box-sizing: border-box;', 'border: var(--cr-card-border-width) solid var(--cr-border);', 'border-radius: var(--cr-card-radius);', 'overflow: hidden;', 'margin: 0;', 'padding: 0;']) {
     assert.ok(list.includes(property), 'shipping_method must retain its single container property: ' + property);
   }
   assert.ok(checkoutCss.includes('#shipping_method.woocommerce-shipping-methods > li + li'));
@@ -797,4 +797,21 @@ test('visible checkout rails derive from the responsive Cart gutter plus native 
     assert.match(rule, /margin-inline:\s*var\(--cr-checkout-visible-field-inset\)/, selector);
   }
   assert.ok(scope.includes('--cr-checkout-visible-field-inset:'));
+});
+
+
+test('checkout app cards consume the global surface contract without changing their rails', () => {
+  const shippingSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
+  const infoSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info';
+  for (const selector of [shippingSelector, infoSelector]) {
+    const rule = cssLastRuleBody(checkoutCss, selector);
+    assert.ok(rule.includes('border: var(--cr-card-border-width) solid var(--cr-border);'));
+    assert.ok(rule.includes('border-radius: var(--cr-card-radius);'));
+    assert.ok(rule.includes('background: var(--cr-white);'));
+  }
+  assert.ok(mainCss.includes('--cr-card-border-width: 1px;'));
+  assert.ok(mainCss.includes('--cr-card-radius: 18px;'));
+  assert.ok(mainCss.includes('--cr-border: rgba(32, 36, 31, .1);'));
+  assert.ok(mainCss.includes('--cr-white: #fff;'));
+  assert.ok(checkoutCss.includes('margin-inline: var(--cr-checkout-visible-field-inset);'));
 });

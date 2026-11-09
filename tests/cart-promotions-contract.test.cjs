@@ -7,6 +7,7 @@ const root = path.resolve(__dirname, '..');
 const theme = path.join(root, 'theme/crios-rango-2026');
 const cartUi = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
 const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
 const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
 
 const renderStart = cartUi.indexOf('const renderPromotions = (payload) => {');
@@ -74,4 +75,18 @@ test('wallet rendering and coupon entry/action remain intact', () => {
 test('all promotion presentation changes remain cart-scoped', () => {
   assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-promo-card/);
   assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-promotions__available/);
+});
+
+
+test('main Cart product cards consume the shared global card surface tokens', () => {
+  const rules = [...cartCss.matchAll(/(?:body\.woocommerce-cart )?\.cr-cart-item__card\s*\{([^}]*)\}/g)].map(match => match[1]);
+  const surfaceRules = rules.filter(rule => /border(?:-color|-width)?\s*:|border-radius\s*:|background\s*:/.test(rule));
+  assert.ok(surfaceRules.length >= 3, 'base, desktop and mobile surface declarations must be covered');
+  for (const rule of surfaceRules) {
+    assert.match(rule, /border:\s*var\(--cr-card-border-width\) solid var\(--cr-border\)/);
+    assert.match(rule, /border-radius:\s*var\(--cr-card-radius\)/);
+    assert.match(rule, /background:\s*var\(--cr-white\)/);
+  }
+  assert.ok(mainCss.includes('--cr-card-border-width: 1px;'));
+  assert.ok(mainCss.includes('--cr-card-radius: 18px;'));
 });
