@@ -606,7 +606,8 @@ test('shipping native TD padding is the actual width inset and method cards fill
   assert.ok(li.includes('box-sizing: border-box;'));
   assert.equal(li.includes('width: 320px;'), false);
   const label = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > label');
-  assert.ok(label.includes('width: 100%;'));
+  assert.ok(label.includes('width: auto;'));
+  assert.ok(label.includes('margin-inline-start: 10px;'));
   assert.ok(label.includes('min-width: 0;'));
   assert.ok(label.includes('word-break: normal;'));
   assert.ok(label.includes('overflow-wrap: normal;'));
@@ -707,6 +708,9 @@ test('shipping remains the only visible method card and native AJAX root is pres
     assert.ok(list.includes(property), 'shipping_method must retain its single container property: ' + property);
   }
   assert.ok(checkoutCss.includes('#shipping_method.woocommerce-shipping-methods > li + li'));
+  const methodLabel = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > label');
+  assert.ok(methodLabel.includes('margin-inline-start: 10px;'), 'Shipping labels must have a generic gap after the radio');
+  assert.ok(methodLabel.includes('width: auto;'), 'Shipping label auto sizing must preserve the radio-to-label gap');
   assert.ok(checkoutCss.includes('border-top: 1px solid var(--cr-checkout-field-border);'));
   assert.ok(checkoutCss.includes('background: color-mix(in srgb, var(--cr-green) 5%, var(--cr-app-canvas));'));
   assert.match(templatePhp, /<table class="shop_table woocommerce-checkout-review-order-table">/);
@@ -819,6 +823,8 @@ test('checkout app cards consume the global surface contract without changing th
   }
   assert.ok(shipping.includes('background: var(--cr-white);'));
   assert.ok(info.includes('background: var(--cr-app-canvas);'));
+  const toggle = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__toggle');
+  assert.ok(toggle.includes('background: var(--cr-app-canvas);'), 'The visible toggle surface must match the Checkout canvas');
   assert.ok(mainCss.includes('--cr-app-canvas: #FCFAF7;'));
   assert.ok(mainCss.includes('--cr-card-border-width: 1px;'));
   assert.ok(mainCss.includes('--cr-card-radius: 18px;'));

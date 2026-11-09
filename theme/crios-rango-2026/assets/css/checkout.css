@@ -373,10 +373,11 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   align-items: center;
   gap: 12px;
   box-sizing: border-box;
-  width: 100%;
+  width: auto;
   min-width: 0;
   min-height: 61px;
   margin: 0;
+  margin-inline-start: 10px;
   padding: 12px 0;
   color: var(--cr-ink);
   font: inherit;
@@ -775,7 +776,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-addition
   gap: 10px;
   padding: 10px 16px;
   border: 0;
-  background: #fff;
+  background: var(--cr-app-canvas);
   color: var(--cr-green);
   text-align: left;
   font: 600 15px/22px "Roboto",Arial,sans-serif;
