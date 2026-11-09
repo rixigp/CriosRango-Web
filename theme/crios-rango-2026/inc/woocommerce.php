@@ -913,24 +913,34 @@ add_action( 'woocommerce_before_checkout_billing_form', 'cr2026_checkout_render_
 
 
 /**
- * Remove the trailing punctuation from the home-delivery rate label in Checkout only.
+ * Remove only WooCommerce core's separator between a shipping method name and
+ * its appended price in the classic Checkout full label.
  *
- * The rate label is supplied by WooCommerce's shipping-rate object and can come
- * from the shipping method's configured title. Keep that configured title and
- * every shipping identifier/calculation intact; this is a display-only filter
- * scoped to the Checkout rate label.
+ * Keep the method's configured title, rate data, price markup, taxes and every
+ * subsequent label fragment intact. The exact prefix match also preserves any
+ * colon that legitimately belongs to the configured method name.
  */
-function cr2026_checkout_shipping_rate_label_presentation( $label, $rate ) {
+function cr2026_checkout_shipping_full_label_presentation( $label, $method ) {
     if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
         || ( function_exists( 'is_order_received_page' ) && is_order_received_page() )
-        || ! is_string( $label ) ) {
+        || ! is_string( $label )
+        || ! is_object( $method )
+        || ! method_exists( $method, 'get_label' ) ) {
         return $label;
     }
 
-    if ( 'Envío a domicilio:' !== trim( wp_strip_all_tags( $label ) ) ) {
+    $method_label = $method->get_label();
+
+    if ( ! is_string( $method_label ) || '' === $method_label ) {
         return $label;
     }
 
-    return preg_replace( '/:\\s*$/u', '', $label );
+    $prefix = $method_label . ': ';
+
+    if ( 0 !== strpos( $label, $prefix ) ) {
+        return $label;
+    }
+
+    return $method_label . ' ' . substr( $label, strlen( $prefix ) );
 }
-add_filter( 'woocommerce_shipping_rate_label', 'cr2026_checkout_shipping_rate_label_presentation', 99, 2 );
+add_filter( 'woocommerce_cart_shipping_method_full_label', 'cr2026_checkout_shipping_full_label_presentation', 99, 2 );
