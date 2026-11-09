@@ -724,63 +724,49 @@ function cr2026_remove_loyalty_messages_from_product_loops() {
 add_action( 'wp', 'cr2026_remove_loyalty_messages_from_product_loops', 100 );
 
 /**
- * Keep WooCommerce's browser-side address-i18n locale in sync with the
- * billing field contract. address-i18n.js applies these labels/priorities
- * after PHP has rendered the form, then sorts the native field wrappers.
+ * Keep WooCommerce's browser-side address-i18n locale priorities aligned with
+ * the final billing field sequence. address-i18n.js applies these priorities
+ * to native wrappers and sorts them after checkout markup has been rendered.
  *
- * Only label and priority are normalized. required/hidden/validate/type,
- * autocomplete, states and country-specific validation remain WooCommerce-owned.
+ * Locale callbacks intentionally modify priority only. Labels, required,
+ * hidden, type, validate, autocomplete, state and country data remain native.
  */
-function cr2026_checkout_default_address_locale( $fields ) {
+function cr2026_checkout_normalize_address_locale_priorities( $fields ) {
     if ( ! is_array( $fields ) ) {
         return $fields;
     }
 
-    $delivery_locale = array(
-        'first_name' => array( 'label' => __( 'Nombre', 'crios-rango-2026' ), 'priority' => 10 ),
-        'last_name'  => array( 'label' => __( 'Apellidos', 'crios-rango-2026' ), 'priority' => 20 ),
-        'address_1'  => array( 'label' => __( 'Dirección', 'crios-rango-2026' ), 'priority' => 50 ),
-        'state'      => array( 'label' => __( 'Provincia', 'crios-rango-2026' ), 'priority' => 60 ),
-        'city'       => array( 'label' => __( 'Localidad', 'crios-rango-2026' ), 'priority' => 70 ),
-        'postcode'   => array( 'label' => __( 'Código postal', 'crios-rango-2026' ), 'priority' => 80 ),
-        'country'    => array( 'label' => __( 'País', 'crios-rango-2026' ), 'priority' => 90 ),
+    $priorities = array(
+        'phone'     => 40,
+        'address_1' => 50,
+        'state'     => 60,
+        'city'      => 70,
+        'postcode'  => 80,
+        'country'   => 90,
     );
 
-    foreach ( $delivery_locale as $key => $presentation ) {
+    foreach ( $priorities as $key => $priority ) {
         if ( ! isset( $fields[ $key ] ) || ! is_array( $fields[ $key ] ) ) {
-            continue;
+            $fields[ $key ] = array();
         }
-        $fields[ $key ]['label'] = $presentation['label'];
-        $fields[ $key ]['priority'] = $presentation['priority'];
+        $fields[ $key ]['priority'] = $priority;
     }
 
     return $fields;
 }
-add_filter( 'woocommerce_get_country_locale_default', 'cr2026_checkout_default_address_locale', 9999 );
+add_filter( 'woocommerce_get_country_locale_default', 'cr2026_checkout_normalize_address_locale_priorities', 9999 );
+add_filter( 'woocommerce_get_country_locale_base', 'cr2026_checkout_normalize_address_locale_priorities', 9999 );
 
 /**
- * Correct the Spain-specific locale overlay that WooCommerce sends to
- * address-i18n.js (notably postcode priority 65 and state label "Province").
+ * Normalize the Spain-specific overlay too. WooCommerce merges this over the
+ * default locale in address-i18n.js, so phone must be present here as well.
  */
 function cr2026_checkout_country_address_locale( $locale ) {
     if ( ! is_array( $locale ) || ! isset( $locale['ES'] ) || ! is_array( $locale['ES'] ) ) {
         return $locale;
     }
 
-    $spain_locale = array(
-        'state'    => array( 'label' => __( 'Provincia', 'crios-rango-2026' ), 'priority' => 60 ),
-        'city'     => array( 'label' => __( 'Localidad', 'crios-rango-2026' ), 'priority' => 70 ),
-        'postcode' => array( 'label' => __( 'Código postal', 'crios-rango-2026' ), 'priority' => 80 ),
-        'country'  => array( 'label' => __( 'País', 'crios-rango-2026' ), 'priority' => 90 ),
-    );
-
-    foreach ( $spain_locale as $key => $presentation ) {
-        if ( ! isset( $locale['ES'][ $key ] ) || ! is_array( $locale['ES'][ $key ] ) ) {
-            $locale['ES'][ $key ] = array();
-        }
-        $locale['ES'][ $key ]['label'] = $presentation['label'];
-        $locale['ES'][ $key ]['priority'] = $presentation['priority'];
-    }
+    $locale['ES'] = cr2026_checkout_normalize_address_locale_priorities( $locale['ES'] );
 
     return $locale;
 }

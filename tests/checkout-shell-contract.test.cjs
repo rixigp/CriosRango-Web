@@ -269,41 +269,32 @@ test('delivery styling is scoped to checkout and excludes notes and transactiona
 
 
 
-test('WooCommerce address locale overrides are normalized before native address-i18n runs', () => {
-  const localeDefaultStart = woocommercePhp.indexOf('function cr2026_checkout_default_address_locale(');
-  const localeDefaultEnd = woocommercePhp.indexOf("add_filter( 'woocommerce_get_country_locale_default'", localeDefaultStart);
-  const localeDefaultFn = woocommercePhp.slice(localeDefaultStart, localeDefaultEnd);
+test('WooCommerce default, base and ES address locales normalize only native field priorities', () => {
+  const localeFnStart = woocommercePhp.indexOf('function cr2026_checkout_normalize_address_locale_priorities(');
+  const localeFnEnd = woocommercePhp.indexOf("add_filter( 'woocommerce_get_country_locale_default'", localeFnStart);
+  const localeFn = woocommercePhp.slice(localeFnStart, localeFnEnd);
   const countryLocaleStart = woocommercePhp.indexOf('function cr2026_checkout_country_address_locale(');
   const countryLocaleEnd = woocommercePhp.indexOf("add_filter( 'woocommerce_get_country_locale'", countryLocaleStart);
   const countryLocaleFn = woocommercePhp.slice(countryLocaleStart, countryLocaleEnd);
 
-  assert.ok(localeDefaultStart >= 0 && localeDefaultEnd > localeDefaultStart);
+  assert.ok(localeFnStart >= 0 && localeFnEnd > localeFnStart);
   assert.ok(countryLocaleStart >= 0 && countryLocaleEnd > countryLocaleStart);
-  assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale_default', 'cr2026_checkout_default_address_locale', 9999 \)/);
+  assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale_default', 'cr2026_checkout_normalize_address_locale_priorities', 9999 \)/);
+  assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale_base', 'cr2026_checkout_normalize_address_locale_priorities', 9999 \)/);
   assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale', 'cr2026_checkout_country_address_locale', 9999 \)/);
-  assert.doesNotMatch(woocommercePhp, /add_filter\( 'woocommerce_default_address_fields'/);
+
+  for (const [key, priority] of [
+    ['phone', 40], ['address_1', 50], ['state', 60],
+    ['city', 70], ['postcode', 80], ['country', 90]
+  ]) {
+    assert.ok(localeFn.includes("'" + key + "'"), 'missing default/base locale key ' + key);
+    assert.ok(localeFn.includes("'priority' => " + priority), 'missing locale priority ' + priority);
+    assert.ok(countryLocaleFn.includes('cr2026_checkout_normalize_address_locale_priorities'), 'ES locale must reuse priority-only normalizer');
+  }
+  assert.doesNotMatch(localeFn, /\['(?:label|required|hidden|type|validate|autocomplete|states|value)'\]\s*=/);
+  assert.doesNotMatch(countryLocaleFn, /\['(?:label|required|hidden|type|validate|autocomplete|states|value)'\]\s*=/);
   assert.deepEqual([...woocommercePhp.matchAll(/add_filter\( 'woocommerce_checkout_fields', '([^']+)'/g)].map(match => match[1]), ['cr2026_checkout_stabilize_phone_field_order']);
-
-  for (const [key, priority, label] of [
-    ['first_name', 10, 'Nombre'], ['last_name', 20, 'Apellidos'],
-    ['address_1', 50, 'Dirección'], ['state', 60, 'Provincia'],
-    ['city', 70, 'Localidad'], ['postcode', 80, 'Código postal'],
-    ['country', 90, 'País']
-  ]) {
-    assert.ok(localeDefaultFn.includes("'" + key + "'"), 'missing default locale key ' + key);
-    assert.ok(localeDefaultFn.includes("'priority' => " + priority), 'missing default locale priority ' + priority);
-    assert.ok(localeDefaultFn.includes("__( '" + label + "'"), 'missing default locale label ' + label);
-  }
-  for (const [key, priority, label] of [
-    ['state', 60, 'Provincia'], ['city', 70, 'Localidad'],
-    ['postcode', 80, 'Código postal'], ['country', 90, 'País']
-  ]) {
-    assert.ok(countryLocaleFn.includes("'" + key + "'"), 'missing ES locale key ' + key);
-    assert.ok(countryLocaleFn.includes("'priority' => " + priority), 'missing ES locale priority ' + priority);
-    assert.ok(countryLocaleFn.includes("__( '" + label + "'"), 'missing ES locale label ' + label);
-  }
 });
-
 test('runtime pipeline simulation preserves final billing DOM order after ES locale and native JS sorting', () => {
   const expected = [
     ['billing_first_name', 10, 'Nombre'],
@@ -327,33 +318,24 @@ test('runtime pipeline simulation preserves final billing DOM order after ES loc
     address_2: { label: 'Apartment, suite, unit, etc.', priority: 60 },
     city: { label: 'Town / City', priority: 70 },
     state: { label: 'State / County', priority: 80 },
-    postcode: { label: 'Postcode / ZIP', priority: 90 }
+    postcode: { label: 'Postcode / ZIP', priority: 90 },
+    phone: { label: 'Phone', priority: 100 }
   };
-  // Core ES overlay before theme locale filters.
+  // Core ES overlay before theme filters.
   const esBefore = {
     postcode: { priority: 65 },
     state: { label: 'Province' }
   };
   const normalizedDefault = structuredClone(defaults);
   const normalizedEs = structuredClone(esBefore);
-  const localeValues = {
-    first_name: ['Nombre', 10], last_name: ['Apellidos', 20],
-    address_1: ['Dirección', 50], state: ['Provincia', 60],
-    city: ['Localidad', 70], postcode: ['Código postal', 80],
-    country: ['País', 90]
+  const localePriorities = {
+    phone: 40, address_1: 50, state: 60, city: 70, postcode: 80, country: 90
   };
-  for (const [key, [label, priority]] of Object.entries(localeValues)) {
-    normalizedDefault[key] = { ...normalizedDefault[key], label, priority };
-  }
-  for (const [key, [label, priority]] of Object.entries({
-    state: ['Provincia', 60], city: ['Localidad', 70],
-    postcode: ['Código postal', 80], country: ['País', 90]
-  })) {
-    normalizedEs[key] = { ...normalizedEs[key], label, priority };
+  for (const [key, priority] of Object.entries(localePriorities)) {
+    normalizedDefault[key] = { ...(normalizedDefault[key] || {}), priority };
+    normalizedEs[key] = { ...(normalizedEs[key] || {}), priority };
   }
 
-  // get_address_fields overlays ES on defaults, adds email/phone, applies
-  // woocommerce_billing_fields, then PHP uasort runs.
   const billing = {};
   for (const [key, value] of Object.entries(normalizedDefault)) {
     billing['billing_' + key] = { ...value };
@@ -376,14 +358,13 @@ test('runtime pipeline simulation preserves final billing DOM order after ES loc
   // Native address-i18n.js merges default+country locale, rewrites locale
   // labels/priorities, then sorts wrapper rows. Contact fields are not locale
   // address keys and retain their billing-filter priorities.
-  const localeKeys = ['first_name', 'last_name', 'country', 'address_1', 'city', 'state', 'postcode'];
+  const localeKeys = ['phone', 'first_name', 'last_name', 'country', 'address_1', 'city', 'state', 'postcode'];
   const runtime = phpSorted.map(([key, field]) => [key, { ...field }]);
   for (const key of localeKeys) {
     const fieldKey = 'billing_' + key;
     const row = runtime.find(([name]) => name === fieldKey);
     if (!row) continue;
     const merged = { ...(normalizedDefault[key] || {}), ...(normalizedEs[key] || {}) };
-    if (merged.label !== undefined) row[1].label = merged.label;
     if (merged.priority !== undefined) row[1].priority = merged.priority;
   }
   runtime.sort((a, b) => a[1].priority - b[1].priority);
