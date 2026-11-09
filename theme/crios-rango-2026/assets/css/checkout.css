@@ -1207,6 +1207,8 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_
 
 body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__visual {
   display: flex;
+  flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
   align-items: center;
   gap: 12px;
@@ -1231,14 +1233,17 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-
 
 body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__copy {
   display: flex;
+  flex: 1 1 auto;
   min-width: 0;
   flex-direction: column;
   gap: 3px;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__title {
+  min-width: 0;
   color: var(--cr-ink);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__subtitle {
@@ -1260,7 +1265,15 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-
   border: 0;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-brand-logo {
+/* Hide only the native Cecabank image. Keep its original node in the gateway label. */
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method.payment_method_cecabank_gateway > label img {
+  display: none !important;
+}
+
+/* These three runtime-confirmed payment boxes contain descriptive text only. */
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method.payment_method_cecabank_gateway > .payment_box,
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method.payment_method_cheque > .payment_box,
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method.payment_method_cod > .payment_box {
   display: none !important;
 }
 
