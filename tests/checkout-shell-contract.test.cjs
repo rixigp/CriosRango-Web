@@ -741,7 +741,7 @@ test('shipping remains the only visible method card and native AJAX root is pres
   const shippingListSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
   const shippingRowSelector = shippingListSelector + ' > li';
   const selectedShippingRowSelector = shippingRowSelector + ':has(> input.shipping_method[type="radio"]:checked)';
-  assert.ok(cssLastRuleBody(checkoutCss, shippingRowSelector).includes('background: var(--cr-white);'));
+  assert.ok(cssRuleBody(checkoutCss, shippingRowSelector).includes('background: var(--cr-white);'));
   assert.ok(cssLastRuleBody(checkoutCss, selectedShippingRowSelector).includes('background: var(--cr-white);'));
   assert.match(templatePhp, /<table class="shop_table woocommerce-checkout-review-order-table">/);
   assert.equal([...templatePhp.matchAll(/<table class="shop_table woocommerce-checkout-review-order-table">/g)].length, 1);
