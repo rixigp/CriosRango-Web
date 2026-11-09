@@ -1260,7 +1260,7 @@ test('cart product cards keep the requested moderate compact layout and preserve
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   assert.match(cartCss, /grid-template-columns: 100px minmax\(0, 1fr\);/);
   assert.match(cartCss, /width: 100px;\s*height: 120px;/);
-  assert.match(cartCss, /padding: 15px;[\s\S]*?border-radius: 20px;/);
+  assert.match(cartCss, /padding: 15px;[\s\S]*?border-radius: var(--cr-card-radius);/);
   assert.match(cartCss, /min-height: 0 !important;[\s\S]*?height: auto;/);
   assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\{[\s\S]*?row-gap:8px!important/);
   assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-quantity__button \{[\s\S]*?width: 30px;[\s\S]*?height: 30px;/);
@@ -1275,7 +1275,7 @@ test('mobile cart final density, variation label, summary grid and checkout labe
   const cartJs = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8');
 
   // Product card, image, text hierarchy and spacing.
-  assert.match(cartCss, /padding: 15px;[\s\S]*?border-radius: 20px;[\s\S]*?box-shadow: none;/, 'CART_PRODUCT_CARD_COMPACTED=PASS');
+  assert.match(cartCss, /padding: 15px;[\s\S]*?border-radius: var(--cr-card-radius);[\s\S]*?box-shadow: none;/, 'CART_PRODUCT_CARD_COMPACTED=PASS');
   assert.match(cartCss, /min-height: 0 !important;[\s\S]*?height: auto;/, 'CART_PRODUCT_CARD_NO_LARGE_MIN_HEIGHT=PASS');
   assert.match(cartCss, /width: 100px;[\s\S]*?height: 120px;/, 'CART_IMAGE_COMPACT_SIZE=PASS');
   assert.match(cartCss, /font-size: 14px;[\s\S]*?line-height: 1\.25;[\s\S]*?font-weight: 500;/, 'CART_PRODUCT_NAME_MEDIUM_WEIGHT=PASS');
@@ -1451,7 +1451,7 @@ test('CART_PRODUCT_TO_SECONDARY_RAIL_HAS_ONE_12PX_OWNER=PASS',()=>{
 });
 test('CART_PRODUCT_CARD_HORIZONTAL_GEOMETRY_FROZEN=PASS',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
- assert.match(c,/body\.woocommerce-cart \.cr-cart-item__card \{[\s\S]*?padding: 15px;[\s\S]*?border-radius: 20px;/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-item__card \{[\s\S]*?padding: 15px;[\s\S]*?border-radius: var(--cr-card-radius);/);
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-item__card\{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box\}/);
  assert.match(c,/\.cr-cart-item-cell \{ display:block!important; width:100%; min-width:0; padding:0!important/);
  assert.doesNotMatch(c,/cr-cart-item__card\s*\{[^}]*width\s*:\s*calc\(|cr-cart-item__card\s*\{[^}]*margin-inline/);
@@ -1545,7 +1545,7 @@ test('CART_HEADER_HORIZONTAL_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_CARD_GEOMETRY
  assert.match(m,/\.cr-parent-category__toolbar \{[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;[\s\S]*?column-gap: 10px;/);
  assert.match(m,/\.cr-parent-category__back \{[\s\S]*?width: 48px;[\s\S]*?height: 48px;/);
  assert.match(m,/\.cr-parent-category__title \{[\s\S]*?font: 300 21px\/28px "Roboto", Arial, sans-serif;/);
- assert.match(c,/body\.woocommerce-cart \.cr-cart-item__card \{[\s\S]*?padding: 15px;[\s\S]*?border-radius: 20px;/);
+ assert.match(c,/body\.woocommerce-cart \.cr-cart-item__card \{[\s\S]*?padding: 15px;[\s\S]*?border-radius: var(--cr-card-radius);/);
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-item__card\{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box\}/);
 });
 
