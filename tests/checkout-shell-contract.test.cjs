@@ -663,12 +663,12 @@ test('checkout assigns the shared Cart gutter only to inner visual surfaces', ()
 
   const shippingHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading');
   const summaryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading');
-  assert.ok(shippingHeading.includes('margin-inline: var(--cr-checkout-visible-field-inset);'));
+  assert.ok(shippingHeading.includes('margin-inline: var(--cr-card-inline-inset);'));
   assert.ok(summaryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
 
   const methods = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
   assert.ok(methods.includes('width: auto;'));
-  assert.ok(methods.includes('margin-inline: var(--cr-checkout-visible-field-inset);'));
+  assert.ok(methods.includes('margin-inline: var(--cr-card-inline-inset);'));
   assert.equal(methods.includes('width: 100%;'), false);
 });
 
@@ -753,7 +753,7 @@ test('checkout shipping mini-table is flattened to block sizing without changing
 
   const methods = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
   assert.match(methods, /max-width:\s*none/);
-  assert.match(methods, /margin-inline:\s*var\(--cr-checkout-visible-field-inset\)/);
+  assert.match(methods, /margin-inline:\s*var\(--cr-card-inline-inset\)/);
   assert.equal(methods.includes('padding-inline'), false);
   assert.equal(methods.includes('margin-left'), false);
   assert.equal(methods.includes('margin-right'), false);
@@ -784,34 +784,44 @@ test('checkout additional information uses the Product Detail accordion pattern 
   assert.match(checkoutCss, /\.cr-checkout-additional-info__panel\[hidden\][\s\S]*?display:\s*none\s*!important/);
 });
 
-test('visible checkout rails derive from the responsive Cart gutter plus native Woo form-row padding', () => {
-  const scope = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received)');
-  assert.match(checkoutCss, /--cr-checkout-form-row-padding:\s*3px/);
-  assert.match(checkoutCss, /--cr-checkout-visible-field-inset:\s*calc\([\s\S]*?var\(--cr-cart-card-inline-gutter\)[\s\S]*?var\(--cr-checkout-form-row-padding\)[\s\S]*?\)/);
+test('Cart and Checkout cards consume one global responsive rail while delivery fields retain their own gutter', () => {
+  assert.match(mainCss, /--cr-card-inline-inset:\s*16px/);
+  assert.match(mainCss, /@media\s*\(max-width:\s*767px\)[\s\S]*?--cr-card-inline-inset:\s*11px/);
+  assert.match(mainCss, /@media\s*\(max-width:\s*360px\)[\s\S]*?--cr-card-inline-inset:\s*9px/);
+  assert.equal((cartCss.match(/padding-inline:var\(--cr-card-inline-inset\);/g) || []).length, 3);
+  assert.doesNotMatch(checkoutCss, /--cr-checkout-visible-field-inset/);
   for (const selector of [
     'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info',
     'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading',
     'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods'
   ]) {
     const rule = cssLastRuleBody(checkoutCss, selector);
-    assert.match(rule, /margin-inline:\s*var\(--cr-checkout-visible-field-inset\)/, selector);
+    assert.match(rule, /margin-inline:\\s*var\\(--cr-card-inline-inset\\)/, selector);
   }
-  assert.ok(scope.includes('--cr-checkout-visible-field-inset:'));
+  const deliveryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-delivery-heading');
+  const deliveryFields = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper');
+  assert.ok(deliveryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  assert.ok(deliveryFields.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
 });
 
 
 test('checkout app cards consume the global surface contract without changing their rails', () => {
   const shippingSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
   const infoSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info';
-  for (const selector of [shippingSelector, infoSelector]) {
-    const rule = cssLastRuleBody(checkoutCss, selector);
+  const shipping = cssLastRuleBody(checkoutCss, shippingSelector);
+  const info = cssLastRuleBody(checkoutCss, infoSelector);
+  for (const rule of [shipping, info]) {
     assert.ok(rule.includes('border: var(--cr-card-border-width) solid var(--cr-border);'));
     assert.ok(rule.includes('border-radius: var(--cr-card-radius);'));
-    assert.ok(rule.includes('background: var(--cr-white);'));
+    assert.ok(rule.includes('margin-inline: var(--cr-card-inline-inset);'));
   }
+  assert.ok(shipping.includes('background: var(--cr-white);'));
+  assert.ok(info.includes('background: var(--cr-app-canvas);'));
+  assert.ok(mainCss.includes('--cr-app-canvas: #FCFAF7;'));
   assert.ok(mainCss.includes('--cr-card-border-width: 1px;'));
   assert.ok(mainCss.includes('--cr-card-radius: 18px;'));
   assert.ok(mainCss.includes('--cr-border: rgba(32, 36, 31, .1);'));
   assert.ok(mainCss.includes('--cr-white: #fff;'));
-  assert.ok(checkoutCss.includes('margin-inline: var(--cr-checkout-visible-field-inset);'));
+  assert.ok(mainCss.includes('--cr-card-inline-inset: 16px;'));
+  assert.ok(cartCss.includes('padding-inline:var(--cr-card-inline-inset);'));
 });
