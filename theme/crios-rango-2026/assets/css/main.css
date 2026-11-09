@@ -14,6 +14,7 @@
   --cr-border: rgba(32, 36, 31, .1);
   --cr-card-border-width: 1px;
   --cr-card-radius: 18px;
+  --cr-card-inline-inset: 16px;
   --cr-shadow: 0 14px 40px rgba(31, 43, 35, .08);
   --cr-radius-s: 14px;
   --cr-radius-m: 22px;
@@ -2880,4 +2881,14 @@ body.cr-product-listing-view .cr-brand-archive .cr-product-grid { margin-top:0; 
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
+}
+
+
+/* Shared outer rail for primary Cart and Checkout cards. Values mirror the
+   responsive inset owned by the canonical Cart product-card row. */
+@media (max-width: 767px) {
+  :root { --cr-card-inline-inset: 11px; }
+}
+@media (max-width: 360px) {
+  :root { --cr-card-inline-inset: 9px; }
 }

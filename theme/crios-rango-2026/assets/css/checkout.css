@@ -540,18 +540,6 @@ body.woocommerce-checkout:not(.woocommerce-order-received) {
   }
 }
 
-/* WooCommerce classic checkout: .woocommerce form .form-row has native
-   padding: 3px. Preserve that field geometry and align sibling visual rails
-   to the visible input edge: the shared responsive Cart gutter plus that
-   structural form-row padding. */
-body.woocommerce-checkout:not(.woocommerce-order-received) {
-  --cr-checkout-form-row-padding: 3px;
-  --cr-checkout-visible-field-inset: calc(
-    var(--cr-cart-card-inline-gutter) +
-    var(--cr-checkout-form-row-padding)
-  );
-}
-
 /* Outer shell mirrors Cart: full width, system cap, no card gutter. */
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell {
   width: 100%;
@@ -738,7 +726,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading {
   width: auto;
   min-width: 0;
-  margin-inline: var(--cr-checkout-visible-field-inset);
+  margin-inline: var(--cr-card-inline-inset);
   box-sizing: border-box;
 }
 
@@ -755,7 +743,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   width: auto;
   max-width: none;
   min-width: 0;
-  margin-inline: var(--cr-checkout-visible-field-inset);
+  margin-inline: var(--cr-card-inline-inset);
   margin-block: 0;
   padding: 0;
   border: var(--cr-card-border-width) solid var(--cr-border);
@@ -772,11 +760,11 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-addition
   min-width: 0;
   box-sizing: border-box;
   margin: 0 0 22px;
-  margin-inline: var(--cr-checkout-visible-field-inset);
+  margin-inline: var(--cr-card-inline-inset);
   overflow: hidden;
   border: var(--cr-card-border-width) solid var(--cr-border);
   border-radius: var(--cr-card-radius);
-  background: var(--cr-white);
+  background: var(--cr-app-canvas);
 }
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__toggle {
   display: flex;
