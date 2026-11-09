@@ -374,6 +374,9 @@ jobs:
       - name: Validate Product Detail enhancement JavaScript syntax
         run: node --check theme/crios-rango-2026/assets/js/product-ui-enhancements.js
 
+      - name: Validate checkout runtime diagnostic JavaScript syntax
+        run: node --check theme/crios-rango-2026/assets/js/checkout-runtime-debug.js
+
       - name: Run catalog contract tests
         run: node --test tests/catalog-contract.test.cjs
 

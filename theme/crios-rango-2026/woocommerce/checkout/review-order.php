@@ -23,7 +23,9 @@ defined( 'ABSPATH' ) || exit;
 	<table class="cr-checkout-shipping-table">
 		<tbody>
 			<?php do_action( 'woocommerce_review_order_before_shipping' ); ?>
+			<?php cr2026_checkout_runtime_debug_marker( 'START' ); ?>
 			<?php wc_cart_totals_shipping_html(); ?>
+			<?php cr2026_checkout_runtime_debug_marker( 'END' ); ?>
 			<?php do_action( 'woocommerce_review_order_after_shipping' ); ?>
 		</tbody>
 	</table>

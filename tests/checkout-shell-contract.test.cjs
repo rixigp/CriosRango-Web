@@ -503,3 +503,62 @@ test('shipping checkout layout changes are isolated from cart shipping presentat
   assert.doesNotMatch(checkoutCss, /\.woocommerce-cart\s+\.woocommerce-checkout-review-order-table/);
   assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\)/);
 });
+
+
+test('checkout runtime debug is gated by checkout, order-received state, capability and explicit query parameter', () => {
+  const debugPhp = fs.readFileSync(path.join(theme, 'inc/checkout-runtime-debug.php'), 'utf8');
+  const functionsPhp = fs.readFileSync(path.join(theme, 'functions.php'), 'utf8');
+  assert.ok(functionsPhp.includes("require_once CR2026_DIR . '/inc/checkout-runtime-debug.php';"));
+  for (const required of ['function cr2026_checkout_runtime_debug_enabled()', 'is_checkout()', 'is_order_received_page()', "current_user_can( 'manage_woocommerce' )", "$_GET['cr_checkout_debug']", "wp_unslash( $_GET['cr_checkout_debug'] )", "return '1' ==="]) {
+    assert.ok(debugPhp.includes(required), 'missing gate: ' + required);
+  }
+  assert.ok(debugPhp.includes("add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_runtime_debug_panel', 0 )"));
+  assert.ok(debugPhp.includes('if ( ! cr2026_checkout_runtime_debug_enabled() ) return;'));
+});
+
+test('checkout runtime debug uses WooCommerce template locator and inspects live hook callbacks safely', () => {
+  const debugPhp = fs.readFileSync(path.join(theme, 'inc/checkout-runtime-debug.php'), 'utf8');
+  for (const required of ["wc_locate_template( $template_name )", "'checkout/review-order.php'", "'checkout/form-checkout.php'", '$wp_filter[ $hook_name ]->callbacks', 'woocommerce_review_order_before_shipping', 'woocommerce_review_order_after_shipping', 'woocommerce_checkout_order_review', 'woocommerce_before_checkout_form', 'PRIORITY=', 'CALLBACK=']) {
+    assert.ok(debugPhp.includes(required), 'missing runtime inspection: ' + required);
+  }
+  assert.ok(debugPhp.includes('instanceof Closure'));
+  assert.ok(debugPhp.includes('get_class( $callback[0] )'));
+  assert.equal(debugPhp.includes('var_dump'), false);
+  assert.equal(debugPhp.includes('print_r'), false);
+  assert.equal(debugPhp.includes("['accepted_args']"), false);
+  assert.equal(debugPhp.includes("['args']"), false);
+});
+
+test('checkout runtime debug emits no customer or secret fields and reports static count separately', () => {
+  const debugPhp = fs.readFileSync(path.join(theme, 'inc/checkout-runtime-debug.php'), 'utf8');
+  assert.ok(debugPhp.includes("if ( cr2026_checkout_runtime_debug_enabled() ) {"));
+  assert.ok(debugPhp.includes('STATIC_THEME_SHIPPING_RENDER_COUNT=1'));
+  assert.ok(debugPhp.includes('STAGING_BUILD_SHA'));
+  for (const forbidden of ['billing_email', 'billing_phone', 'customer_email', 'cart_hash', 'nonce', 'api_key', 'password']) {
+    assert.equal(debugPhp.toLowerCase().includes(forbidden), false, 'debug must not expose ' + forbidden);
+  }
+  for (const label of ['DEBUG_INITIAL_SCAN', 'DEBUG_AFTER_UPDATED_CHECKOUT', 'DUPLICATE_EXISTS_ON_INITIAL_LOAD', 'DUPLICATE_APPEARS_AFTER_UPDATED_CHECKOUT', 'VISIBLE_SHIPPING_HEADING_COUNT', 'SHIPPING_METHOD_LIST_COUNT', 'SHIPPING_RADIO_COUNT', 'CR_SHIPPING_SECTION_COUNT', 'NATIVE_SHIPPING_ROW_COUNT']) {
+    assert.ok(debugPhp.includes(label), 'missing diagnostic field ' + label);
+  }
+});
+
+test('checkout runtime markers are conditional and bracket exactly one theme shipping renderer', () => {
+  const debugPhp = fs.readFileSync(path.join(theme, 'inc/checkout-runtime-debug.php'), 'utf8');
+  assert.ok(debugPhp.includes('CR_SHIPPING_OVERRIDE_'));
+  const start = templatePhp.indexOf("cr2026_checkout_runtime_debug_marker( 'START' )");
+  const render = templatePhp.indexOf('wc_cart_totals_shipping_html()');
+  const end = templatePhp.indexOf("cr2026_checkout_runtime_debug_marker( 'END' )");
+  assert.ok(start >= 0 && render > start && end > render);
+  assert.equal([...templatePhp.matchAll(/wc_cart_totals_shipping_html\(\)/g)].length, 1);
+});
+
+test('checkout runtime debug JavaScript is read-only against checkout DOM and observes updated_checkout', () => {
+  const debugJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-runtime-debug.js'), 'utf8');
+  for (const required of ['updated_checkout.cr2026RuntimeDebug', '.cr-checkout-shipping-section', '#shipping_method', 'input[name^="shipping_method"]', 'tr.woocommerce-shipping-totals.shipping', 'parentPath', 'getClientRects']) {
+    assert.ok(debugJs.includes(required), 'missing DOM diagnostic ' + required);
+  }
+  for (const forbidden of ['appendChild', 'insertBefore', 'insertAdjacentElement', 'removeChild', '.remove(', '.hide(', '.show(', '.val(', 'setAttribute', 'classList.add', 'classList.remove', 'classList.toggle', '.innerHTML =']) {
+    assert.equal(debugJs.includes(forbidden), false, 'diagnostic JS must not mutate checkout DOM: ' + forbidden);
+  }
+  assert.ok(debugJs.includes("target.textContent = value"), 'only the diagnostic panel text is updated');
+});
