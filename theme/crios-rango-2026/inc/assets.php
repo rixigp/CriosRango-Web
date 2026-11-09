@@ -61,6 +61,13 @@ function cr2026_enqueue_assets() {
             cr2026_asset_version( 'assets/js/checkout-additional-info.js' ),
             true
         );
+        wp_enqueue_script(
+            'cr2026-checkout-payment',
+            CR2026_URI . '/assets/js/checkout-payment.js',
+            array(),
+            cr2026_asset_version( 'assets/js/checkout-payment.js' ),
+            true
+        );
     }
 
     if ( $uses_product_detail_skin ) {

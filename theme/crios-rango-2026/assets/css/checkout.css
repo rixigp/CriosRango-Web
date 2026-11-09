@@ -1111,3 +1111,181 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-
   text-decoration: underline;
 }
 
+
+
+/* Checkout payment methods: one native WooCommerce list, presented as the shared app card. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-payment-heading {
+  margin-inline: var(--cr-card-inline-inset);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment > ul.wc_payment_methods {
+  display: block;
+  box-sizing: border-box;
+  float: none;
+  width: auto;
+  min-width: 0;
+  margin: 0 var(--cr-card-inline-inset) 24px;
+  padding: 0;
+  border: var(--cr-card-border-width) solid var(--cr-border);
+  border-radius: var(--cr-card-radius);
+  overflow: hidden;
+  background: var(--cr-white);
+  list-style: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment > ul.wc_payment_methods > li.wc_payment_method {
+  position: relative;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 64px;
+  margin: 0;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: var(--cr-white);
+  color: var(--cr-ink);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment > ul.wc_payment_methods > li.wc_payment_method + li.wc_payment_method {
+  border-top: 1px solid var(--cr-checkout-field-border);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method > input[name="payment_method"][type="radio"] {
+  display: block;
+  grid-column: 1;
+  grid-row: 1;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  margin: 0;
+  accent-color: var(--cr-green);
+  cursor: pointer;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method > input[name="payment_method"][type="radio"]:focus-visible {
+  outline: 2px solid var(--cr-green);
+  outline-offset: 3px;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method:has(> input[name="payment_method"][type="radio"]:focus-visible) {
+  outline: 2px solid color-mix(in srgb, var(--cr-green) 28%, transparent);
+  outline-offset: 2px;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method > label {
+  display: flex;
+  grid-column: 2;
+  grid-row: 1;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  width: auto;
+  min-width: 0;
+  min-height: 61px;
+  margin: 0 0 0 10px;
+  padding: 12px 0;
+  color: var(--cr-ink);
+  font: inherit;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__visual {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__icon {
+  display: inline-flex;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  color: var(--cr-green);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__icon svg {
+  display: block;
+  width: 23px;
+  height: 23px;
+  stroke: currentColor;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__title {
+  color: var(--cr-ink);
+  font-weight: 600;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__subtitle {
+  color: var(--cr-muted);
+  font-size: .86em;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-brand-logo {
+  display: none !important;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method > .payment_box {
+  grid-column: 1 / -1;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 0 14px 14px 42px;
+  border: 0;
+  border-radius: 0;
+  background: var(--cr-white);
+  color: var(--cr-ink);
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method > .payment_box::before {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method > label {
+    gap: 8px;
+  }
+  body.woocommerce-checkout:not(.woocommerce-order-received) #payment .cr-payment-method__visual {
+    gap: 8px;
+  }
+}
