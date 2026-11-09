@@ -171,7 +171,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   margin: 0;
   padding: 0 6px;
   transform: translateY(-50%);
-  background: var(--cr-app-canvas);
+  background: var(--cr-white);
   color: var(--cr-muted);
   font: inherit;
   font-size: var(--cr-checkout-field-label-size);
@@ -196,7 +196,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   min-height: var(--cr-checkout-field-height);
   border: 1.5px solid var(--cr-checkout-field-border);
   border-radius: var(--cr-checkout-field-radius);
-  background: var(--cr-app-canvas);
+  background: var(--cr-white);
   color: var(--cr-ink);
   box-shadow: none;
   font: inherit;
@@ -230,7 +230,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   height: var(--cr-checkout-field-height);
   border: 1.5px solid var(--cr-checkout-field-border);
   border-radius: var(--cr-checkout-field-radius);
-  background: var(--cr-app-canvas);
+  background: var(--cr-white);
   box-shadow: none;
 }
 
@@ -345,7 +345,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   min-height: 64px;
   border: 0;
   border-radius: 0;
-  background: var(--cr-app-canvas);
+  background: var(--cr-white);
   color: var(--cr-ink);
 }
 
@@ -399,7 +399,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li:has(> input.shipping_method[type="radio"]:checked) {
-  background: color-mix(in srgb, var(--cr-green) 5%, var(--cr-app-canvas));
+  background: var(--cr-white);
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"]:focus-visible {
@@ -1110,3 +1110,4 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-
   color: var(--cr-ink);
   text-decoration: underline;
 }
+

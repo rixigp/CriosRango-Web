@@ -910,3 +910,27 @@ add_action( 'woocommerce_before_checkout_billing_form', 'cr2026_checkout_render_
 
 
 
+
+
+/**
+ * Remove the trailing punctuation from the home-delivery rate label in Checkout only.
+ *
+ * The rate label is supplied by WooCommerce's shipping-rate object and can come
+ * from the shipping method's configured title. Keep that configured title and
+ * every shipping identifier/calculation intact; this is a display-only filter
+ * scoped to the Checkout rate label.
+ */
+function cr2026_checkout_shipping_rate_label_presentation( $label, $rate ) {
+    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() )
+        || ! is_string( $label ) ) {
+        return $label;
+    }
+
+    if ( 'Envío a domicilio:' !== trim( wp_strip_all_tags( $label ) ) ) {
+        return $label;
+    }
+
+    return preg_replace( '/:\\s*$/u', '', $label );
+}
+add_filter( 'woocommerce_shipping_rate_label', 'cr2026_checkout_shipping_rate_label_presentation', 99, 2 );
