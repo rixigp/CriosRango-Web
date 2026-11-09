@@ -549,18 +549,20 @@ test('checkout review fragment has one table root and no template siblings outsi
   assert.doesNotMatch(templatePhp, /<tfoot>[\s\S]*?wc_cart_totals_shipping_html\(\)/);
 });
 
-test('checkout review preserves native product filters, hooks, and total rendering hooks', () => {
+test('checkout review preserves native product filters, hooks, and numeric total rendering contracts', () => {
   for (const required of [
     'woocommerce_review_order_before_cart_contents', 'woocommerce_review_order_after_cart_contents',
     'woocommerce_cart_item_product', 'woocommerce_checkout_cart_item_visible', 'woocommerce_cart_item_class',
     'woocommerce_cart_item_name', 'woocommerce_checkout_cart_item_quantity', 'woocommerce_cart_item_subtotal',
     'woocommerce_review_order_before_order_total', 'woocommerce_review_order_after_order_total',
-    'wc_cart_totals_subtotal_html()', 'wc_cart_totals_coupon_html(', 'wc_cart_totals_fee_html(',
+    'wc_cart_totals_subtotal_html()', 'get_discount_total()', 'get_discount_tax()',
+    'get_fees()', '$fee->total', '$fee->tax', 'wc_cart_totals_fee_html(',
     'wc_cart_totals_taxes_total_html()', 'wc_cart_totals_order_total_html()'
   ]) assert.ok(templatePhp.includes(required), 'native contract missing: ' + required);
-  assert.match(templatePhp, /<tfoot(?:\s+class="[^"]+")?>[\s\S]*?woocommerce_review_order_before_order_total[\s\S]*?order-total[\s\S]*?woocommerce_review_order_after_order_total[\s\S]*?<\/tfoot>/);
+  assert.doesNotMatch(templatePhp, /wc_cart_totals_coupon_html\\(/);
+  assert.doesNotMatch(templatePhp, /class="cart-discount/);
+  assert.match(templatePhp, /<tfoot(?:\\s+class="[^"]+")?>[\\s\\S]*?woocommerce_review_order_before_order_total[\\s\\S]*?order-total[\\s\\S]*?woocommerce_review_order_after_order_total[\\s\\S]*?<\\/tfoot>/);
 });
-
 test('checkout native order-review heading is hidden narrowly and summary step heading remains', () => {
   assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\) #order_review_heading\s*\{\s*display:\s*none;/);
   assert.match(templatePhp, /cr-checkout-summary-heading-row[\s\S]*?cr-checkout-summary-heading[\s\S]*?3[\s\S]*?Resumen/);
