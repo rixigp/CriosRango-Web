@@ -134,21 +134,5 @@ function cr2026_enqueue_assets() {
             true
         );
     }
-
-    // Temporary, opt-in runtime diagnostics. Never enqueue outside Cart/Checkout + explicit query flag.
-    $rail_debug_requested = isset( $_GET['cr_rail_debug'] )
-        && '1' === (string) wp_unslash( $_GET['cr_rail_debug'] );
-    $rail_debug_page = ( function_exists( 'is_cart' ) && is_cart() )
-        || $uses_checkout_shell;
-
-    if ( $rail_debug_requested && $rail_debug_page ) {
-        wp_enqueue_script(
-            'cr2026-rail-debug',
-            CR2026_URI . '/assets/js/rail-debug.js',
-            array(),
-            cr2026_asset_version( 'assets/js/rail-debug.js' ),
-            true
-        );
-    }
 }
 add_action( 'wp_enqueue_scripts', 'cr2026_enqueue_assets', 30 );
