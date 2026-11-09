@@ -41,11 +41,15 @@ defined( 'ABSPATH' ) || exit;
 				</td>
 			</tr>
 		<?php endif; ?>
+	</tbody>
+	<tbody class="cr-checkout-summary-heading">
 		<tr class="cr-checkout-summary-heading-row">
 			<td colspan="2">
 				<div class="cr-checkout-delivery-heading cr-checkout-summary-heading"><span class="cr-checkout-delivery-heading__step" aria-hidden="true">3</span><h2><?php esc_html_e( 'Resumen', 'crios-rango-2026' ); ?></h2></div>
 			</td>
 		</tr>
+	</tbody>
+	<tbody class="cr-checkout-summary-products">
 		<?php
 		do_action( 'woocommerce_review_order_before_cart_contents' );
 
@@ -90,7 +94,7 @@ defined( 'ABSPATH' ) || exit;
 		do_action( 'woocommerce_review_order_after_cart_contents' );
 		?>
 	</tbody>
-	<tfoot>
+	<tfoot class="cr-checkout-summary-totals">
 		<tr class="cart-subtotal">
 			<th><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></th>
 			<td><?php wc_cart_totals_subtotal_html(); ?></td>

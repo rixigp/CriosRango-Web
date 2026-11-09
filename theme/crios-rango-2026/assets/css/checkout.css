@@ -850,3 +850,173 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-addition
   box-sizing: border-box;
   resize: vertical;
 }
+
+
+/* Checkout Phase 4: order summary uses the shared app card contract.
+   The native review table remains the sole AJAX fragment root. Shipping is
+   intentionally outside these summary-only selectors. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals {
+  display: block;
+  width: auto;
+  min-width: 0;
+  margin-inline: var(--cr-card-inline-inset);
+  box-sizing: border-box;
+  background: var(--cr-white);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products {
+  border: var(--cr-card-border-width) solid var(--cr-border);
+  border-bottom: 0;
+  border-radius: var(--cr-card-radius) var(--cr-card-radius) 0 0;
+  overflow: hidden;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals {
+  border: var(--cr-card-border-width) solid var(--cr-border);
+  border-top: 0;
+  border-radius: 0 0 var(--cr-card-radius) var(--cr-card-radius);
+  overflow: hidden;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--cr-border) 75%, transparent);
+  background: transparent;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr > th,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr > td,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr > th,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr > td {
+  display: block;
+  float: none;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  box-sizing: border-box;
+  line-height: 1.45;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr > td:first-child,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr > th:first-child {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr > td:last-child,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr > td:last-child {
+  flex: 0 1 auto;
+  max-width: 42%;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr.cart_item > td.product-name {
+  color: var(--cr-ink);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr.cart_item > td.product-total {
+  color: var(--cr-ink);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products .product-quantity {
+  display: block;
+  margin-top: 4px;
+  color: var(--cr-muted);
+  font-size: .84rem;
+  font-weight: 400;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products .product-quantity::before {
+  content: "Cantidad: ";
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products dl.variation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  margin: 6px 0 0;
+  color: var(--cr-muted);
+  font-size: .82rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products dl.variation dt,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products dl.variation dd {
+  display: inline;
+  float: none;
+  margin: 0;
+  padding: 0;
+  font-weight: 400;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products dl.variation dt {
+  font-weight: 500;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products dl.variation dd p {
+  display: inline;
+  margin: 0;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr > th {
+  color: var(--cr-muted);
+  font-weight: 400;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr > td {
+  color: var(--cr-ink);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr.order-total {
+  align-items: center;
+  margin-top: 2px;
+  padding-block: 17px;
+  border-top: 1px solid var(--cr-border);
+  border-bottom: 0;
+  background: color-mix(in srgb, var(--cr-app-canvas) 55%, var(--cr-white));
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr.order-total > th,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr.order-total > td {
+  color: var(--cr-ink);
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr.order-total > td {
+  text-align: right;
+}
+
+@media (max-width: 420px) {
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr,
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr {
+    gap: 10px;
+    padding: 13px 12px;
+  }
+
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-products > tr > td:last-child,
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-totals > tr > td:last-child {
+    max-width: 40%;
+  }
+}
