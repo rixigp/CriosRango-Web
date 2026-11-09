@@ -456,21 +456,25 @@ test('shipping row precedes the summary heading row and native products remain w
   ]) assert.ok(templatePhp.includes("apply_filters( '" + filter + "'"), 'preserve ' + filter);
 });
 
-test('summary preserves coupons, fees, taxes, totals and before/after total hooks without shipping duplication', () => {
-  assert.match(templatePhp, /WC\(\)->cart->get_coupons\(\)/);
-  assert.match(templatePhp, /wc_cart_totals_coupon_label\( \$coupon \)/);
-  assert.match(templatePhp, /wc_cart_totals_coupon_html\( \$coupon \)/);
-  assert.match(templatePhp, /WC\(\)->cart->get_fees\(\)/);
-  assert.match(templatePhp, /wc_cart_totals_fee_html\( \$fee \)/);
-  assert.match(templatePhp, /wc_tax_enabled\(\)/);
-  assert.match(templatePhp, /WC\(\)->cart->get_tax_totals\(\)/);
-  assert.match(templatePhp, /wc_cart_totals_taxes_total_html\(\)/);
-  assert.match(templatePhp, /wc_cart_totals_order_total_html\(\)/);
-  assert.match(templatePhp, /do_action\( 'woocommerce_review_order_before_order_total' \)/);
-  assert.match(templatePhp, /do_action\( 'woocommerce_review_order_after_order_total' \)/);
+test('summary consolidates coupon and negative-fee discounts while preserving positive fees, taxes and total hooks', () => {
+  for (const required of [
+    '$cart->get_discount_total()', '$cart->get_discount_tax()', '$cart->get_fees()',
+    '$fee->total', '$fee->tax', 'wc_cart_totals_fee_html( $fee )',
+    'wc_tax_enabled()', '$cart->get_tax_totals()', 'wc_cart_totals_taxes_total_html()',
+    'wc_cart_totals_order_total_html()',
+    "do_action( 'woocommerce_review_order_before_order_total' )",
+    "do_action( 'woocommerce_review_order_after_order_total' )"
+  ]) assert.ok(templatePhp.includes(required), 'missing consolidated summary contract: ' + required);
+  assert.ok(!templatePhp.includes('get_coupons()'));
+  assert.ok(!templatePhp.includes('wc_cart_totals_coupon_label('));
+  assert.ok(!templatePhp.includes('wc_cart_totals_coupon_html('));
+  assert.ok(!templatePhp.includes('class="cart-discount'));
   assert.equal([...templatePhp.matchAll(/wc_cart_totals_shipping_html\(\)/g)].length, 1);
+  assert.ok(templatePhp.includes('get_shipping_total()'));
+  assert.ok(templatePhp.includes('get_shipping_tax()'));
+  assert.ok(templatePhp.includes('class="shipping"'));
+  assert.ok(templatePhp.includes('class="fee"'));
 });
-
 test('shipping methods share one bordered container and native list items are rows, not cards', () => {
   const listSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
   const list = cssRuleBody(checkoutCss, listSelector);
