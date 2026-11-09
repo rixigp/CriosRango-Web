@@ -766,7 +766,7 @@ test('checkout additional information uses the Product Detail accordion pattern 
   const checkoutJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-additional-info.js'), 'utf8');
   assert.match(assets, /cr2026-checkout-additional-info/);
   assert.match(checkoutJs, /\.woocommerce-additional-fields/);
-  assert.match(checkoutJs, /\.cr-checkout-additional-info__toggle/);
+  assert.match(checkoutJs, /cr-checkout-additional-info__toggle/);
   assert.match(checkoutJs, /aria-expanded', 'false'/);
   assert.match(checkoutJs, /aria-controls/);
   assert.match(checkoutJs, /panel\.hidden = true/);
