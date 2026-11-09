@@ -796,7 +796,7 @@ test('Cart and Checkout cards consume one global responsive rail while delivery 
     'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods'
   ]) {
     const rule = cssLastRuleBody(checkoutCss, selector);
-    assert.match(rule, /margin-inline:\\s*var\\(--cr-card-inline-inset\\)/, selector);
+    assert.match(rule, /margin-inline:\s*var\(--cr-card-inline-inset\)/, selector);
   }
   const deliveryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-delivery-heading');
   const deliveryFields = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper');
