@@ -16,4 +16,3 @@ require_once CR2026_DIR . '/inc/cart.php';
 require_once CR2026_DIR . '/inc/catalog-routes.php';
 require_once CR2026_DIR . '/inc/product-skin.php';
 require_once CR2026_DIR . '/inc/login.php';
-require_once CR2026_DIR . '/inc/checkout-runtime-debug.php';
