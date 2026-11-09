@@ -712,8 +712,8 @@ test('review root, shipping section and heading rows contribute no outer surface
   assert.ok(rail.includes('#order_review > .woocommerce-checkout-review-order-table'));
   assert.ok(rail.includes('border-spacing: 0;'));
   assert.ok(rail.includes('.woocommerce-checkout-review-order-table > tbody'));
-  assert.ok(rail.includes('.cr-checkout-shipping-section-row > td,'));
-  assert.ok(rail.includes('.cr-checkout-summary-heading-row > td'));
+  assert.ok(rail.includes('.cr-checkout-shipping-section-row > td {'));
+  assert.ok(rail.includes('.cr-checkout-summary-heading-row > td {'));
   assert.ok(rail.includes('.cr-checkout-shipping-section'));
   assert.ok(rail.includes('.cr-checkout-shipping-table'));
   assert.ok(rail.includes('margin: 0;'));
