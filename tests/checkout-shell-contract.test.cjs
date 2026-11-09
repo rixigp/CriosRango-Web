@@ -491,10 +491,10 @@ test('shipping methods share one bordered container and native list items are ro
   assert.ok(item.includes('border-radius: 0;'));
   assert.doesNotMatch(item, /border:\\s*1(?:\\.5)?px solid/);
   const dividerSelector = listSelector + ' > li + li';
-  assert.match(cssRuleBody(checkoutCss, dividerSelector), /border-top:\\s*1px solid/);
+  assert.match(cssRuleBody(checkoutCss, dividerSelector), /border-top:\s*1px solid/);
   const selectedSelector = listSelector + ' > li:has(> input.shipping_method[type="radio"]:checked)';
   const selected = cssRuleBody(checkoutCss, selectedSelector);
-  assert.match(selected, /background:\\s*color-mix/);
+  assert.match(selected, /background:\s*color-mix/);
   assert.doesNotMatch(selected, /border/);
   const outerSection = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section');
   for (const neutral of ['border: 0;', 'border-radius: 0;', 'padding: 0;', 'background: transparent;', 'box-shadow: none;']) assert.ok(outerSection.includes(neutral));
@@ -603,7 +603,10 @@ test('shipping native TD padding is the actual width inset and method cards fill
   const list = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
   assert.ok(list.includes('width: 100%;'));
   assert.ok(list.includes('min-width: 0;'));
-  assert.ok(list.includes('grid-template-columns: minmax(0, 1fr);'));
+  assert.ok(list.includes('border: 1.5px solid var(--cr-checkout-field-border);'));
+  assert.ok(list.includes('border-radius: var(--cr-checkout-field-radius);'));
+  assert.ok(list.includes('overflow: hidden;'));
+  assert.ok(list.includes('padding: 0;'));
   const li = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li');
   assert.ok(li.includes('width: 100%;'));
   assert.ok(li.includes('min-width: 0;'));
