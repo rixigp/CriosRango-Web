@@ -837,6 +837,27 @@ function cr2026_checkout_delivery_fields( $fields, $country = '' ) {
 }
 add_filter( 'woocommerce_billing_fields', 'cr2026_checkout_delivery_fields', 9999, 2 );
 
+/**
+ * Reassert the native phone field priority at the final classic-checkout
+ * field pipeline. Third-party checkout_fields callbacks may alter the
+ * priority after woocommerce_billing_fields has already been sorted.
+ *
+ * Only the priority is changed; type, validation, required state and all
+ * other native field properties remain untouched.
+ */
+function cr2026_checkout_stabilize_phone_field_order( $fields ) {
+    if ( ! is_array( $fields )
+        || ! isset( $fields['billing'], $fields['billing']['billing_phone'] )
+        || ! is_array( $fields['billing']['billing_phone'] ) ) {
+        return $fields;
+    }
+
+    $fields['billing']['billing_phone']['priority'] = 40;
+
+    return $fields;
+}
+add_filter( 'woocommerce_checkout_fields', 'cr2026_checkout_stabilize_phone_field_order', 99999 );
+
 
 /** Add the app-style delivery heading without replacing WooCommerce markup. */
 function cr2026_checkout_render_delivery_heading( $checkout ) {

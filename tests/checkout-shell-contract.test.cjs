@@ -126,6 +126,19 @@ test('billing-field filter runs after locale defaults and before WooCommerce pri
   ]);
 });
 
+test('final checkout_fields filter reasserts phone position after later billing pipeline changes without altering field semantics', () => {
+  assert.match(woocommercePhp, /function cr2026_checkout_stabilize_phone_field_order\( \$fields \)/);
+  assert.match(woocommercePhp, /add_filter\( 'woocommerce_checkout_fields', 'cr2026_checkout_stabilize_phone_field_order', 99999 \)/);
+  const start = woocommercePhp.indexOf('function cr2026_checkout_stabilize_phone_field_order(');
+  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const fn = woocommercePhp.slice(start, end);
+  assert.match(fn, /\$fields\['billing'\]\['billing_phone'\]\['priority'\] = 40/);
+  for (const forbidden of ['type', 'required', 'validate', 'autocomplete', 'class', 'label', 'unset(']) {
+    assert.equal(fn.includes(forbidden), false, 'must not alter ' + forbidden);
+  }
+  assert.match(fn, /return \$fields;/);
+});
+
 test('billing presentation filter changes only label, priority and wrapper classes', () => {
   const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
   const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
