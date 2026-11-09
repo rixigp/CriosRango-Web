@@ -633,95 +633,68 @@ test('checkout review wrapper and root table lose only their inherited outer car
 
 
 
-test('checkout reuses Cart outer and inner rail ownership with one gutter', () => {
+test('checkout assigns the shared Cart gutter only to inner visual surfaces', () => {
   assert.ok(cartCss.includes('body.woocommerce-cart { --cr-cart-card-inline-gutter:16px; }'));
   assert.ok(cartCss.includes('@media(max-width:767px){body.woocommerce-cart{--cr-cart-card-inline-gutter:11px}}'));
   assert.ok(cartCss.includes('@media(max-width:360px){body.woocommerce-cart{--cr-cart-card-inline-gutter:9px}}'));
-  assert.ok(cartCss.includes('body.woocommerce-cart .cr-cart-content{width:100%;max-width:1280px;min-width:0;margin-inline:auto;'));
-  assert.ok(cartCss.includes('margin:0 var(--cr-cart-card-inline-gutter) 14px'));
   assert.ok(cartCss.includes('margin-inline:var(--cr-cart-card-inline-gutter)'));
 
-  assert.ok(checkoutCss.includes('body.woocommerce-checkout:not(.woocommerce-order-received) {\n  --cr-cart-card-inline-gutter: 16px;'));
-  assert.ok(checkoutCss.includes('@media (max-width: 767px)'));
+  assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 16px;'));
   assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 11px;'));
-  assert.ok(checkoutCss.includes('@media (max-width: 360px)'));
   assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 9px;'));
 
   const shell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell');
   assert.ok(shell.includes('width: 100%;'));
   assert.ok(shell.includes('max-width: 1360px;'));
   assert.ok(shell.includes('margin-inline: auto;'));
-  assert.equal(shell.includes('--cr-cart-card-inline-gutter'), false);
-
-  const content = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose > .woocommerce');
-  assert.ok(content.includes('width: 100%;'));
-  assert.ok(content.includes('max-width: 1280px;'));
-  assert.ok(content.includes('margin-inline: auto;'));
+  assert.equal(shell.includes('cr-cart-card-inline-gutter'), false);
 
   const form = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocommerce-checkout');
-  assert.ok(form.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
-  assert.ok(form.includes('width: auto;'));
-  assert.equal((form.match(/cr-cart-card-inline-gutter/g) || []).length, 1);
-  assert.equal(form.includes('padding-inline:'), false);
+  assert.ok(form.includes('width: 100%;'));
+  assert.ok(form.includes('max-width: none;'));
+  assert.ok(form.includes('margin: 0;'));
+  assert.ok(form.includes('padding-inline: 0;'));
+  assert.equal(form.includes('cr-cart-card-inline-gutter'), false);
+
+  const deliveryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-delivery-heading');
+  const deliveryFields = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper');
+  assert.ok(deliveryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  assert.ok(deliveryFields.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+
+  const shippingHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading');
+  const summaryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading');
+  assert.ok(shippingHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  assert.ok(summaryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+
+  const methods = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
+  assert.ok(methods.includes('width: auto;'));
+  assert.ok(methods.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  assert.equal(methods.includes('width: 100%;'), false);
 });
 
-test('checkout has no shell double gutter and uses the Cart inner-surface pattern', () => {
+test('checkout has exactly one gutter layer and no structural gutter owners', () => {
   const shell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell');
-  const content = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose > .woocommerce');
   const form = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocommerce-checkout');
-  assert.equal(shell.includes('padding-inline:'), false);
-  assert.equal(shell.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
-  assert.equal(content.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
-  assert.equal((form.match(/margin-inline: var\(--cr-cart-card-inline-gutter\);/g) || []).length, 1);
-});
-
-test('checkout review and shipping width chain stays full-width through the native method list', () => {
   const root = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .woocommerce-checkout-review-order-table');
+  assert.equal(shell.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
+  assert.equal(form.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
+  assert.equal(root.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
   assert.ok(root.includes('width: 100%;'));
   assert.ok(root.includes('max-width: 100%;'));
   assert.ok(root.includes('table-layout: auto;'));
 
-  const row = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row');
-  assert.ok(row.includes('width: 100%;'));
-
-  const cell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row > td');
-  assert.ok(cell.includes('width: 100%;'));
-  assert.ok(cell.includes('padding: 0;'));
-
   const section = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section');
-  assert.ok(section.includes('width: 100%;'));
-  assert.ok(section.includes('max-width: 100%;'));
-
   const table = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table');
-  assert.ok(table.includes('width: 100%;'));
-  assert.ok(table.includes('table-layout: fixed;'));
-
-  const nativeCell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > td');
-  assert.ok(nativeCell.includes('display: block;'));
-  assert.ok(nativeCell.includes('width: 100%;'));
-  assert.ok(nativeCell.includes('padding: 0;'));
-
-  const list = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
-  assert.ok(list.includes('width: 100%;'));
-  assert.ok(list.includes('max-width: 100%;'));
-  assert.ok(list.includes('box-sizing: border-box;'));
-});
-
-test('review root, shipping section and heading rows contribute no outer surface', () => {
-  const rail = checkoutCss.slice(checkoutCss.lastIndexOf('/* Checkout rail: reuse Cart'));
-  assert.ok(rail.includes('#order_review > .woocommerce-checkout-review-order-table'));
-  assert.ok(rail.includes('border-spacing: 0;'));
-  assert.ok(rail.includes('.woocommerce-checkout-review-order-table > tbody'));
-  assert.ok(rail.includes('.cr-checkout-shipping-section-row > td {'));
-  assert.ok(rail.includes('.cr-checkout-summary-heading-row > td {'));
-  assert.ok(rail.includes('.cr-checkout-shipping-section'));
-  assert.ok(rail.includes('.cr-checkout-shipping-table'));
-  assert.ok(rail.includes('margin: 0;'));
-  assert.ok(rail.includes('padding: 0;'));
-  assert.ok(rail.includes('border: 0;'));
-  assert.ok(rail.includes('background: transparent;'));
-  assert.ok(rail.includes('box-shadow: none;'));
-  assert.ok(rail.includes('overflow: visible;'));
+  const row = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping');
+  const cell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > td');
+  for (const [name, body] of [['section',section],['table',table],['row',row],['cell',cell]]) {
+    assert.equal(body.includes('cr-cart-card-inline-gutter'), false, name + ' must not own the gutter');
+    assert.ok(body.includes('margin: 0;') || body.includes('margin: 0 0 24px;'), name + ' must remain neutral');
+    assert.ok(body.includes('padding: 0;'), name + ' must remain neutral');
+    assert.ok(body.includes('border: 0;'), name + ' must remain neutral');
+    assert.ok(body.includes('background: transparent;'), name + ' must remain neutral');
+    assert.ok(body.includes('box-shadow: none;'), name + ' must remain neutral');
+  }
 });
 
 test('shipping remains the only visible method card and native AJAX root is preserved', () => {

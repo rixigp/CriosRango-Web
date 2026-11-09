@@ -27,9 +27,9 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose {
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell {
-  width: calc(100% + 40px);
+  width: 100%;
   max-width: 1360px;
-  margin-inline: -20px;
+  margin-inline: auto;
   box-sizing: border-box;
 }
 
@@ -52,8 +52,8 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-footer {
   }
 
   body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell {
-    width: calc(100% + 24px);
-    margin-inline: -12px;
+    width: 100%;
+    margin-inline: auto;
   }
 
   body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell > .cr-parent-category__toolbar {
@@ -523,8 +523,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .wooc
 }
 
 
-/* Checkout rail: reuse Cart's wide outer container and one inset inner surface.
-   The form is the single owner for delivery, shipping and section headings. */
+/* Checkout rail: full-width structure; each visual surface owns its own Cart gutter. */
 body.woocommerce-checkout:not(.woocommerce-order-received) {
   --cr-cart-card-inline-gutter: 16px;
 }
@@ -541,11 +540,12 @@ body.woocommerce-checkout:not(.woocommerce-order-received) {
   }
 }
 
-/* Match Cart's outer rail: full available shell, capped at the same 1360px. */
+/* Outer shell mirrors Cart: full width, system cap, no card gutter. */
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell {
   width: 100%;
   max-width: 1360px;
   margin-inline: auto;
+  padding-inline: 0;
   box-sizing: border-box;
 }
 
@@ -556,7 +556,6 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose {
   margin: 0;
 }
 
-/* Cart's content container is full width up to 1280px; Checkout mirrors it. */
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose > .woocommerce {
   width: 100%;
   max-width: 1280px;
@@ -565,27 +564,38 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose > 
   box-sizing: border-box;
 }
 
-/* One inner gutter owner, equivalent to Cart's card surfaces.
-   Delivery fields, headings, review root and shipping list share this rail. */
+/* The form is structural only: it must never own the horizontal gutter. */
 body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocommerce-checkout {
-  width: auto;
+  display: block;
+  width: 100%;
   max-width: none;
   min-width: 0;
-  margin-block: 0;
+  margin: 0;
+  padding-inline: 0;
+  box-sizing: border-box;
+}
+
+/* Delivery surfaces share the Cart inset independently. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-delivery-heading {
+  margin-inline: var(--cr-cart-card-inline-gutter);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper {
+  width: auto;
+  min-width: 0;
   margin-inline: var(--cr-cart-card-inline-gutter);
   box-sizing: border-box;
 }
 
-/* Header keeps its established toolbar inset without compensating for a
-   narrowed shell; the content rail below owns its own single gutter. */
+/* Header stays in the full-width shell; toolbar's own inset is unchanged. */
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell {
   width: 100%;
   max-width: 1360px;
-  margin-inline: 0;
+  margin-inline: auto;
   box-sizing: border-box;
 }
 
-/* Keep the native AJAX fragment root full-width; no table autosizing by content. */
+/* Native AJAX fragment root and table remain full-width and own no gutter. */
 body.woocommerce-checkout:not(.woocommerce-order-received) #order_review {
   width: 100%;
   max-width: none;
@@ -606,6 +616,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .wooc
   max-width: 100%;
   min-width: 0;
   margin: 0;
+  padding: 0;
   border: 0;
   border-radius: 0;
   border-spacing: 0;
@@ -616,37 +627,27 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .wooc
   box-sizing: border-box;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row {
-  width: 100%;
-  box-sizing: border-box;
-}
-
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row,
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-summary-heading-row {
   width: 100%;
   box-sizing: border-box;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row > td {
-  width: 100%;
-  padding: 0;
-  box-sizing: border-box;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row > td,
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-summary-heading-row > td {
   width: 100%;
+  margin: 0;
   padding: 0;
-  box-sizing: border-box;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+  box-sizing: border-box;
 }
 
+/* Technical wrappers are neutral and never become gutter owners. */
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section {
+  display: block;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -677,9 +678,10 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody {
   width: 100%;
+  margin: 0;
+  padding: 0;
   border: 0;
   border-radius: 0;
-  padding: 0;
   background: transparent;
   box-shadow: none;
 }
@@ -688,6 +690,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   display: block;
   width: 100%;
   margin: 0;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -709,13 +712,21 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   box-sizing: border-box;
 }
 
+/* Each visible surface, and only that surface, receives the Cart gutter. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading {
+  width: auto;
+  margin-inline: var(--cr-cart-card-inline-gutter);
+}
+
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods {
   display: block;
   float: none;
-  width: 100%;
-  max-width: 100%;
+  width: auto;
+  max-width: none;
   min-width: 0;
-  margin: 0;
+  margin-inline: var(--cr-cart-card-inline-gutter);
+  margin-block: 0;
   padding: 0;
   border: 1.5px solid var(--cr-checkout-field-border);
   border-radius: var(--cr-checkout-field-radius);
@@ -724,4 +735,3 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   list-style: none;
   box-sizing: border-box;
 }
-
