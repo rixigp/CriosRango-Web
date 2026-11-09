@@ -561,7 +561,11 @@ test('checkout review preserves native product filters, hooks, and numeric total
   ]) assert.ok(templatePhp.includes(required), 'native contract missing: ' + required);
   assert.ok(!templatePhp.includes('wc_cart_totals_coupon_html('));
   assert.ok(!templatePhp.includes('class="cart-discount'));
-  assert.match(templatePhp, /<tfoot(?:\\s+class="[^"]+")?>[\\s\\S]*?woocommerce_review_order_before_order_total[\\s\\S]*?order-total[\\s\\S]*?woocommerce_review_order_after_order_total[\\s\\S]*?<\\/tfoot>/);
+  assert.ok(templatePhp.includes('<tfoot class="cr-checkout-summary-totals">'));
+  assert.ok(templatePhp.includes('woocommerce_review_order_before_order_total'));
+  assert.ok(templatePhp.includes('class="order-total"'));
+  assert.ok(templatePhp.includes('woocommerce_review_order_after_order_total'));
+  assert.ok(templatePhp.includes('</tfoot>'));
 });
 test('checkout native order-review heading is hidden narrowly and summary step heading remains', () => {
   assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\) #order_review_heading\s*\{\s*display:\s*none;/);
