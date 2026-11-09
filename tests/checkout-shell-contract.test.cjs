@@ -72,6 +72,16 @@ function cssRuleBody(css, selector) {
   return css.slice(bodyStart, bodyEnd);
 }
 
+function cssLastRuleBody(css, selector) {
+  const marker = selector + ' {';
+  const start = css.lastIndexOf(marker);
+  assert.notEqual(start, -1, 'Missing final CSS rule for ' + selector);
+  const bodyStart = start + marker.length;
+  const bodyEnd = css.indexOf('}', bodyStart);
+  assert.notEqual(bodyEnd, -1, 'Unclosed final CSS rule for ' + selector);
+  return css.slice(bodyStart, bodyEnd);
+}
+
 test('checkout toolbar uses only the global header top reservation', () => {
   const globalHeader = cssRuleBody(mainCss, 'body.cr-global-app-header:not(.home)');
   assert.match(globalHeader, /padding-top:\s*var\(--cr-app-topbar-height\)/);
@@ -623,29 +633,82 @@ test('checkout review wrapper and root table lose only their inherited outer car
 
 
 
-test('checkout rail reuses the exact Cart gutter values with one shell owner', () => {
+test('checkout reuses Cart outer and inner rail ownership with one gutter', () => {
   assert.ok(cartCss.includes('body.woocommerce-cart { --cr-cart-card-inline-gutter:16px; }'));
   assert.ok(cartCss.includes('@media(max-width:767px){body.woocommerce-cart{--cr-cart-card-inline-gutter:11px}}'));
   assert.ok(cartCss.includes('@media(max-width:360px){body.woocommerce-cart{--cr-cart-card-inline-gutter:9px}}'));
+  assert.ok(cartCss.includes('body.woocommerce-cart .cr-cart-content{width:100%;max-width:1280px;min-width:0;margin-inline:auto;'));
   assert.ok(cartCss.includes('margin:0 var(--cr-cart-card-inline-gutter) 14px'));
-  assert.ok(checkoutCss.includes('--cr-checkout-content-inline-gutter: 16px;'));
-  assert.ok(checkoutCss.includes('--cr-checkout-content-inline-gutter: 11px;'));
-  assert.ok(checkoutCss.includes('--cr-checkout-content-inline-gutter: 9px;'));
-  assert.ok(checkoutCss.includes('width: min(calc(100% - 2 * var(--cr-checkout-content-inline-gutter)), var(--cr-shell));'));
-  assert.ok(checkoutCss.includes('width: calc(100% + 2 * var(--cr-checkout-content-inline-gutter));'));
-  assert.ok(checkoutCss.includes('margin-inline: calc(-1 * var(--cr-checkout-content-inline-gutter));'));
-  const pageRuleStart = checkoutCss.indexOf('body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,');
-  assert.notEqual(pageRuleStart, -1, 'checkout page rail selector must exist');
-  const pageRuleEnd = checkoutCss.indexOf('}', pageRuleStart);
-  assert.notEqual(pageRuleEnd, -1, 'checkout page rail rule must close');
-  const pageRule = checkoutCss.slice(pageRuleStart, pageRuleEnd);
-  assert.ok(pageRule.includes('body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose'));
-  assert.ok(pageRule.includes('width: 100%;'));
-  assert.ok(pageRule.includes('margin: 0;'));
+  assert.ok(cartCss.includes('margin-inline:var(--cr-cart-card-inline-gutter)'));
+
+  assert.ok(checkoutCss.includes('body.woocommerce-checkout:not(.woocommerce-order-received) {\n  --cr-cart-card-inline-gutter: 16px;'));
+  assert.ok(checkoutCss.includes('@media (max-width: 767px)'));
+  assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 11px;'));
+  assert.ok(checkoutCss.includes('@media (max-width: 360px)'));
+  assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 9px;'));
+
+  const shell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell');
+  assert.ok(shell.includes('width: 100%;'));
+  assert.ok(shell.includes('max-width: 1360px;'));
+  assert.ok(shell.includes('margin-inline: auto;'));
+  assert.equal(shell.includes('--cr-cart-card-inline-gutter'), false);
+
+  const content = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose > .woocommerce');
+  assert.ok(content.includes('width: 100%;'));
+  assert.ok(content.includes('max-width: 1280px;'));
+  assert.ok(content.includes('margin-inline: auto;'));
+
+  const form = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocommerce-checkout');
+  assert.ok(form.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  assert.ok(form.includes('width: auto;'));
+  assert.equal((form.match(/cr-cart-card-inline-gutter/g) || []).length, 1);
+  assert.equal(form.includes('padding-inline:'), false);
+});
+
+test('checkout has no shell double gutter and uses the Cart inner-surface pattern', () => {
+  const shell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell');
+  const content = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose > .woocommerce');
+  const form = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocommerce-checkout');
+  assert.equal(shell.includes('padding-inline:'), false);
+  assert.equal(shell.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
+  assert.equal(content.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
+  assert.equal((form.match(/margin-inline: var\(--cr-cart-card-inline-gutter\);/g) || []).length, 1);
+});
+
+test('checkout review and shipping width chain stays full-width through the native method list', () => {
+  const root = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .woocommerce-checkout-review-order-table');
+  assert.ok(root.includes('width: 100%;'));
+  assert.ok(root.includes('max-width: 100%;'));
+  assert.ok(root.includes('table-layout: auto;'));
+
+  const row = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row');
+  assert.ok(row.includes('width: 100%;'));
+
+  const cell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row > td');
+  assert.ok(cell.includes('width: 100%;'));
+  assert.ok(cell.includes('padding: 0;'));
+
+  const section = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section');
+  assert.ok(section.includes('width: 100%;'));
+  assert.ok(section.includes('max-width: 100%;'));
+
+  const table = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table');
+  assert.ok(table.includes('width: 100%;'));
+  assert.ok(table.includes('table-layout: fixed;'));
+
+  const nativeCell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > td');
+  assert.ok(nativeCell.includes('display: block;'));
+  assert.ok(nativeCell.includes('width: 100%;'));
+  assert.ok(nativeCell.includes('padding: 0;'));
+
+  const list = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
+  assert.ok(list.includes('width: 100%;'));
+  assert.ok(list.includes('max-width: 100%;'));
+  assert.ok(list.includes('box-sizing: border-box;'));
 });
 
 test('review root, shipping section and heading rows contribute no outer surface', () => {
-  const rail = checkoutCss.slice(checkoutCss.lastIndexOf('/* Checkout rail: one shell owns'));
+  const rail = checkoutCss.slice(checkoutCss.lastIndexOf('/* Checkout rail: reuse Cart'));
   assert.ok(rail.includes('#order_review > .woocommerce-checkout-review-order-table'));
   assert.ok(rail.includes('border-spacing: 0;'));
   assert.ok(rail.includes('.woocommerce-checkout-review-order-table > tbody'));
@@ -662,7 +725,7 @@ test('review root, shipping section and heading rows contribute no outer surface
 });
 
 test('shipping remains the only visible method card and native AJAX root is preserved', () => {
-  const rail = checkoutCss.slice(checkoutCss.lastIndexOf('/* Checkout rail: one shell owns'));
+  const rail = checkoutCss.slice(checkoutCss.lastIndexOf('/* Checkout rail: reuse Cart'));
   const listSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
   const list = cssRuleBody(checkoutCss, listSelector);
   for (const property of ['width: 100%;', 'box-sizing: border-box;', 'border: 1.5px solid var(--cr-checkout-field-border);', 'border-radius: var(--cr-checkout-field-radius);', 'overflow: hidden;', 'margin: 0;', 'padding: 0;']) {
