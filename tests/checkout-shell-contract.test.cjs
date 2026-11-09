@@ -612,3 +612,35 @@ test('shipping presentation is adapted to the table-row fragment without changin
   assert.match(checkoutCss, /#shipping_method\.woocommerce-shipping-methods\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\)/);
   assert.match(checkoutCss, /word-break:\s*normal;\s*overflow-wrap:\s*normal;/);
 });
+
+
+test('checkout review THEAD markup remains native but is hidden only on checkout', () => {
+  assert.ok(templatePhp.includes('<thead>'));
+  assert.ok(templatePhp.includes('<th class="product-name">'));
+  assert.ok(templatePhp.includes('<th class="product-total">'));
+  const selector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > thead';
+  const rule = cssRuleBody(checkoutCss, selector);
+  assert.ok(rule.includes('display: none;'));
+  assert.equal(checkoutCss.includes('body.woocommerce-cart ' + selector), false);
+});
+
+test('shipping native TD padding is the actual width inset and method cards fill available rail', () => {
+  const td = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table tr.woocommerce-shipping-totals.shipping > td');
+  assert.ok(td.includes('display: block;'));
+  assert.ok(td.includes('width: 100%;'));
+  assert.ok(td.includes('padding: 0;'));
+  const list = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
+  assert.ok(list.includes('width: 100%;'));
+  assert.ok(list.includes('min-width: 0;'));
+  assert.ok(list.includes('grid-template-columns: minmax(0, 1fr);'));
+  const li = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li');
+  assert.ok(li.includes('width: 100%;'));
+  assert.ok(li.includes('min-width: 0;'));
+  assert.ok(li.includes('box-sizing: border-box;'));
+  assert.equal(li.includes('width: 320px;'), false);
+  const label = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > label');
+  assert.ok(label.includes('width: 100%;'));
+  assert.ok(label.includes('min-width: 0;'));
+  assert.ok(label.includes('word-break: normal;'));
+  assert.ok(label.includes('overflow-wrap: normal;'));
+});
