@@ -647,6 +647,8 @@ test('checkout assigns the shared Cart gutter only to inner visual surfaces', ()
   assert.doesNotMatch(shell, /(^|\s)width\s*:/, 'Checkout shell must inherit width from the global .cr-shell rule');
   assert.ok(shell.includes('max-width: 1360px;'));
   assert.ok(shell.includes('margin-inline: auto;'));
+  assert.ok(shell.includes('padding-inline: 0;'));
+  assert.ok(shell.includes('box-sizing: border-box;'));
   assert.equal(shell.includes('cr-cart-card-inline-gutter'), false);
 
   const form = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocommerce-checkout');
