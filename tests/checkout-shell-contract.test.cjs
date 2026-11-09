@@ -238,12 +238,25 @@ test('delivery controls and floating-label notch use the white card surface', ()
   assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*position:\s*absolute;[^}]*transform:\s*translateY\(-50%\)/s);
 });
 
-test('home-delivery punctuation is removed only from the Checkout shipping-rate presentation', () => {
-  assert.match(woocommercePhp, /function cr2026_checkout_shipping_rate_label_presentation\( \$label, \$rate \)/);
-  assert.ok(woocommercePhp.includes("add_filter( 'woocommerce_shipping_rate_label', 'cr2026_checkout_shipping_rate_label_presentation', 99, 2 );"));
-  assert.ok(woocommercePhp.includes("'Envío a domicilio:'"));
-  assert.ok(woocommercePhp.includes("return preg_replace( '/:\\\\s*$/u', '', $label );"));
+test('WooCommerce core full shipping labels lose only the appended price separator in Checkout', () => {
+  assert.match(woocommercePhp, /function cr2026_checkout_shipping_full_label_presentation\( \$label, \$method \)/);
+  assert.ok(woocommercePhp.includes("add_filter( 'woocommerce_cart_shipping_method_full_label', 'cr2026_checkout_shipping_full_label_presentation', 99, 2 );"));
+  assert.ok(woocommercePhp.includes("$method->get_label()"));
+  assert.ok(woocommercePhp.includes("$prefix = $method_label . ': ';"));
+  assert.ok(woocommercePhp.includes("0 !== strpos( $label, $prefix )"));
+  assert.ok(woocommercePhp.includes("substr( $label, strlen( $prefix ) )"));
+  assert.doesNotMatch(woocommercePhp, /woocommerce_shipping_rate_label|cr2026_checkout_shipping_rate_label_presentation/);
   assert.match(woocommercePhp, /! is_checkout\(\)[\s\S]*?is_order_received_page\(\)/);
+
+  const removeCoreSeparator = (label, methodLabel) => {
+    const prefix = methodLabel + ': ';
+    return label.startsWith(prefix) ? methodLabel + ' ' + label.slice(prefix.length) : label;
+  };
+
+  assert.equal(removeCoreSeparator('Envío a domicilio: 5,00€', 'Envío a domicilio'), 'Envío a domicilio 5,00€');
+  assert.equal(removeCoreSeparator('Entrega urgente: Madrid: 5,00€', 'Entrega urgente: Madrid'), 'Entrega urgente: Madrid 5,00€');
+  assert.equal(removeCoreSeparator('Envío gratuito', 'Envío gratuito'), 'Envío gratuito');
+  assert.equal(removeCoreSeparator('Envío gratuito: <small>Gratis</small>', 'Envío gratuito'), 'Envío gratuito <small>Gratis</small>');
 });
 
 test('delivery labels float over native controls and retain the real WooCommerce label element', () => {
