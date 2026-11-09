@@ -423,3 +423,47 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
     gap: 8px;
   }
 }
+
+
+/* Checkout review fragment contract: shipping and summary are rows in the single root table. */
+body.woocommerce-checkout:not(.woocommerce-order-received) #order_review_heading {
+  display: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row > td,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-summary-heading-row > td {
+  box-sizing: border-box;
+  width: 100%;
+  padding-inline: 0;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section-row > td {
+  width: 100%;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 24px;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table {
+  box-sizing: border-box;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  table-layout: auto;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > th {
+  display: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > td {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-width: 0;
+}

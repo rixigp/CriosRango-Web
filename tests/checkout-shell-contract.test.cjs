@@ -253,7 +253,7 @@ test('delivery styling is scoped to checkout and excludes notes and transactiona
     'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-shipping-fields'
   ]) assert.ok(checkoutCss.includes(selector), 'missing scoped selector ' + selector);
   for (const forbidden of [
-    '.woocommerce-additional-fields', 'order_review', '#payment', 'payment_method_',
+    '.woocommerce-additional-fields', '#payment', 'payment_method_',
     'checkout_coupon', 'place_order', 'wployalty', 'wc-ajax'
   ]) assert.equal(checkoutCss.includes(forbidden), false, forbidden + ' must remain outside delivery styling');
 });
@@ -561,4 +561,51 @@ test('checkout runtime debug JavaScript is read-only against checkout DOM and ob
     assert.equal(debugJs.includes(forbidden), false, 'diagnostic JS must not mutate checkout DOM: ' + forbidden);
   }
   assert.ok(debugJs.includes("target.textContent = value"), 'only the diagnostic panel text is updated');
+});
+
+
+test('checkout review fragment has one table root and no template siblings outside it', () => {
+  const rootOpen = templatePhp.indexOf('<table class="shop_table woocommerce-checkout-review-order-table">');
+  const rootClose = templatePhp.lastIndexOf('</table>');
+  assert.ok(rootOpen >= 0 && rootClose > rootOpen);
+  assert.equal([...templatePhp.matchAll(/<table class="shop_table woocommerce-checkout-review-order-table">/g)].length, 1);
+  assert.equal([...templatePhp.matchAll(/<table class="shop_table woocommerce-checkout-review-order-table">/g)].length, 1, 'single fragment root');
+  assert.equal(templatePhp.slice(0, rootOpen).replace(/<\?php[\s\S]*?\?>|\s|<!--[^]*?-->/g, ''), '');
+  assert.equal(templatePhp.slice(rootClose + '</table>'.length).replace(/<\?php[\s\S]*?\?>|\s|<!--[^]*?-->/g, ''), '');
+  assert.match(templatePhp, /<tr class="cr-checkout-shipping-section-row">\s*<td colspan="2">/);
+  assert.match(templatePhp, /<tr class="cr-checkout-summary-heading-row">\s*<td colspan="2">[\s\S]*?3[\s\S]*?Resumen/);
+  assert.ok(templatePhp.indexOf('cr-checkout-shipping-section-row') < templatePhp.indexOf('cr-checkout-summary-heading-row'));
+  assert.ok(templatePhp.indexOf('cr-checkout-summary-heading-row') < templatePhp.indexOf('woocommerce_review_order_before_cart_contents'));
+  assert.equal([...templatePhp.matchAll(/wc_cart_totals_shipping_html\(\)/g)].length, 1);
+  assert.match(templatePhp, /if \( WC\(\)->cart->needs_shipping\(\) && WC\(\)->cart->show_shipping\(\) \)/);
+  assert.match(templatePhp, /woocommerce_review_order_before_shipping[\s\S]*?wc_cart_totals_shipping_html\(\)[\s\S]*?woocommerce_review_order_after_shipping/);
+  assert.doesNotMatch(templatePhp, /<tfoot>[\s\S]*?wc_cart_totals_shipping_html\(\)/);
+});
+
+test('checkout review preserves native product filters, hooks, and total rendering hooks', () => {
+  for (const required of [
+    'woocommerce_review_order_before_cart_contents', 'woocommerce_review_order_after_cart_contents',
+    'woocommerce_cart_item_product', 'woocommerce_checkout_cart_item_visible', 'woocommerce_cart_item_class',
+    'woocommerce_cart_item_name', 'woocommerce_checkout_cart_item_quantity', 'woocommerce_cart_item_subtotal',
+    'woocommerce_review_order_before_order_total', 'woocommerce_review_order_after_order_total',
+    'wc_cart_totals_subtotal_html()', 'wc_cart_totals_coupon_html(', 'wc_cart_totals_fee_html(',
+    'wc_cart_totals_taxes_total_html()', 'wc_cart_totals_order_total_html()'
+  ]) assert.ok(templatePhp.includes(required), 'native contract missing: ' + required);
+  assert.match(templatePhp, /<tfoot>[\s\S]*?woocommerce_review_order_before_order_total[\s\S]*?order-total[\s\S]*?woocommerce_review_order_after_order_total[\s\S]*?<\/tfoot>/);
+});
+
+test('checkout native order-review heading is hidden narrowly and summary step heading remains', () => {
+  assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\) #order_review_heading\s*\{\s*display:\s*none;/);
+  assert.match(templatePhp, /cr-checkout-summary-heading-row[\s\S]*?cr-checkout-summary-heading[\s\S]*?3[\s\S]*?Resumen/);
+  assert.doesNotMatch(checkoutCss, /#order_review\s*\{/);
+});
+
+test('shipping presentation is adapted to the table-row fragment without changing methods or values', () => {
+  for (const required of [
+    '.cr-checkout-shipping-section-row > td', '.cr-checkout-shipping-table',
+    'width: 100%', 'table-layout: auto', 'tr.woocommerce-shipping-totals.shipping > th',
+    'tr.woocommerce-shipping-totals.shipping > td'
+  ]) assert.ok(checkoutCss.includes(required), 'missing shipping row presentation rule: ' + required);
+  assert.match(checkoutCss, /#shipping_method\.woocommerce-shipping-methods\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\)/);
+  assert.match(checkoutCss, /word-break:\s*normal;\s*overflow-wrap:\s*normal;/);
 });
