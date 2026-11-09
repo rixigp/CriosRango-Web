@@ -947,33 +947,61 @@ test('payment radios retain the exact native radio presentation contract used by
   assert.doesNotMatch(checkoutPaymentJs, /preventDefault\(|\.trigger\(/);
 });
 
-test('card and Bizum receive visual-only titles, subtitles and currentColor SVG icons', () => {
-  assert.match(checkoutPaymentJs, /Pago con tarjeta/);
-  assert.match(checkoutPaymentJs, /Pago seguro con tarjeta/);
-  assert.match(checkoutPaymentJs, /Recibirás las instrucciones de pago al finalizar el pedido/);
-  assert.match(checkoutPaymentJs, /kind === 'card'/);
-  assert.match(checkoutPaymentJs, /kind === 'bizum'/);
-  assert.match(checkoutPaymentJs, /stroke="currentColor"/);
-  assert.match(checkoutPaymentJs, /fill="none"/);
-  assert.match(checkoutPaymentJs, /unicaja\|cecabank/);
-  assert.match(checkoutCss, /\.cr-payment-brand-logo\s*\{\s*display:\s*none !important;/);
-  assert.match(checkoutCss, /\.wc_payment_method > \.payment_box/);
-  assert.match(checkoutCss, /\.wc_payment_method > \.payment_box::before\s*\{\s*display:\s*none;/);
-  const paymentBox = cssLastRuleBody(
-    checkoutCss,
-    'body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method > .payment_box'
-  );
-  assert.ok(paymentBox.includes('background: var(--cr-white);'));
-  assert.ok(paymentBox.includes('grid-column: 1 / -1;'));
-  assert.equal(paymentBox.includes('display: none;'), false);
+test('the three payment gateways are classified only by their native gateway IDs', () => {
+  assert.match(checkoutPaymentJs, /gatewayId === 'cecabank_gateway' \? 'card'/);
+  assert.match(checkoutPaymentJs, /gatewayId === 'cheque' \? 'bizum'/);
+  assert.match(checkoutPaymentJs, /gatewayId === 'cod' \? 'store'/);
+  assert.match(checkoutPaymentJs, /var gatewayId = radio\.value;/);
+  assert.doesNotMatch(checkoutPaymentJs, /unicaja|cecabank.*alt|alt.*cecabank|src.*cecabank/i);
+  assert.doesNotMatch(checkoutPaymentJs, /radio\.(?:value|checked)\s*=|setAttribute\(\s*['"](?:id|name|value|checked)/);
+  assert.doesNotMatch(checkoutPaymentJs, /preventDefault\(|\.trigger\(/);
 });
 
-test('generic payment gateways remain visible and the visual enhancer is idempotent across updated_checkout', () => {
-  assert.match(checkoutPaymentJs, /: 'generic'/);
-  assert.match(checkoutPaymentJs, /: kind === 'bizum' \? 'Bizum' : nativeText/);
+test('Cecabank native logo remains in the DOM and is hidden only within its Checkout gateway row', () => {
+  assert.match(checkoutPaymentJs, /label\.childNodes/);
+  assert.doesNotMatch(checkoutPaymentJs, /removeChild|\.remove\(\)|cloneNode/);
+  assert.match(checkoutCss, /#payment \.wc_payment_method\.payment_method_cecabank_gateway > label img\s*\{\s*display:\s*none !important;/);
+  assert.doesNotMatch(checkoutPaymentCssForTest(), /cr-payment-brand-logo/);
+});
+
+function checkoutPaymentCssForTest() {
+  return checkoutCss;
+}
+
+test('all three gateway rows receive unique currentColor icons and the approved subtitles', () => {
+  for (const kind of ["card", "bizum", "store"]) {
+    assert.ok(checkoutPaymentJs.includes("kind === '" + kind + "'"), "missing " + kind + " icon");
+  }
+  for (const copy of [
+    'Pago con tarjeta',
+    'Pago seguro con tarjeta',
+    'Bizum',
+    'Recibirás las instrucciones de pago al finalizar el pedido',
+    'En tienda',
+    'Paga en efectivo en la tienda.'
+  ]) assert.ok(checkoutPaymentJs.includes(copy), 'missing payment copy: ' + copy);
+  assert.match(checkoutPaymentJs, /stroke="currentColor"/);
+  assert.match(checkoutPaymentJs, /fill="none"/);
+  assert.match(checkoutPaymentJs, /kind !== 'generic'[\s\S]*?createPaymentIcon\(kind\)/);
+});
+
+test('descriptive gateway payment boxes remain in the DOM but are visually hidden', () => {
+  for (const gateway of [
+    'payment_method_cecabank_gateway',
+    'payment_method_cheque',
+    'payment_method_cod'
+  ]) {
+    assert.match(checkoutCss, new RegExp('#payment \\.wc_payment_method\\.' + gateway + ' > \\.payment_box'));
+  }
+  assert.match(checkoutCss, /#payment \.wc_payment_method\.payment_method_cecabank_gateway > \.payment_box,[\s\S]*?payment_method_cheque > \.payment_box,[\s\S]*?payment_method_cod > \.payment_box\s*\{\s*display:\s*none !important;/);
+  assert.doesNotMatch(checkoutPaymentJs, /payment_box[\s\S]{0,80}(?:remove|removeChild)/);
+});
+
+test('native radios, gateway values and payment rows remain intact and decoration is idempotent', () => {
+  assert.match(checkoutPaymentJs, /radio\.type !== 'radio'/);
   assert.match(checkoutPaymentJs, /row\.dataset\.crPaymentPresentation === 'true'/);
   assert.match(checkoutPaymentJs, /updated_checkout\.crPaymentPresentation/);
-  assert.match(checkoutPaymentJs, /createElement\('span'\)/);
+  assert.match(checkoutPaymentJs, /rows\.forEach\(decoratePaymentMethod\)/);
   assert.doesNotMatch(checkoutPaymentJs, /createElement\('li'\)|methods\.appendChild|methods\.insertBefore|rows\.push/);
   assert.match(assets, /cr2026-checkout-payment[\s\S]*?assets\/js\/checkout-payment\.js/);
   assert.doesNotMatch(checkoutPaymentJs + checkoutCss, /#place_order|place_order|checkout_place_order/);
