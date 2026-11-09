@@ -542,7 +542,6 @@ body.woocommerce-checkout:not(.woocommerce-order-received) {
 
 /* Outer shell mirrors Cart: full width, system cap, no card gutter. */
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell {
-  width: 100%;
   max-width: 1360px;
   margin-inline: auto;
   padding-inline: 0;

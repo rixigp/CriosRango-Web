@@ -644,7 +644,7 @@ test('checkout assigns the shared Cart gutter only to inner visual surfaces', ()
   assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 9px;'));
 
   const shell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell');
-  assert.ok(shell.includes('width: 100%;'));
+  assert.doesNotMatch(shell, /(^|\s)width\s*:/, 'Checkout shell must inherit width from the global .cr-shell rule');
   assert.ok(shell.includes('max-width: 1360px;'));
   assert.ok(shell.includes('margin-inline: auto;'));
   assert.equal(shell.includes('cr-cart-card-inline-gutter'), false);
@@ -824,4 +824,19 @@ test('checkout app cards consume the global surface contract without changing th
   assert.ok(mainCss.includes('--cr-white: #fff;'));
   assert.ok(mainCss.includes('--cr-card-inline-inset: 16px;'));
   assert.ok(cartCss.includes('padding-inline:var(--cr-card-inline-inset);'));
+});
+
+
+
+test('Checkout shell inherits the global responsive shell width instead of forcing width: 100%', () => {
+  const selector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell';
+  const checkoutShell = cssLastRuleBody(checkoutCss, selector);
+  assert.doesNotMatch(checkoutShell, /(^|\s)width\s*:/, 'Checkout must not override the global shell width');
+
+  const globalShell = cssRuleBody(mainCss, '.cr-shell');
+  assert.match(globalShell, /width:\s*min\(calc\(100%\s*-\s*40px\),\s*var\(--cr-shell\)\)/,
+    'The global shell rule remains the canonical width source');
+  const mobileShellRule = mainCss.match(/@media\s*\(max-width:\s*767px\)[\s\S]*?\.cr-shell\s*\{([^}]*)\}/);
+  assert.ok(mobileShellRule, 'The existing responsive global shell rule must remain present');
+  assert.match(mobileShellRule[1], /width:\s*min\(calc\(100%\s*-\s*24px\),\s*var\(--cr-shell\)\)/);
 });
