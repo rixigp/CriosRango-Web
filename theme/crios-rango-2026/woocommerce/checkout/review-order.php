@@ -95,28 +95,75 @@ defined( 'ABSPATH' ) || exit;
 		?>
 	</tbody>
 	<tfoot class="cr-checkout-summary-totals">
+		<?php
+		$cart                         = WC()->cart;
+		$display_prices_including_tax = $cart->display_prices_including_tax();
+		$summary_discount_total       = (float) $cart->get_discount_total();
+
+		// Coupon discounts come from WooCommerce's calculated numeric totals.
+		if ( $display_prices_including_tax ) {
+			$summary_discount_total += (float) $cart->get_discount_tax();
+		}
+
+		// WC_Cart_Totals writes each applied fee total and tax back onto its fee
+		// object. Aggregate negative fees from those calculated values, not HTML
+		// or the original fee amount; keep positive fees as independent rows.
+		$summary_positive_fees = array();
+		foreach ( $cart->get_fees() as $fee ) {
+			if ( ! isset( $fee->total ) || ! is_numeric( $fee->total ) ) {
+				// Unknown extension fee shape: preserve it rather than hide it.
+				$summary_positive_fees[] = $fee;
+				continue;
+			}
+
+			$fee_total = (float) $fee->total;
+			if ( $fee_total < 0 ) {
+				$summary_discount_total += abs( $fee_total );
+				if ( $display_prices_including_tax && isset( $fee->tax ) && is_numeric( $fee->tax ) ) {
+					$summary_discount_total += abs( (float) $fee->tax );
+				}
+			} else {
+				$summary_positive_fees[] = $fee;
+			}
+		}
+
+		$summary_discount_total = round( $summary_discount_total, wc_get_price_decimals() );
+		$summary_shipping_total = (float) $cart->get_shipping_total();
+		if ( $display_prices_including_tax ) {
+			$summary_shipping_total += (float) $cart->get_shipping_tax();
+		}
+		$summary_shipping_total = round( $summary_shipping_total, wc_get_price_decimals() );
+		?>
+
 		<tr class="cart-subtotal">
 			<th><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></th>
 			<td><?php wc_cart_totals_subtotal_html(); ?></td>
 		</tr>
 
-		<?php foreach ( WC()->cart->get_coupons() as $code => $coupon ) : ?>
-			<tr class="cart-discount coupon-<?php echo esc_attr( sanitize_title( $code ) ); ?>">
-				<th><?php wc_cart_totals_coupon_label( $coupon ); ?></th>
-				<td><?php wc_cart_totals_coupon_html( $coupon ); ?></td>
+		<?php if ( $summary_discount_total > 0 ) : ?>
+			<tr class="cr-checkout-summary-discounts">
+				<th><?php esc_html_e( 'Descuentos', 'crios-rango-2026' ); ?></th>
+				<td><?php echo wp_kses_post( wc_price( -$summary_discount_total ) ); ?></td>
 			</tr>
-		<?php endforeach; ?>
+		<?php endif; ?>
 
-		<?php foreach ( WC()->cart->get_fees() as $fee ) : ?>
+		<?php foreach ( $summary_positive_fees as $fee ) : ?>
 			<tr class="fee">
 				<th><?php echo esc_html( $fee->name ); ?></th>
 				<td><?php wc_cart_totals_fee_html( $fee ); ?></td>
 			</tr>
 		<?php endforeach; ?>
 
-		<?php if ( wc_tax_enabled() && ! WC()->cart->display_prices_including_tax() ) : ?>
+		<?php if ( $summary_shipping_total > 0 ) : ?>
+			<tr class="shipping">
+				<th><?php esc_html_e( 'Envío', 'woocommerce' ); ?></th>
+				<td><?php echo wp_kses_post( wc_price( $summary_shipping_total ) ); ?></td>
+			</tr>
+		<?php endif; ?>
+
+		<?php if ( wc_tax_enabled() && ! $cart->display_prices_including_tax() ) : ?>
 			<?php if ( 'itemized' === get_option( 'woocommerce_tax_total_display' ) ) : ?>
-				<?php foreach ( WC()->cart->get_tax_totals() as $code => $tax ) : // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited ?>
+				<?php foreach ( $cart->get_tax_totals() as $code => $tax ) : // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited ?>
 					<tr class="tax-rate tax-rate-<?php echo esc_attr( sanitize_title( $code ) ); ?>">
 						<th><?php echo esc_html( $tax->label ); ?></th>
 						<td><?php echo wp_kses_post( $tax->formatted_amount ); ?></td>
