@@ -634,7 +634,14 @@ test('checkout rail reuses the exact Cart gutter values with one shell owner', (
   assert.ok(checkoutCss.includes('width: min(calc(100% - 2 * var(--cr-checkout-content-inline-gutter)), var(--cr-shell));'));
   assert.ok(checkoutCss.includes('width: calc(100% + 2 * var(--cr-checkout-content-inline-gutter));'));
   assert.ok(checkoutCss.includes('margin-inline: calc(-1 * var(--cr-checkout-content-inline-gutter));'));
-  assert.match(checkoutCss, /body\\.woocommerce-checkout:not\\(\\.woocommerce-order-received\\) \\.cr-page,[\\s\\S]*?\\.cr-page \\.cr-prose[\\s\\S]*?width:\\s*100%;[\\s\\S]*?margin:\\s*0;/);
+  const pageRuleStart = checkoutCss.indexOf('body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,');
+  assert.notEqual(pageRuleStart, -1, 'checkout page rail selector must exist');
+  const pageRuleEnd = checkoutCss.indexOf('}', pageRuleStart);
+  assert.notEqual(pageRuleEnd, -1, 'checkout page rail rule must close');
+  const pageRule = checkoutCss.slice(pageRuleStart, pageRuleEnd);
+  assert.ok(pageRule.includes('body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose'));
+  assert.ok(pageRule.includes('width: 100%;'));
+  assert.ok(pageRule.includes('margin: 0;'));
 });
 
 test('review root, shipping section and heading rows contribute no outer surface', () => {
