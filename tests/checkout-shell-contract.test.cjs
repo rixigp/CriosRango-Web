@@ -479,7 +479,28 @@ test('summary preserves coupons, fees, taxes, totals and before/after total hook
   assert.equal([...templatePhp.matchAll(/wc_cart_totals_shipping_html\(\)/g)].length, 1);
 });
 
-test('shipping styles remain scoped to the mini-table native radios and rates', () => {
+test('shipping methods share one bordered container and native list items are rows, not cards', () => {
+  const listSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
+  const list = cssRuleBody(checkoutCss, listSelector);
+  for (const required of ['width: 100%;', 'box-sizing: border-box;', 'border: 1.5px solid var(--cr-checkout-field-border);', 'border-radius: var(--cr-checkout-field-radius);', 'overflow: hidden;', 'margin: 0;', 'padding: 0;', 'background: var(--cr-app-canvas);']) {
+    assert.ok(list.includes(required), 'missing single-container property: ' + required);
+  }
+  const itemSelector = listSelector + ' > li';
+  const item = cssRuleBody(checkoutCss, itemSelector);
+  assert.ok(item.includes('border: 0;'));
+  assert.ok(item.includes('border-radius: 0;'));
+  assert.doesNotMatch(item, /border:\\s*1(?:\\.5)?px solid/);
+  const dividerSelector = listSelector + ' > li + li';
+  assert.match(cssRuleBody(checkoutCss, dividerSelector), /border-top:\\s*1px solid/);
+  const selectedSelector = listSelector + ' > li:has(> input.shipping_method[type="radio"]:checked)';
+  const selected = cssRuleBody(checkoutCss, selectedSelector);
+  assert.match(selected, /background:\\s*color-mix/);
+  assert.doesNotMatch(selected, /border/);
+  const outerSection = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section');
+  for (const neutral of ['border: 0;', 'border-radius: 0;', 'padding: 0;', 'background: transparent;', 'box-shadow: none;']) assert.ok(outerSection.includes(neutral));
+});
+
+test('native WooCommerce shipping radios and rate labels remain scoped to checkout', () => {
   assert.match(checkoutCss, /\.cr-checkout-shipping-table #shipping_method\.woocommerce-shipping-methods/);
   assert.match(checkoutCss, /input\.shipping_method\[type="radio"\]/);
   assert.match(checkoutCss, /#shipping_method\.woocommerce-shipping-methods > li > label/);

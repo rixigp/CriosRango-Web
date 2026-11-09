@@ -317,14 +317,17 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
+  display: block;
+  box-sizing: border-box;
   float: none;
   width: 100%;
   min-width: 0;
   margin: 0;
   padding: 0;
+  border: 1.5px solid var(--cr-checkout-field-border);
+  border-radius: var(--cr-checkout-field-radius);
+  overflow: hidden;
+  background: var(--cr-app-canvas);
   list-style: none;
 }
 
@@ -340,10 +343,14 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   margin: 0;
   padding: 0 14px;
   min-height: 64px;
-  border: 1.5px solid var(--cr-checkout-field-border);
-  border-radius: var(--cr-checkout-field-radius);
+  border: 0;
+  border-radius: 0;
   background: var(--cr-app-canvas);
   color: var(--cr-ink);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li + li {
+  border-top: 1px solid var(--cr-checkout-field-border);
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"] {
@@ -391,7 +398,6 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li:has(> input.shipping_method[type="radio"]:checked) {
-  border-color: var(--cr-green);
   background: color-mix(in srgb, var(--cr-green) 5%, var(--cr-app-canvas));
 }
 
@@ -448,9 +454,28 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   box-sizing: border-box;
   width: 100%;
   border: 0;
+  border-radius: 0;
+  padding: 0;
   background: transparent;
   box-shadow: none;
+  overflow: visible;
   table-layout: auto;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > th {
@@ -462,6 +487,11 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   display: block;
   width: 100%;
   min-width: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 /* Checkout-only: preserve native review header markup but hide it visually. */
