@@ -1510,9 +1510,9 @@ test('CART_PRODUCT_ROW_VERTICAL_PADDING_ZERO=PASS; CART_PRODUCT_LIST_GAP_REMAINS
  for(const rule of rowRules){
   assert.doesNotMatch(rule,/padding-(?:top|bottom|block)\s*:/i,'row rule must not introduce vertical padding');
  }
- assert.match(c,/\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-cart-card-inline-gutter\);/);
- assert.match(c,/@media \(max-width:767px\)[\s\S]*?\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-cart-card-inline-gutter\);/);
- assert.match(c,/@media \(max-width:360px\)[\s\S]*?\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-cart-card-inline-gutter\);/);
+ assert.match(c,/\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-card-inline-inset\);/);
+ assert.match(c,/@media \(max-width:767px\)[\s\S]*?\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-card-inline-inset\);/);
+ assert.match(c,/@media \(max-width:360px\)[\s\S]*?\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-card-inline-inset\);/);
  const gapOwners=c.match(/body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tbody\s*\{[^}]*row-gap\s*:\s*8px!important[^}]*\}/g)||[];
  assert.equal(gapOwners.length,1,'one 8px product-list gap owner');
  assert.equal(8+0+0,8,'zero vertical row padding makes effective spacing equal to tbody gap');
@@ -1520,13 +1520,17 @@ test('CART_PRODUCT_ROW_VERTICAL_PADDING_ZERO=PASS; CART_PRODUCT_LIST_GAP_REMAINS
  assert.match(c,/@media \(max-width: 767px\) \{[\s\S]*?body\.woocommerce-cart \.cr-cart-item__card \{[\s\S]*?padding: 15px;/);
 });
 
-test('CART_SHARED_CARD_GUTTER_DEFINED=PASS; CART_PRODUCT_ROW_USES_SHARED_GUTTER=PASS; CART_WALLET_CARD_USES_SHARED_GUTTER=PASS; CART_REWARD_CARD_USES_SHARED_GUTTER=PASS; CART_PROMOTION_CARD_USES_SHARED_GUTTER=PASS; CART_APPLIED_CARD_USES_SHARED_GUTTER=PASS; CART_SECONDARY_CARDS_NO_FULL_RAIL_WIDTH_OVERRIDE=PASS; CART_PRODUCT_CARD_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_VERTICAL_SPACING_UNCHANGED=PASS; CART_DOM_STRUCTURE_UNCHANGED=PASS',()=>{
+test('CART_GLOBAL_PRODUCT_CARD_INSET=PASS; CART_PRODUCT_ROW_USES_GLOBAL_INSET=PASS; CART_WALLET_CARD_USES_SHARED_GUTTER=PASS; CART_REWARD_CARD_USES_SHARED_GUTTER=PASS; CART_PROMOTION_CARD_USES_SHARED_GUTTER=PASS; CART_APPLIED_CARD_USES_SHARED_GUTTER=PASS; CART_SECONDARY_CARDS_NO_FULL_RAIL_WIDTH_OVERRIDE=PASS; CART_PRODUCT_CARD_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_VERTICAL_SPACING_UNCHANGED=PASS; CART_DOM_STRUCTURE_UNCHANGED=PASS',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
+ const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
  const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
  assert.match(c,/body\.woocommerce-cart \{ --cr-cart-card-inline-gutter:16px; \}/,'desktop gutter remains 16px');
  assert.match(c,/@media\(max-width:767px\)\{body\.woocommerce-cart\{--cr-cart-card-inline-gutter:11px\}\}/,'mobile gutter remains 11px');
  assert.match(c,/@media\(max-width:360px\)\{body\.woocommerce-cart\{--cr-cart-card-inline-gutter:9px\}\}/,'narrow mobile gutter remains 9px');
- assert.match(c,/\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-cart-card-inline-gutter\);/,'product row consumes shared gutter');
+ assert.match(c,/\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-card-inline-inset\);/,'product row consumes global card inset');
+ assert.match(m,/--cr-card-inline-inset:\s*16px/,'global desktop card inset');
+ assert.match(m,/@media \(max-width: 767px\)[\s\S]*?--cr-card-inline-inset:\s*11px/,'global mobile card inset');
+ assert.match(m,/@media \(max-width: 360px\)[\s\S]*?--cr-card-inline-inset:\s*9px/,'global narrow mobile card inset');
  const shared=c.match(/body\.woocommerce-cart \.cr-cart-content \.cr-cart-wallet__summary,[\s\S]*?body\.woocommerce-cart \.cr-cart-content \.cr-cart-applied\s*\{[^}]*\}/);
  assert.ok(shared,'one shared secondary surface rule exists');
  for(const selector of ['cr-cart-wallet__summary','cr-cart-wallet__rewards','cr-cart-promo-card','cr-cart-applied'])assert.ok(shared[0].includes(selector),selector);
