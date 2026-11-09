@@ -267,18 +267,47 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-shipping
 }
 
 
+/* Checkout Phase 3.2: shipping is rendered in its own native mini-table before the summary. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section {
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 24px;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table {
+  width: 100%;
+  border: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody {
+  display: table-row-group;
+  width: 100%;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-section {
+  width: 100%;
+  min-width: 0;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading {
+  margin-bottom: 20px;
+}
+
 /* Checkout Phase 3.1: expand the native shipping row across the full review rail. */
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table tr.woocommerce-shipping-totals.shipping {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table tr.woocommerce-shipping-totals.shipping {
   display: block;
   width: 100%;
   box-sizing: border-box;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table tr.woocommerce-shipping-totals.shipping > th {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table tr.woocommerce-shipping-totals.shipping > th {
   display: none;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table tr.woocommerce-shipping-totals.shipping > td {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table tr.woocommerce-shipping-totals.shipping > td {
   display: block;
   box-sizing: border-box;
   width: 100%;
@@ -287,7 +316,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout
   text-align: left;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
@@ -299,7 +328,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout
   list-style: none;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li {
   position: relative;
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr) auto;
@@ -317,7 +346,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout
   color: var(--cr-ink);
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"] {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"] {
   display: block;
   grid-column: 1;
   grid-row: 1;
@@ -329,7 +358,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout
   cursor: pointer;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li > label {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > label {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-column: 2 / 4;
@@ -352,8 +381,8 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout
   overflow-wrap: normal;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li > label .woocommerce-Price-amount,
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li > label .amount {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > label .woocommerce-Price-amount,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > label .amount {
   grid-column: 2;
   margin-left: 0;
   color: var(--cr-green);
@@ -361,36 +390,36 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout
   white-space: nowrap;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li:has(> input.shipping_method[type="radio"]:checked) {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li:has(> input.shipping_method[type="radio"]:checked) {
   border-color: var(--cr-green);
   background: color-mix(in srgb, var(--cr-green) 5%, var(--cr-app-canvas));
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"]:focus-visible {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"]:focus-visible {
   outline: 2px solid var(--cr-green);
   outline-offset: 3px;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li:has(> input.shipping_method[type="radio"]:focus-visible) {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li:has(> input.shipping_method[type="radio"]:focus-visible) {
   outline: 2px solid color-mix(in srgb, var(--cr-green) 28%, transparent);
   outline-offset: 2px;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="hidden"] {
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="hidden"] {
   display: none;
 }
 
 @media (max-width: 480px) {
-  body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table tr.woocommerce-shipping-totals.shipping > td {
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table tr.woocommerce-shipping-totals.shipping > td {
     padding: 12px;
   }
 
-  body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li {
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li {
     min-height: 64px;
     padding-inline: 12px;
   }
 
-  body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table #shipping_method.woocommerce-shipping-methods > li > label {
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > label {
     gap: 8px;
   }
 }
