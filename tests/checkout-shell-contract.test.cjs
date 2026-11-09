@@ -661,10 +661,8 @@ test('checkout assigns the shared Cart gutter only to inner visual surfaces', ()
   assert.ok(deliveryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
   assert.ok(deliveryFields.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
 
-  const shippingHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading');
-  const summaryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading');
-  assert.ok(shippingHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
-  assert.ok(summaryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  const sectionHeadings = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading,\nbody.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading');
+  assert.ok(sectionHeadings.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
 
   const methods = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
   assert.ok(methods.includes('width: auto;'));
