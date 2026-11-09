@@ -661,12 +661,14 @@ test('checkout assigns the shared Cart gutter only to inner visual surfaces', ()
   assert.ok(deliveryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
   assert.ok(deliveryFields.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
 
-  const sectionHeadings = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading,\nbody.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading');
-  assert.ok(sectionHeadings.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  const shippingHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading');
+  const summaryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading');
+  assert.ok(shippingHeading.includes('margin-inline: var(--cr-checkout-visible-field-inset);'));
+  assert.ok(summaryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
 
   const methods = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
   assert.ok(methods.includes('width: auto;'));
-  assert.ok(methods.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  assert.ok(methods.includes('margin-inline: var(--cr-checkout-visible-field-inset);'));
   assert.equal(methods.includes('width: 100%;'), false);
 });
 
@@ -751,7 +753,7 @@ test('checkout shipping mini-table is flattened to block sizing without changing
 
   const methods = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
   assert.match(methods, /max-width:\s*none/);
-  assert.match(methods, /margin-inline:\s*var\(--cr-cart-card-inline-gutter\)/);
+  assert.match(methods, /margin-inline:\s*var\(--cr-checkout-visible-field-inset\)/);
   assert.equal(methods.includes('padding-inline'), false);
   assert.equal(methods.includes('margin-left'), false);
   assert.equal(methods.includes('margin-right'), false);
@@ -780,4 +782,19 @@ test('checkout additional information uses the Product Detail accordion pattern 
   assert.match(checkoutCss, /\.cr-checkout-additional-info__panel textarea#order_comments[\s\S]*?width:\s*100%[\s\S]*?max-width:\s*none[\s\S]*?box-sizing:\s*border-box/);
   assert.match(checkoutCss, /\.cr-checkout-additional-info__toggle:focus-visible/);
   assert.match(checkoutCss, /\.cr-checkout-additional-info__panel\[hidden\][\s\S]*?display:\s*none\s*!important/);
+});
+
+test('visible checkout rails derive from the responsive Cart gutter plus native Woo form-row padding', () => {
+  const scope = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received)');
+  assert.match(checkoutCss, /--cr-checkout-form-row-padding:\s*3px/);
+  assert.match(checkoutCss, /--cr-checkout-visible-field-inset:\s*calc\([\s\S]*?var\(--cr-cart-card-inline-gutter\)[\s\S]*?var\(--cr-checkout-form-row-padding\)[\s\S]*?\)/);
+  for (const selector of [
+    'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info',
+    'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading',
+    'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods'
+  ]) {
+    const rule = cssLastRuleBody(checkoutCss, selector);
+    assert.match(rule, /margin-inline:\s*var\(--cr-checkout-visible-field-inset\)/, selector);
+  }
+  assert.ok(scope.includes('--cr-checkout-visible-field-inset:'));
 });
