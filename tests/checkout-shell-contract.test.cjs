@@ -10,6 +10,7 @@ const page = fs.readFileSync(path.join(theme, 'page.php'), 'utf8');
 const footer = fs.readFileSync(path.join(theme, 'footer.php'), 'utf8');
 const assets = fs.readFileSync(path.join(theme, 'inc/assets.php'), 'utf8');
 const checkoutCss = fs.readFileSync(path.join(theme, 'assets/css/checkout.css'), 'utf8');
+const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
 const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
 
 test('classic checkout heading delegates to the existing shared toolbar component', () => {
@@ -618,4 +619,43 @@ test('checkout review wrapper and root table lose only their inherited outer car
   assert.equal([...templatePhp.matchAll(/<table class="shop_table woocommerce-checkout-review-order-table">/g)].length, 1);
   assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\) #order_review/);
   assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\) #order_review > \.woocommerce-checkout-review-order-table/);
+});
+
+
+test('checkout rail reuses the exact Cart gutter values with one shell owner', () => {
+  assert.match(cartCss, /body\\.woocommerce-cart \\{ --cr-cart-card-inline-gutter:16px; \\}/);
+  assert.match(cartCss, /@media\\(max-width:767px\\)\\{body\\.woocommerce-cart\\{--cr-cart-card-inline-gutter:11px\\}\\}/);
+  assert.match(cartCss, /@media\\(max-width:360px\\)\\{body\\.woocommerce-cart\\{--cr-cart-card-inline-gutter:9px\\}\\}/);
+  assert.match(cartCss, /body\\.woocommerce-cart \\.cr-cart-content \\.cr-cart-summary \\.cr-cart-summary__rows[\\s\\S]*?margin:0 var\\(--cr-cart-card-inline-gutter\\) 14px/);
+  const rail = checkoutCss.slice(checkoutCss.lastIndexOf('/* Checkout rail: one shell owns'));
+  assert.match(rail, /--cr-checkout-content-inline-gutter:\\s*16px/);
+  assert.match(rail, /max-width:\\s*767px[\\s\\S]*?--cr-checkout-content-inline-gutter:\\s*11px/);
+  assert.match(rail, /max-width:\\s*360px[\\s\\S]*?--cr-checkout-content-inline-gutter:\\s*9px/);
+  assert.match(rail, /\\.cr-main > \\.cr-shell\\.cr-page-shell\\s*\\{[^}]*width:\\s*min\\(calc\\(100% - 2 \\* var\\(--cr-checkout-content-inline-gutter\\)\\), var\\(--cr-shell\\)\\)/s);
+  assert.match(rail, /\\.cr-checkout-header-shell\\s*\\{[^}]*width:\\s*calc\\(100% \\+ 2 \\* var\\(--cr-checkout-content-inline-gutter\\)\\);[^}]*margin-inline:\\s*calc\\(-1 \\* var\\(--cr-checkout-content-inline-gutter\\)\\)/s);
+  assert.match(checkoutCss, /body\\.woocommerce-checkout:not\\(\\.woocommerce-order-received\\) \\.cr-page,\\s*body\\.woocommerce-checkout:not\\(\\.woocommerce-order-received\\) \\.cr-page \\.cr-prose\\s*\\{\\s*width:\\s*100%;[\\s\\S]*?margin:\\s*0;/);
+});
+
+test('review root, shipping section and heading rows contribute no outer surface', () => {
+  const rail = checkoutCss.slice(checkoutCss.lastIndexOf('/* Checkout rail: one shell owns'));
+  assert.match(rail, /#order_review > \\.woocommerce-checkout-review-order-table\\s*\\{[^}]*border-spacing:\\s*0;/s);
+  assert.match(rail, /\\.woocommerce-checkout-review-order-table > tbody\\s*\\{[^}]*border:\\s*0;[^}]*background:\\s*transparent;[^}]*box-shadow:\\s*none;/s);
+  assert.match(rail, /\\.cr-checkout-shipping-section-row > td,[\\s\\S]*?\\.cr-checkout-summary-heading-row > td\\s*\\{[^}]*border:\\s*0;[^}]*padding:\\s*0;[^}]*background:\\s*transparent;[^}]*box-shadow:\\s*none;/s);
+  assert.match(rail, /\\.cr-checkout-shipping-section\\s*\\{[^}]*margin:\\s*0;[^}]*border:\\s*0;[^}]*background:\\s*transparent;[^}]*box-shadow:\\s*none;/s);
+  assert.match(rail, /\\.cr-checkout-shipping-table\\s*\\{[^}]*margin:\\s*0;[^}]*border:\\s*0;[^}]*border-spacing:\\s*0;[^}]*background:\\s*transparent;[^}]*box-shadow:\\s*none;/s);
+  assert.match(rail, /tr\\.woocommerce-shipping-totals\\.shipping\\s*\\{[^}]*margin:\\s*0;[^}]*border:\\s*0;[^}]*background:\\s*transparent;[^}]*box-shadow:\\s*none;/s);
+  assert.match(rail, /tr\\.woocommerce-shipping-totals\\.shipping > td\\s*\\{[^}]*padding:\\s*0;[^}]*border:\\s*0;[^}]*background:\\s*transparent;[^}]*box-shadow:\\s*none;/s);
+});
+
+test('shipping remains the only visible method card and native AJAX root is preserved', () => {
+  const listSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
+  const list = cssRuleBody(checkoutCss, listSelector);
+  for (const property of ['width: 100%;', 'box-sizing: border-box;', 'border: 1.5px solid var(--cr-checkout-field-border);', 'border-radius: var(--cr-checkout-field-radius);', 'overflow: hidden;', 'margin: 0;', 'padding: 0;']) {
+    assert.ok(list.includes(property), 'shipping_method must retain its single container property: ' + property);
+  }
+  assert.match(checkoutCss, /#shipping_method\\.woocommerce-shipping-methods > li \\+ li\\s*\\{[^}]*border-top:\\s*1px solid/);
+  assert.match(checkoutCss, /#shipping_method\\.woocommerce-shipping-methods > li:has\\(> input\\.shipping_method\\[type="radio"\\]:checked\\)\\s*\\{[^}]*background:\\s*color-mix/);
+  assert.match(templatePhp, /<table class="shop_table woocommerce-checkout-review-order-table">/);
+  assert.equal([...templatePhp.matchAll(/<table class="shop_table woocommerce-checkout-review-order-table">/g)].length, 1);
+  assert.doesNotMatch(rail, /billing_phone/);
 });

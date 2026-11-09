@@ -521,3 +521,114 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .wooc
   overflow: visible;
   margin: 0;
 }
+
+
+/* Checkout rail: one shell owns the same inline gutter used by Cart cards.
+   Header toolbar compensation preserves its existing viewport geometry. */
+body.woocommerce-checkout:not(.woocommerce-order-received) {
+  --cr-checkout-content-inline-gutter: 16px;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell {
+  width: min(calc(100% - 2 * var(--cr-checkout-content-inline-gutter)), var(--cr-shell));
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell {
+  width: calc(100% + 2 * var(--cr-checkout-content-inline-gutter));
+  margin-inline: calc(-1 * var(--cr-checkout-content-inline-gutter));
+}
+
+@media (max-width: 767px) {
+  body.woocommerce-checkout:not(.woocommerce-order-received) {
+    --cr-checkout-content-inline-gutter: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  body.woocommerce-checkout:not(.woocommerce-order-received) {
+    --cr-checkout-content-inline-gutter: 9px;
+  }
+}
+
+/* Review root stays in the DOM for WooCommerce AJAX, but owns no visible
+   table geometry. The shipping methods list remains its only visible card. */
+body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .woocommerce-checkout-review-order-table {
+  border-spacing: 0;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-summary-heading-row {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-shipping-section-row > td,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-checkout-review-order-table > tbody > .cr-checkout-summary-heading-row > td {
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-section {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  border-spacing: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table > tbody > tr.woocommerce-shipping-totals.shipping > td {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
