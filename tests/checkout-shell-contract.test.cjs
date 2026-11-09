@@ -133,6 +133,15 @@ test('final checkout_fields filter reasserts phone position after later billing 
   const start = woocommercePhp.indexOf('function cr2026_checkout_stabilize_phone_field_order(');
   const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
   const fn = woocommercePhp.slice(start, end);
+  const expectedOrder = [
+    'billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone',
+    'billing_address_1', 'billing_state', 'billing_city', 'billing_postcode', 'billing_country'
+  ];
+  const orderBlock = fn.match(/\$billing_order = array\(([\s\S]*?)\);/);
+  assert.ok(orderBlock, 'final checkout filter must explicitly reconstruct the existing billing array');
+  assert.deepEqual([...orderBlock[1].matchAll(/'([^']+)'/g)].map(match => match[1]), expectedOrder);
+  assert.match(fn, /\$ordered_billing\[ \$key \] = \$fields\['billing'\]\[ \$key \];/);
+  assert.match(fn, /\$fields\['billing'\] = \$ordered_billing;/);
   assert.match(fn, /'billing_phone'\s*=>\s*40/);
   for (const forbidden of ['type', 'required', 'validate', 'autocomplete', 'class', 'label', 'unset(']) {
     assert.equal(fn.includes(forbidden), false, 'must not alter ' + forbidden);

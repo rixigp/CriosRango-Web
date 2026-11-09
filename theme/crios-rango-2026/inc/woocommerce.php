@@ -872,6 +872,38 @@ function cr2026_checkout_stabilize_phone_field_order( $fields ) {
         }
     }
 
+    // Rebuild the existing entries in the requested delivery sequence. This
+    // changes only array insertion order: each native field definition and all
+    // properties supplied by WooCommerce/plugins are reused without mutation.
+    $billing_order = array(
+        'billing_first_name',
+        'billing_last_name',
+        'billing_email',
+        'billing_phone',
+        'billing_address_1',
+        'billing_state',
+        'billing_city',
+        'billing_postcode',
+        'billing_country',
+    );
+    $ordered_billing = array();
+
+    foreach ( $billing_order as $key ) {
+        if ( isset( $fields['billing'][ $key ] ) && is_array( $fields['billing'][ $key ] ) ) {
+            $ordered_billing[ $key ] = $fields['billing'][ $key ];
+        }
+    }
+
+    // Keep any integration-added billing fields present, in their original
+    // relative order, after the nine explicitly ordered delivery fields.
+    foreach ( $fields['billing'] as $key => $field ) {
+        if ( ! array_key_exists( $key, $ordered_billing ) ) {
+            $ordered_billing[ $key ] = $field;
+        }
+    }
+
+    $fields['billing'] = $ordered_billing;
+
     return $fields;
 }
 add_filter( 'woocommerce_checkout_fields', 'cr2026_checkout_stabilize_phone_field_order', PHP_INT_MAX );
