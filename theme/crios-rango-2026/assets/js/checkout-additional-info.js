@@ -7,6 +7,7 @@
       var heading = container.querySelector(':scope > h3');
       if (!heading) return;
 
+      var nativeOrderNotes = container.querySelector('#order_comments');
       var nativeContent = Array.prototype.filter.call(container.childNodes, function (node) {
         return node !== heading;
       });
@@ -39,6 +40,7 @@
       panel.setAttribute('aria-labelledby', toggle.id || (toggle.id = 'cr-checkout-additional-info-toggle'));
       panel.hidden = true;
       nativeContent.forEach(function (node) { panel.appendChild(node); });
+      if (nativeOrderNotes && !panel.contains(nativeOrderNotes)) panel.appendChild(nativeOrderNotes);
 
       heading.remove();
       container.classList.add('cr-checkout-additional-info');
