@@ -48,7 +48,7 @@ test('shipping stays in one native renderer and is not recreated inside the summ
 test('summary product, discount and total monetary amounts never wrap', () => {
   assert.match(checkoutCss, /\.cr-checkout-summary-products > tr\.cart_item > td\.product-name\s*\{[^}]*flex:\s*1 1 0;[^}]*min-width:\s*0;/);
   assert.match(checkoutCss, /\.cr-checkout-summary-products > tr\.cart_item > td\.product-total\s*\{[^}]*flex:\s*0 0 auto;[^}]*white-space:\s*nowrap;/);
-  assert.match(checkoutCss, /\.cr-checkout-summary-totals \.woocommerce-Price-amount\s*\{\s*white-space:\s*nowrap;/);
+  assert.match(checkoutCss, /\\.cr-checkout-summary-totals \\.woocommerce-Price-amount,[\\s\\S]*?\\{[^}]*white-space:\\s*nowrap;/);
   assert.match(checkoutCss, /\.cr-checkout-summary-totals > tr > td\s*\{[^}]*white-space:\s*nowrap;/);
   assert.match(checkoutCss, /\.cr-checkout-summary-products a\.remove[\s\S]*?text-decoration:\s*none/);
 });
