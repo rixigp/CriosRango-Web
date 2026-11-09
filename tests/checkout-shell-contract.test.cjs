@@ -408,11 +408,12 @@ test('shipping step heading is inserted through the classic order-review hook an
   // The shipping heading reuses the current shared Delivery heading system;
   // its semantic step and H2 distinguish it from WooCommerce's native hidden TH.
   assert.match(woocommercePhp, /cr-checkout-delivery-heading cr-checkout-shipping-heading/);
-  assert.match(woocommercePhp, /<span class="cr-checkout-delivery-heading__step" aria-hidden="true">2<\\/span><h2>/);
-  assert.match(woocommercePhp, /esc_html__\\( 'Envío'/);
-  assert.match(woocommercePhp, /<tr class="cr-checkout-shipping-heading-row"><th colspan="2"><div class="cr-checkout-delivery-heading cr-checkout-shipping-heading">/);
-  assert.match(checkoutCss, /body\\.woocommerce-checkout:not\\(\\.woocommerce-order-received\\) \\.cr-checkout-delivery-heading\\s*\\{/);
-  assert.match(checkoutCss, /body\\.woocommerce-checkout:not\\(\\.woocommerce-order-received\\) \\.cr-checkout-delivery-heading h2\\s*\\{/);
+  // Check the emitted heading semantics independently to keep this contract readable.
+  assert.ok(woocommercePhp.includes('<span class="cr-checkout-delivery-heading__step" aria-hidden="true">2</span><h2>'));
+  assert.ok(woocommercePhp.includes("esc_html__( 'Envío'"));
+  assert.ok(woocommercePhp.includes('<tr class="cr-checkout-shipping-heading-row"><th colspan="2"><div class="cr-checkout-delivery-heading cr-checkout-shipping-heading">'));
+  assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\) \.cr-checkout-delivery-heading\s*\{/);
+  assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\) \.cr-checkout-delivery-heading h2\s*\{/);
 });
 
 test('shipping presentation targets only the native WooCommerce rate list and radio inputs', () => {
