@@ -558,7 +558,7 @@ test('checkout review preserves native product filters, hooks, and total renderi
     'wc_cart_totals_subtotal_html()', 'wc_cart_totals_coupon_html(', 'wc_cart_totals_fee_html(',
     'wc_cart_totals_taxes_total_html()', 'wc_cart_totals_order_total_html()'
   ]) assert.ok(templatePhp.includes(required), 'native contract missing: ' + required);
-  assert.match(templatePhp, /<tfoot>[\s\S]*?woocommerce_review_order_before_order_total[\s\S]*?order-total[\s\S]*?woocommerce_review_order_after_order_total[\s\S]*?<\/tfoot>/);
+  assert.match(templatePhp, /<tfoot(?:\s+class="[^"]+")?>[\s\S]*?woocommerce_review_order_before_order_total[\s\S]*?order-total[\s\S]*?woocommerce_review_order_after_order_total[\s\S]*?<\/tfoot>/);
 });
 
 test('checkout native order-review heading is hidden narrowly and summary step heading remains', () => {
