@@ -761,3 +761,23 @@ test('checkout shipping mini-table is flattened to block sizing without changing
   assert.match(reviewRoot, /width:\s*100%/);
   assert.match(checkoutCss, /#order_review > \.woocommerce-checkout-review-order-table/);
 });
+
+test('checkout additional information uses the Product Detail accordion pattern and preserves native order notes', () => {
+  const checkoutJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-additional-info.js'), 'utf8');
+  assert.match(assets, /cr2026-checkout-additional-info/);
+  assert.match(checkoutJs, /\.woocommerce-additional-fields/);
+  assert.match(checkoutJs, /\.cr-checkout-additional-info__toggle/);
+  assert.match(checkoutJs, /aria-expanded', 'false'/);
+  assert.match(checkoutJs, /aria-controls/);
+  assert.match(checkoutJs, /panel\.hidden = true/);
+  assert.match(checkoutJs, /panel\.hidden = expanded/);
+  assert.match(checkoutJs, /heading\.remove\(\)/);
+  assert.match(checkoutJs, /nativeContent\.forEach/);
+  assert.match(checkoutJs, /updated_checkout\.crAdditionalInfo/);
+  assert.match(checkoutJs, /crAdditionalInfoInitialized/);
+  assert.match(checkoutJs, /document\.createElement\('button'\)/);
+  assert.match(checkoutJs, /order_comments/);
+  assert.match(checkoutCss, /\.cr-checkout-additional-info__panel textarea#order_comments[\s\S]*?width:\s*100%[\s\S]*?max-width:\s*none[\s\S]*?box-sizing:\s*border-box/);
+  assert.match(checkoutCss, /\.cr-checkout-additional-info__toggle:focus-visible/);
+  assert.match(checkoutCss, /\.cr-checkout-additional-info__panel\[hidden\][\s\S]*?display:\s*none\s*!important/);
+});

@@ -745,3 +745,99 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   list-style: none;
   box-sizing: border-box;
 }
+
+/* Checkout: Additional information collapse mirrors the Product Detail description component. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info {
+  width: auto;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0 0 22px;
+  overflow: hidden;
+  border: 1px solid var(--cr-product-border, var(--cr-checkout-field-border));
+  border-radius: 16px;
+  background: #fff;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__toggle {
+  display: flex;
+  width: 100%;
+  min-height: 54px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 0;
+  background: #fff;
+  color: var(--cr-green);
+  text-align: left;
+  font: 600 15px/22px "Roboto",Arial,sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__toggle:focus-visible {
+  outline: 2px solid var(--cr-green);
+  outline-offset: -3px;
+  border-radius: 12px;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__icon {
+  display: inline-flex;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: var(--cr-app-canvas);
+  color: var(--cr-green);
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__icon svg {
+  display: block;
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__title {
+  color: var(--cr-green);
+  font-weight: 600;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__chevron {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  margin: -4px 3px 0 auto;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 160ms ease, margin 160ms ease;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__toggle[aria-expanded="true"] .cr-checkout-additional-info__chevron {
+  margin-top: 4px;
+  transform: rotate(225deg);
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 16px 16px;
+  color: #555B56;
+  font: 400 14px/1.6 "Roboto",Arial,sans-serif;
+  overflow-wrap: anywhere;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel[hidden] {
+  display: none !important;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel .form-row,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel .woocommerce-input-wrapper {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel textarea#order_comments {
+  display: block;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+  resize: vertical;
+}

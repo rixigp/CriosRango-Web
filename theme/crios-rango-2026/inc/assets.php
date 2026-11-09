@@ -54,6 +54,13 @@ function cr2026_enqueue_assets() {
             array( 'cr2026-main', 'cr2026-roboto' ),
             cr2026_asset_version( 'assets/css/checkout.css' )
         );
+        wp_enqueue_script(
+            'cr2026-checkout-additional-info',
+            CR2026_URI . '/assets/js/checkout-additional-info.js',
+            array(),
+            cr2026_asset_version( 'assets/js/checkout-additional-info.js' ),
+            true
+        );
     }
 
     if ( $uses_product_detail_skin ) {
