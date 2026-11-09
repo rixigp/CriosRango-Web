@@ -437,11 +437,13 @@ test('official override template version and native shipping render are exactly 
   assert.doesNotMatch(templatePhp, /<input[^>]+type=["']radio|shipping_method\[[^]]+\]\s*=/i);
 });
 
-test('shipping section precedes summary and the full native products loop remains inside summary', () => {
-  const shippingStart = templatePhp.indexOf('class="cr-checkout-shipping-section"');
-  const summaryStart = templatePhp.indexOf('class="cr-checkout-summary-section"');
-  const tableStart = templatePhp.indexOf('woocommerce-checkout-review-order-table', summaryStart);
-  assert.ok(shippingStart >= 0 && summaryStart > shippingStart && tableStart > summaryStart);
+test('shipping row precedes the summary heading row and native products remain within the single root table', () => {
+  const rootStart = templatePhp.indexOf('<table class="shop_table woocommerce-checkout-review-order-table">');
+  const shippingStart = templatePhp.indexOf('class="cr-checkout-shipping-section-row"');
+  const summaryStart = templatePhp.indexOf('class="cr-checkout-summary-heading-row"');
+  const productsStart = templatePhp.indexOf("do_action( 'woocommerce_review_order_before_cart_contents' )");
+  const rootEnd = templatePhp.lastIndexOf('</table>');
+  assert.ok(rootStart >= 0 && shippingStart > rootStart && summaryStart > shippingStart && productsStart > summaryStart && rootEnd > productsStart);
   assert.match(templatePhp, /woocommerce-checkout-review-order-table/);
   assert.match(templatePhp, /do_action\( 'woocommerce_review_order_before_cart_contents' \)/);
   assert.match(templatePhp, /foreach \( WC\(\)->cart->get_cart\(\) as \$cart_item_key => \$cart_item \)/);
@@ -478,9 +480,10 @@ test('shipping styles remain scoped to the mini-table native radios and rates', 
   assert.doesNotMatch(checkoutCss, /\.woocommerce-checkout-review-order-table[^\n]*shipping_method/);
 });
 
-test('classic checkout update_order_review regenerates the complete shipping-before-summary fragment without DOM moves', () => {
-  assert.match(templatePhp, /cr-checkout-shipping-section/);
-  assert.match(templatePhp, /cr-checkout-summary-section/);
+test('classic checkout update_order_review regenerates the full single-root shipping-before-summary fragment without DOM moves', () => {
+  assert.match(templatePhp, /<table class="shop_table woocommerce-checkout-review-order-table">/);
+  assert.match(templatePhp, /cr-checkout-shipping-section-row/);
+  assert.match(templatePhp, /cr-checkout-summary-heading-row/);
   assert.doesNotMatch(woocommercePhp, /appendChild|insertBefore|insertAdjacentElement|update_checkout|updated_checkout/);
   assert.doesNotMatch(woocommercePhp, /wp_enqueue_script|wp_add_inline_script/);
 });
