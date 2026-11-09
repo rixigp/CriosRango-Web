@@ -231,11 +231,26 @@ test('delivery field semantics define five full-width fields and two half-width 
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
 });
 
+test('delivery controls and floating-label notch use the white card surface', () => {
+  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*background:\s*var\(--cr-white\)/s);
+  assert.match(checkoutCss, /\.form-row input\.input-text,[\s\S]*?\.form-row select\s*\{[^}]*background:\s*var\(--cr-white\)/s);
+  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper \.select2-selection--single\s*\{[^}]*background:\s*var\(--cr-white\)/s);
+  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*position:\s*absolute;[^}]*transform:\s*translateY\(-50%\)/s);
+});
+
+test('home-delivery punctuation is removed only from the Checkout shipping-rate presentation', () => {
+  assert.match(woocommercePhp, /function cr2026_checkout_shipping_rate_label_presentation\( \$label, \$rate \)/);
+  assert.ok(woocommercePhp.includes("add_filter( 'woocommerce_shipping_rate_label', 'cr2026_checkout_shipping_rate_label_presentation', 99, 2 );"));
+  assert.ok(woocommercePhp.includes("'Envío a domicilio:'"));
+  assert.ok(woocommercePhp.includes("return preg_replace( '/:\\\\s*$/u', '', $label );"));
+  assert.match(woocommercePhp, /! is_checkout\(\)[\s\S]*?is_order_received_page\(\)/);
+});
+
 test('delivery labels float over native controls and retain the real WooCommerce label element', () => {
   assert.ok(checkoutCss.includes(".woocommerce-billing-fields__field-wrapper > .form-row > label {"));
   assert.ok(checkoutCss.includes("position: absolute;"));
   assert.ok(checkoutCss.includes("transform: translateY(-50%);"));
-  assert.ok(checkoutCss.includes("background: var(--cr-app-canvas);"));
+  assert.ok(checkoutCss.includes("background: var(--cr-white);"));
   assert.ok(checkoutCss.includes("pointer-events: none;"));
   assert.ok(checkoutCss.includes(".form-row input.input-text"));
   assert.ok(woocommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
@@ -722,7 +737,12 @@ test('shipping remains the only visible method card and native AJAX root is pres
   assert.ok(methodLabel.includes('margin-inline-start: 10px;'), 'Shipping labels must have a generic gap after the radio');
   assert.ok(methodLabel.includes('width: auto;'), 'Shipping label auto sizing must preserve the radio-to-label gap');
   assert.ok(checkoutCss.includes('border-top: 1px solid var(--cr-checkout-field-border);'));
-  assert.ok(checkoutCss.includes('background: color-mix(in srgb, var(--cr-green) 5%, var(--cr-app-canvas));'));
+  assert.ok(!checkoutCss.includes('background: color-mix(in srgb, var(--cr-green) 5%, var(--cr-app-canvas));'));
+  const shippingListSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
+  const shippingRowSelector = shippingListSelector + ' > li';
+  const selectedShippingRowSelector = shippingRowSelector + ':has(> input.shipping_method[type="radio"]:checked)';
+  assert.ok(cssLastRuleBody(checkoutCss, shippingRowSelector).includes('background: var(--cr-white);'));
+  assert.ok(cssLastRuleBody(checkoutCss, selectedShippingRowSelector).includes('background: var(--cr-white);'));
   assert.match(templatePhp, /<table class="shop_table woocommerce-checkout-review-order-table">/);
   assert.equal([...templatePhp.matchAll(/<table class="shop_table woocommerce-checkout-review-order-table">/g)].length, 1);
   assert.equal(rail.includes('billing_phone'), false);
