@@ -85,6 +85,17 @@ function cr2026_enqueue_assets() {
         );
     }
 
+ 
+    if ( $uses_account_app_skin && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
+        wp_enqueue_script(
+            'cr2026-account-save-feedback',
+            CR2026_URI . '/assets/js/account-save-feedback.js',
+            array(),
+            cr2026_asset_version( 'assets/js/account-save-feedback.js' ),
+            true
+        );
+    }
+
     if ( function_exists( 'is_account_page' ) && is_account_page()
         && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'orders' ) ) {
         wp_enqueue_script(

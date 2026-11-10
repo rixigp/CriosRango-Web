@@ -23,6 +23,7 @@ on:
       - "tests/account-birthday-contract.test.php"
       - "tests/page-title-contract.test.cjs"
       - "tests/account-address-layout-contract.test.cjs"
+      - "tests/account-save-feedback-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
 
@@ -421,6 +422,9 @@ jobs:
 
       - name: Run mobile Account address layout contract test
         run: node --test tests/account-address-layout-contract.test.cjs
+
+      - name: Run mobile Account save feedback contract test
+        run: node --test tests/account-save-feedback-contract.test.cjs
 
       - name: Validate theme structure
         shell: bash

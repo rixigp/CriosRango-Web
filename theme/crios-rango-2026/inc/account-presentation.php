@@ -622,3 +622,158 @@ function cr2026_account_birth_date_save_error() {
         wc_add_notice( __( 'Tus datos de WooCommerce se han guardado, pero no se pudo guardar la fecha de nacimiento en WPLoyalty. No se ha confirmado el guardado completo; vuelve a intentarlo o contacta con soporte.', 'crios-rango-2026' ), 'error' );
     }
 }
+
+
+/**
+ * Shared mobile Account save-feedback contract.
+ * WooCommerce remains the sole owner of validation, sanitization and persistence.
+ */
+function cr2026_account_mobile_save_context( $endpoint = '' ) {
+    if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
+        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
+        || ! function_exists( 'is_wc_endpoint_url' ) ) {
+        return false;
+    }
+    if ( 'edit-account' === $endpoint ) {
+        return is_wc_endpoint_url( 'edit-account' );
+    }
+    if ( 'edit-address' === $endpoint ) {
+        return is_wc_endpoint_url( 'edit-address' );
+    }
+    return is_wc_endpoint_url( 'edit-account' ) || is_wc_endpoint_url( 'edit-address' );
+}
+
+function cr2026_account_save_feedback_session() {
+    if ( ! function_exists( 'WC' ) ) {
+        return false;
+    }
+    $woocommerce = WC();
+    return is_object( $woocommerce ) && isset( $woocommerce->session )
+        && is_object( $woocommerce->session ) && method_exists( $woocommerce->session, 'get' )
+        && method_exists( $woocommerce->session, 'set' ) ? $woocommerce->session : false;
+}
+
+function cr2026_account_store_save_feedback( $feedback ) {
+    $session = cr2026_account_save_feedback_session();
+    if ( $session ) {
+        $session->set( 'cr2026_account_save_feedback', (string) $feedback );
+    }
+}
+
+function cr2026_account_take_save_feedback( $expected ) {
+    $session = cr2026_account_save_feedback_session();
+    if ( ! $session ) {
+        return false;
+    }
+    $feedback = (string) $session->get( 'cr2026_account_save_feedback', '' );
+    if ( $feedback !== (string) $expected ) {
+        return false;
+    }
+    $session->set( 'cr2026_account_save_feedback', '' );
+    return true;
+}
+
+function cr2026_account_render_save_feedback( $feedback ) {
+    $messages = array(
+        'personal' => __( 'Datos actualizados', 'crios-rango-2026' ),
+        'address'  => __( 'Dirección actualizada', 'crios-rango-2026' ),
+        'password' => __( 'Contraseña actualizada', 'crios-rango-2026' ),
+    );
+    if ( ! isset( $messages[ $feedback ] ) || ! cr2026_account_take_save_feedback( $feedback ) ) {
+        return;
+    }
+    echo '<p class="cr-account-save-feedback" role="status" aria-live="polite">' . esc_html( $messages[ $feedback ] ) . '</p>';
+}
+
+/** Preserve the selected mobile Profile subview across WooCommerce's native POST/redirect. */
+function cr2026_account_profile_save_form_feedback() {
+    if ( ! cr2026_account_mobile_save_context( 'edit-account' ) ) {
+        return;
+    }
+    $view = cr2026_account_profile_view();
+    if ( ! in_array( $view, array( 'personal', 'password' ), true ) ) {
+        return;
+    }
+    echo '<input type="hidden" name="cr2026_account_profile_view" value="' . esc_attr( $view ) . '" />';
+    cr2026_account_render_save_feedback( $view );
+}
+add_action( 'woocommerce_edit_account_form', 'cr2026_account_profile_save_form_feedback', 99 );
+
+/** Render address feedback before WooCommerce's native Save address submit button. */
+function cr2026_account_address_save_form_feedback() {
+    if ( ! cr2026_account_mobile_save_context( 'edit-address' ) ) {
+        return;
+    }
+    $address_type = (string) get_query_var( 'edit-address' );
+    if ( 'shipping' !== $address_type && isset( $_SERVER['REQUEST_URI'] ) ) {
+        $path = (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH );
+        if ( preg_match( '#/edit-address/shipping/?$#', $path ) ) {
+            $address_type = 'shipping';
+        }
+    }
+    if ( 'shipping' === $address_type ) {
+        cr2026_account_render_save_feedback( 'address' );
+    }
+}
+add_action( 'woocommerce_after_edit_address_form', 'cr2026_account_address_save_form_feedback', 99 );
+
+/** Store success only after WooCommerce's native account save action completed without errors. */
+function cr2026_account_store_profile_save_feedback( $user_id ) {
+    if ( ! cr2026_account_mobile_save_context( 'edit-account' ) ) {
+        return;
+    }
+    $view = isset( $_POST['cr2026_account_profile_view'] )
+        ? sanitize_key( wp_unslash( $_POST['cr2026_account_profile_view'] ) )
+        : cr2026_account_profile_view();
+    if ( ! in_array( $view, array( 'personal', 'password' ), true ) ) {
+        return;
+    }
+    if ( function_exists( 'wc_get_notices' ) && wc_get_notices( 'error' ) ) {
+        return;
+    }
+    cr2026_account_store_save_feedback( $view );
+}
+add_action( 'woocommerce_save_account_details', 'cr2026_account_store_profile_save_feedback', 99, 1 );
+
+/** Keep the same native Account subview after WooCommerce's successful redirect. */
+function cr2026_account_profile_save_redirect( $redirect ) {
+    if ( ! cr2026_account_mobile_save_context( 'edit-account' ) ) {
+        return $redirect;
+    }
+    $view = isset( $_POST['cr2026_account_profile_view'] )
+        ? sanitize_key( wp_unslash( $_POST['cr2026_account_profile_view'] ) )
+        : cr2026_account_profile_view();
+    if ( ! in_array( $view, array( 'personal', 'password' ), true ) ) {
+        return $redirect;
+    }
+    $url = wc_get_endpoint_url( 'edit-account', '', wc_get_page_permalink( 'myaccount' ) );
+    return add_query_arg( 'profile_view', $view, $url );
+}
+add_filter( 'woocommerce_save_account_details_redirect', 'cr2026_account_profile_save_redirect', 99, 1 );
+
+/** WooCommerce calls this after its native shipping-address update has completed. */
+function cr2026_account_store_address_save_feedback( $user_id, $load_address ) {
+    if ( 'shipping' !== $load_address || ! cr2026_account_mobile_save_context( 'edit-address' ) ) {
+        return;
+    }
+    if ( function_exists( 'wc_get_notices' ) && wc_get_notices( 'error' ) ) {
+        return;
+    }
+    cr2026_account_store_save_feedback( 'address' );
+}
+add_action( 'woocommerce_customer_save_address', 'cr2026_account_store_address_save_feedback', 99, 2 );
+
+/** Always return a successful mobile shipping save to the editable shipping form, not edit-address/. */
+function cr2026_account_address_save_redirect( $redirect, $user_id, $load_address ) {
+    if ( 'shipping' !== $load_address || ! cr2026_account_mobile_save_context( 'edit-address' ) ) {
+        return $redirect;
+    }
+    return wc_get_endpoint_url( 'edit-address', 'shipping', wc_get_page_permalink( 'myaccount' ) );
+}
+add_filter( 'woocommerce_customer_save_address_redirect', 'cr2026_account_address_save_redirect', 99, 3 );
+
+/** Hide only WooCommerce success notices on the mobile Account save endpoints; errors remain native. */
+function cr2026_account_filter_legacy_save_success( $message ) {
+    return cr2026_account_mobile_save_context() ? '' : $message;
+}
+add_filter( 'woocommerce_add_success', 'cr2026_account_filter_legacy_save_success', 99, 1 );

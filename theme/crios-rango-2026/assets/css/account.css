@@ -1002,3 +1002,65 @@
     text-indent: 0 !important;
   }
 }
+
+
+/* Shared mobile Account submit feedback: retain native CTA geometry while processing. */
+@media (max-width: 767px) {
+  body.woocommerce-account .cr-account-save-feedback {
+    margin: 0 0 9px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #244436 !important;
+    text-align: center;
+    font: 400 12px/17px "Roboto", Arial, sans-serif !important;
+  }
+
+  body.woocommerce-account .cr-account-save-feedback--error,
+  body.woocommerce-account .woocommerce-error.cr-account-save-feedback--error {
+    margin: 0 0 10px !important;
+    padding: 9px 11px !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: #f8ecea !important;
+    color: #8a3e36 !important;
+    text-align: left !important;
+    font: 300 12px/17px "Roboto", Arial, sans-serif !important;
+    list-style: none !important;
+  }
+
+  body.woocommerce-account .cr-account-submit--loading {
+    position: relative !important;
+    background: #e1e5e1 !important;
+    color: #183b35 !important;
+    cursor: wait !important;
+    pointer-events: none !important;
+  }
+
+  body.woocommerce-account .cr-account-submit--loading .cr-account-submit__label {
+    visibility: hidden !important;
+  }
+
+  body.woocommerce-account .cr-account-submit--loading::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    margin: -9px 0 0 -9px;
+    border: 2px solid rgba(24,59,53,.22);
+    border-top-color: #183b35;
+    border-radius: 50%;
+    content: "";
+    animation: cr-account-submit-spin .7s linear infinite;
+  }
+
+  body.woocommerce-account .cr-account-submit--loading:disabled {
+    opacity: 1 !important;
+  }
+}
+
+@keyframes cr-account-submit-spin {
+  to { transform: rotate(360deg); }
+}
