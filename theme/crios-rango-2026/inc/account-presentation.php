@@ -95,48 +95,87 @@ function cr2026_account_help_body_class( $classes ) {
 add_filter( 'body_class', 'cr2026_account_help_body_class' );
 
 /**
- * Add only contact channels not already present in the current page content.
- * The original contact form/content is retained unchanged after this panel.
+ * One source of truth for Help contact channels and weekly opening hours.
+ * No matching WordPress option/theme setting exists in the theme implementation.
  */
+function cr2026_account_help_config() {
+    return array(
+        'whatsapp' => array(
+            'label' => __( 'WhatsApp', 'crios-rango-2026' ),
+            'display' => '633 246 788',
+            'number' => '34633246788',
+        ),
+        'phone' => array(
+            'label' => __( 'Llamar', 'crios-rango-2026' ),
+            'display' => '969 091 236',
+            'number' => '+34969091236',
+        ),
+        'email' => array(
+            'label' => __( 'Correo electrónico', 'crios-rango-2026' ),
+            'address' => 'criosrango@criosrango.es',
+        ),
+        'hours' => array(
+            array( 'day' => __( 'Lunes', 'crios-rango-2026' ), 'time' => '10:00–13:30 · 17:30–21:00' ),
+            array( 'day' => __( 'Martes', 'crios-rango-2026' ), 'time' => '10:00–13:30 · 17:30–21:00' ),
+            array( 'day' => __( 'Miércoles', 'crios-rango-2026' ), 'time' => '10:00–13:30 · 17:30–21:00' ),
+            array( 'day' => __( 'Jueves', 'crios-rango-2026' ), 'time' => '10:00–13:30 · 17:30–21:00' ),
+            array( 'day' => __( 'Viernes', 'crios-rango-2026' ), 'time' => '10:00–13:30 · 17:30–21:00' ),
+            array( 'day' => __( 'Sábado', 'crios-rango-2026' ), 'time' => '10:00–13:30' ),
+            array( 'day' => __( 'Domingo', 'crios-rango-2026' ), 'time' => __( 'Cerrado', 'crios-rango-2026' ) ),
+        ),
+    );
+}
+
+/** Render mobile Help from controlled theme markup, never from page-builder content. */
 function cr2026_account_help_content( $content ) {
-    if ( is_admin() || ! is_main_query() || ! in_the_loop() || ! cr2026_account_is_help_page() ) {
+    if ( is_admin() || ! is_main_query() || ! in_the_loop() || ! cr2026_account_is_help_page()
+        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
         return $content;
     }
 
-    $plain  = wp_strip_all_tags( $content );
-    $digits = preg_replace( '/\D+/', '', $plain );
-    $cards  = array();
-
-    if ( false === strpos( $digits, '633246788' ) ) {
-        $cards[] = '<a class="cr-account-help__card" href="https://wa.me/34633246788"><span class="cr-account-help__icon" aria-hidden="true">WA</span><span><strong>' . esc_html__( 'WhatsApp', 'crios-rango-2026' ) . '</strong><small>' . esc_html__( '633 246 788', 'crios-rango-2026' ) . '</small></span><span class="cr-account-help__chevron" aria-hidden="true">›</span></a>';
-    }
-
-    if ( false === strpos( $digits, '969091236' ) ) {
-        $cards[] = '<a class="cr-account-help__card" href="tel:+34969091236"><span class="cr-account-help__icon" aria-hidden="true">☎</span><span><strong>' . esc_html__( 'Teléfono', 'crios-rango-2026' ) . '</strong><small>' . esc_html__( '969 091 236', 'crios-rango-2026' ) . '</small></span><span class="cr-account-help__chevron" aria-hidden="true">›</span></a>';
-    }
-
-    if ( false === stripos( $plain, 'criosrango@criosrango.es' ) ) {
-        $cards[] = '<a class="cr-account-help__card" href="mailto:criosrango@criosrango.es"><span class="cr-account-help__icon" aria-hidden="true">@</span><span><strong>' . esc_html__( 'Correo electrónico', 'crios-rango-2026' ) . '</strong><small>criosrango@criosrango.es</small></span><span class="cr-account-help__chevron" aria-hidden="true">›</span></a>';
-    }
-
-    $has_hours = false !== stripos( $plain, 'horario' ) || preg_match( '/\b\d{1,2}:\d{2}\b/', $plain );
-    if ( ! $has_hours ) {
-        $cards[] = '<div class="cr-account-help__hours"><strong>' . esc_html__( 'Horario de tienda', 'crios-rango-2026' ) . '</strong><p><span>' . esc_html__( 'Lunes a viernes', 'crios-rango-2026' ) . '</span><span>10:00–13:30 · 17:30–21:00</span></p><p><span>' . esc_html__( 'Sábado', 'crios-rango-2026' ) . '</span><span>10:00–13:30</span></p><p><span>' . esc_html__( 'Domingo', 'crios-rango-2026' ) . '</span><span>' . esc_html__( 'Cerrado', 'crios-rango-2026' ) . '</span></p></div>';
-    }
-
-    if ( empty( $cards ) ) {
-        return $content;
-    }
+    $config = cr2026_account_help_config();
+    $whatsapp = $config['whatsapp'];
+    $phone = $config['phone'];
+    $email = $config['email'];
 
     ob_start();
     cr2026_account_render_endpoint_toolbar( __( 'Ayuda', 'crios-rango-2026' ) );
-    $toolbar = ob_get_clean();
-
-    $panel = '<section class="cr-account-help" aria-label="' . esc_attr__( 'Contacto y ayuda', 'crios-rango-2026' ) . '">'
-        . $toolbar
-        . '<div class="cr-account-help__grid">' . implode( '', $cards ) . '</div>'
-        . '</section>';
-
-    return $panel . $content;
+    ?>
+    <section class="cr-account-help" aria-label="<?php esc_attr_e( 'Contacto y ayuda', 'crios-rango-2026' ); ?>">
+        <h2 class="cr-account-help__heading"><?php esc_html_e( 'Contacta con nosotros', 'crios-rango-2026' ); ?></h2>
+        <div class="cr-account-help__grid">
+            <a class="cr-account-help__card cr-account-help__card--whatsapp" href="<?php echo esc_url( 'https://wa.me/' . $whatsapp['number'] ); ?>">
+                <span class="cr-account-help__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4A8 8 0 1 1 20 11.5Z"/><path d="M8.8 8.4c.3-.5.6-.5.9-.5h.5l.8 1.9-.8.9c.6 1.2 1.5 2.1 2.7 2.7l.9-.8 1.9.8v.5c0 .3 0 .6-.5.9-.5.3-1.1.4-1.7.2-2.8-.8-5.1-3.1-5.9-5.9-.2-.6-.1-1.2.2-1.7Z"/></svg>
+                </span>
+                <span class="cr-account-help__copy"><strong><?php echo esc_html( $whatsapp['label'] ); ?></strong><small><?php echo esc_html( $whatsapp['display'] ); ?></small></span>
+                <span class="cr-account-help__chevron" aria-hidden="true">›</span>
+            </a>
+            <a class="cr-account-help__card cr-account-help__card--phone" href="<?php echo esc_url( 'tel:' . $phone['number'] ); ?>">
+                <span class="cr-account-help__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h3l1.5 4.5-2 1.7a15 15 0 0 0 5.3 5.3l1.7-2L21 14v3c0 1.1-.9 2-2 2C10 19 5 14 5 5c0-1.1.9-2 2-2Z"/></svg>
+                </span>
+                <span class="cr-account-help__copy"><strong><?php echo esc_html( $phone['label'] ); ?></strong><small><?php echo esc_html( $phone['display'] ); ?></small></span>
+                <span class="cr-account-help__chevron" aria-hidden="true">›</span>
+            </a>
+            <a class="cr-account-help__card cr-account-help__card--email" href="<?php echo esc_url( 'mailto:' . $email['address'] ); ?>">
+                <span class="cr-account-help__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+                </span>
+                <span class="cr-account-help__copy"><strong><?php echo esc_html( $email['label'] ); ?></strong><small><?php echo esc_html( $email['address'] ); ?></small></span>
+                <span class="cr-account-help__chevron" aria-hidden="true">›</span>
+            </a>
+        </div>
+        <section class="cr-account-help__hours" aria-labelledby="cr-account-help-hours-title">
+            <h2 id="cr-account-help-hours-title"><?php esc_html_e( 'Horario de atención', 'crios-rango-2026' ); ?></h2>
+            <div class="cr-account-help__hours-table">
+                <?php foreach ( $config['hours'] as $row ) : ?>
+                    <div class="cr-account-help__hours-row"><span><?php echo esc_html( $row['day'] ); ?></span><span><?php echo esc_html( $row['time'] ); ?></span></div>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    </section>
+    <?php
+    return ob_get_clean();
 }
 add_filter( 'the_content', 'cr2026_account_help_content', 20 );

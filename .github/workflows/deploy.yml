@@ -19,6 +19,7 @@ on:
       - "tests/checkout-review-contract.test.cjs"
       - "tests/cart-promotions-contract.test.cjs"
       - "tests/account-information-icons.test.cjs"
+      - "tests/account-help-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
 
@@ -395,6 +396,9 @@ jobs:
 
       - name: Run Account information icon geometry tests
         run: node --test tests/account-information-icons.test.cjs
+
+      - name: Run mobile Account Help contract tests
+        run: node --test tests/account-help-contract.test.cjs
 
       - name: Install validation and FTP tools
         shell: bash

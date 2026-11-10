@@ -305,7 +305,9 @@ function cr2026_is_app_nav_shell() {
         || ( function_exists( 'is_product' ) && is_product() )
         || ( function_exists( 'is_cart' ) && is_cart() )
         || ( function_exists( 'is_checkout' ) && is_checkout() )
-        || ( function_exists( 'is_account_page' ) && is_account_page() );
+        || ( function_exists( 'is_account_page' ) && is_account_page() )
+        || ( function_exists( 'is_page' ) && is_page( array( 'ayuda', 'preguntas-frecuentes', 'contacto' ) )
+            && function_exists( 'wp_is_mobile' ) && wp_is_mobile() );
 }
 function cr2026_app_nav_body_class( $classes ) {
     $classes[] = 'cr-global-app-header';
