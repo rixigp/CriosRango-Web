@@ -1126,8 +1126,10 @@ test('Cecabank success and failure require a matching WooCommerce order, gateway
   assert.match(checkoutSuccessPhp, /'cecabank_gateway' === \$order->get_payment_method\(\)/);
   assert.match(checkoutSuccessPhp, /\$order->is_paid\(\)/);
   assert.match(checkoutSuccessPhp, /\$_GET\['key'\]/);
-  assert.match(checkoutSuccessPhp, /\$_GET\['cancel_order'\]/);
-  assert.match(checkoutSuccessPhp, /wc_get_order_id_by_order_key/);
+  assert.match(checkoutSuccessPhp, /add_action\( 'woocommerce_cancelled_order', 'cr2026_checkout_capture_cecabank_cancelled_order', 10, 1 \)/);
+  assert.match(checkoutSuccessPhp, /cr2026_cecabank_cancelled_order_id/);
+  assert.match(checkoutSuccessPhp, /\$woocommerce->session->get\( 'cr2026_cecabank_cancelled_order_id' \)/);
+  assert.match(checkoutSuccessPhp, /\$woocommerce->session->set\( 'cr2026_cecabank_cancelled_order_id', 0 \)/);
   assert.match(checkoutSuccessPhp, /in_array\( \$order->get_status\(\), array\( 'cancelled', 'failed' \), true \)/);
   assert.match(checkoutSuccessPhp, /Tu pedido se ha cancelado\./);
   assert.match(checkoutSuccessJs, /config\.result/);

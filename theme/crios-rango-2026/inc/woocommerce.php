@@ -1058,6 +1058,23 @@ function cr2026_checkout_hide_cecabank_cancel_notice() {
     wc_set_notices( $notices );
 }
 
+/**
+ * Cecabank sends URL_NOK to WooCommerce's native order-cancel URL. The core
+ * cancel handler removes its query arguments before redirecting to Cart, so
+ * preserve only a verified Cecabank order ID in the current WooCommerce session.
+ */
+function cr2026_checkout_capture_cecabank_cancelled_order( $order_id ) {
+    if ( ! function_exists( 'WC' ) || ! function_exists( 'wc_get_order' ) ) { return; }
+    $order = wc_get_order( absint( $order_id ) );
+    $woocommerce = WC();
+    if ( $order instanceof WC_Order && 'cecabank_gateway' === $order->get_payment_method()
+        && $order->has_status( 'cancelled' )
+        && $woocommerce && isset( $woocommerce->session ) && $woocommerce->session ) {
+        $woocommerce->session->set( 'cr2026_cecabank_cancelled_order_id', (int) $order->get_id() );
+    }
+}
+add_action( 'woocommerce_cancelled_order', 'cr2026_checkout_capture_cecabank_cancelled_order', 10, 1 );
+
 function cr2026_checkout_payment_result_page_payload() {
     if ( ! function_exists( 'wc_get_order' ) ) { return null; }
     if ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) {
@@ -1070,19 +1087,22 @@ function cr2026_checkout_payment_result_page_payload() {
             return cr2026_checkout_payment_result_modal_payload( $order, 'card_success' );
         }
     }
-    if ( function_exists( 'is_cart' ) && is_cart()
-        && isset( $_GET['cancel_order'], $_GET['order'] )
-        && 'true' === sanitize_key( wp_unslash( $_GET['cancel_order'] ) ) ) {
-        $order_key = wc_clean( wp_unslash( $_GET['order'] ) );
-        $order_id = function_exists( 'wc_get_order_id_by_order_key' )
-            ? absint( wc_get_order_id_by_order_key( $order_key ) ) : 0;
-        $order = $order_id ? wc_get_order( $order_id ) : false;
-        if ( $order instanceof WC_Order && '' !== $order_key
-            && hash_equals( (string) $order->get_order_key(), (string) $order_key )
-            && 'cecabank_gateway' === $order->get_payment_method()
-            && in_array( $order->get_status(), array( 'cancelled', 'failed' ), true ) ) {
-            cr2026_checkout_hide_cecabank_cancel_notice();
-            return cr2026_checkout_payment_result_modal_payload( $order, 'card_failure' );
+    if ( function_exists( 'is_cart' ) && is_cart() && function_exists( 'WC' ) ) {
+        $woocommerce = WC();
+        if ( $woocommerce && isset( $woocommerce->session ) && $woocommerce->session ) {
+            $cancelled_order_id = absint( $woocommerce->session->get( 'cr2026_cecabank_cancelled_order_id' ) );
+            if ( $cancelled_order_id ) {
+                // Consume the one-shot marker before rendering so later Cart
+                // visits cannot replay a stale Cecabank failure dialog.
+                $woocommerce->session->set( 'cr2026_cecabank_cancelled_order_id', 0 );
+                $order = wc_get_order( $cancelled_order_id );
+                if ( $order instanceof WC_Order
+                    && 'cecabank_gateway' === $order->get_payment_method()
+                    && in_array( $order->get_status(), array( 'cancelled', 'failed' ), true ) ) {
+                    cr2026_checkout_hide_cecabank_cancel_notice();
+                    return cr2026_checkout_payment_result_modal_payload( $order, 'card_failure' );
+                }
+            }
         }
     }
     return null;
