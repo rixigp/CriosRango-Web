@@ -25,42 +25,87 @@ function cr2026_account_loyalty_endpoint_toolbar() {
 add_action( 'woocommerce_account_loyalty_reward_endpoint', 'cr2026_account_loyalty_endpoint_toolbar', 1 );
 
 
-/** Native WooCommerce profile endpoint toolbar and section labels. */
-function cr2026_account_profile_endpoint_toolbar() {
-    if ( function_exists( 'is_account_page' ) && is_account_page() ) {
-        cr2026_account_render_endpoint_toolbar( __( 'Perfil', 'crios-rango-2026' ) );
+/** Resolve the mobile profile subview without changing WooCommerce endpoint data. */
+function cr2026_account_profile_view() {
+    $view = isset( $_GET['profile_view'] ) ? sanitize_key( wp_unslash( $_GET['profile_view'] ) ) : 'home';
+    return in_array( $view, array( 'home', 'personal', 'password' ), true ) ? $view : 'home';
+}
+
+/** Route only the mobile edit-account endpoint through this presentation layer. */
+function cr2026_account_route_mobile_profile() {
+    if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
+        || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'edit-account' )
+        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
+        return;
     }
+    remove_action( 'woocommerce_account_edit-account_endpoint', 'woocommerce_account_edit_account', 10 );
+    add_action( 'woocommerce_account_edit-account_endpoint', 'cr2026_account_render_mobile_profile', 10 );
+}
+add_action( 'wp', 'cr2026_account_route_mobile_profile', 20 );
+
+/** Render a profile landing page or WooCommerce's unmodified native edit-account form. */
+function cr2026_account_render_mobile_profile() {
+    $view = cr2026_account_profile_view();
+    if ( 'home' === $view ) {
+        cr2026_account_render_profile_home();
+        return;
+    }
+    wc_get_template( 'myaccount/form-edit-account.php' );
+}
+
+/** Profile landing page; all destinations remain native WordPress/WooCommerce URLs. */
+function cr2026_account_render_profile_home() {
+    $base = wc_get_account_endpoint_url( 'edit-account' );
+    $personal_url = add_query_arg( 'profile_view', 'personal', $base );
+    $password_url = add_query_arg( 'profile_view', 'password', $base );
+    $shipping_url = wc_get_endpoint_url( 'edit-address', 'shipping', wc_get_page_permalink( 'myaccount' ) );
+    $delete_url = wc_get_account_endpoint_url( 'wpf-delete-account' );
+    ?>
+    <section class="cr-account-profile-home" aria-label="<?php esc_attr_e( 'Perfil', 'crios-rango-2026' ); ?>">
+        <div class="cr-account-profile-home__main">
+            <a href="<?php echo esc_url( $personal_url ); ?>" class="cr-account-profile-home__row">
+                <span class="cr-account-profile-home__icon" aria-hidden="true"><?php echo cr2026_icon( 'user' ); ?></span><span><?php esc_html_e( 'Datos personales', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
+            </a>
+            <?php if ( function_exists( 'wc_shipping_enabled' ) && wc_shipping_enabled() && ( ! function_exists( 'wc_ship_to_billing_address_only' ) || ! wc_ship_to_billing_address_only() ) ) : ?>
+            <a href="<?php echo esc_url( $shipping_url ); ?>" class="cr-account-profile-home__row">
+                <span class="cr-account-profile-home__icon" aria-hidden="true"><?php echo cr2026_icon( 'map-pin' ); ?></span><span><?php esc_html_e( 'Dirección de entrega', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
+            </a>
+            <?php endif; ?>
+            <a href="<?php echo esc_url( $password_url ); ?>" class="cr-account-profile-home__row">
+                <span class="cr-account-profile-home__icon" aria-hidden="true"><?php echo cr2026_icon( 'lock' ); ?></span><span><?php esc_html_e( 'Cambiar contraseña', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
+            </a>
+        </div>
+        <a class="cr-account-profile-home__action cr-account-profile-home__action--delete" href="<?php echo esc_url( $delete_url ); ?>">
+            <span class="cr-account-profile-home__action-icon" aria-hidden="true"><?php echo cr2026_icon( 'trash-2' ); ?></span><span><?php esc_html_e( 'Eliminar cuenta', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
+        </a>
+        <a class="cr-account-profile-home__action cr-account-profile-home__action--logout" href="<?php echo esc_url( wc_logout_url() ); ?>">
+            <span class="cr-account-profile-home__action-icon" aria-hidden="true"><?php echo cr2026_icon( 'log-out' ); ?></span><span><?php esc_html_e( 'Cerrar sesión', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
+        </a>
+    </section>
+    <?php
+}
+
+/** Canonical mobile heading for each profile subview. */
+function cr2026_account_profile_endpoint_toolbar() {
+    if ( ! function_exists( 'is_account_page' ) || ! is_account_page() ) { return; }
+    $view = cr2026_account_profile_view();
+    $title = 'personal' === $view ? __( 'Datos personales', 'crios-rango-2026' )
+        : ( 'password' === $view ? __( 'Cambiar contraseña', 'crios-rango-2026' ) : __( 'Perfil', 'crios-rango-2026' ) );
+    cr2026_account_render_endpoint_toolbar( $title );
 }
 add_action( 'woocommerce_account_edit-account_endpoint', 'cr2026_account_profile_endpoint_toolbar', 1 );
 
-function cr2026_account_profile_personal_heading() {
-    echo '<h2 class="cr-account-profile__section-title">' . esc_html__( 'Datos personales', 'crios-rango-2026' ) . '</h2>';
-}
+/** Suppress the previous extra heading; the canonical toolbar is the sole title. */
+function cr2026_account_profile_personal_heading() {}
 add_action( 'woocommerce_before_edit_account_form', 'cr2026_account_profile_personal_heading', 1 );
 
-/** Preserve native address editing and link to the shipping-address endpoint. */
-function cr2026_account_profile_address_link() {
-    if ( ! function_exists( 'wc_get_endpoint_url' ) || ! function_exists( 'wc_get_page_permalink' )
-        || ! function_exists( 'wc_shipping_enabled' ) || ! wc_shipping_enabled()
-        || ( function_exists( 'wc_ship_to_billing_address_only' ) && wc_ship_to_billing_address_only() ) ) {
-        return;
-    }
-
-    $url = wc_get_endpoint_url( 'edit-address', 'shipping', wc_get_page_permalink( 'myaccount' ) );
-    echo '<a class="cr-account-profile__address" href="' . esc_url( $url ) . '">'
-        . '<span><strong>' . esc_html__( 'Dirección de entrega', 'crios-rango-2026' ) . '</strong>'
-        . '<small>' . esc_html__( 'Gestiona dónde recibes tus pedidos', 'crios-rango-2026' ) . '</small></span>'
-        . '<span class="cr-account-profile__chevron" aria-hidden="true">›</span></a>';
-}
-add_action( 'woocommerce_after_edit_account_form', 'cr2026_account_profile_address_link', 15 );
-
-/** Use WooCommerce's native logout URL; no custom session handling. */
-function cr2026_account_profile_logout_link() {
-    if ( function_exists( 'wc_logout_url' ) ) {
-        echo '<a class="cr-account-profile__logout" href="' . esc_url( wc_logout_url() ) . '">' . esc_html__( 'Cerrar sesión', 'crios-rango-2026' ) . '</a>';
+/** Delete account remains entirely owned by WP Frontend Delete Account. */
+function cr2026_account_delete_endpoint_toolbar() {
+    if ( function_exists( 'is_account_page' ) && is_account_page() ) {
+        cr2026_account_render_endpoint_toolbar( __( 'Eliminar cuenta', 'crios-rango-2026' ) );
     }
 }
-add_action( 'woocommerce_after_edit_account_form', 'cr2026_account_profile_logout_link', 100 );
+add_action( 'woocommerce_account_wpf-delete-account_endpoint', 'cr2026_account_delete_endpoint_toolbar', 1 );
 
 /** Native address editing stays on WooCommerce's edit-address endpoint. */
 function cr2026_account_address_endpoint_toolbar() {
@@ -77,6 +122,16 @@ function cr2026_account_address_endpoint_toolbar() {
 }
 add_action( 'woocommerce_account_edit-address_endpoint', 'cr2026_account_address_endpoint_toolbar', 1 );
 
+
+function cr2026_account_profile_body_class( $classes ) {
+    if ( function_exists( 'is_account_page' ) && is_account_page()
+        && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'edit-account' )
+        && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
+        $classes[] = 'cr-account-profile-view-' . cr2026_account_profile_view();
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'cr2026_account_profile_body_class' );
 
 /** Identify the existing Help/FAQ/Contact page selected by the Account home. */
 function cr2026_account_is_help_page() {

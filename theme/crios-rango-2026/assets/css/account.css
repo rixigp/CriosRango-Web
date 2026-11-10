@@ -458,3 +458,22 @@
 }
 
 @media (min-width: 768px) { .cr-account-help { display: none !important; } }
+
+
+/* Mobile Profile home: native endpoints remain the source of all account actions. */
+.cr-account-profile-home { width: min(100% - 32px, 720px); margin: 0 auto; padding: 0 0 calc(88px + env(safe-area-inset-bottom)); color: #20241f; font-family: "Roboto", Arial, sans-serif; }
+.cr-account-profile-home__main { overflow: hidden; border: 1px solid rgba(24,59,53,.07); border-radius: 20px; background: #fff; }
+.cr-account-profile-home__row, .cr-account-profile-home__action { min-height: 62px; display: flex; align-items: center; gap: 13px; padding: 0 16px; color: #303630; text-decoration: none; font: 300 14px/20px "Roboto", Arial, sans-serif; }
+.cr-account-profile-home__row + .cr-account-profile-home__row { border-top: 1px solid rgba(32,36,31,.08); }
+.cr-account-profile-home__icon, .cr-account-profile-home__action-icon { width: 24px; height: 24px; flex: 0 0 24px; display: inline-flex; align-items: center; justify-content: center; color: #244436; }
+.cr-account-profile-home__icon svg, .cr-account-profile-home__action-icon svg { width: 21px; height: 21px; }
+.cr-account-profile-home__chevron { margin-left: auto; color: #8a918b; font: 300 24px/1 Arial,sans-serif; }
+.cr-account-profile-home__action { min-height: 58px; margin-top: 14px; border: 1px solid rgba(24,59,53,.06); border-radius: 17px; }
+.cr-account-profile-home__action--delete { background: #fbf4dc; color: #5b4a1f; }
+.cr-account-profile-home__action--delete .cr-account-profile-home__action-icon { color: #8a6b1e; }
+.cr-account-profile-home__action--logout { background: #fbeeee; color: #754747; }
+.cr-account-profile-home__action--logout .cr-account-profile-home__action-icon { color: #925757; }
+@media (max-width: 767px) {
+ body.woocommerce-account .cr-account-profile-home { width: calc(100% - 32px); }
+ body.woocommerce-account:has(.cr-account-profile-home) .cr-page__header { display: none !important; }
+}
