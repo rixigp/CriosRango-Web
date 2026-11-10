@@ -1126,12 +1126,12 @@ function cr2026_checkout_payment_result_page_payload() {
  * and the native coupon prompt on Checkout. Cart rendering and coupon behavior
  * remain untouched.
  */
+/**
+ * Suppress only the native Checkout benefit prompts immediately before
+ * WooCommerce renders them. Reaching this hook is the Checkout-context guard;
+ * no early conditional query-tag check is needed.
+ */
 function cr2026_checkout_remove_legacy_benefit_prompts() {
-    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
-        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
-        return;
-    }
-
     if ( isset( $GLOBALS['wc_points_rewards'] ) && is_object( $GLOBALS['wc_points_rewards'] )
         && isset( $GLOBALS['wc_points_rewards']->cart )
         && is_object( $GLOBALS['wc_points_rewards']->cart ) ) {
@@ -1147,8 +1147,7 @@ function cr2026_checkout_remove_legacy_benefit_prompts() {
 
     remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_form', 10 );
 }
-add_action( 'wp_loaded', 'cr2026_checkout_remove_legacy_benefit_prompts', 999 );
-add_action( 'admin_init', 'cr2026_checkout_remove_legacy_benefit_prompts', 999 );
+add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_remove_legacy_benefit_prompts', 1 );
 
 /**
  * Resolve a real free-shipping method for the currently matching shipping
@@ -1243,7 +1242,10 @@ function cr2026_checkout_benefits_shipping_data() {
     return null;
 }
 
-/** Read this cart's actual earned-points value from the plugin cart handler. */
+/**
+ * Capture the live value calculated by Points & Rewards through its public
+ * message filter. The plugin remains the sole owner of earning rules/formula.
+ */
 function cr2026_checkout_benefits_points_earned() {
     if ( ! isset( $GLOBALS['wc_points_rewards'] ) || ! is_object( $GLOBALS['wc_points_rewards'] )
         || ! isset( $GLOBALS['wc_points_rewards']->cart )
@@ -1252,19 +1254,32 @@ function cr2026_checkout_benefits_points_earned() {
     }
 
     $points_cart = $GLOBALS['wc_points_rewards']->cart;
-    if ( ! method_exists( $points_cart, 'get_points_earned_for_purchase' ) ) {
+    if ( ! is_callable( array( $points_cart, 'render_earn_points_message' ) ) ) {
         return null;
     }
 
+    $points_earned = null;
+    $capture_points = static function( $message, $earned ) use ( &$points_earned ) {
+        $points_earned = is_numeric( $earned ) && (float) $earned >= 0
+            ? (float) $earned
+            : null;
+        return '';
+    };
+
+    add_filter( 'wc_points_rewards_earn_points_message', $capture_points, PHP_INT_MAX, 2 );
+
+    ob_start();
     try {
-        $points = $points_cart->get_points_earned_for_purchase();
+        $points_cart->render_earn_points_message();
     } catch ( Throwable $error ) {
-        // Older plugin releases may expose this calculation as non-public.
-        // Fail closed: don't derive a replacement or parse rendered notices.
-        return null;
+        // Keep Checkout rendering resilient if the optional plugin callback fails.
+        $points_earned = null;
+    } finally {
+        ob_end_clean();
+        remove_filter( 'wc_points_rewards_earn_points_message', $capture_points, PHP_INT_MAX );
     }
 
-    return is_numeric( $points ) && (float) $points >= 0 ? (float) $points : null;
+    return $points_earned;
 }
 
 /** Render the single server-generated Checkout benefits card. */
