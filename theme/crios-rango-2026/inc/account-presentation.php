@@ -12,10 +12,7 @@ function cr2026_account_render_endpoint_toolbar( $title ) {
         return;
     }
 
-    echo '<div class="cr-account-endpoint-toolbar">'
-        . '<a class="cr-account-endpoint-toolbar__back" href="' . esc_url( wc_get_page_permalink( 'myaccount' ) ) . '" aria-label="' . esc_attr__( 'Volver a Cuenta', 'crios-rango-2026' ) . '">'
-        . '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"></path></svg>'
-        . '</a><h1>' . esc_html( $title ) . '</h1></div>';
+    cr2026_render_category_toolbar( $title, wc_get_page_permalink( 'myaccount' ), 'parent', false );
 }
 
 /** Add the title before WPLoyalty renders its native reward page. */

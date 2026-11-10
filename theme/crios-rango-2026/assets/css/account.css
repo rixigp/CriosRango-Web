@@ -1,9 +1,5 @@
 /* Mobile account home: scoped to the WooCommerce account page only. */
-.cr-account-home { width: min(100% - 32px, 720px); margin: 0 auto; padding: 18px 0 108px; color: #20241f; font-family: "Roboto", Arial, sans-serif; }
-.cr-account-home__toolbar { min-height: 44px; display: flex; align-items: center; gap: 12px; margin: 0 0 18px; }
-.cr-account-home__back { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; color: #183b35; text-decoration: none; }
-.cr-account-home__back svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.cr-account-home__toolbar h1 { margin: 0; color: #183b35; font: 400 21px/28px "Roboto", Arial, sans-serif; }
+.cr-account-home { width: min(100% - 32px, 720px); margin: 0 auto; padding: 0 0 108px; color: #20241f; font-family: "Roboto", Arial, sans-serif; }
 .cr-account-home__user { min-height: 88px; display: flex; align-items: center; gap: 14px; padding: 16px; margin: 0 0 18px; border: 1px solid rgba(24,59,53,.07); border-radius: 20px; background: #fff; }
 .cr-account-home__avatar { width: 52px; height: 52px; flex: 0 0 52px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: #e5eee8; color: #244436; font: 400 17px/1 "Roboto", Arial, sans-serif; }
 .cr-account-home__identity { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
@@ -91,7 +87,7 @@
     width: 100%;
     max-width: none;
     margin-inline: auto;
-    padding-block-start: 10px;
+    padding-block-start: 0;
     padding-block-end: 0;
     background: var(--cr-app-canvas);
   }
@@ -187,10 +183,6 @@
 }
 
 /* WPLoyalty native reward page: app-skin presentation only. */
-.cr-account-endpoint-toolbar { min-height: 44px; display: flex; align-items: center; gap: 12px; margin: 0 0 16px; color: #183b35; font-family: "Roboto", Arial, sans-serif; }
-.cr-account-endpoint-toolbar__back { width: 34px; height: 34px; display: inline-flex; flex: 0 0 34px; align-items: center; justify-content: center; color: #183b35; text-decoration: none; }
-.cr-account-endpoint-toolbar__back svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.cr-account-endpoint-toolbar h1 { margin: 0; color: #183b35; font: 400 21px/28px "Roboto", Arial, sans-serif; }
 @media (max-width: 767px) {
   body.woocommerce-account .wlr-myaccount-page {
     width: 100% !important;
@@ -411,7 +403,7 @@
   body.cr-account-help-page .cr-main > .cr-shell.cr-page-shell {
     width: 100%; max-width: none; margin-inline: auto;
     padding-block-start: 10px;
-    padding-block-end: calc(88px + env(safe-area-inset-bottom));
+    padding-block-end: 0;
     background: var(--cr-app-canvas);
   }
   body.cr-account-help-page .cr-page,
@@ -420,7 +412,7 @@
   }
   body.cr-account-help-page .cr-page__header,
   body.cr-account-help-page .cr-footer { display: none !important; }
-  body.cr-account-help-page .cr-account-endpoint-toolbar { margin: 0 20px 22px; }
+  body.cr-account-help-page .cr-parent-category__toolbar { margin-bottom: 16px; }
   .cr-account-help { width: min(calc(100% - 40px), 720px); margin: 0 auto 18px; }
   .cr-account-help__heading {
     margin: 0 0 14px; color: #183b35;

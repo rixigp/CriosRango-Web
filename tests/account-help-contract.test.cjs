@@ -7,6 +7,7 @@ const root = path.join(__dirname, '../theme/crios-rango-2026');
 const presentation = fs.readFileSync(path.join(root, 'inc/account-presentation.php'), 'utf8');
 const helpers = fs.readFileSync(path.join(root, 'inc/helpers.php'), 'utf8');
 const page = fs.readFileSync(path.join(root, 'page.php'), 'utf8');
+const dashboard = fs.readFileSync(path.join(root, 'woocommerce/myaccount/dashboard.php'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'assets/css/account.css'), 'utf8');
 const footer = fs.readFileSync(path.join(root, 'footer.php'), 'utf8');
 
@@ -16,7 +17,8 @@ test('MOBILE_HELP_REPLACES_UNPROCESSED_PAGE_BUILDER_CONTENT', () => {
   assert.match(presentation, /return ob_get_clean\(\);/);
   assert.doesNotMatch(presentation, /return \$panel \. \$content/);
   assert.match(presentation, /add_filter\( 'the_content', 'cr2026_account_help_content', 20 \)/);
-  assert.match(presentation, /cr2026_account_render_endpoint_toolbar\( __\( 'Ayuda'/);
+  assert.match(presentation, /cr2026_render_category_toolbar\( \$title, wc_get_page_permalink\( 'myaccount' \), 'parent', false \)/);
+  assert.match(dashboard, /cr2026_render_category_toolbar\( __\( 'Cuenta'/);
 });
 
 test('HELP_CONTACTS_USE_ONE_CENTRAL_CONFIGURATION_AND_REAL_ACTIONS', () => {
@@ -56,7 +58,12 @@ test('HELP_NAV_AND_FOOTER_ARE_MOBILE_SCOPED', () => {
   assert.match(helpers, /is_page\( array\( 'ayuda', 'preguntas-frecuentes', 'contacto' \) \)\s*&& function_exists\( 'wp_is_mobile' \) && wp_is_mobile\(\)/);
   assert.match(footer, /cr-mobile-bottom-nav cr-app-bottom-nav/);
   assert.match(css, /body\.cr-account-help-page \.cr-footer \{ display: none !important; \}/);
-  assert.match(css, /body\.cr-account-help-page \.cr-account-endpoint-toolbar/);
+  assert.match(css, /body\.cr-account-help-page \.cr-parent-category__toolbar/);
+  assert.doesNotMatch(css, /\.cr-account-endpoint-toolbar|\.cr-account-home__toolbar/);
+  const helpShell = css.match(/body\.cr-account-help-page \.cr-main > \.cr-shell\.cr-page-shell \{([\s\S]*?)\n  \}/);
+  assert.ok(helpShell, 'Help page shell CSS exists');
+  assert.match(helpShell[1], /padding-block-end:\s*0;/);
+  assert.doesNotMatch(helpShell[1], /calc\(88px|safe-area-inset-bottom/);
   assert.match(css, /\.cr-account-help__card--whatsapp/);
   assert.match(css, /\.cr-account-help__card--phone/);
   assert.match(css, /\.cr-account-help__card--email/);

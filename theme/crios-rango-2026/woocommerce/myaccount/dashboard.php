@@ -48,13 +48,8 @@ $information = array(
     array( 'label' => __( 'Política de cookies', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="cookie"><path d="M20.5 12a8.5 8.5 0 1 1-8.5-8.5c0 1.1.9 2 2 2h.5a3 3 0 0 0 3 3h.5a2.5 2.5 0 0 1 2.5 2.5Z"></path><circle cx="8.5" cy="11" r=".8"></circle><circle cx="11" cy="16" r=".8"></circle><circle cx="15" cy="12.5" r=".8"></circle><circle cx="7.5" cy="15.5" r=".8"></circle></svg>', 'slugs' => array( 'politica-de-cookies' ) ),
 );
 ?>
+<?php cr2026_render_category_toolbar( __( 'Cuenta', 'crios-rango-2026' ), home_url( '/' ), 'parent', false, '', 'cr-account-title' ); ?>
 <section class="cr-account-home" aria-labelledby="cr-account-title">
-    <div class="cr-account-home__toolbar">
-        <a class="cr-account-home__back" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Volver al inicio', 'crios-rango-2026' ); ?>">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"></path></svg>
-        </a>
-        <h1 id="cr-account-title"><?php esc_html_e( 'Cuenta', 'crios-rango-2026' ); ?></h1>
-    </div>
 
     <div class="cr-account-home__user">
         <span class="cr-account-home__avatar" aria-hidden="true"><?php echo esc_html( $initials ); ?></span>
