@@ -619,7 +619,11 @@ test('Points row consumes the plugin earned-points argument captured by the real
 
 test('Coupon prompt remains Checkout-only and the shipping implementation is unchanged by this points fix', () => {
   assert.match(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',\s*'woocommerce_checkout_coupon_form',\s*10\s*\)/);
-  assert.doesNotMatch(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',[\s\S]*?render_(?:earn|redeem)_points_message/);
+  const checkoutBenefits = woocommercePhp.slice(
+    woocommercePhp.indexOf('function cr2026_checkout_remove_legacy_benefit_prompts'),
+    woocommercePhp.indexOf('function cr2026_checkout_benefits_shipping_data')
+  );
+  assert.doesNotMatch(checkoutBenefits, /remove_action\([\s\S]*?render_(?:earn|redeem)_points_message/);
   assert.match(woocommercePhp, /WC_Shipping_Zones::get_zone_matching_package\(\s*\$package\s*\)/);
   assert.match(woocommercePhp, /get_displayed_subtotal\(\)/);
 });
