@@ -1420,3 +1420,70 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits
   width: 19px;
   height: 19px;
 }
+
+/* Cecabank order-pay receipt: replace only its visual summary and legacy copy. */
+body.cr-cecabank-redirect-page .woocommerce > ul.order_details {
+  display: none !important;
+}
+
+body.cr-cecabank-redirect-page p:has(+ form#cecabank-form) {
+  display: none !important;
+}
+
+body.cr-cecabank-redirect-page .cr-cecabank-redirect {
+  display: grid;
+  width: 100%;
+  place-items: center;
+  padding: clamp(36px, 7vw, 64px) 16px;
+}
+
+body.cr-cecabank-redirect-page .cr-cecabank-redirect__card {
+  display: flex;
+  width: min(100%, 440px);
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(30px, 7vw, 44px) 24px;
+  border: 1px solid var(--cr-border);
+  border-radius: var(--cr-card-radius);
+  background: var(--cr-white);
+  color: var(--cr-ink);
+  text-align: center;
+  box-shadow: 0 8px 28px rgba(24, 59, 53, .07);
+}
+
+body.cr-cecabank-redirect-page .cr-cecabank-redirect__spinner {
+  display: block;
+  width: 34px;
+  height: 34px;
+  margin: 0 0 22px;
+  border: 3px solid rgba(24, 59, 53, .14);
+  border-top-color: var(--cr-green-dark);
+  border-radius: 50%;
+  animation: cr-cecabank-spin .85s linear infinite;
+}
+
+body.cr-cecabank-redirect-page .cr-cecabank-redirect__title {
+  margin: 0;
+  color: var(--cr-ink);
+  font-size: clamp(22px, 5vw, 26px);
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+body.cr-cecabank-redirect-page .cr-cecabank-redirect__message {
+  margin: 12px 0 0;
+  color: var(--cr-muted, #6b7280);
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+@keyframes cr-cecabank-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.cr-cecabank-redirect-page .cr-cecabank-redirect__spinner {
+    animation-duration: 1.8s;
+  }
+}

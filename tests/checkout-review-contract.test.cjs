@@ -116,3 +116,20 @@ test('G: AJAX review fragment remains singular and all totals are server-rendere
   assert.match(review, /get_discount_total\(\)[\s\S]*?get_fees\(\)[\s\S]*?get_shipping_total\(\)[\s\S]*?wc_cart_totals_order_total_html\(\)/);
   assert.doesNotMatch(review, /addEventListener|MutationObserver|updated_checkout|localStorage/);
 });
+
+const checkoutWooCommercePhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
+
+test('Cecabank redirect receipt is redesigned without replacing its gateway receipt callback', () => {
+  assert.match(checkoutWooCommercePhp, /function cr2026_is_cecabank_redirect_request/);
+  assert.match(checkoutWooCommercePhp, /is_wc_endpoint_url\( 'order-pay' \)/);
+  assert.match(checkoutWooCommercePhp, /'cecabank_gateway' === \$order->get_payment_method\(\)/);
+  assert.match(checkoutWooCommercePhp, /hash_equals\( \(string\) \$order->get_order_key\(\), \(string\) \$order_key \)/);
+  assert.match(checkoutWooCommercePhp, /add_action\( 'woocommerce_receipt_cecabank_gateway', 'cr2026_cecabank_redirect_loading_ui', 1, 1 \)/);
+  assert.match(checkoutWooCommercePhp, /Pago seguro/);
+  assert.match(checkoutWooCommercePhp, /Conectando con la pasarela de pago\.\.\./);
+  assert.match(checkoutCss, /body\.cr-cecabank-redirect-page \.woocommerce > ul\.order_details\s*\{\s*display: none !important;/);
+  assert.match(checkoutCss, /body\.cr-cecabank-redirect-page p:has\(\+ form#cecabank-form\)\s*\{\s*display: none !important;/);
+  assert.match(checkoutCss, /cr-cecabank-redirect__spinner/);
+  assert.doesNotMatch(checkoutCss, /#cecabank-form\s*\{[^}]*display:\s*none/i);
+  assert.doesNotMatch(checkoutWooCommercePhp, /process_payment\s*\(|process_regular_payment\s*\(|setFormHiddens|MerchantID|Firma|URL_OK|URL_NOK/);
+});

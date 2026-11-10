@@ -1350,3 +1350,57 @@ function cr2026_checkout_benefits_order_review_fragment( $fragments ) {
     return $fragments;
 }
 add_filter( 'woocommerce_update_order_review_fragments', 'cr2026_checkout_benefits_order_review_fragment', 20, 1 );
+
+/**
+ * Identify only a verified Cecabank order-pay receipt request. The order key
+ * is checked before adding any presentation to the page.
+ */
+function cr2026_is_cecabank_redirect_request( $receipt_order_id = 0 ) {
+    if ( ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'order-pay' )
+        || ! function_exists( 'wc_get_order' ) ) {
+        return false;
+    }
+
+    $order_id = absint( get_query_var( 'order-pay' ) );
+    if ( ! $order_id || ( $receipt_order_id && $order_id !== absint( $receipt_order_id ) ) ) {
+        return false;
+    }
+
+    $order_key = isset( $_GET['key'] ) && is_string( $_GET['key'] )
+        ? wc_clean( wp_unslash( $_GET['key'] ) )
+        : '';
+    $order = wc_get_order( $order_id );
+
+    return $order instanceof WC_Order
+        && 'cecabank_gateway' === $order->get_payment_method()
+        && '' !== $order_key
+        && hash_equals( (string) $order->get_order_key(), (string) $order_key )
+        && $order->needs_payment();
+}
+
+/** Add a page class only to the authenticated Cecabank redirect receipt. */
+function cr2026_cecabank_redirect_body_class( $classes ) {
+    if ( cr2026_is_cecabank_redirect_request() ) {
+        $classes[] = 'cr-cecabank-redirect-page';
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'cr2026_cecabank_redirect_body_class', 20, 1 );
+
+/**
+ * Render presentation before the gateway's original receipt callback.
+ * The Cecabank plugin still prints its native hidden form and immediate submit.
+ */
+function cr2026_cecabank_redirect_loading_ui( $order_id ) {
+    if ( ! cr2026_is_cecabank_redirect_request( $order_id ) ) {
+        return;
+    }
+
+    echo '<section class="cr-cecabank-redirect" role="status" aria-live="polite">'
+        . '<div class="cr-cecabank-redirect__card">'
+        . '<span class="cr-cecabank-redirect__spinner" aria-hidden="true"></span>'
+        . '<h1 class="cr-cecabank-redirect__title">' . esc_html__( 'Pago seguro', 'crios-rango-2026' ) . '</h1>'
+        . '<p class="cr-cecabank-redirect__message">' . esc_html__( 'Conectando con la pasarela de pago...', 'crios-rango-2026' ) . '</p>'
+        . '</div></section>';
+}
+add_action( 'woocommerce_receipt_cecabank_gateway', 'cr2026_cecabank_redirect_loading_ui', 1, 1 );
