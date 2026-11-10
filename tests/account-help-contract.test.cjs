@@ -71,10 +71,10 @@ test('HELP_NAV_AND_FOOTER_ARE_MOBILE_SCOPED', () => {
 });
 
 test('MOBILE_ACCOUNT_AND_HELP_SHELLS_SHARE_OUTLET_TOP_SPACING', () => {
-  const accountShell = css.match(/body\\.woocommerce-account \\.cr-main > \\.cr-shell\\.cr-page-shell \\{([\\s\\S]*?)\\n  \\}/);
-  const helpShell = css.match(/body\\.cr-account-help-page \\.cr-main > \\.cr-shell\\.cr-page-shell \\{([\\s\\S]*?)\\n  \\}/);
+  const accountShell = css.match(/body\.woocommerce-account \.cr-main > \.cr-shell\.cr-page-shell \{([\s\S]*?)\n  \}/);
+  const helpShell = css.match(/body\.cr-account-help-page \.cr-main > \.cr-shell\.cr-page-shell \{([\s\S]*?)\n  \}/);
   assert.ok(accountShell, 'Shared Account shell CSS exists');
   assert.ok(helpShell, 'Help shell CSS exists');
-  assert.match(accountShell[1], /padding-block-start:\\s*0;/);
-  assert.match(helpShell[1], /padding-block-start:\\s*0;/);
+  assert.match(accountShell[1], /padding-block-start:\s*0;/);
+  assert.match(helpShell[1], /padding-block-start:\s*0;/);
 });
