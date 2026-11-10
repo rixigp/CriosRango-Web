@@ -50,6 +50,7 @@ namespace {
     function wp_parse_args( $args, $defaults = array() ) { return array_merge( $defaults, (array) $args ); }
     function is_account_page() { return true; }
     function wc_get_page_permalink( $page ) { return '/mi-cuenta/'; }
+    function wc_get_account_endpoint_url( $endpoint ) { return '/mi-cuenta/' . $endpoint . '/'; }
     function cr2026_render_category_toolbar( $title, $back_url, $kind, $flag ) { $GLOBALS['test_toolbar'] = array( $title, $back_url, $kind, $flag ); }
     function get_query_var( $key ) { return ''; }
     function sanitize_key( $value ) { return preg_replace( '/[^a-z0-9_\\-]/', '', strtolower( (string) $value ) ); }
