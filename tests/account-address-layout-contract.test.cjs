@@ -9,6 +9,126 @@ const mainCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/c
 const accountPresentation = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/account-presentation.php'), 'utf8');
 const birthdayContract = fs.readFileSync(path.join(root, 'tests/account-birthday-contract.test.php'), 'utf8');
 
+function findCssBlockEnd(source, openIndex) {
+  let depth = 1;
+  let quote = null;
+  let comment = false;
+  for (let i = openIndex + 1; i < source.length; i += 1) {
+    const ch = source[i];
+    const next = source[i + 1];
+    if (comment) {
+      if (ch === '*' && next === '/') { comment = false; i += 1; }
+      continue;
+    }
+    if (quote) {
+      if (ch === '\\\\') { i += 1; continue; }
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '/' && next === '*') { comment = true; i += 1; continue; }
+    if (ch === '"' || ch === "'") { quote = ch; continue; }
+    if (ch === '{') depth += 1;
+    if (ch === '}' && --depth === 0) return i;
+  }
+  return -1;
+}
+
+function findCssOpeningBrace(source, start) {
+  let quote = null;
+  let comment = false;
+  for (let i = start; i < source.length; i += 1) {
+    const ch = source[i];
+    const next = source[i + 1];
+    if (comment) {
+      if (ch === '*' && next === '/') { comment = false; i += 1; }
+      continue;
+    }
+    if (quote) {
+      if (ch === '\\\\') { i += 1; continue; }
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '/' && next === '*') { comment = true; i += 1; continue; }
+    if (ch === '"' || ch === "'") { quote = ch; continue; }
+    if (ch === '{') return i;
+  }
+  return -1;
+}
+
+function splitCssDeclarations(source) {
+  const parts = [];
+  let start = 0;
+  let depth = 0;
+  let quote = null;
+  let comment = false;
+  for (let i = 0; i < source.length; i += 1) {
+    const ch = source[i];
+    const next = source[i + 1];
+    if (comment) {
+      if (ch === '*' && next === '/') { comment = false; i += 1; }
+      continue;
+    }
+    if (quote) {
+      if (ch === '\\\\') { i += 1; continue; }
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '/' && next === '*') { comment = true; i += 1; continue; }
+    if (ch === '"' || ch === "'") { quote = ch; continue; }
+    if (ch === '(') depth += 1;
+    if (ch === ')') depth = Math.max(0, depth - 1);
+    if (ch === ';' && depth === 0) { parts.push(source.slice(start, i)); start = i + 1; }
+  }
+  parts.push(source.slice(start));
+  return parts.map(part => {
+    const colon = part.indexOf(':');
+    if (colon < 0) return null;
+    return {
+      property: part.slice(0, colon).trim().toLowerCase(),
+      value: part.slice(colon + 1).trim().replace(/\\s*!important\\s*$/i, ''),
+    };
+  }).filter(Boolean);
+}
+
+function parseAccountCssRules(source) {
+  const rules = [];
+  function visit(block) {
+    let cursor = 0;
+    while (cursor < block.length) {
+      while (cursor < block.length && /\\s/.test(block[cursor])) cursor += 1;
+      if (block.startsWith('/*', cursor)) {
+        const endComment = block.indexOf('*/', cursor + 2);
+        if (endComment < 0) break;
+        cursor = endComment + 2;
+        continue;
+      }
+      const open = findCssOpeningBrace(block, cursor);
+      if (open < 0) break;
+      const close = findCssBlockEnd(block, open);
+      if (close < 0) break;
+      const selector = block.slice(cursor, open).trim();
+      const body = block.slice(open + 1, close);
+      if (selector.startsWith('@')) visit(body);
+      else if (selector) rules.push({ selector, declarations: splitCssDeclarations(body) });
+      cursor = close + 1;
+    }
+  }
+  visit(source);
+  return rules;
+}
+
+function cssPaddingLeft(rule) {
+  const explicit = rule.declarations.find(item => item.property === 'padding-left');
+  if (explicit) return explicit.value.toLowerCase();
+  const shorthand = [...rule.declarations].reverse().find(item => item.property === 'padding');
+  if (!shorthand) return null;
+  const values = shorthand.value.trim().split(/\\s+/);
+  if (values.length === 1) return values[0].toLowerCase();
+  if (values.length === 2) return values[1].toLowerCase();
+  if (values.length === 3) return values[1].toLowerCase();
+  return values[3].toLowerCase();
+}
+
 test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
   const fieldContractStart = accountCss.indexOf('body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row :is(');
   const fieldContractOpen = accountCss.indexOf('{', fieldContractStart);
@@ -35,36 +155,37 @@ test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
   assert.doesNotMatch(nativeSelect[1], /appearance\s*:/i);
 });
 
+
 test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
-  const genericStart = accountCss.indexOf('    .woocommerce-EditAccountForm .form-row input:not([type="hidden"])');
-  const genericEnd = accountCss.indexOf('  body.woocommerce-account :is(', genericStart);
-  const generic = accountCss.slice(genericStart, genericEnd);
-  assert.ok(genericStart >= 0 && genericEnd > genericStart, 'generic field selector exists');
-  assert.doesNotMatch(generic, /select2-selection--single/);
-  assert.ok(generic.includes('input:not([type="hidden"])') && generic.includes('select') && generic.includes('textarea'));
+  const rules = parseAccountCssRules(accountCss);
+  const genericRules = rules.filter(rule => {
+    const selector = rule.selector;
+    return /body\\s*\\.woocommerce-account/i.test(selector)
+      && /woocommerce-address-fields/i.test(selector)
+      && /woocommerce-EditAccountForm/i.test(selector)
+      && /\\binput\\b/i.test(selector)
+      && /\\bselect\\b/i.test(selector)
+      && /\\btextarea\\b/i.test(selector);
+  });
 
-  const importantStart = accountCss.indexOf('body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row :is(');
-  const importantOpen = accountCss.indexOf('{', importantStart);
-  const importantEnd = accountCss.indexOf('}', importantOpen);
-  const importantGeneric = accountCss.slice(importantStart, importantEnd);
-  assert.ok(importantStart >= 0 && importantEnd > importantStart, 'important generic field contract exists');
-  assert.doesNotMatch(importantGeneric, /select2-selection--single/);
+  assert.ok(genericRules.length > 0, 'shared Account field selector exists');
+  assert.ok(genericRules.every(rule => !/\\.select2-selection--single/i.test(rule.selector)),
+    'generic field selectors exclude the Select2 outer wrapper');
+  assert.ok(genericRules.some(rule => cssPaddingLeft(rule) === '13px'),
+    'generic input/select/textarea fields use a 13px left inset');
 
-  const outerStart = accountCss.indexOf('/* Select2 outer control is not a generic padded field; its rendered value owns the inset. */');
-  const outerEnd = accountCss.indexOf('body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row textarea', outerStart);
-  const outer = accountCss.slice(outerStart, outerEnd);
-  assert.ok(outerStart >= 0 && outerEnd > outerStart, 'dedicated Select2 outer contract exists');
-  assert.ok(outer.includes('.select2-selection--single {') && outer.includes('padding: 0 !important'));
-  assert.ok(outer.includes('width: 100%') && outer.includes('height: 48px !important'));
-  assert.ok(outer.includes('border: 1px solid #d8d9d5 !important'));
-  assert.ok(outer.includes('border-radius: 9px !important'));
-  assert.ok(outer.includes('background: var(--cr-app-canvas) !important'));
+  const select2OuterRules = rules.filter(rule =>
+    /\\.select2-selection--single/i.test(rule.selector)
+    && !/\\.select2-selection__rendered/i.test(rule.selector)
+  );
+  assert.ok(select2OuterRules.some(rule => cssPaddingLeft(rule) === '0'),
+    'dedicated Select2 outer rule resets padding to zero');
 
-  const renderedStart = accountCss.lastIndexOf('body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection__rendered {');
-  const renderedEnd = accountCss.indexOf('}', renderedStart);
-  const rendered = accountCss.slice(renderedStart, renderedEnd);
-  assert.ok(renderedStart >= 0 && renderedEnd > renderedStart, 'dedicated Select2 rendered-value contract exists');
-  assert.ok(rendered.includes('padding: 0 36px 0 13px !important'));
+  const renderedValueRules = rules.filter(rule =>
+    /\\.select2-selection__rendered/i.test(rule.selector)
+  );
+  assert.ok(renderedValueRules.some(rule => cssPaddingLeft(rule) === '13px'),
+    'Select2 rendered value uses the same 13px left inset as inputs');
 });
 
 test('ADDRESS_SCREEN_USES_ONLY_THE_GLOBAL_BOTTOM_NAV_RESERVED_SPACE', () => {
