@@ -21,8 +21,8 @@ test('ACCOUNT_SAVE_FEEDBACK_USES_ONE_SHARED_SESSION_AND_INLINE_COMPONENT', () =>
 test('NATIVE_WOOCOMMERCE_SAVE_ACTIONS_REMAIN_THE_ONLY_PERSISTENCE_PATH', () => {
   assert.match(php, /add_action\(\s*'woocommerce_save_account_details',\s*'cr2026_account_store_profile_save_feedback'/);
   assert.match(php, /add_action\(\s*'woocommerce_customer_save_address',\s*'cr2026_account_store_address_save_feedback'/);
-  assert.match(php, /add_filter\(\s*'woocommerce_save_account_details_redirect'/);
-  assert.match(php, /add_filter\(\s*'woocommerce_customer_save_address_redirect'/);
+  assert.match(php, /wp_safe_redirect\( add_query_arg\( 'profile_view', \$view, \$url \) \)/);
+  assert.match(php, /wp_safe_redirect\( \$url \)/);
   assert.doesNotMatch(php.slice(php.indexOf('Shared mobile Account save-feedback contract')), /update_user_meta\s*\(|wp_update_user\s*\(|\$wpdb->/);
 });
 
@@ -43,7 +43,7 @@ test('LOADING_BLOCKS_DOUBLE_SUBMIT_AND_PRESERVES_NATIVE_SUBMITTER', () => {
   assert.match(js, /cr-account-submit--loading/);
   assert.match(js, /button\.disabled = true/);
   assert.match(js, /window\.setTimeout/);
-  assert.match(js, /captured the clicked submitter/);
+  assert.match(js, /captured[\\s\\S]*the clicked submitter/);
   assert.match(css, /\.cr-account-submit--loading::after/);
   assert.match(css, /\.cr-account-submit__label\s*\{\s*visibility:\s*hidden/);
 });

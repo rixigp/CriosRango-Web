@@ -732,24 +732,13 @@ function cr2026_account_store_profile_save_feedback( $user_id ) {
         return;
     }
     cr2026_account_store_save_feedback( $view );
+    // WooCommerce's core handler redirects immediately after this action; keep
+    // the selected mobile subview and let the native save finish before returning.
+    $url = wc_get_endpoint_url( 'edit-account', '', wc_get_page_permalink( 'myaccount' ) );
+    wp_safe_redirect( add_query_arg( 'profile_view', $view, $url ) );
+    exit;
 }
 add_action( 'woocommerce_save_account_details', 'cr2026_account_store_profile_save_feedback', 99, 1 );
-
-/** Keep the same native Account subview after WooCommerce's successful redirect. */
-function cr2026_account_profile_save_redirect( $redirect ) {
-    if ( ! cr2026_account_mobile_save_context( 'edit-account' ) ) {
-        return $redirect;
-    }
-    $view = isset( $_POST['cr2026_account_profile_view'] )
-        ? sanitize_key( wp_unslash( $_POST['cr2026_account_profile_view'] ) )
-        : cr2026_account_profile_view();
-    if ( ! in_array( $view, array( 'personal', 'password' ), true ) ) {
-        return $redirect;
-    }
-    $url = wc_get_endpoint_url( 'edit-account', '', wc_get_page_permalink( 'myaccount' ) );
-    return add_query_arg( 'profile_view', $view, $url );
-}
-add_filter( 'woocommerce_save_account_details_redirect', 'cr2026_account_profile_save_redirect', 99, 1 );
 
 /** WooCommerce calls this after its native shipping-address update has completed. */
 function cr2026_account_store_address_save_feedback( $user_id, $load_address ) {
@@ -760,17 +749,12 @@ function cr2026_account_store_address_save_feedback( $user_id, $load_address ) {
         return;
     }
     cr2026_account_store_save_feedback( 'address' );
+    // Core otherwise redirects to edit-address/ (the address index).
+    $url = wc_get_endpoint_url( 'edit-address', 'shipping', wc_get_page_permalink( 'myaccount' ) );
+    wp_safe_redirect( $url );
+    exit;
 }
 add_action( 'woocommerce_customer_save_address', 'cr2026_account_store_address_save_feedback', 99, 2 );
-
-/** Always return a successful mobile shipping save to the editable shipping form, not edit-address/. */
-function cr2026_account_address_save_redirect( $redirect, $user_id, $load_address ) {
-    if ( 'shipping' !== $load_address || ! cr2026_account_mobile_save_context( 'edit-address' ) ) {
-        return $redirect;
-    }
-    return wc_get_endpoint_url( 'edit-address', 'shipping', wc_get_page_permalink( 'myaccount' ) );
-}
-add_filter( 'woocommerce_customer_save_address_redirect', 'cr2026_account_address_save_redirect', 99, 3 );
 
 /** Hide only WooCommerce success notices on the mobile Account save endpoints; errors remain native. */
 function cr2026_account_filter_legacy_save_success( $message ) {
