@@ -108,12 +108,15 @@ function cr2026_account_delete_endpoint_toolbar() {
 add_action( 'woocommerce_account_wpf-delete-account_endpoint', 'cr2026_account_delete_endpoint_toolbar', 1 );
 
 /** Native address editing stays on WooCommerce's edit-address endpoint. */
-function cr2026_account_address_endpoint_toolbar() {
+function cr2026_account_address_endpoint_toolbar( $endpoint_value = '' ) {
     if ( ! function_exists( 'is_account_page' ) || ! is_account_page() ) {
         return;
     }
 
-    $address_type = (string) get_query_var( 'edit-address' );
+    // WooCommerce passes the selected address type to this endpoint action.
+    $address_type = in_array( $endpoint_value, array( 'shipping', 'billing' ), true )
+        ? (string) $endpoint_value
+        : (string) get_query_var( 'edit-address' );
     if ( '' === $address_type && isset( $_SERVER['REQUEST_URI'] ) ) {
         $request_path = (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH );
         if ( preg_match( '#/edit-address/(shipping|billing)/?$#', $request_path, $matches ) ) {
@@ -127,6 +130,43 @@ function cr2026_account_address_endpoint_toolbar() {
     cr2026_account_render_endpoint_toolbar( $title, wc_get_account_endpoint_url( 'edit-account' ) );
 }
 add_action( 'woocommerce_account_edit-address_endpoint', 'cr2026_account_address_endpoint_toolbar', 1 );
+
+/** The toolbar is the only mobile title; suppress WooCommerce's secondary H2 in markup. */
+function cr2026_account_edit_address_title( $page_title, $load_address ) {
+    if ( 'shipping' === $load_address
+        && function_exists( 'is_account_page' ) && is_account_page()
+        && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
+        return '';
+    }
+    return $page_title;
+}
+add_filter( 'woocommerce_my_account_edit_address_title', 'cr2026_account_edit_address_title', 10, 2 );
+
+/** Keep WooCommerce's native shipping_address_2 field visible and use the app copy. */
+function cr2026_account_shipping_address_fields( $fields, $country = '' ) {
+    if ( ! is_array( $fields ) ) {
+        return $fields;
+    }
+
+    $address_2 = isset( $fields['shipping_address_2'] ) && is_array( $fields['shipping_address_2'] )
+        ? $fields['shipping_address_2'] : array();
+    $address_2 = wp_parse_args( $address_2, array(
+        'type'        => 'text',
+        'required'    => false,
+        'class'       => array( 'form-row-wide' ),
+        'priority'    => 60,
+        'autocomplete'=> 'address-line2',
+    ) );
+    $address_2['label'] = __( 'Dirección adicional / Piso, puerta, etc. (opcional)', 'crios-rango-2026' );
+    $address_2['placeholder'] = __( 'Dirección adicional / Piso, puerta, etc. (opcional)', 'crios-rango-2026' );
+    $address_2['required'] = false;
+    $address_2['hidden'] = false;
+    $address_2['class'] = array_values( array_unique( array_merge( (array) $address_2['class'], array( 'form-row-wide' ) ) ) );
+    $fields['shipping_address_2'] = $address_2;
+
+    return $fields;
+}
+add_filter( 'woocommerce_shipping_fields', 'cr2026_account_shipping_address_fields', 9999, 2 );
 
 
 function cr2026_account_profile_body_class( $classes ) {
