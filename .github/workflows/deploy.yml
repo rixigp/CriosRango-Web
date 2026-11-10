@@ -15,6 +15,7 @@ on:
       - "tests/catalog-contract.test.cjs"
       - "tests/product-skin-contract.test.cjs"
       - "tests/checkout-shell-contract.test.cjs"
+      - "tests/checkout-points-runtime.test.php"
       - "tests/checkout-review-contract.test.cjs"
       - "tests/cart-promotions-contract.test.cjs"
       - ".github/workflows/deploy.yml"
@@ -397,6 +398,9 @@ jobs:
           set -euo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y -qq php-cli lftp
+
+      - name: Run checkout Points & Rewards runtime contract test
+        run: php tests/checkout-points-runtime.test.php
 
       - name: Validate theme structure
         shell: bash
