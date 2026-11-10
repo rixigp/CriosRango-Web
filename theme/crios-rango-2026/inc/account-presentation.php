@@ -174,8 +174,10 @@ function cr2026_account_shipping_address_fields( $fields, $country = '' ) {
         'priority'    => 60,
         'autocomplete'=> 'address-line2',
     ) );
-    $address_2['label'] = __( 'Dirección adicional / Piso, puerta, etc. (opcional)', 'crios-rango-2026' );
-    $address_2['placeholder'] = __( 'Dirección adicional / Piso, puerta, etc. (opcional)', 'crios-rango-2026' );
+    $address_2['label'] = __( 'Dirección adicional / Piso, puerta, etc.', 'crios-rango-2026' );
+    // WooCommerce appends its single localized optional marker to the label.
+    // Keep the field itself empty unless the customer has a saved value.
+    $address_2['placeholder'] = '';
     $address_2['required'] = false;
     $address_2['hidden'] = false;
     $address_2['class'] = array_values( array_unique( array_merge( (array) $address_2['class'], array( 'form-row-wide' ) ) ) );
