@@ -68,17 +68,6 @@ function cr2026_enqueue_assets() {
             cr2026_asset_version( 'assets/js/checkout-payment.js' ),
             true
         );
-
-        wp_enqueue_script(
-            'cr2026-checkout-success-modal',
-            CR2026_URI . '/assets/js/checkout-success-modal.js',
-            array( 'jquery' ),
-            cr2026_asset_version( 'assets/js/checkout-success-modal.js' ),
-            true
-        );
-        wp_localize_script( 'cr2026-checkout-success-modal', 'CR2026CheckoutSuccess', array(
-            'shopUrl' => function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : cr2026_shop_url(),
-        ) );
     }
 
     if ( $uses_product_detail_skin ) {

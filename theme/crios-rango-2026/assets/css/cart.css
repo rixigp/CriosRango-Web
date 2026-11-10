@@ -1081,3 +1081,82 @@ body.woocommerce-cart .cr-cart-promo-card > .cr-cart-apply-button {
 body.woocommerce-cart .cr-cart-promotions__available {
   margin: 0;
 }
+
+/* Shared WooCommerce notice surface: cart cancellation/payment notices and
+ * native success/info/error feedback retain their text and link behavior. */
+.woocommerce-notices-wrapper > .woocommerce-message,
+.woocommerce-notices-wrapper > .woocommerce-info,
+.woocommerce-notices-wrapper > .woocommerce-error,
+.cr-cart-page .woocommerce-message,
+.cr-cart-page .woocommerce-info,
+.cr-cart-page .woocommerce-error {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  margin: 0 0 14px !important;
+  padding: 16px 18px 16px 20px !important;
+  border: 1px solid var(--cr-border) !important;
+  border-radius: 18px !important;
+  border-top: 1px solid var(--cr-border) !important;
+  background: #fff !important;
+  color: var(--cr-ink) !important;
+  box-shadow: none !important;
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.woocommerce-notices-wrapper > .woocommerce-message::before,
+.woocommerce-notices-wrapper > .woocommerce-info::before,
+.woocommerce-notices-wrapper > .woocommerce-error::before,
+.cr-cart-page .woocommerce-message::before,
+.cr-cart-page .woocommerce-info::before,
+.cr-cart-page .woocommerce-error::before {
+  position: static !important;
+  inset: auto !important;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  margin: 0 !important;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: transparent !important;
+  color: var(--cr-muted) !important;
+  content: "!" !important;
+  font-family: inherit !important;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.woocommerce-notices-wrapper > .woocommerce-message,
+.cr-cart-page .woocommerce-message { color: var(--cr-ink) !important; }
+.woocommerce-notices-wrapper > .woocommerce-info,
+.cr-cart-page .woocommerce-info { color: var(--cr-ink) !important; }
+.woocommerce-notices-wrapper > .woocommerce-error,
+.cr-cart-page .woocommerce-error { color: var(--cr-ink) !important; }
+
+.woocommerce-notices-wrapper > .woocommerce-message a,
+.woocommerce-notices-wrapper > .woocommerce-info a,
+.woocommerce-notices-wrapper > .woocommerce-error a,
+.cr-cart-page .woocommerce-message a,
+.cr-cart-page .woocommerce-info a,
+.cr-cart-page .woocommerce-error a {
+  color: var(--cr-green) !important;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.woocommerce-notices-wrapper > .woocommerce-message > *,
+.woocommerce-notices-wrapper > .woocommerce-info > *,
+.woocommerce-notices-wrapper > .woocommerce-error > *,
+.cr-cart-page .woocommerce-message > *,
+.cr-cart-page .woocommerce-info > *,
+.cr-cart-page .woocommerce-error > * {
+  min-width: 0;
+}

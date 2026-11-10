@@ -979,39 +979,3 @@ function cr2026_checkout_order_button_text( $button_text ) {
 }
 add_filter( 'woocommerce_order_button_text', 'cr2026_checkout_order_button_text', 9999 );
 
-/**
- * Attach a minimal, checkout-only presentation payload after WooCommerce has
- * accepted the payment gateway's successful result. Order creation and every
- * native transactional hook remain owned by WooCommerce and the gateway.
- */
-function cr2026_checkout_offline_success_modal_result( $result, $order_id ) {
-    if ( ! is_array( $result ) || ! isset( $result['result'], $result['redirect'] )
-        || 'success' !== $result['result']
-        || ! isset( $_GET['wc-ajax'] )
-        || 'checkout' !== sanitize_key( wp_unslash( $_GET['wc-ajax'] ) ) ) {
-        return $result;
-    }
-
-    $order = wc_get_order( absint( $order_id ) );
-    if ( ! $order instanceof WC_Order ) {
-        return $result;
-    }
-
-    $gateway = $order->get_payment_method();
-    if ( ! in_array( $gateway, array( 'cheque', 'cod' ), true ) ) {
-        return $result;
-    }
-
-    $result['cr_order_success'] = array(
-        'enabled' => true,
-        'gateway' => $gateway,
-        'order_id' => (int) $order->get_id(),
-        'order_number' => (string) $order->get_order_number(),
-    );
-
-    // WooCommerce's checkout JS assigns window.location to this hash. On the
-    // current Checkout document that is same-page navigation, not a reload.
-    $result['redirect'] = '#cr-order-success';
-    return $result;
-}
-add_filter( 'woocommerce_payment_successful_result', 'cr2026_checkout_offline_success_modal_result', 9999, 2 );
