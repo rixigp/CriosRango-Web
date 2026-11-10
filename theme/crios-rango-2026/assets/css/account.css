@@ -810,8 +810,7 @@
     .woocommerce-EditAccountForm .form-row textarea,
     .woocommerce-address-fields .form-row input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
     .woocommerce-address-fields .form-row select,
-    .woocommerce-address-fields .form-row textarea,
-    .woocommerce-address-fields .form-row .select2-selection--single
+    .woocommerce-address-fields .form-row textarea
   ) {
     box-sizing: border-box;
     display: block;
@@ -835,8 +834,7 @@
     .woocommerce-EditAccountForm .form-row textarea:focus,
     .woocommerce-address-fields .form-row input:focus,
     .woocommerce-address-fields .form-row select:focus,
-    .woocommerce-address-fields .form-row textarea:focus,
-    .woocommerce-address-fields .form-row .select2-selection--single:focus
+    .woocommerce-address-fields .form-row textarea:focus
   ) {
     border-color: #aeb2ad;
     outline: none;
@@ -947,7 +945,7 @@
     font: 300 11px/16px "Roboto", Arial, sans-serif !important;
   }
 
-  body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row :is(input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), select, textarea, .select2-selection--single),
+  body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row :is(input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), select, textarea),
   body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date input[type="date"] {
     min-height: 48px !important;
     border: 1px solid #d8d9d5 !important;
@@ -957,6 +955,31 @@
     padding: 12px 13px 9px !important;
     box-shadow: none !important;
     font: 400 14px/20px "Roboto", Arial, sans-serif !important;
+  }
+
+  /* Select2 outer control is not a generic padded field; its rendered value owns the inset. */
+  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection--single {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px !important;
+    height: 48px !important;
+    margin: 0;
+    padding: 0 !important;
+    border: 1px solid #d8d9d5 !important;
+    border-radius: 9px !important;
+    background: var(--cr-app-canvas) !important;
+    color: var(--cr-ink) !important;
+    box-shadow: none !important;
+    font: 400 14px/20px "Roboto", Arial, sans-serif !important;
+  }
+
+  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection--single:focus {
+    border-color: #aeb2ad;
+    outline: none;
+    box-shadow: none;
   }
 
   body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row textarea {
