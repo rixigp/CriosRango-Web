@@ -127,7 +127,7 @@ test('Cecabank redirect receipt is redesigned without replacing its gateway rece
   assert.match(checkoutWooCommercePhp, /add_action\( 'woocommerce_receipt_cecabank_gateway', 'cr2026_cecabank_redirect_loading_ui', 1, 1 \)/);
   assert.match(checkoutWooCommercePhp, /Pago seguro/);
   assert.match(checkoutWooCommercePhp, /Conectando con la pasarela de pago\.\.\./);
-  assert.match(checkoutCss, /body\.cr-cecabank-redirect-page \.woocommerce > ul\.order_details\s*\{\s*display: none !important;/);
+  assert.match(checkoutCss, /body\.cr-cecabank-redirect-page ul\.order_details\s*\{\s*display: none !important;/);
   assert.match(checkoutCss, /body\.cr-cecabank-redirect-page p:has\(\+ form#cecabank-form\)\s*\{\s*display: none !important;/);
   assert.match(checkoutCss, /cr-cecabank-redirect__spinner/);
   assert.doesNotMatch(checkoutCss, /#cecabank-form\s*\{[^}]*display:\s*none/i);

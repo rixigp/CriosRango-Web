@@ -1422,7 +1422,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits
 }
 
 /* Cecabank order-pay receipt: replace only its visual summary and legacy copy. */
-body.cr-cecabank-redirect-page .woocommerce > ul.order_details {
+body.cr-cecabank-redirect-page ul.order_details {
   display: none !important;
 }
 
