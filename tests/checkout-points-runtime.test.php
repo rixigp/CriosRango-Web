@@ -122,7 +122,7 @@ test_assert(
     'Points & Rewards filters must be registered only from before_checkout_form at priority 1.'
 );
 test_assert(
-    1 !== preg_match( "/add_filter\\(\\s*['\"]wc_points_rewards_(?:earn|redeem)_points_message/", $source ),
+    1 !== preg_match( '/^add_filter\\(/m', $source ),
     'Points & Rewards filters must not be registered globally during bootstrap.'
 );
 test_assert(
@@ -136,11 +136,13 @@ test_assert(
 // Model the actual hook order: our registration at 1, plugin earn at 5,
 // plugin redeem at 6, and the theme benefits card at 20.
 add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_register_points_rewards_filters', 1 );
+$registered_checkout_callbacks = $GLOBALS['test_actions']['woocommerce_before_checkout_form'][1] ?? array();
+test_assert( in_array( 'cr2026_checkout_register_points_rewards_filters', $registered_checkout_callbacks, true ), 'Filter registrar must be attached at checkout hook priority 1.' );
 test_assert( empty( $GLOBALS['test_filters']['wc_points_rewards_earn_points_message'] ), 'Cart/bootstrap must not have the earn filter installed.' );
 test_assert( empty( $GLOBALS['test_filters']['wc_points_rewards_redeem_points_message'] ), 'Cart/bootstrap must not have the redeem filter installed.' );
 
 $hook_events = array(
-    1 => function () { cr2026_checkout_register_points_rewards_filters(); },
+    1 => function () use ( $registered_checkout_callbacks ) { call_user_func( $registered_checkout_callbacks[0] ); },
     5 => function () {
         $GLOBALS['test_earn_output'] = apply_filters( 'wc_points_rewards_earn_points_message', 'Complete your order and earn 15...', 15 );
     },
