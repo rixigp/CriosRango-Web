@@ -17,7 +17,8 @@ test('MOBILE_HELP_REPLACES_UNPROCESSED_PAGE_BUILDER_CONTENT', () => {
   assert.match(presentation, /return ob_get_clean\(\);/);
   assert.doesNotMatch(presentation, /return \$panel \. \$content/);
   assert.match(presentation, /add_filter\( 'the_content', 'cr2026_account_help_content', 20 \)/);
-  assert.match(presentation, /if \( ! \$back_url \) \{\s*\$back_url = wc_get_page_permalink\( 'myaccount' \);\s*\}/);\n  assert.match(presentation, /cr2026_render_category_toolbar\( \$title, \$back_url, 'parent', false \)/);
+  assert.match(presentation, /if \( ! \$back_url \) \{\s*\$back_url = wc_get_page_permalink\( 'myaccount' \);\s*\}/);
+  assert.match(presentation, /cr2026_render_category_toolbar\( \$title, \$back_url, 'parent', false \)/);
   assert.match(dashboard, /cr2026_render_category_toolbar\( __\( 'Cuenta'/);
 });
 
