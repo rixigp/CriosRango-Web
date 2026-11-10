@@ -14,7 +14,7 @@ test('ACCOUNT_INFORMATION_ICONS_USE_REQUESTED_SVG_GEOMETRY', () => {
   for (const row of rows) {
     const labelAt = dashboard.indexOf("__( '" + row.label + "'");
     assert.notEqual(labelAt, -1, row.label + ' row exists');
-    const start = dashboard.lastIndexOf("'icon_svg' => '", labelAt);
+    const start = dashboard.indexOf("'icon_svg' => '", labelAt);
     const end = dashboard.indexOf("', 'slugs'", start);
     assert.ok(start >= 0 && end > start, row.label + ' SVG attached to row');
     const svg = dashboard.slice(start, end);
@@ -26,7 +26,7 @@ test('ACCOUNT_INFORMATION_ICONS_USE_REQUESTED_SVG_GEOMETRY', () => {
 });
 test('ACCOUNT_INFORMATION_COOKIE_IS_NOT_THE_PREVIOUS_MOON_SVG', () => {
   const labelAt = dashboard.indexOf("__( 'Política de cookies'");
-  const start = dashboard.lastIndexOf("'icon_svg' => '", labelAt);
+  const start = dashboard.indexOf("'icon_svg' => '", labelAt);
   const end = dashboard.indexOf("', 'slugs'", start);
   const svg = dashboard.slice(start, end);
   assert.ok(svg.includes('data-icon="cookie"'));
