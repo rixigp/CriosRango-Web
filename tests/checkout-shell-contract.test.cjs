@@ -1006,3 +1006,52 @@ test('native radios, gateway values and payment rows remain intact and decoratio
   assert.match(assets, /cr2026-checkout-payment[\s\S]*?assets\/js\/checkout-payment\.js/);
   assert.doesNotMatch(checkoutPaymentJs + checkoutCss, /#place_order|place_order|checkout_place_order/);
 });
+
+
+const checkoutWooCommercePhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
+
+test('Checkout removes native privacy and terms acceptance through WooCommerce hooks without disabling submit processing', () => {
+  assert.match(checkoutWooCommercePhp, /add_filter\(\s*'woocommerce_checkout_show_terms',\s*'cr2026_checkout_disable_terms_acceptance',\s*9999\s*\)/);
+  assert.match(checkoutWooCommercePhp, /return false;\s*\}\s*add_filter\(\s*'woocommerce_checkout_show_terms'/);
+  assert.match(checkoutWooCommercePhp, /remove_action\(\s*'woocommerce_checkout_terms_and_conditions',\s*'wc_checkout_privacy_policy_text',\s*20\s*\)/);
+  assert.match(checkoutWooCommercePhp, /remove_action\(\s*'woocommerce_checkout_terms_and_conditions',\s*'wc_terms_and_conditions_checkbox',\s*30\s*\)/);
+  assert.match(checkoutWooCommercePhp, /add_filter\(\s*'woocommerce_order_button_text',\s*'cr2026_checkout_order_button_text',\s*9999\s*\)/);
+  assert.match(checkoutWooCommercePhp, /return 'Realizar el pedido';/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_checkout_process|woocommerce_checkout_place_order|woocommerce_order_status|wp_redirect/);
+});
+
+test('Checkout final action hides privacy/terms wrappers and preserves exactly the native place_order button contract', () => {
+  for (const selector of [
+    '#payment .woocommerce-privacy-policy-text',
+    '#payment .woocommerce-terms-and-conditions-wrapper',
+    '#payment .woocommerce-terms-and-conditions',
+    '#payment .form-row.terms',
+    '#payment #terms',
+    '#payment label[for="terms"]'
+  ]) assert.ok(checkoutCss.includes(selector), 'missing scoped hidden privacy/terms selector: ' + selector);
+
+  const placeOrder = cssLastRuleBody(
+    checkoutCss,
+    'body.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order'
+  );
+  for (const property of [
+    'display: block;',
+    'width: calc(100% - (2 * var(--cr-card-inline-inset)));',
+    'min-height: 56px;',
+    'margin: 0 var(--cr-card-inline-inset) 24px;',
+    'border-radius: var(--cr-card-radius) !important;',
+    'background: var(--cr-green-dark) !important;',
+    'color: #fff !important;'
+  ]) assert.ok(placeOrder.includes(property), 'native place_order visual contract missing: ' + property);
+
+  assert.match(checkoutWooCommercePhp, /return 'Realizar el pedido';/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /createElement\(['"]button|<button[^>]*place_order|id=['"]place_order/);
+  assert.match(checkoutCss, /#payment \.form-row\.place-order\s*\{\s*margin:\s*0;\s*padding:\s*0;/);
+});
+
+test('Checkout terms acceptance stays disabled and native place_order remains single through updated_checkout', () => {
+  assert.match(checkoutWooCommercePhp, /woocommerce_checkout_show_terms/);
+  assert.match(checkoutPaymentJs, /updated_checkout\.crPaymentPresentation/);
+  assert.doesNotMatch(checkoutPaymentJs, /createElement\(['"]button['"]\)|place_order/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /add_action\(\s*'woocommerce_checkout_terms_and_conditions'[\s\S]*?wc_terms_and_conditions_checkbox/);
+});
