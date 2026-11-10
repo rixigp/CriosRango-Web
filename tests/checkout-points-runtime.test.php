@@ -124,7 +124,7 @@ test_assert( false === strpos( $source, 'cr2026_find_points_rewards_callback' ),
 test_assert( false === strpos( $source, 'render_earn_points_message' ) && false === strpos( $source, 'render_redeem_points_message' ), 'The wrong renderer method names must be removed.' );
 
 $feature_start = strpos( $source, '// WPLoyalty exposes Checkout-only switches' );
-$feature_end = strpos( $source, '/**\n * Resolve a real free-shipping method', $feature_start );
+$feature_end = strpos( $source, "/**\n * Resolve a real free-shipping method", $feature_start );
 $feature_source = substr( $source, $feature_start, $feature_end - $feature_start );
 test_assert( false === strpos( $feature_source, 'strip_tags' ) && false === strpos( $feature_source, 'preg_match' ), 'WPLoyalty message HTML must not be parsed.' );
 test_assert( false === strpos( $feature_source, 'get_points_earned_for_purchase' ), 'The theme must not duplicate WPLoyalty point calculation.' );
