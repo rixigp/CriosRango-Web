@@ -44,7 +44,8 @@ test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
   assert.ok(generic.includes('input:not([type="hidden"])') && generic.includes('select') && generic.includes('textarea'));
 
   const importantStart = accountCss.indexOf('body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row :is(');
-  const importantEnd = accountCss.indexOf('body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row textarea', importantStart);
+  const importantOpen = accountCss.indexOf('{', importantStart);
+  const importantEnd = accountCss.indexOf('}', importantOpen);
   const importantGeneric = accountCss.slice(importantStart, importantEnd);
   assert.ok(importantStart >= 0 && importantEnd > importantStart, 'important generic field contract exists');
   assert.doesNotMatch(importantGeneric, /select2-selection--single/);
