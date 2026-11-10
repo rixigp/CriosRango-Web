@@ -944,3 +944,38 @@ function cr2026_checkout_shipping_full_label_presentation( $label, $method ) {
     return $method_label . ' ' . substr( $label, strlen( $prefix ) );
 }
 add_filter( 'woocommerce_cart_shipping_method_full_label', 'cr2026_checkout_shipping_full_label_presentation', 99, 2 );
+
+
+/**
+ * Keep the classic Checkout's final action clear of privacy/terms copy.
+ * WooCommerce's official display filter also disables its terms checkbox
+ * requirement during checkout validation; gateway and order processing stay native.
+ */
+function cr2026_checkout_disable_terms_acceptance( $show_terms ) {
+    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
+        return $show_terms;
+    }
+    return false;
+}
+add_filter( 'woocommerce_checkout_show_terms', 'cr2026_checkout_disable_terms_acceptance', 9999 );
+
+function cr2026_checkout_remove_privacy_terms_output() {
+    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
+        return;
+    }
+    remove_action( 'woocommerce_checkout_terms_and_conditions', 'wc_checkout_privacy_policy_text', 20 );
+    remove_action( 'woocommerce_checkout_terms_and_conditions', 'wc_terms_and_conditions_checkbox', 30 );
+}
+add_action( 'wp', 'cr2026_checkout_remove_privacy_terms_output', 99 );
+
+function cr2026_checkout_order_button_text( $button_text ) {
+    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
+        return $button_text;
+    }
+    return 'Realizar el pedido';
+}
+add_filter( 'woocommerce_order_button_text', 'cr2026_checkout_order_button_text', 9999 );
+
