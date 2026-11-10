@@ -975,7 +975,7 @@ function cr2026_checkout_order_button_text( $button_text ) {
         || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
         return $button_text;
     }
-    return 'Realizar el pedido';
+    return 'Realizar pedido';
 }
 add_filter( 'woocommerce_order_button_text', 'cr2026_checkout_order_button_text', 9999 );
 
