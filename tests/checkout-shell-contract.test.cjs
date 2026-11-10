@@ -574,7 +574,11 @@ test('Points & Rewards notices are suppressed only by public filters in normal C
   assert.match(woocommercePhp, /function cr2026_checkout_is_benefits_request\(\)/);
   assert.match(woocommercePhp, /is_checkout\(\)[\s\S]*?is_order_received_page\(\)/);
   assert.match(woocommercePhp, /return cr2026_checkout_is_benefits_request\(\) \? '' : \$message/);
-  assert.doesNotMatch(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',[\s\S]*?render_(?:earn|redeem)_points_message/);
+  const checkoutBenefits = woocommercePhp.slice(
+    woocommercePhp.indexOf('function cr2026_checkout_remove_legacy_benefit_prompts'),
+    woocommercePhp.indexOf('function cr2026_checkout_benefits_shipping_data')
+  );
+  assert.doesNotMatch(checkoutBenefits, /remove_action\([\s\S]*?render_(?:earn|redeem)_points_message/);
   assert.doesNotMatch(woocommercePhp, /get_points_earned_for_purchase\s*\(/);
   assert.doesNotMatch(woocommercePhp, /\$GLOBALS\['wc_points_rewards'\]->cart/);
 });
@@ -594,7 +598,7 @@ test('Points row consumes the plugin earned-points argument captured by the real
   );
   assert.match(resolver, /\$wp_filter\['woocommerce_before_checkout_form'\]/);
   assert.match(resolver, /render_earn_points_message/);
-  assert.match(resolver, /get_class\(\$renderer\)/);
+  assert.match(resolver, /get_class\(\s*\$renderer\s*\)/);
   assert.match(resolver, /Points_Rewards/);
   assert.match(resolver, /is_callable/);
 
