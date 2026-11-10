@@ -1347,3 +1347,63 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order
   outline: 2px solid var(--cr-green);
   outline-offset: 3px;
 }
+
+/* Shared post-success confirmation modal for offline Checkout gateways only. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-order-success-modal {
+  position: fixed;
+  z-index: 1000000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 20px;
+  background: rgba(20, 24, 20, .58);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-order-success-modal__card {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 500px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: clamp(24px, 6vw, 36px);
+  border-radius: 24px;
+  background: #fff;
+  color: var(--cr-ink);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-order-success-modal__title {
+  margin: 0 0 20px;
+  color: var(--cr-ink);
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-order-success-modal__text {
+  margin: 0 0 14px;
+  color: var(--cr-ink);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-order-success-modal__action {
+  align-self: flex-end;
+  min-height: 48px;
+  margin-top: 18px;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--cr-green-dark);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-order-success-modal__action:focus-visible {
+  outline: 3px solid var(--cr-green);
+  outline-offset: 3px;
+}
