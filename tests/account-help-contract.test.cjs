@@ -104,5 +104,5 @@ test('ACCOUNT_ACTIVE_SOURCE_PRESERVES_OTHER_NAV_DESTINATIONS', () => {
   assert.match(footer, /\$is_outlet_active = 'outlet' === \$active_nav_item;/);
   assert.match(footer, /\$is_cart_active = 'cart' === \$active_nav_item;/);
   const desktopRail = footer.split('<nav class="cr-desktop-rail"')[1].split('</nav>')[0];
-  assert.match(desktopRail, /\$is_account_active \? 'is-active' : ''/);
+  assert.ok(desktopRail.includes("$is_account_active ? 'is-active' : ''"));
 });
