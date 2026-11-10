@@ -78,3 +78,31 @@ test('MOBILE_ACCOUNT_AND_HELP_SHELLS_SHARE_OUTLET_TOP_SPACING', () => {
   assert.match(accountShell[1], /padding-block-start:\s*0;/);
   assert.match(helpShell[1], /padding-block-start:\s*0;/);
 });
+
+
+test('MOBILE_ACCOUNT_BOTTOM_NAV_USES_ONE_SEMANTIC_ACCOUNT_CONTEXT', () => {
+  const accountContext = helpers.match(/function cr2026_is_account_context\(\) \{([\s\S]*?)\n\}/);
+  assert.ok(accountContext, 'Account context helper exists');
+  assert.match(accountContext[1], /is_account_page\(\)/);
+  assert.match(accountContext[1], /is_wc_endpoint_url\( 'loyalty_reward' \)/);
+  assert.match(accountContext[1], /is_page\( array\( 'ayuda', 'preguntas-frecuentes', 'contacto' \) \)/);
+  assert.match(accountContext[1], /wp_is_mobile\(\)/);
+  assert.match(footer, /\$is_mobile_account_active = cr2026_is_account_context\(\);/);
+  const mobileNav = footer.split('<nav class="cr-mobile-bottom-nav cr-app-bottom-nav"')[1];
+  assert.ok(mobileNav, 'Mobile bottom navigation exists');
+  assert.match(mobileNav, /\$is_mobile_account_active \? 'is-active' : ''/);
+  assert.match(mobileNav, /\$is_mobile_account_active \? 'account-filled' : 'account-outlined'/);
+  assert.match(mobileNav, /\$is_mobile_account_active \? ' aria-current="page"' : ''/);
+});
+
+test('ACCOUNT_ACTIVE_SOURCE_PRESERVES_OTHER_NAV_DESTINATIONS', () => {
+  assert.match(helpers, /if \( is_front_page\(\) \) \{ return 'home'; \}/);
+  assert.match(helpers, /if \( function_exists\( 'is_cart' \) && is_cart\(\) \) \{ return 'cart'; \}/);
+  assert.match(helpers, /if \( function_exists\( 'is_product_category' \) && is_product_category\(\) \)/);
+  assert.match(footer, /\$is_app_home = 'home' === \$active_nav_item;/);
+  assert.match(footer, /\$is_categories_active = 'categories' === \$active_nav_item;/);
+  assert.match(footer, /\$is_outlet_active = 'outlet' === \$active_nav_item;/);
+  assert.match(footer, /\$is_cart_active = 'cart' === \$active_nav_item;/);
+  const desktopRail = footer.split('<nav class="cr-desktop-rail"')[1].split('</nav>')[0];
+  assert.match(desktopRail, /\$is_account_active \? 'is-active' : ''/);
+});

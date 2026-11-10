@@ -278,6 +278,24 @@ function cr2026_app_nav_urls() {
     );
 }
 
+/**
+ * Semantic context for the mobile Account destination.
+ * WooCommerce owns native account endpoints; Help is part of the same flow.
+ */
+function cr2026_is_account_context() {
+    if ( function_exists( 'is_account_page' ) && is_account_page() ) {
+        return true;
+    }
+
+    if ( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'loyalty_reward' ) ) {
+        return true;
+    }
+
+    return function_exists( 'is_page' )
+        && is_page( array( 'ayuda', 'preguntas-frecuentes', 'contacto' ) )
+        && function_exists( 'wp_is_mobile' ) && wp_is_mobile();
+}
+
 function cr2026_app_nav_active_item() {
     // Product search is an independent destination; keep every app tab inactive.
     if ( function_exists( 'is_search' ) && is_search() && 'product' === get_query_var( 'post_type' ) ) { return ''; }
