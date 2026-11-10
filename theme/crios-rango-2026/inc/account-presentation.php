@@ -7,12 +7,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Presentation-only toolbar for native WooCommerce account endpoints.
  * WPLoyalty and WooCommerce continue to own their data and endpoint actions.
  */
-function cr2026_account_render_endpoint_toolbar( $title ) {
+function cr2026_account_render_endpoint_toolbar( $title, $back_url = '' ) {
     if ( ! function_exists( 'wc_get_page_permalink' ) ) {
         return;
     }
-
-    cr2026_render_category_toolbar( $title, wc_get_page_permalink( 'myaccount' ), 'parent', false );
+    if ( ! $back_url ) {
+        $back_url = wc_get_page_permalink( 'myaccount' );
+    }
+    cr2026_render_category_toolbar( $title, $back_url, 'parent', false );
 }
 
 /** Add the title before WPLoyalty renders its native reward page. */
@@ -91,7 +93,7 @@ function cr2026_account_profile_endpoint_toolbar() {
     $view = cr2026_account_profile_view();
     $title = 'personal' === $view ? __( 'Datos personales', 'crios-rango-2026' )
         : ( 'password' === $view ? __( 'Cambiar contraseña', 'crios-rango-2026' ) : __( 'Perfil', 'crios-rango-2026' ) );
-    cr2026_account_render_endpoint_toolbar( $title );
+    cr2026_account_render_endpoint_toolbar( $title, wc_get_account_endpoint_url( 'edit-account' ) );
 }
 add_action( 'woocommerce_account_edit-account_endpoint', 'cr2026_account_profile_endpoint_toolbar', 1 );
 
@@ -102,7 +104,7 @@ add_action( 'woocommerce_before_edit_account_form', 'cr2026_account_profile_pers
 /** Delete account remains entirely owned by WP Frontend Delete Account. */
 function cr2026_account_delete_endpoint_toolbar() {
     if ( function_exists( 'is_account_page' ) && is_account_page() ) {
-        cr2026_account_render_endpoint_toolbar( __( 'Eliminar cuenta', 'crios-rango-2026' ) );
+        cr2026_account_render_endpoint_toolbar( __( 'Eliminar cuenta', 'crios-rango-2026' ), wc_get_account_endpoint_url( 'edit-account' ) );
     }
 }
 add_action( 'woocommerce_account_wpf-delete-account_endpoint', 'cr2026_account_delete_endpoint_toolbar', 1 );
@@ -118,7 +120,7 @@ function cr2026_account_address_endpoint_toolbar() {
         ? __( 'Dirección de entrega', 'crios-rango-2026' )
         : ( 'billing' === $address_type ? __( 'Dirección de facturación', 'crios-rango-2026' ) : __( 'Direcciones', 'crios-rango-2026' ) );
 
-    cr2026_account_render_endpoint_toolbar( $title );
+    cr2026_account_render_endpoint_toolbar( $title, wc_get_account_endpoint_url( 'edit-account' ) );
 }
 add_action( 'woocommerce_account_edit-address_endpoint', 'cr2026_account_address_endpoint_toolbar', 1 );
 
