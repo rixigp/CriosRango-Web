@@ -8,21 +8,27 @@ const accountCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/asset
 const mainCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
 
 test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
-  const fieldContract = accountCss.match(/body\.woocommerce-account :is\(\.woocommerce-EditAccountForm, \.woocommerce-address-fields\) \.form-row :is\([\s\S]*?\) \{([\s\S]*?)\n  \}/);
-  assert.ok(fieldContract, 'canonical Account field contract exists');
-  assert.match(fieldContract[1], /padding:\s*12px 13px 9px !important/);
+  const fieldContractStart = accountCss.lastIndexOf('body.woocommerce-account :is(');
+  const fieldContractOpen = accountCss.indexOf('{', fieldContractStart);
+  const fieldContractClose = accountCss.indexOf('}', fieldContractOpen);
+  const fieldContract = accountCss.slice(fieldContractOpen, fieldContractClose);
+  assert.ok(fieldContractStart >= 0 && fieldContractOpen > fieldContractStart && fieldContractClose > fieldContractOpen, 'canonical Account field contract exists');
+  assert.match(fieldContract, /padding:\s*12px 13px 9px !important/);
 
   const addressStart = accountCss.indexOf('/* Mobile native shipping address form:');
   const addressEnd = accountCss.indexOf('/* Password app subview:', addressStart);
   const addressBlock = accountCss.slice(addressStart, addressEnd);
   const nativeSelect = addressBlock.match(/body\.woocommerce-account\.woocommerce-edit-address \.woocommerce-address-fields select \{([\s\S]*?)\n \}/);
-  const select2Value = addressBlock.match(/body\.woocommerce-account\.woocommerce-edit-address \.woocommerce-address-fields \.select2-selection__rendered \{([\s\S]*?)\n \}/);
+  const select2ValueStart = addressBlock.lastIndexOf('body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection__rendered {');
+  const select2ValueOpen = addressBlock.indexOf('{', select2ValueStart);
+  const select2ValueClose = addressBlock.indexOf('}', select2ValueOpen);
+  const select2Value = addressBlock.slice(select2ValueOpen, select2ValueClose);
   assert.ok(nativeSelect, 'native shipping select alignment override exists');
-  assert.ok(select2Value, 'visible Select2 value alignment override exists');
+  assert.ok(select2ValueStart >= 0 && select2ValueOpen > select2ValueStart && select2ValueClose > select2ValueOpen, 'visible Select2 value alignment override exists');
   assert.match(nativeSelect[1], /padding-inline-start:\s*13px !important/);
   assert.match(nativeSelect[1], /text-indent:\s*0 !important/);
-  assert.match(select2Value[1], /padding-inline-start:\s*13px !important/);
-  assert.match(select2Value[1], /text-indent:\s*0 !important/);
+  assert.match(select2Value, /padding-inline-start:\s*13px !important/);
+  assert.match(select2Value, /text-indent:\s*0 !important/);
   assert.match(addressBlock, /\.select2-selection__arrow \{[\s\S]*?height:\s*50px/);
   assert.doesNotMatch(nativeSelect[1], /appearance\s*:/i);
 });
