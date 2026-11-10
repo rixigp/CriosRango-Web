@@ -7,6 +7,7 @@ const root = path.resolve(__dirname, '..');
 const accountCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/account.css'), 'utf8');
 const mainCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
 const accountPresentation = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/account-presentation.php'), 'utf8');
+const birthdayContract = fs.readFileSync(path.join(root, 'tests/account-birthday-contract.test.php'), 'utf8');
 
 test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
   const fieldContractStart = accountCss.indexOf('body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row :is(');
@@ -55,6 +56,8 @@ test('SHIPPING_ADDRESS_2_HAS_ONE_OPTIONAL_LABEL_AND_NO_PLACEHOLDER_COPY', () => 
   assert.match(field, /\$address_2\['required'\]\s*=\s*false\s*;/);
   assert.doesNotMatch(field, /\$address_2\['label'\][^;]*\(opcional\)/);
   assert.doesNotMatch(field, /\$address_2\['placeholder'\][^;]*Dirección adicional/);
+  assert.match(birthdayContract, /'Dirección adicional \/ Piso, puerta, etc\.' === \$shipping_fields\['shipping_address_2'\]\['label'\]/);
+  assert.match(birthdayContract, /'' === \$shipping_fields\['shipping_address_2'\]\['placeholder'\]/);
 });
 
 test('SHIPPING_SELECT_PADDING_OVERRIDE_IS_LAST_AND_PRESERVES_SELECT2_ARROW', () => {
