@@ -1414,3 +1414,9 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits
     font-size: 13px;
   }
 }
+
+/* Balance the points star with the shipping truck without changing row geometry. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits__row--points .cr-checkout-benefits__icon svg {
+  width: 19px;
+  height: 19px;
+}
