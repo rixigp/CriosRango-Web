@@ -1131,23 +1131,45 @@ function cr2026_checkout_payment_result_page_payload() {
  * WooCommerce renders them. Reaching this hook is the Checkout-context guard;
  * no early conditional query-tag check is needed.
  */
+/**
+ * The coupon form is Checkout-only. Points & Rewards notices are suppressed
+ * through the plugin's public message filters below, not by removing actions.
+ */
 function cr2026_checkout_remove_legacy_benefit_prompts() {
-    if ( isset( $GLOBALS['wc_points_rewards'] ) && is_object( $GLOBALS['wc_points_rewards'] )
-        && isset( $GLOBALS['wc_points_rewards']->cart )
-        && is_object( $GLOBALS['wc_points_rewards']->cart ) ) {
-        $points_cart = $GLOBALS['wc_points_rewards']->cart;
-
-        if ( method_exists( $points_cart, 'render_earn_points_message' ) ) {
-            remove_action( 'woocommerce_before_checkout_form', array( $points_cart, 'render_earn_points_message' ), 5 );
-        }
-        if ( method_exists( $points_cart, 'render_redeem_points_message' ) ) {
-            remove_action( 'woocommerce_before_checkout_form', array( $points_cart, 'render_redeem_points_message' ), 6 );
-        }
-    }
-
     remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_form', 10 );
 }
 add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_remove_legacy_benefit_prompts', 1 );
+
+/** True only for the normal Checkout page or its order-review AJAX request. */
+function cr2026_checkout_is_benefits_request() {
+    if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax()
+        && isset( $_REQUEST['wc-ajax'] ) && 'update_order_review' === sanitize_text_field( wp_unslash( $_REQUEST['wc-ajax'] ) ) ) {
+        return true;
+    }
+
+    return function_exists( 'is_checkout' ) && is_checkout()
+        && ( ! function_exists( 'is_order_received_page' ) || ! is_order_received_page() );
+}
+
+/** Capture the actual points argument and suppress only the Checkout earn notice. */
+function cr2026_checkout_capture_earn_points_message( $message, $points_earned ) {
+    if ( ! cr2026_checkout_is_benefits_request() ) {
+        return $message;
+    }
+
+    $GLOBALS['cr2026_checkout_points_earned'] = is_numeric( $points_earned ) && (float) $points_earned >= 0
+        ? (float) $points_earned
+        : null;
+
+    return '';
+}
+add_filter( 'wc_points_rewards_earn_points_message', 'cr2026_checkout_capture_earn_points_message', PHP_INT_MAX, 2 );
+
+/** Suppress only the Checkout redeem notice; Cart keeps the plugin's message. */
+function cr2026_checkout_suppress_redeem_points_message( $message ) {
+    return cr2026_checkout_is_benefits_request() ? '' : $message;
+}
+add_filter( 'wc_points_rewards_redeem_points_message', 'cr2026_checkout_suppress_redeem_points_message', PHP_INT_MAX, 1 );
 
 /**
  * Resolve a real free-shipping method for the currently matching shipping
@@ -1222,39 +1244,75 @@ function cr2026_checkout_benefits_shipping_data() {
                     }
                 }
 
-                $precision = function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2;
-                $eligible_amount = max( 0, round( $eligible_amount, $precision ) );
-                $remaining = max( 0, round( $threshold - $eligible_amount, $precision ) );
+                $precision = function_exists( 'wc_get_price_decimals' ) ? wc_ge/**
+ * Resolve the actual earn-notice renderer registered by Points & Rewards.
+ * The hook registry is the source of truth; never assume a plugin global.
+ */
+function cr2026_checkout_points_real_earn_callback() {
+    global $wp_filter;
+
+    if ( ! isset( $wp_filter['woocommerce_before_checkout_form'] )
+        || ! $wp_filter['woocommerce_before_checkout_form'] instanceof WP_Hook ) {
+        return null;
+    }
+
+    foreach ( $wp_filter['woocommerce_before_checkout_form']->callbacks as $callbacks ) {
+        foreach ( $callbacks as $registered ) {
+            if ( empty( $registered['function'] ) || ! is_array( $registered['function'] )
+                || ! isset( $registered['function'][0], $registered['function'][1] )
+                || 'render_earn_points_message' !== $registered['function'][1]
+                || ! is_object( $registered['function'][0] ) ) {
+                continue;
             }
 
-            return array(
-                'instance' => isset( $method->instance_id ) ? (string) $method->instance_id : 'unknown',
-                'requires' => $requires,
-                'threshold' => $threshold,
-                'ignore_discounts' => $ignore_discounts,
-                'eligible_amount' => $eligible_amount,
-                'remaining' => $remaining,
-                'free_rate_available' => $free_rate_available,
-            );
+            $renderer = $registered['function'][0];
+            $class    = get_class( $renderer );
+            if ( false !== stripos( $class, 'Points_Rewards' )
+                && is_callable( array( $renderer, 'render_earn_points_message' ) ) ) {
+                return array( $renderer, 'render_earn_points_message' );
+            }
         }
     }
 
     return null;
 }
 
-/**
- * Capture the live value calculated by Points & Rewards through its public
- * message filter. The plugin remains the sole owner of earning rules/formula.
- */
-function cr2026_checkout_benefits_points_earned() {
-    if ( ! isset( $GLOBALS['wc_points_rewards'] ) || ! is_object( $GLOBALS['wc_points_rewards'] )
-        || ! isset( $GLOBALS['wc_points_rewards']->cart )
-        || ! is_object( $GLOBALS['wc_points_rewards']->cart ) ) {
-        return null;
+/** Read points captured by the native plugin renderer in this request. */
+function cr2026_checkout_benefits_points_earned( $refresh_from_real_callback = false ) {
+    if ( $refresh_from_real_callback ) {
+        $callback = cr2026_checkout_points_real_earn_callback();
+        if ( null === $callback ) {
+            return null;
+        }
+
+        $points_earned = null;
+        $capture_points = static function( $message, $earned ) use ( &$points_earned ) {
+            $points_earned = is_numeric( $earned ) && (float) $earned >= 0
+                ? (float) $earned
+                : null;
+            return '';
+        };
+
+        add_filter( 'wc_points_rewards_earn_points_message', $capture_points, PHP_INT_MAX, 2 );
+        ob_start();
+        try {
+            call_user_func( $callback );
+        } catch ( Throwable $error ) {
+            $points_earned = null;
+        } finally {
+            ob_end_clean();
+            remove_filter( 'wc_points_rewards_earn_points_message', $capture_points, PHP_INT_MAX );
+        }
+
+        $GLOBALS['cr2026_checkout_points_earned'] = $points_earned;
+        return $points_earned;
     }
 
-    $points_cart = $GLOBALS['wc_points_rewards']->cart;
-    if ( ! is_callable( array( $points_cart, 'render_earn_points_message' ) ) ) {
+    return isset( $GLOBALS['cr2026_checkout_points_earned'] )
+        ? $GLOBALS['cr2026_checkout_points_earned']
+        : null;
+}
+   if ( ! is_callable( array( $points_cart, 'render_earn_points_message' ) ) ) {
         return null;
     }
 
@@ -1334,6 +1392,8 @@ function cr2026_checkout_benefits_order_review_fragment( $fragments ) {
         || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
         return $fragments;
     }
+
+    cr2026_checkout_benefits_points_earned( true );
 
     ob_start();
     cr2026_checkout_render_benefits_card();
