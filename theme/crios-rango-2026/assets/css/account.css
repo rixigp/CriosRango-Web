@@ -31,17 +31,34 @@
 .cr-account-home__information-card { overflow: hidden; border: 1px solid rgba(24,59,53,.08); border-radius: 18px; background: #fff; }
 .cr-account-home__information-row { min-height: 53px; display: grid; grid-template-columns: 25px minmax(0,1fr) 16px; align-items: center; gap: 10px; padding: 0 14px; color: #303630; text-decoration: none; font: 300 13px/18px "Roboto", Arial, sans-serif; }
 .cr-account-home__information-row + .cr-account-home__information-row { border-top: 1px solid rgba(32,36,31,.07); }
-.cr-account-home__information-icon { display: inline-flex; color: #64756b; }
-.cr-account-home__information-icon .cr-icon { width: 19px; height: 19px; }
-.cr-account-home__information-icon .cr-icon svg { stroke-width: 1.5; }
+.cr-account-home__information-icon {
+  box-sizing: border-box;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #244436;
+}
+.cr-account-home__information-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .cr-account-home__information-chevron { justify-self: end; color: #8a918b; font: 300 23px/1 Arial,sans-serif; }
 @media (max-width: 767px) {
   /* The app toolbar already supplies the account-home title on mobile. */
   body.woocommerce-account:has(.cr-account-home) .cr-page__header { display: none !important; }
   .cr-account-home__tile { min-height: 136px; padding-top: 12px; padding-bottom: 12px; }
   .cr-account-home__tile-top { margin-bottom: 10px; }
-  .cr-account-home__information-icon { color: #244436; align-items: center; justify-content: center; }
-  .cr-account-home__information-icon svg { display: block; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .cr-account-home__information-icon { align-items: center; justify-content: center; }
 }
 @media (max-width: 767px) {
   body.woocommerce-account .cr-footer { display: none !important; }

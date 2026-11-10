@@ -41,11 +41,11 @@ $find_account_page = static function( $slugs ) {
 $help_url = $find_account_page( array( 'ayuda', 'preguntas-frecuentes', 'contacto' ) );
 
 $information = array(
-    array( 'label' => __( 'Cambios y devoluciones', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 7v5h5M4.8 11A8 8 0 1 1 5 15"></path><path d="M12 7v5l3 2"></path></svg>', 'slugs' => array( 'cambios-y-devoluciones' ) ),
-    array( 'label' => __( 'Condiciones de contratación', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 3.5h8l4 4V20.5H6z"></path><path d="M14 3.5v4h4M9 12h6M9 16h6"></path></svg>', 'slugs' => array( 'condiciones-generales-de-contratacion' ) ),
-    array( 'label' => __( 'Política de privacidad', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 3 19 6v5c0 4.5-2.8 7.8-7 10-4.2-2.2-7-5.5-7-10V6z"></path><path d="M12 9v4M12 16h.01"></path></svg>', 'slugs' => array( 'politica-de-privacidad' ) ),
-    array( 'label' => __( 'Aviso legal', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 3.5h8l4 4V20.5H6z"></path><path d="M14 3.5v4h4M9 12h6M9 16h6"></path></svg>', 'slugs' => array( 'aviso-legal' ) ),
-    array( 'label' => __( 'Política de cookies', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" focusable="false"><path d="M20 12.2A8.2 8.2 0 1 1 11.8 4a3.2 3.2 0 0 0 8.2 8.2Z"></path><path d="M8 9h.01M11 15h.01M15 11h.01M7 14h.01"></path></svg>', 'slugs' => array( 'politica-de-cookies' ) ),
+    array( 'label' => __( 'Cambios y devoluciones', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" focusable="false"><path d="M4 7v5h5M4.8 11A8 8 0 1 1 5 15"></path><path d="M12 7v5l3 2"></path></svg>', 'slugs' => array( 'cambios-y-devoluciones' ) ),
+    array( 'label' => __( 'Condiciones de contratación', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" focusable="false"><path d="M6 3.5h8l4 4V20.5H6z"></path><path d="M14 3.5v4h4M9 12h6M9 16h6"></path></svg>', 'slugs' => array( 'condiciones-generales-de-contratacion' ) ),
+    array( 'label' => __( 'Política de privacidad', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" focusable="false"><path d="M12 3 19 6v5c0 4.5-2.8 7.8-7 10-4.2-2.2-7-5.5-7-10V6z"></path><path d="M12 9v4M12 16h.01"></path></svg>', 'slugs' => array( 'politica-de-privacidad' ) ),
+    array( 'label' => __( 'Aviso legal', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" focusable="false"><path d="M6 3.5h8l4 4V20.5H6z"></path><path d="M14 3.5v4h4M9 12h6M9 16h6"></path></svg>', 'slugs' => array( 'aviso-legal' ) ),
+    array( 'label' => __( 'Política de cookies', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" focusable="false"><path d="M20 12.2A8.2 8.2 0 1 1 11.8 4a3.2 3.2 0 0 0 8.2 8.2Z"></path><path d="M8 9h.01M11 15h.01M15 11h.01M7 14h.01"></path></svg>', 'slugs' => array( 'politica-de-cookies' ) ),
 );
 ?>
 <section class="cr-account-home" aria-labelledby="cr-account-title">
