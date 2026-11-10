@@ -58,7 +58,11 @@ function test_extract_function( $source, $name ) {
         if ( ! is_array( $tokens[$i] ) || T_FUNCTION !== $tokens[$i][0] ) {
             continue;
         }
-        $start = $tokens[$i][1];
+        $start = 0;
+        for ( $n = 0; $n < $i; $n++ ) {
+            $part = $tokens[$n];
+            $start += strlen( is_array( $part ) ? $part[1] : $part );
+        }
         $j = $i + 1;
         while ( $j < $count && is_array( $tokens[$j]) && T_WHITESPACE === $tokens[$j][0] ) { $j++; }
         if ( $j < $count && '(' === $tokens[$j] ) { $j++; }
