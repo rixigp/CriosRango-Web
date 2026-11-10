@@ -1061,7 +1061,7 @@ test('Checkout removes native privacy and terms acceptance through WooCommerce h
   assert.match(checkoutWooCommercePhp, /remove_action\(\s*'woocommerce_checkout_terms_and_conditions',\s*'wc_checkout_privacy_policy_text',\s*20\s*\)/);
   assert.match(checkoutWooCommercePhp, /remove_action\(\s*'woocommerce_checkout_terms_and_conditions',\s*'wc_terms_and_conditions_page_content',\s*30\s*\)/);
   assert.match(checkoutWooCommercePhp, /add_filter\(\s*'woocommerce_order_button_text',\s*'cr2026_checkout_order_button_text',\s*9999\s*\)/);
-  assert.match(checkoutWooCommercePhp, /return 'Realizar el pedido';/);
+  assert.match(checkoutWooCommercePhp, /return 'Realizar pedido';/);
   assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_checkout_process|woocommerce_checkout_place_order|woocommerce_order_status|wp_redirect/);
 });
 
@@ -1089,7 +1089,7 @@ test('Checkout final action hides privacy/terms wrappers and preserves exactly t
     'color: #fff !important;'
   ]) assert.ok(placeOrder.includes(property), 'native place_order visual contract missing: ' + property);
 
-  assert.match(checkoutWooCommercePhp, /return 'Realizar el pedido';/);
+  assert.match(checkoutWooCommercePhp, /return 'Realizar pedido';/);
   assert.doesNotMatch(checkoutWooCommercePhp, /createElement\(['"]button|<button[^>]*place_order|id=['"]place_order/);
   assert.match(checkoutCss, /#payment \.form-row\.place-order\s*\{\s*margin:\s*0;\s*padding:\s*0;/);
 });
