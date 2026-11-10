@@ -116,7 +116,7 @@ $GLOBALS['wp_filter']['woocommerce_before_checkout_form']->callbacks = array(
     ),
 );
 $resolved = cr2026_find_points_rewards_callback( 'render_earn_points_message' );
-test_assert( is_array( $resolved ) && $resolved[0] === $renderer && 'render_earn_points_message' === $resolved[1], 'Resolver must find an arbitrary object's exact registered method.' );
+test_assert( is_array( $resolved ) && $resolved[0] === $renderer && 'render_earn_points_message' === $resolved[1], 'Resolver must find the exact registered method on an arbitrary object.' );
 test_assert( 5 === $GLOBALS['cr2026_checkout_real_earn_callback_priority'], 'Resolver must retain the real priority.' );
 
 $GLOBALS['test_is_checkout'] = false;
