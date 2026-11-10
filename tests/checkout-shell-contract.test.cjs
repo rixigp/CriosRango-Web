@@ -1014,7 +1014,7 @@ test('Checkout removes native privacy and terms acceptance through WooCommerce h
   assert.match(checkoutWooCommercePhp, /add_filter\(\s*'woocommerce_checkout_show_terms',\s*'cr2026_checkout_disable_terms_acceptance',\s*9999\s*\)/);
   assert.match(checkoutWooCommercePhp, /return false;\s*\}\s*add_filter\(\s*'woocommerce_checkout_show_terms'/);
   assert.match(checkoutWooCommercePhp, /remove_action\(\s*'woocommerce_checkout_terms_and_conditions',\s*'wc_checkout_privacy_policy_text',\s*20\s*\)/);
-  assert.match(checkoutWooCommercePhp, /remove_action\(\s*'woocommerce_checkout_terms_and_conditions',\s*'wc_terms_and_conditions_checkbox',\s*30\s*\)/);
+  assert.match(checkoutWooCommercePhp, /remove_action\(\s*'woocommerce_checkout_terms_and_conditions',\s*'wc_terms_and_conditions_page_content',\s*30\s*\)/);
   assert.match(checkoutWooCommercePhp, /add_filter\(\s*'woocommerce_order_button_text',\s*'cr2026_checkout_order_button_text',\s*9999\s*\)/);
   assert.match(checkoutWooCommercePhp, /return 'Realizar el pedido';/);
   assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_checkout_process|woocommerce_checkout_place_order|woocommerce_order_status|wp_redirect/);
