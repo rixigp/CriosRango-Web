@@ -18,6 +18,7 @@ on:
       - "tests/checkout-points-runtime.test.php"
       - "tests/checkout-review-contract.test.cjs"
       - "tests/cart-promotions-contract.test.cjs"
+      - "tests/account-information-icons.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
 
@@ -391,6 +392,9 @@ jobs:
 
       - name: Run cart promotions contract tests
         run: node --test tests/cart-promotions-contract.test.cjs
+
+      - name: Run Account information icon geometry tests
+        run: node --test tests/account-information-icons.test.cjs
 
       - name: Install validation and FTP tools
         shell: bash
