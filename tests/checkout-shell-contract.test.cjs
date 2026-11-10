@@ -598,9 +598,12 @@ test('Points row consumes the plugin earned-points argument captured by the real
   );
   assert.match(resolver, /\$wp_filter\['woocommerce_before_checkout_form'\]/);
   assert.match(resolver, /render_earn_points_message/);
-  assert.match(resolver, /get_class\(\s*\$renderer\s*\)/);
-  assert.match(resolver, /Points_Rewards/);
-  assert.match(resolver, /is_callable/);
+  assert.match(resolver, /\$method_name !== \$registered\['function'\]\[1\]/);
+  assert.doesNotMatch(resolver, /Points_Rewards|stripos|class_exists/);
+  assert.match(resolver, /is_object\(\s*\$registered\['function'\]\[0\]\s*\)/);
+  assert.match(resolver, /is_callable\(\s*\$registered\['function'\]\s*\)/);
+  assert.match(resolver, /\$priority/);
+  assert.match(resolver, /get_class\(\s*\$registered\['function'\]\[0\]\s*\)/);
 
   const pointsFn = woocommercePhp.slice(
     woocommercePhp.indexOf('function cr2026_checkout_benefits_points_earned'),
