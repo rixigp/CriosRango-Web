@@ -114,6 +114,12 @@ function cr2026_account_address_endpoint_toolbar() {
     }
 
     $address_type = (string) get_query_var( 'edit-address' );
+    if ( '' === $address_type && isset( $_SERVER['REQUEST_URI'] ) ) {
+        $request_path = (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH );
+        if ( preg_match( '#/edit-address/(shipping|billing)/?$#', $request_path, $matches ) ) {
+            $address_type = $matches[1];
+        }
+    }
     $title = 'shipping' === $address_type
         ? __( 'Dirección de entrega', 'crios-rango-2026' )
         : ( 'billing' === $address_type ? __( 'Dirección de facturación', 'crios-rango-2026' ) : __( 'Direcciones', 'crios-rango-2026' ) );
