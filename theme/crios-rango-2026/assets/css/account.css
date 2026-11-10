@@ -380,3 +380,49 @@
   body.woocommerce-account .woocommerce-Address-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   body.woocommerce-account .woocommerce-Address-title h2 { margin: 0; color: #244436; font: 400 14px/20px "Roboto", Arial, sans-serif; }
 }
+
+/* Existing Contact/FAQ page as the mobile Account Help screen. */
+@media (max-width: 767px) {
+  body.cr-account-help-page { background: var(--cr-app-canvas); }
+  body.cr-account-help-page .cr-main {
+    width: 100%; min-height: 60vh; margin: 0; padding: 0;
+    background: var(--cr-app-canvas);
+  }
+  body.cr-account-help-page .cr-main > .cr-shell.cr-page-shell {
+    width: 100%; max-width: none; margin-inline: auto;
+    padding-block-start: 10px;
+    padding-block-end: calc(88px + env(safe-area-inset-bottom));
+    background: var(--cr-app-canvas);
+  }
+  body.cr-account-help-page .cr-page,
+  body.cr-account-help-page .cr-page .cr-prose {
+    width: 100%; max-width: none; margin: 0; background: transparent;
+  }
+  body.cr-account-help-page .cr-page__header { display: none !important; }
+  body.cr-account-help-page .cr-footer { display: none !important; }
+  .cr-account-help { width: min(calc(100% - 40px), 720px); margin: 0 auto 18px; }
+  .cr-account-help__grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .cr-account-help__card {
+    box-sizing: border-box; display: flex; align-items: center; gap: 12px;
+    min-height: 68px; padding: 12px 14px;
+    border: 1px solid rgba(24,59,53,.08); border-radius: 16px;
+    background: #fff; color: #303630; text-decoration: none;
+  }
+  .cr-account-help__card > span:nth-child(2) { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }
+  .cr-account-help__card strong { color: #244436; font: 400 14px/19px "Roboto", Arial, sans-serif; }
+  .cr-account-help__card small { color: #777b76; font: 300 12px/17px "Roboto", Arial, sans-serif; }
+  .cr-account-help__icon {
+    width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center;
+    border-radius: 11px; background: #f1f4f0; color: #244436;
+    font: 400 14px/1 "Roboto", Arial, sans-serif;
+  }
+  .cr-account-help__chevron { color: #8a918b; font: 300 23px/1 Arial,sans-serif; }
+  .cr-account-help__hours {
+    padding: 15px 16px; border: 1px solid rgba(24,59,53,.08);
+    border-radius: 16px; background: #fff;
+  }
+  .cr-account-help__hours > strong { display: block; margin-bottom: 10px; color: #244436; font: 400 14px/19px "Roboto", Arial, sans-serif; }
+  .cr-account-help__hours p { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding: 7px 0; border-top: 1px solid rgba(32,36,31,.06); color: #66716a; font: 300 11px/16px "Roboto", Arial, sans-serif; }
+  .cr-account-help__hours p span:last-child { color: #303630; text-align: right; }
+  body.cr-account-help-page .cr-account-help + * { margin-top: 18px; }
+}
