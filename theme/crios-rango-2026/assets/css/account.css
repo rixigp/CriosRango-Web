@@ -39,7 +39,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #244436;
+  color: var(--cr-green-dark);
 }
 .cr-account-home__information-icon svg {
   display: block;
