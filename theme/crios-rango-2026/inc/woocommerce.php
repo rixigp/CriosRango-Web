@@ -1244,7 +1244,27 @@ function cr2026_checkout_benefits_shipping_data() {
                     }
                 }
 
-                $precision = function_exists( 'wc_get_price_decimals' ) ? wc_ge/**
+                $precision = function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2;
+                $eligible_amount = max( 0, round( $eligible_amount, $precision ) );
+                $remaining = max( 0, round( $threshold - $eligible_amount, $precision ) );
+            }
+
+            return array(
+                'instance' => isset( $method->instance_id ) ? (string) $method->instance_id : 'unknown',
+                'requires' => $requires,
+                'threshold' => $threshold,
+                'ignore_discounts' => $ignore_discounts,
+                'eligible_amount' => $eligible_amount,
+                'remaining' => $remaining,
+                'free_rate_available' => $free_rate_available,
+            );
+        }
+    }
+
+    return null;
+}
+
+/**
  * Resolve the actual earn-notice renderer registered by Points & Rewards.
  * The hook registry is the source of truth; never assume a plugin global.
  */
@@ -1312,38 +1332,10 @@ function cr2026_checkout_benefits_points_earned( $refresh_from_real_callback = f
         ? $GLOBALS['cr2026_checkout_points_earned']
         : null;
 }
-   if ( ! is_callable( array( $points_cart, 'render_earn_points_message' ) ) ) {
-        return null;
-    }
-
-    $points_earned = null;
-    $capture_points = static function( $message, $earned ) use ( &$points_earned ) {
-        $points_earned = is_numeric( $earned ) && (float) $earned >= 0
-            ? (float) $earned
-            : null;
-        return '';
-    };
-
-    add_filter( 'wc_points_rewards_earn_points_message', $capture_points, PHP_INT_MAX, 2 );
-
-    ob_start();
-    try {
-        $points_cart->render_earn_points_message();
-    } catch ( Throwable $error ) {
-        // Keep Checkout rendering resilient if the optional plugin callback fails.
-        $points_earned = null;
-    } finally {
-        ob_end_clean();
-        remove_filter( 'wc_points_rewards_earn_points_message', $capture_points, PHP_INT_MAX );
-    }
-
-    return $points_earned;
-}
 
 /** Render the single server-generated Checkout benefits card. */
 function cr2026_checkout_render_benefits_card() {
-    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
-        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
+    if ( ! cr2026_checkout_is_benefits_request() ) {
         return;
     }
 
@@ -1388,8 +1380,7 @@ add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_render_benefits
 
 /** Keep the benefits card synchronized with WooCommerce's order-review AJAX. */
 function cr2026_checkout_benefits_order_review_fragment( $fragments ) {
-    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
-        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
+    if ( ! cr2026_checkout_is_benefits_request() ) {
         return $fragments;
     }
 
