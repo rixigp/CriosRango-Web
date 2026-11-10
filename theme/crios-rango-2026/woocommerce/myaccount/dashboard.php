@@ -66,7 +66,7 @@ $information = array(
 
     <div class="cr-account-home__grid" aria-label="<?php esc_attr_e( 'Secciones de cuenta', 'crios-rango-2026' ); ?>">
         <a class="cr-account-home__tile cr-account-home__tile--orders" href="<?php echo esc_url( $orders_url ); ?>">
-            <span class="cr-account-home__tile-top"><span class="cr-account-home__icon" aria-hidden="true"><?php echo cr2026_icon( 'bag' ); ?></span><span class="cr-account-home__chevron" aria-hidden="true">›</span></span>
+            <span class="cr-account-home__tile-top"><span class="cr-account-home__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 4.5h8M9 3h6v3H9zM6 5.5H4.5v15h15v-8"></path><path d="m10 14 2.5 2.5L21 8"></path></svg></span><span class="cr-account-home__chevron" aria-hidden="true">›</span></span>
             <strong><?php esc_html_e( 'Pedidos', 'crios-rango-2026' ); ?></strong>
             <span><?php esc_html_e( 'Consulta y gestiona tus pedidos', 'crios-rango-2026' ); ?></span>
         </a>
@@ -85,7 +85,7 @@ $information = array(
         <?php else : ?>
             <div class="cr-account-home__tile cr-account-home__tile--help" aria-disabled="true">
         <?php endif; ?>
-            <span class="cr-account-home__tile-top"><span class="cr-account-home__icon" aria-hidden="true"><?php echo cr2026_icon( 'message' ); ?></span><span class="cr-account-home__chevron" aria-hidden="true">›</span></span>
+            <span class="cr-account-home__tile-top"><span class="cr-account-home__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M9.6 9a2.5 2.5 0 1 1 4.4 1.6c-1.2 1.2-2 1.5-2 3"></path><path d="M12 17.2h.01"></path></svg></span><span class="cr-account-home__chevron" aria-hidden="true">›</span></span>
             <strong><?php esc_html_e( 'Ayuda', 'crios-rango-2026' ); ?></strong>
             <span><?php esc_html_e( 'Preguntas frecuentes y contacto', 'crios-rango-2026' ); ?></span>
         <?php if ( $help_url ) : ?>

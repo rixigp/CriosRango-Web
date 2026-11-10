@@ -17,11 +17,14 @@
 .cr-account-home__tile--help { background: #e8f0f5; }
 .cr-account-home__tile[aria-disabled="true"] { cursor: default; }
 .cr-account-home__tile-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
-.cr-account-home__icon { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; color: #244436; }
-.cr-account-home__icon .cr-icon { width: 24px; height: 24px; }
-.cr-account-home__icon .cr-icon svg { fill: none; stroke: currentColor; stroke-width: 1.65; }
-.cr-account-home__chevron { color: rgba(32,36,31,.55); font: 300 25px/24px Arial,sans-serif; }
-.cr-account-home__tile > strong { margin: auto 0 5px; color: #20241f; font: 400 14px/19px "Roboto", Arial, sans-serif; }
+.cr-account-home__icon { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; color: #2d7655; }
+.cr-account-home__icon .cr-icon, .cr-account-home__icon svg { width: 24px; height: 24px; }
+.cr-account-home__icon svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.cr-account-home__chevron { color: #2d7655; font: 300 25px/24px Arial,sans-serif; }
+.cr-account-home__tile--promotions .cr-account-home__icon, .cr-account-home__tile--promotions .cr-account-home__chevron { color: #8058a4; }
+.cr-account-home__tile--profile .cr-account-home__icon, .cr-account-home__tile--profile .cr-account-home__chevron { color: #a27d25; }
+.cr-account-home__tile--help .cr-account-home__icon, .cr-account-home__tile--help .cr-account-home__chevron { color: #3f779c; }
+.cr-account-home__tile > strong { margin: 0 0 5px; color: #20241f; font: 400 14px/19px "Roboto", Arial, sans-serif; }
 .cr-account-home__tile > span:last-child { color: #656b66; font: 300 11px/16px "Roboto", Arial, sans-serif; }
 .cr-account-home__information { margin-top: 25px; }
 .cr-account-home__information h2 { margin: 0 0 12px; color: #183b35; font: 400 18px/25px "Roboto", Arial, sans-serif; }
@@ -114,7 +117,7 @@
   }
 
   body.woocommerce-account .cr-account-home__tile {
-    min-height: 128px;
+    min-height: 142px;
     padding-top: 10px;
     padding-bottom: 10px;
   }
