@@ -74,7 +74,11 @@ function test_extract_function( $source, $name ) {
             if ( '}' === $token ) {
                 $depth--;
                 if ( 0 === $depth ) {
-                    $end = is_array($token) ? $token[1] + strlen($token[1]) : 1;
+                    $end = $start;
+                    for ( $m = $i; $m <= $k; $m++ ) {
+                        $part = $tokens[$m];
+                        $end += strlen( is_array( $part ) ? $part[1] : $part );
+                    }
                     return substr( $source, $start, $end - $start );
                 }
             }
