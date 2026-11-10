@@ -557,13 +557,42 @@ test('Checkout benefits card reads live free-shipping zone configuration and ser
   assert.match(woocommercePhp, /\$method->get_option\(\s*'min_amount'/);
   assert.match(woocommercePhp, /\$method->get_option\(\s*'ignore_discounts'/);
   assert.match(woocommercePhp, /get_displayed_subtotal\(\)/);
-  assert.match(woocommercePhp, /get_points_earned_for_purchase\(\)/);
+  assert.match(woocommercePhp, /wc_points_rewards_earn_points_message/);
+  assert.match(woocommercePhp, /render_earn_points_message\(\)/);
+  assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_earn_points_message'[\s\S]*?PHP_INT_MAX\s*,\s*2\s*\)/);
+  assert.match(woocommercePhp, /\$points_cart->render_earn_points_message\(\)/);
+  assert.match(woocommercePhp, /remove_filter\(\s*'wc_points_rewards_earn_points_message'/);
   assert.match(woocommercePhp, /woocommerce_update_order_review_fragments/);
   assert.match(woocommercePhp, /\.cr-checkout-benefits/);
   assert.match(checkoutCss, /\.cr-checkout-benefits__row/);
   assert.doesNotMatch(woocommercePhp, /woocommerce_package_rates|woocommerce_shipping_rate_cost|woocommerce_shipping_methods/);
 });
 
+
+test('Checkout legacy prompts are removed on the same render hook before native callbacks', () => {
+  assert.match(woocommercePhp, /add_action\(\s*'woocommerce_before_checkout_form',\s*'cr2026_checkout_remove_legacy_benefit_prompts',\s*1\s*\)/);
+  assert.match(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',[\s\S]*?render_earn_points_message'[\s\S]*?,\s*5\s*\)/);
+  assert.match(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',[\s\S]*?render_redeem_points_message'[\s\S]*?,\s*6\s*\)/);
+  assert.match(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',\s*'woocommerce_checkout_coupon_form',\s*10\s*\)/);
+  assert.doesNotMatch(woocommercePhp, /add_action\(\s*'(?:wp_loaded|admin_init)'\s*,\s*'cr2026_checkout_remove_legacy_benefit_prompts'/);
+  assert.doesNotMatch(woocommercePhp, /get_points_earned_for_purchase\s*\(/);
+});
+
+test('Points & Rewards earned points are captured only through its public filter without parsing notice HTML', () => {
+  const pointsFn = woocommercePhp.slice(
+    woocommercePhp.indexOf('function cr2026_checkout_benefits_points_earned'),
+    woocommercePhp.indexOf('function cr2026_checkout_render_benefits_card')
+  );
+  assert.match(pointsFn, /wc_points_rewards_earn_points_message/);
+  assert.match(pointsFn, /function\s*\(\s*\$message\s*,\s*\$earned\s*\)/);
+  assert.match(pointsFn, /return '';\s*\};/);
+  assert.match(pointsFn, /ob_start\(\)/);
+  assert.match(pointsFn, /render_earn_points_message\(\)/);
+  assert.match(pointsFn, /remove_filter\(/);
+  assert.doesNotMatch(pointsFn, /get_points_earned_for_purchase|DOMDocument|strip_tags|preg_match/);
+  assert.match(woocommercePhp, /Sumarás %s puntos con esta compra/);
+  assert.match(woocommercePhp, /woocommerce_update_order_review_fragments/);
+});
 
 test('shipping checkout layout changes are isolated from cart shipping presentation', () => {
   assert.doesNotMatch(checkoutCss, /\.woocommerce-cart\s+\.woocommerce-checkout-review-order-table/);
