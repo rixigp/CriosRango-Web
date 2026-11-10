@@ -21,6 +21,7 @@ on:
       - "tests/account-information-icons.test.cjs"
       - "tests/account-help-contract.test.cjs"
       - "tests/account-birthday-contract.test.php"
+      - "tests/page-title-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
 
@@ -410,6 +411,9 @@ jobs:
 
       - name: Run checkout Points & Rewards runtime contract test
         run: php tests/checkout-points-runtime.test.php
+
+      - name: Run mobile page title audit contract test
+        run: node --test tests/page-title-contract.test.cjs
 
       - name: Run WPLoyalty birthday contract test
         run: php tests/account-birthday-contract.test.php
