@@ -60,7 +60,7 @@ test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
   assert.ok(outer.includes('border-radius: 9px !important'));
   assert.ok(outer.includes('background: var(--cr-app-canvas) !important'));
 
-  const renderedStart = accountCss.indexOf('body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection__rendered {');
+  const renderedStart = accountCss.lastIndexOf('body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection__rendered {');
   const renderedEnd = accountCss.indexOf('}', renderedStart);
   const rendered = accountCss.slice(renderedStart, renderedEnd);
   assert.ok(renderedStart >= 0 && renderedEnd > renderedStart, 'dedicated Select2 rendered-value contract exists');
