@@ -140,10 +140,6 @@ test_assert( false === apply_filters( 'wlr_is_checkout_earn_message_enabled', tr
 test_assert( false === apply_filters( 'wlr_is_checkout_redeem_message_enabled', true ), 'WPLoyalty Checkout redeem messages must be disabled.' );
 
 // Normal Checkout: use WPLoyalty's own public calculator and capture its shortcode value.
-add_filter( 'wlr_points_rewards_earn_points_message', static function( $message, $short_code_list ) {
-    $GLOBALS['test_captured_points'] = $short_code_list['{wlr_cart_points}'] ?? null;
-    return '';
-}, PHP_INT_MAX, 2 );
 $normal_points = cr2026_checkout_benefits_points_earned();
 test_assert( 15.0 === $normal_points, 'The normal request must capture {wlr_cart_points}=15.' );
 test_assert( false === $GLOBALS['test_get_cart_message_argument'], 'getCartMessage must be called with false.' );
