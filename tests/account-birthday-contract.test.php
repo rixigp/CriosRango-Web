@@ -124,7 +124,8 @@ namespace {
         'shipping_phone' => array( 'type' => 'tel', 'required' => true ),
     ), 'ES' );
     contract_assert( isset( $shipping_fields['shipping_address_2'] ), 'native shipping_address_2 field is retained in the address form schema' );
-    contract_assert( 'Dirección adicional / Piso, puerta, etc. (opcional)' === $shipping_fields['shipping_address_2']['label'], 'shipping_address_2 uses the requested mobile label' );
+    contract_assert( 'Dirección adicional / Piso, puerta, etc.' === $shipping_fields['shipping_address_2']['label'], 'shipping_address_2 base label leaves the optional suffix to WooCommerce' );
+    contract_assert( '' === $shipping_fields['shipping_address_2']['placeholder'], 'shipping_address_2 has no duplicate placeholder copy' );
     contract_assert( false === $shipping_fields['shipping_address_2']['required'] && false === $shipping_fields['shipping_address_2']['hidden'], 'shipping_address_2 remains optional and visible' );
     contract_assert( true === $shipping_fields['shipping_phone']['required'], 'existing shipping_phone required policy is preserved' );
 
