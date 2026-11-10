@@ -604,7 +604,7 @@
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields > h3 { display: none !important; }
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields {
    box-sizing: border-box; width: min(calc(100% - 40px), var(--cr-shell)); margin: 0 auto;
-   padding: 0 0 calc(88px + env(safe-area-inset-bottom)) !important;
+   padding: 0 0 16px !important;
    border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
  }
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields__field-wrapper {
@@ -635,6 +635,16 @@
  }
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection__arrow {
    top: 0; right: 8px; height: 50px;
+ }
+
+ /* Align visible address-select values with the text-input content axis. */
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields select {
+   padding-inline-start: 13px !important;
+   text-indent: 0 !important;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection__rendered {
+   padding-inline-start: 13px !important;
+   text-indent: 0 !important;
  }
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields button[type="submit"] {
    box-sizing: border-box; display: block; width: 100%; min-height: 50px; margin: 8px 0 0; padding: 0 20px;
