@@ -72,6 +72,15 @@ function cr2026_enqueue_assets() {
         cr2026_asset_version( 'assets/css/main.css' )
     );
 
+    if ( function_exists( 'is_account_page' ) && is_account_page() ) {
+        wp_enqueue_style(
+            'cr2026-account',
+            CR2026_URI . '/assets/css/account.css',
+            array( 'cr2026-main' ),
+            cr2026_asset_version( 'assets/css/account.css' )
+        );
+    }
+
     if ( $uses_checkout_shell ) {
         wp_enqueue_style(
             'cr2026-checkout',
