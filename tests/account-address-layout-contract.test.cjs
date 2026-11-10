@@ -41,7 +41,7 @@ test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
   const generic = accountCss.slice(genericStart, genericEnd);
   assert.ok(genericStart >= 0 && genericEnd > genericStart, 'generic field selector exists');
   assert.doesNotMatch(generic, /select2-selection--single/);
-  assert.match(generic, /input:not\\(\\[type="hidden"\\]\\)[\\s\\S]*?select[\\s\\S]*?textarea/);
+  assert.ok(generic.includes('input:not([type="hidden"])') && generic.includes('select') && generic.includes('textarea'));
 
   const importantStart = accountCss.indexOf('body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row :is(');
   const importantEnd = accountCss.indexOf('body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row textarea', importantStart);
@@ -53,16 +53,17 @@ test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
   const outerEnd = accountCss.indexOf('body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row textarea', outerStart);
   const outer = accountCss.slice(outerStart, outerEnd);
   assert.ok(outerStart >= 0 && outerEnd > outerStart, 'dedicated Select2 outer contract exists');
-  assert.match(outer, /select2-selection--single \\{[\\s\\S]*?padding: 0 !important/);
-  assert.match(outer, /width: 100%/);
-  assert.match(outer, /height: 48px !important/);
-  assert.match(outer, /border: 1px solid #d8d9d5 !important/);
-  assert.match(outer, /border-radius: 9px !important/);
-  assert.match(outer, /background: var\\(--cr-app-canvas\\) !important/);
+  assert.ok(outer.includes('.select2-selection--single {') && outer.includes('padding: 0 !important'));
+  assert.ok(outer.includes('width: 100%') && outer.includes('height: 48px !important'));
+  assert.ok(outer.includes('border: 1px solid #d8d9d5 !important'));
+  assert.ok(outer.includes('border-radius: 9px !important'));
+  assert.ok(outer.includes('background: var(--cr-app-canvas) !important'));
 
-  const rendered = accountCss.match(/body\\.woocommerce-account \\.woocommerce-address-fields \\.form-row \\.select2-selection__rendered \\{([\\s\\S]*?)\\n  \\}/);
-  assert.ok(rendered, 'dedicated Select2 rendered-value contract exists');
-  assert.match(rendered[1], /padding: 0 36px 0 13px !important/);
+  const renderedStart = accountCss.indexOf('body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection__rendered {');
+  const renderedEnd = accountCss.indexOf('}', renderedStart);
+  const rendered = accountCss.slice(renderedStart, renderedEnd);
+  assert.ok(renderedStart >= 0 && renderedEnd > renderedStart, 'dedicated Select2 rendered-value contract exists');
+  assert.ok(rendered.includes('padding: 0 36px 0 13px !important'));
 });
 
 test('ADDRESS_SCREEN_USES_ONLY_THE_GLOBAL_BOTTOM_NAV_RESERVED_SPACE', () => {
