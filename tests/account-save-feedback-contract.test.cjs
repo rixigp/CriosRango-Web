@@ -43,7 +43,8 @@ test('LOADING_BLOCKS_DOUBLE_SUBMIT_AND_PRESERVES_NATIVE_SUBMITTER', () => {
   assert.match(js, /cr-account-submit--loading/);
   assert.match(js, /button\.disabled = true/);
   assert.match(js, /window\.setTimeout/);
-  assert.match(js, /captured[\\s\\S]*the clicked submitter/);
+  assert.match(js, /captured/);
+  assert.match(js, /clicked submitter/);
   assert.match(css, /\.cr-account-submit--loading::after/);
   assert.match(css, /\.cr-account-submit__label\s*\{\s*visibility:\s*hidden/);
 });
