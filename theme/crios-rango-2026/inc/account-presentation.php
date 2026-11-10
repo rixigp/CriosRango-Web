@@ -52,7 +52,7 @@ function cr2026_account_render_mobile_profile() {
         cr2026_account_render_profile_home();
         return;
     }
-    wc_get_template( 'myaccount/form-edit-account.php' );
+    woocommerce_account_edit_account();
 }
 
 /** Profile landing page; all destinations remain native WordPress/WooCommerce URLs. */
