@@ -1096,26 +1096,36 @@ body.woocommerce-cart .cr-cart-empty-state h2 {
   font-weight: 500;
 }
 body.woocommerce-cart .cr-cart-empty-state > p.return-to-shop {
-  display: block !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
   width: 100% !important;
+  max-width: none !important;
   margin: 0 !important;
+  justify-content: center !important;
+  align-items: center !important;
+  float: none !important;
+  position: static !important;
   text-align: center !important;
 }
 body.woocommerce-cart .cr-cart-empty-state > p.return-to-shop > a.button.wc-backward {
-  display: flex !important;
-  flex: 0 0 auto;
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
   align-items: center !important;
   justify-content: center !important;
-  width: fit-content !important;
-  min-height: 42px;
-  margin-inline: auto !important;
-  margin-block: 0 !important;
+  width: auto !important;
+  min-height: 42px !important;
+  height: auto !important;
+  margin: 0 !important;
   padding: 8px 16px !important;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
   border-radius: 14px;
-  font-size: 13px;
-  line-height: 1.25;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
   font-weight: 500;
   text-align: center !important;
+  vertical-align: middle !important;
+  float: none !important;
+  position: static !important;
   white-space: nowrap;
 }

@@ -1062,30 +1062,52 @@ test('PRODUCT_DETAIL_UNCHANGED=PASS and BOTTOM_NAV_UNCHANGED=PASS', () => {
 });
 
 
-test('empty cart CTA centering selector matches the actual WooCommerce empty template markup', () => {
+test('empty cart CTA layout contract evaluates the parent-child centering model and known theme cascade', () => {
   const emptyCartTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/woocommerce/cart/cart-empty.php'), 'utf8');
   const cartRenderer = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/woocommerce/cart/cart.php'), 'utf8');
   const cartCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/cart.css'), 'utf8');
+  const mainCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
 
   assert.match(cartRenderer, /<div class="cr-cart-empty-state">\s*<\?php wc_get_template\( 'cart\/cart-empty\.php' \); \?>\s*<\/div>/);
   assert.match(emptyCartTemplate, /<p class="return-to-shop">\s*<a class="button wc-backward" href=/);
 
-  const actualCtaSelector = 'body.woocommerce-cart .cr-cart-empty-state > p.return-to-shop > a.button.wc-backward';
-  const actualParentSelector = 'body.woocommerce-cart .cr-cart-empty-state > p.return-to-shop';
-  assert.ok(cartCss.includes(actualParentSelector + ' {'), 'CSS targets the actual immediate paragraph parent');
-  assert.ok(cartCss.includes(actualCtaSelector + ' {'), 'CSS targets the actual template CTA anchor');
-  const ctaRule = cartCss.slice(cartCss.indexOf(actualCtaSelector + ' {'));
-  const ctaDeclarations = ctaRule.slice(0, ctaRule.indexOf('}'));
+  const parentSelector = 'body.woocommerce-cart .cr-cart-empty-state > p.return-to-shop';
+  const buttonSelector = parentSelector + ' > a.button.wc-backward';
+  const ruleBody = (source, selector) => {
+    const index = source.lastIndexOf(selector + ' {');
+    assert.notEqual(index, -1, 'selector exists: ' + selector);
+    const opening = source.indexOf('{', index);
+    const closing = source.indexOf('}', opening);
+    return source.slice(opening + 1, closing);
+  };
+  const parent = ruleBody(cartCss, parentSelector);
+  const button = ruleBody(cartCss, buttonSelector);
+
+  // Parent owns centering: full available width, not shrink-to-fit, flex row, centered child.
   for (const declaration of [
-    'display: flex !important',
-    'width: fit-content !important',
-    'margin-inline: auto !important',
-    'align-items: center !important',
-    'justify-content: center !important',
-    'text-align: center !important',
-    'padding: 8px 16px !important',
-  ]) {
-    assert.ok(ctaDeclarations.includes(declaration), declaration + ' is present in the matching actual CTA rule');
-  }
-  assert.doesNotMatch(ctaRule, /::(?:before|after)/, 'actual CTA selector does not introduce a pseudo-element');
+    'display: flex !important', 'flex-direction: row !important',
+    'flex-wrap: nowrap !important', 'width: 100% !important',
+    'max-width: none !important', 'justify-content: center !important',
+    'align-items: center !important', 'float: none !important',
+    'position: static !important', 'margin: 0 !important'
+  ]) assert.ok(parent.includes(declaration), 'parent layout model includes ' + declaration);
+
+  // Button remains compact and centers its text in the geometric box with symmetric vertical padding.
+  for (const declaration of [
+    'display: inline-flex !important', 'align-items: center !important',
+    'justify-content: center !important', 'width: auto !important',
+    'line-height: 1.2 !important', 'padding: 8px 16px !important',
+    'text-align: center !important', 'margin: 0 !important',
+    'float: none !important', 'position: static !important'
+  ]) assert.ok(button.includes(declaration), 'button geometry includes ' + declaration);
+  assert.match(button, /padding:\s*(8px|\d+(?:\.\d+)?px)\s+16px\s*!important/);
+  assert.match(button, /line-height:\s*1\.2\s*!important/);
+  assert.doesNotMatch(button, /padding-(?:top|bottom):\s*\d+(?:\.\d+)?px\s*!important/);
+
+  // Inspect the known theme sheets for competing declarations targeting this CTA or parent.
+  const knownThemeCss = cartCss + '\n' + mainCss;
+  assert.doesNotMatch(knownThemeCss, /(?:^|[,\s])(?:p\.return-to-shop|\.return-to-shop|a\.button\.wc-backward|\.cr-cart-empty-state\s+\.button)\s*\{[^}]*\b(?:display:\s*(?:block|inline-block)|float:\s*(?:left|right)|position:\s*absolute|width:\s*100%)\s*(?:!important)?/s,
+    'no known theme rule assigns a competing display/float/position/full-width model to the target');
+  assert.doesNotMatch(cartCss, /(?:cr-cart-empty-state|return-to-shop|wc-backward)[^{}]*::(?:before|after)/,
+    'theme cart stylesheet does not attach space-taking pseudo-elements to this empty CTA');
 });
