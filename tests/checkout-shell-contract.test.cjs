@@ -1004,7 +1004,8 @@ test('native radios, gateway values and payment rows remain intact and decoratio
   assert.match(checkoutPaymentJs, /rows\.forEach\(decoratePaymentMethod\)/);
   assert.doesNotMatch(checkoutPaymentJs, /createElement\('li'\)|methods\.appendChild|methods\.insertBefore|rows\.push/);
   assert.match(assets, /cr2026-checkout-payment[\s\S]*?assets\/js\/checkout-payment\.js/);
-  assert.doesNotMatch(checkoutPaymentJs + checkoutCss, /#place_order|place_order|checkout_place_order/);
+  // The native submit button is now styled in checkout.css; payment decoration JS must not create or mutate it.
+  assert.doesNotMatch(checkoutPaymentJs, /#place_order|place_order|checkout_place_order/);
 });
 
 
