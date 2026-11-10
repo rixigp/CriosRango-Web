@@ -20,6 +20,7 @@ on:
       - "tests/cart-promotions-contract.test.cjs"
       - "tests/account-information-icons.test.cjs"
       - "tests/account-help-contract.test.cjs"
+      - "tests/account-birthday-contract.test.php"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
 
@@ -409,6 +410,9 @@ jobs:
 
       - name: Run checkout Points & Rewards runtime contract test
         run: php tests/checkout-points-runtime.test.php
+
+      - name: Run WPLoyalty birthday contract test
+        run: php tests/account-birthday-contract.test.php
 
       - name: Validate theme structure
         shell: bash
