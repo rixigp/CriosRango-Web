@@ -52,3 +52,78 @@
   .cr-account-home__grid { gap: 18px; }
   .cr-account-home__tile { min-height: 170px; padding: 20px; }
 }
+
+/* Account app shell: reuse the canonical app canvas and shared mobile rail. */
+@media (max-width: 767px) {
+  body.woocommerce-account {
+    background: var(--cr-app-canvas);
+  }
+
+  body.woocommerce-account .cr-main {
+    width: 100%;
+    min-height: 60vh;
+    margin: 0;
+    padding: 0;
+    background: var(--cr-app-canvas);
+  }
+
+  body.woocommerce-account .cr-main > .cr-shell.cr-page-shell {
+    width: 100%;
+    max-width: none;
+    margin-inline: auto;
+    padding-block-start: 10px;
+    padding-block-end: calc(88px + env(safe-area-inset-bottom));
+    background: var(--cr-app-canvas);
+  }
+
+  body.woocommerce-account .cr-page,
+  body.woocommerce-account .cr-page .cr-prose {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    background: transparent;
+  }
+
+  body.woocommerce-account .woocommerce {
+    width: 100%;
+    margin: 0;
+  }
+
+  body.woocommerce-account .woocommerce-MyAccount-content {
+    float: none !important;
+    width: calc(100% - 40px) !important;
+    max-width: 720px;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  body.woocommerce-account:has(.cr-account-home) .woocommerce-MyAccount-content {
+    width: 100% !important;
+    max-width: none;
+    margin: 0 !important;
+  }
+
+  body.woocommerce-account .cr-account-home {
+    width: min(calc(100% - 40px), 720px);
+    margin-inline: auto;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  body.woocommerce-account .cr-account-home__tile {
+    min-height: 128px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  body.woocommerce-account .cr-account-home__tile-top {
+    margin-bottom: 8px;
+  }
+
+  body.woocommerce-account .cr-account-home__tile > strong {
+    margin-bottom: 4px;
+  }
+}
