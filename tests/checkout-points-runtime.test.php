@@ -1,15 +1,10 @@
 <?php
 declare(strict_types=1);
 
-final class WP_Hook {
-    public array $callbacks = array();
-}
-
 $GLOBALS['test_filters'] = array();
-$GLOBALS['test_actions'] = array();
 $GLOBALS['test_is_checkout'] = true;
-$GLOBALS['test_is_order_received'] = false;
 $GLOBALS['test_is_ajax'] = false;
+$GLOBALS['test_is_order_received'] = false;
 
 function add_filter( $tag, $callback, $priority = 10, $accepted_args = 1 ) {
     $GLOBALS['test_filters'][ $tag ][ $priority ][] = array(
@@ -22,7 +17,7 @@ function remove_filter( $tag, $callback, $priority = 10 ) {
     if ( empty( $GLOBALS['test_filters'][ $tag ][ $priority ] ) ) { return false; }
     foreach ( $GLOBALS['test_filters'][ $tag ][ $priority ] as $index => $entry ) {
         if ( $entry['callback'] === $callback ) {
-            unset( $GLOBALS['test_filters'][ $tag ][ $priority ][ $index] );
+            unset( $GLOBALS['test_filters'][ $tag ][ $priority ][ $index ] );
             return true;
         }
     }
@@ -39,17 +34,7 @@ function apply_filters( $tag, $value, ...$args ) {
     }
     return $value;
 }
-function add_action( $tag, $callback, $priority = 10, $accepted_args = 1 ) {
-    $GLOBALS['test_actions'][ $tag ][ $priority ][] = $callback;
-    return true;
-}
-function remove_action( $tag, $callback, $priority = 10 ) { return true; }
-function test_do_action( $tag, array $events ) {
-    ksort( $events );
-    foreach ( $events as $priority => $callback ) {
-        if ( $priority >= 1 ) { call_user_func( $callback ); }
-    }
-}
+function __return_false() { return false; }
 function is_checkout() { return $GLOBALS['test_is_checkout']; }
 function is_wc_endpoint_url( $endpoint ) { return 'order-received' === $endpoint && $GLOBALS['test_is_order_received']; }
 function wp_doing_ajax() { return $GLOBALS['test_is_ajax']; }
@@ -61,6 +46,19 @@ function esc_html__( $value ) { return $value; }
 function esc_html( $value ) { return $value; }
 function number_format_i18n( $value, $precision = 0 ) { return number_format( $value, $precision, '.', ',' ); }
 function wp_kses( $value, $allowed_html ) { return $value; }
+
+final class TestWployaltyDisplayMessage {
+    public function getCartMessage( $is_cart ) {
+        $GLOBALS['test_get_cart_message_argument'] = $is_cart;
+        $GLOBALS['test_wlr_message_result'] = apply_filters(
+            'wlr_points_rewards_earn_points_message',
+            'native WPLoyalty earn message',
+            array( '{wlr_cart_points}' => '15' )
+        );
+        return $GLOBALS['test_wlr_message_result'];
+    }
+}
+class_alias( TestWployaltyDisplayMessage::class, 'Wlr\\App\\Controllers\\Site\\DisplayMessage' );
 
 function test_assert( $condition, $message ) {
     if ( ! $condition ) { throw new RuntimeException( $message ); }
@@ -104,102 +102,71 @@ function test_extract_function( $source, $name ) {
 $source = file_get_contents( __DIR__ . '/../theme/crios-rango-2026/inc/woocommerce.php' );
 $function_names = array(
     'cr2026_checkout_is_benefits_request',
-    'cr2026_checkout_capture_earn_points_message',
-    'cr2026_checkout_suppress_redeem_points_message',
-    'cr2026_checkout_register_points_rewards_filters',
-    'cr2026_find_points_rewards_callback',
     'cr2026_checkout_benefits_points_earned',
     'cr2026_checkout_render_benefits_card',
+    'cr2026_checkout_benefits_order_review_fragment',
 );
-$functions = array();
 foreach ( $function_names as $function_name ) {
-    $functions[ $function_name ] = test_extract_function( $source, $function_name );
-    eval( $functions[ $function_name ] );
+    eval( test_extract_function( $source, $function_name ) );
 }
 
 test_assert(
-    false !== strpos( $source, "add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_register_points_rewards_filters', 1 );" ),
-    'Points & Rewards filters must be registered only from before_checkout_form at priority 1.'
+    1 === preg_match( "/add_filter\\(\\s*['\\\"]wlr_is_checkout_earn_message_enabled['\\\"]\\s*,\\s*'__return_false'/", $source ),
+    'WPLoyalty Checkout earn message must be disabled through its dedicated filter.'
 );
 test_assert(
-    1 !== preg_match( "/^add_filter\\\\(\\\\s*['\\\"]wc_points_rewards_(?:earn|redeem)_points_message/m", $source ),
-    'Points & Rewards filters must not be registered globally during bootstrap.'
+    1 === preg_match( "/add_filter\\(\\s*['\\\"]wlr_is_checkout_redeem_message_enabled['\\\"]\\s*,\\s*'__return_false'/", $source ),
+    'WPLoyalty Checkout redeem message must be disabled through its dedicated filter.'
 );
-test_assert(
-    false === strpos( $functions['cr2026_checkout_capture_earn_points_message'], 'cr2026_checkout_is_benefits_request' )
-    && false === strpos( $functions['cr2026_checkout_suppress_redeem_points_message'], 'cr2026_checkout_is_benefits_request' )
-    && false === strpos( $functions['cr2026_checkout_capture_earn_points_message'], 'is_checkout' )
-    && false === strpos( $functions['cr2026_checkout_suppress_redeem_points_message'], 'is_checkout' ),
-    'Suppression callbacks must not depend on is_checkout or request-context predicates.'
-);
+test_assert( false === strpos( $source, 'wc_points_rewards_earn_points_message' ), 'The wrong WooCommerce Points earn filter must be removed.' );
+test_assert( false === strpos( $source, 'wc_points_rewards_redeem_points_message' ), 'The wrong WooCommerce Points redeem filter must be removed.' );
+test_assert( false === strpos( $source, 'cr2026_find_points_rewards_callback' ), 'The old WP_Hook resolver must be removed.' );
+test_assert( false === strpos( $source, 'render_earn_points_message' ) && false === strpos( $source, 'render_redeem_points_message' ), 'The wrong renderer method names must be removed.' );
 
-// Model the actual hook order: our registration at 1, plugin earn at 5,
-// plugin redeem at 6, and the theme benefits card at 20.
-add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_register_points_rewards_filters', 1 );
-$registered_checkout_callbacks = $GLOBALS['test_actions']['woocommerce_before_checkout_form'][1] ?? array();
-test_assert( in_array( 'cr2026_checkout_register_points_rewards_filters', $registered_checkout_callbacks, true ), 'Filter registrar must be attached at checkout hook priority 1.' );
-test_assert( empty( $GLOBALS['test_filters']['wc_points_rewards_earn_points_message'] ), 'Cart/bootstrap must not have the earn filter installed.' );
-test_assert( empty( $GLOBALS['test_filters']['wc_points_rewards_redeem_points_message'] ), 'Cart/bootstrap must not have the redeem filter installed.' );
+$feature_start = strpos( $source, '// WPLoyalty exposes Checkout-only switches' );
+$feature_end = strpos( $source, '/**\n * Resolve a real free-shipping method', $feature_start );
+$feature_source = substr( $source, $feature_start, $feature_end - $feature_start );
+test_assert( false === strpos( $feature_source, 'strip_tags' ) && false === strpos( $feature_source, 'preg_match' ), 'WPLoyalty message HTML must not be parsed.' );
+test_assert( false === strpos( $feature_source, 'get_points_earned_for_purchase' ), 'The theme must not duplicate WPLoyalty point calculation.' );
+test_assert( false !== strpos( $feature_source, "class_exists( '\\\\Wlr\\\\App\\\\Controllers\\\\Site\\\\DisplayMessage' )" ), 'The public DisplayMessage class must be checked.' );
+test_assert( false !== strpos( $feature_source, "new \\\\Wlr\\\\App\\\\Controllers\\\\Site\\\\DisplayMessage()" ), 'The public DisplayMessage class must be instantiated.' );
+test_assert( false !== strpos( $feature_source, '$display_message->getCartMessage( false )' ), 'The helper must call getCartMessage(false).' );
+test_assert( false !== strpos( $feature_source, "'{wlr_cart_points}'" ), 'The points value must come from the WPLoyalty shortcode key.' );
 
-$hook_events = array(
-    1 => function () use ( $registered_checkout_callbacks ) { call_user_func( $registered_checkout_callbacks[0] ); },
-    5 => function () {
-        $GLOBALS['test_earn_output'] = apply_filters( 'wc_points_rewards_earn_points_message', 'Complete your order and earn 15...', 15 );
-    },
-    6 => function () {
-        $GLOBALS['test_redeem_output'] = apply_filters( 'wc_points_rewards_redeem_points_message', 'You have ... point earned...', 4 );
-    },
-    20 => function () {
-        ob_start();
-        cr2026_checkout_render_benefits_card();
-        $GLOBALS['test_benefits_markup'] = ob_get_clean();
-    },
-);
-test_do_action( 'woocommerce_before_checkout_form', $hook_events );
+// Execute the exact Checkout-only enable switches.
+add_filter( 'wlr_is_checkout_earn_message_enabled', '__return_false' );
+add_filter( 'wlr_is_checkout_redeem_message_enabled', '__return_false' );
+test_assert( false === apply_filters( 'wlr_is_checkout_earn_message_enabled', true ), 'WPLoyalty Checkout earn messages must be disabled.' );
+test_assert( false === apply_filters( 'wlr_is_checkout_redeem_message_enabled', true ), 'WPLoyalty Checkout redeem messages must be disabled.' );
 
-test_assert( '' === $GLOBALS['test_earn_output'], 'Earn renderer output must be suppressed at plugin priority 5.' );
-test_assert( '' === $GLOBALS['test_redeem_output'], 'Redeem renderer output must be suppressed at plugin priority 6.' );
-test_assert( 15.0 === $GLOBALS['cr2026_checkout_points_earned'], 'Earn filter must capture 15 before the card renderer.' );
-test_assert(
-    false !== strpos( $GLOBALS['test_benefits_markup'], 'Sumarás <span class="cr-checkout-benefits__value">15</span> puntos con esta compra' ),
-    'Priority-20 benefits card must render the 15 points captured at priority 5.'
-);
-test_assert(
-    false === strpos( $GLOBALS['test_benefits_markup'], 'Complete your order' )
-    && false === strpos( $GLOBALS['test_benefits_markup'], 'You have' ),
-    'Legacy earn/redeem copy must not appear in the benefits card markup.'
-);
+// Normal Checkout: use WPLoyalty's own public calculator and capture its shortcode value.
+add_filter( 'wlr_points_rewards_earn_points_message', static function( $message, $short_code_list ) {
+    $GLOBALS['test_captured_points'] = $short_code_list['{wlr_cart_points}'] ?? null;
+    return '';
+}, PHP_INT_MAX, 2 );
+$normal_points = cr2026_checkout_benefits_points_earned();
+test_assert( 15.0 === $normal_points, 'The normal request must capture {wlr_cart_points}=15.' );
+test_assert( false === $GLOBALS['test_get_cart_message_argument'], 'getCartMessage must be called with false.' );
+test_assert( '' === $GLOBALS['test_wlr_message_result'], 'The temporary earn message filter must suppress the native return.' );
+test_assert( 15.0 === $GLOBALS['cr2026_checkout_points_earned'], 'Captured points must be stored only in this request.' );
 
-// A Cart request never runs before_checkout_form, so neither public filter exists.
-$GLOBALS['test_filters'] = array();
-$GLOBALS['test_is_checkout'] = false;
-test_assert( 'cart earn' === apply_filters( 'wc_points_rewards_earn_points_message', 'cart earn', 15 ), 'Cart earn message must remain unchanged.' );
-test_assert( 'cart redeem' === apply_filters( 'wc_points_rewards_redeem_points_message', 'cart redeem', 4 ), 'Cart redeem message must remain unchanged.' );
+// The temporary capture callback must be removed after the public method returns.
+test_assert( empty( $GLOBALS['test_filters']['wlr_points_rewards_earn_points_message'][PHP_INT_MAX] ), 'The temporary WPLoyalty capture filter must be removed.' );
 
-// AJAX continues to resolve the actual callable by method name, without a class filter.
-$renderer = new class {
-    public function render_earn_points_message() {
-        echo 'discard this renderer output';
-        apply_filters( 'wc_points_rewards_earn_points_message', 'legacy earn', 15 );
-    }
-};
-$GLOBALS['wp_filter']['woocommerce_before_checkout_form'] = new WP_Hook();
-$GLOBALS['wp_filter']['woocommerce_before_checkout_form']->callbacks = array(
-    5 => array(
-        'synthetic-earn' => array( 'function' => array( $renderer, 'render_earn_points_message' ) ),
-    ),
-);
-$resolved = cr2026_find_points_rewards_callback( 'render_earn_points_message' );
-test_assert( is_array( $resolved ) && $resolved[0] === $renderer && 'render_earn_points_message' === $resolved[1], 'Resolver must find the exact registered method on an arbitrary object.' );
-test_assert( 5 === $GLOBALS['cr2026_checkout_real_earn_callback_priority'], 'Resolver must retain the real priority.' );
+// The real benefits renderer calls the same helper and prints the captured live value.
+ob_start();
+cr2026_checkout_render_benefits_card();
+$markup = ob_get_clean();
+test_assert( false !== strpos( $markup, 'Sumarás <span class="cr-checkout-benefits__value">15</span> puntos con esta compra' ), 'The card must render the live 15 points.' );
+test_assert( false === strpos( $markup, 'native WPLoyalty earn message' ), 'The native message must not be rendered by the theme card.' );
 
+// AJAX request: no before_checkout_form hook is needed; fragment rendering resolves points directly.
 $GLOBALS['test_is_checkout'] = false;
 $GLOBALS['test_is_ajax'] = true;
 $_REQUEST = array( 'wc-ajax' => 'update_order_review' );
-$level = ob_get_level();
-$earned = cr2026_checkout_benefits_points_earned( true );
-test_assert( 15.0 === $earned, 'AJAX renderer invocation must capture 15 from the temporary public filter.' );
-test_assert( $level === ob_get_level(), 'AJAX renderer output buffer must be closed.' );
-test_assert( empty( $GLOBALS['test_filters']['wc_points_rewards_earn_points_message'][PHP_INT_MAX] ), 'Temporary AJAX capture filter must be removed after invocation.' );
+$ajax_fragments = cr2026_checkout_benefits_order_review_fragment( array() );
+test_assert( isset( $ajax_fragments['.cr-checkout-benefits'] ), 'The AJAX response must regenerate the benefits fragment.' );
+test_assert( false !== strpos( $ajax_fragments['.cr-checkout-benefits'], 'Sumarás <span class="cr-checkout-benefits__value">15</span> puntos con esta compra' ), 'The AJAX benefits fragment must capture the current 15 points.' );
+test_assert( empty( $GLOBALS['test_filters']['wlr_points_rewards_earn_points_message'][PHP_INT_MAX] ), 'The AJAX temporary WPLoyalty filter must be removed.' );
 
-echo "PASS: checkout-scoped priority ordering, Cart isolation, and AJAX points capture\\n";
+echo "PASS: WPLoyalty Checkout suppression, public points capture, and AJAX card refresh\\n";
