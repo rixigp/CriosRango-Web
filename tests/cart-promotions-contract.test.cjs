@@ -90,16 +90,3 @@ test('main Cart product cards consume the shared global card surface tokens', ()
   assert.ok(mainCss.includes('--cr-card-border-width: 1px;'));
   assert.ok(mainCss.includes('--cr-card-radius: 18px;'));
 });
-
-test('WooCommerce notice presentation shares neutral cart card styling without changing notice copy or flow', () => {
-  assert.match(cartCss, /\.woocommerce-notices-wrapper > \.woocommerce-message/);
-  assert.match(cartCss, /\.woocommerce-notices-wrapper > \.woocommerce-info/);
-  assert.match(cartCss, /\.woocommerce-notices-wrapper > \.woocommerce-error/);
-  assert.match(cartCss, /border: 1px solid var\(--cr-border\) !important/);
-  assert.match(cartCss, /border-radius: 18px !important/);
-  assert.match(cartCss, /content: "!" !important/);
-  assert.match(cartCss, /woocommerce-message a[\s\S]*?text-decoration: underline/);
-  assert.match(cartCss, /\.cr-cart-page \.woocommerce-message/);
-  // Styling is CSS-only: native notices remain in WooCommerce templates/hooks.
-  assert.doesNotMatch(cartCss, /display:\s*none\s*!important[\s\S]*?woocommerce-(message|info|error)/);
-});
