@@ -661,3 +661,57 @@
    top: 36px; right: 12px;
  }
 }
+
+
+/* Birthday is owned by WPLoyalty; display-name remains in the native Woo form but is visually clipped, not removed. */
+@media (max-width: 767px) {
+  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_display_name) {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date {
+    position: relative;
+    float: none;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 0 16px;
+    padding: 0;
+  }
+  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date label {
+    display: block;
+    margin: 0 0 6px;
+    color: #183b35;
+    font: 300 12px/17px "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date input[type="date"] {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 50px;
+    border: 1.5px solid #183b35;
+    border-radius: 12px;
+    background: #fff;
+    color: #20241f;
+    padding: 12px 14px;
+    box-shadow: none;
+    font: 300 15px/1.35 "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date input[readonly] {
+    background: #f5f6f4;
+    color: #66716a;
+  }
+  .cr-account-birth-date__status {
+    display: block;
+    margin-top: 5px;
+    color: #66716a;
+    font: 300 11px/16px "Roboto", Arial, sans-serif;
+  }
+}
