@@ -561,9 +561,7 @@
    border: 1.5px solid #183b35; border-radius: 12px; background: #fff; color: #20241f;
    padding: 12px 14px; box-shadow: none; font: 300 15px/1.35 "Roboto", Arial, sans-serif;
  }
- body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_display_name) {
-   display: none !important;
- }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_display_name) { display: block; }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm fieldset { display: none !important; }
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_first_name),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_last_name),
