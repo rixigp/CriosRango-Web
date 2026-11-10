@@ -1062,7 +1062,9 @@ const checkoutSuccessJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-s
 
 test('offline checkout success payload is emitted only after successful gateway result and uses Woo order number', () => {
   assert.match(checkoutSuccessPhp, /add_filter\( 'woocommerce_payment_successful_result', 'cr2026_checkout_offline_success_modal_result', 9999, 2 \)/);
-  assert.match(checkoutSuccessPhp, /'checkout' !== sanitize_key\( wp_unslash\( \$_GET\['wc-ajax'\] \)\)/);
+  assert.match(checkoutSuccessPhp, /sanitize_key\( wp_unslash\( \$_GET\['wc-ajax'\] \) \)/);
+  assert.match(checkoutSuccessPhp, /'checkout' !== sanitize_key/);
+  assert.match(checkoutSuccessPhp, /! isset\( \$_GET\['wc-ajax'\] \)/);
   assert.match(checkoutSuccessPhp, /'success' !== \$result\['result'\]/);
   assert.match(checkoutSuccessPhp, /\$order->get_payment_method\(\)/);
   assert.match(checkoutSuccessPhp, /in_array\( \$gateway, array\( 'cheque', 'cod' \), true \)/);
