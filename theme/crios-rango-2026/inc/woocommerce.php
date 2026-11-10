@@ -1136,16 +1136,17 @@ add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_remove_legacy_b
 
 /** True only for the normal Checkout page or its order-review AJAX request. */
 function cr2026_checkout_is_benefits_request() {
-    if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax()
-        && isset( $_REQUEST['wc-ajax'] ) && 'update_order_review' === sanitize_text_field( wp_unslash( $_REQUEST['wc-ajax'] ) ) ) {
+    if ( function_exists( 'is_checkout' ) && is_checkout()
+        && ( ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'order-received' ) ) ) {
         return true;
     }
 
-    return function_exists( 'is_checkout' ) && is_checkout()
-        && ( ! function_exists( 'is_order_received_page' ) || ! is_order_received_page() );
+    return function_exists( 'wp_doing_ajax' ) && wp_doing_ajax()
+        && isset( $_REQUEST['wc-ajax'] )
+        && 'update_order_review' === sanitize_text_field( wp_unslash( $_REQUEST['wc-ajax'] ) );
 }
 
-/** Capture the actual points argument and suppress only the Checkout earn notice. */
+/** Capture the plugin's real earned-points argument and suppress its Checkout notice. */
 function cr2026_checkout_capture_earn_points_message( $message, $points_earned ) {
     if ( ! cr2026_checkout_is_benefits_request() ) {
         return $message;
@@ -1157,13 +1158,13 @@ function cr2026_checkout_capture_earn_points_message( $message, $points_earned )
 
     return '';
 }
-add_filter( 'wc_points_rewards_earn_points_message', 'cr2026_checkout_capture_earn_points_message', PHP_INT_MAX, 2 );
+add_filter( 'wc_points_rewards_earn_points_message', 'cr2026_checkout_capture_earn_points_message', 9999, 2 );
 
 /** Suppress only the Checkout redeem notice; Cart keeps the plugin's message. */
-function cr2026_checkout_suppress_redeem_points_message( $message ) {
+function cr2026_checkout_suppress_redeem_points_message( $message, $points_redeemed = null ) {
     return cr2026_checkout_is_benefits_request() ? '' : $message;
 }
-add_filter( 'wc_points_rewards_redeem_points_message', 'cr2026_checkout_suppress_redeem_points_message', PHP_INT_MAX, 1 );
+add_filter( 'wc_points_rewards_redeem_points_message', 'cr2026_checkout_suppress_redeem_points_message', 9999, 2 );
 
 /**
  * Resolve a real free-shipping method for the currently matching shipping
@@ -1259,32 +1260,33 @@ function cr2026_checkout_benefits_shipping_data() {
 }
 
 /**
- * Resolve the actual earn-notice renderer registered by Points & Rewards.
- * The hook registry is the source of truth; never assume a plugin global.
+ * Find a registered Points & Rewards renderer by its exact method name.
+ * The WP_Hook registry is authoritative; the object's class is irrelevant.
  */
-function cr2026_checkout_points_real_earn_callback() {
+function cr2026_find_points_rewards_callback( $method_name ) {
     global $wp_filter;
+
+    $GLOBALS['cr2026_checkout_real_earn_callback_class'] = null;
+    $GLOBALS['cr2026_checkout_real_earn_callback_priority'] = null;
 
     if ( ! isset( $wp_filter['woocommerce_before_checkout_form'] )
         || ! ( $wp_filter['woocommerce_before_checkout_form'] instanceof WP_Hook ) ) {
         return null;
     }
 
-    foreach ( $wp_filter['woocommerce_before_checkout_form']->callbacks as $callbacks ) {
+    foreach ( $wp_filter['woocommerce_before_checkout_form']->callbacks as $priority => $callbacks ) {
         foreach ( $callbacks as $registered ) {
             if ( empty( $registered['function'] ) || ! is_array( $registered['function'] )
-                || ! isset( $registered['function'][0], $registered['function'][1] )
-                || 'render_earn_points_message' !== $registered['function'][1]
-                || ! is_object( $registered['function'][0] ) ) {
+                || 2 !== count( $registered['function'] )
+                || ! is_object( $registered['function'][0] )
+                || $method_name !== $registered['function'][1]
+                || ! is_callable( $registered['function'] ) ) {
                 continue;
             }
 
-            $renderer = $registered['function'][0];
-            $class    = get_class( $renderer );
-            if ( false !== stripos( $class, 'Points_Rewards' )
-                && is_callable( array( $renderer, 'render_earn_points_message' ) ) ) {
-                return array( $renderer, 'render_earn_points_message' );
-            }
+            $GLOBALS['cr2026_checkout_real_earn_callback_class'] = get_class( $registered['function'][0] );
+            $GLOBALS['cr2026_checkout_real_earn_callback_priority'] = (int) $priority;
+            return $registered['function'];
         }
     }
 
@@ -1294,7 +1296,7 @@ function cr2026_checkout_points_real_earn_callback() {
 /** Read points captured by the native plugin renderer in this request. */
 function cr2026_checkout_benefits_points_earned( $refresh_from_real_callback = false ) {
     if ( $refresh_from_real_callback ) {
-        $callback = cr2026_checkout_points_real_earn_callback();
+        $callback = cr2026_find_points_rewards_callback( 'render_earn_points_message' );
         if ( null === $callback ) {
             $GLOBALS['cr2026_checkout_points_earned'] = null;
             return null;
