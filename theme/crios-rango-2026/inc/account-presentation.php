@@ -305,6 +305,8 @@ function cr2026_account_is_mobile_personal_post() {
 /** Add the WPLoyalty-owned birthday value inside WooCommerce's native account form. */
 function cr2026_account_render_birth_date_field() {
     if ( ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
+        || ! function_exists( 'is_account_page' ) || ! is_account_page()
+        || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'edit-account' )
         || 'personal' !== cr2026_account_profile_view() || ! is_user_logged_in() ) {
         return;
     }
@@ -325,7 +327,7 @@ function cr2026_account_render_birth_date_field() {
     </p>
     <?php
 }
-add_action( 'woocommerce_edit_account_form', 'cr2026_account_render_birth_date_field', 20 );
+add_action( 'woocommerce_edit_account_form', 'cr2026_account_render_birth_date_field', 1 );
 
 /** Validate the theme nonce, WPLoyalty policy and strict calendar date before WooCommerce saves. */
 function cr2026_account_validate_birth_date( $errors, $user ) {
