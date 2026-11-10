@@ -81,6 +81,17 @@ function cr2026_enqueue_assets() {
         );
     }
 
+    if ( function_exists( 'is_account_page' ) && is_account_page()
+        && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'orders' ) ) {
+        wp_enqueue_script(
+            'cr2026-account-orders',
+            CR2026_URI . '/assets/js/account-orders.js',
+            array(),
+            cr2026_asset_version( 'assets/js/account-orders.js' ),
+            true
+        );
+    }
+
     if ( $uses_checkout_shell ) {
         wp_enqueue_style(
             'cr2026-checkout',
