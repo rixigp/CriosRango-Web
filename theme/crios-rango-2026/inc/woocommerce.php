@@ -980,6 +980,18 @@ function cr2026_checkout_order_button_text( $button_text ) {
 add_filter( 'woocommerce_order_button_text', 'cr2026_checkout_order_button_text', 9999 );
 
 /**
+ * Keep store-payment (COD) orders awaiting collection/payment.
+ * This leaves other gateways and WooCommerce's native order processing untouched.
+ */
+function cr2026_cod_initial_order_status( $order_status, $order ) {
+    if ( $order instanceof WC_Order && 'cod' === $order->get_payment_method() ) {
+        return 'on-hold';
+    }
+    return $order_status;
+}
+add_filter( 'woocommerce_cod_process_payment_order_status', 'cr2026_cod_initial_order_status', 10, 2 );
+
+/**
  * Attach a minimal, checkout-only presentation payload after WooCommerce has
  * accepted the payment gateway's successful result. Order creation and every
  * native transactional hook remain owned by WooCommerce and the gateway.
