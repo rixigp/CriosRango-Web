@@ -1146,25 +1146,26 @@ function cr2026_checkout_is_benefits_request() {
         && 'update_order_review' === sanitize_text_field( wp_unslash( $_REQUEST['wc-ajax'] ) );
 }
 
-/** Capture the plugin's real earned-points argument and suppress its Checkout notice. */
+/** Capture earned points and suppress the native message whenever this filter is installed. */
 function cr2026_checkout_capture_earn_points_message( $message, $points_earned ) {
-    if ( ! cr2026_checkout_is_benefits_request() ) {
-        return $message;
-    }
-
     $GLOBALS['cr2026_checkout_points_earned'] = is_numeric( $points_earned ) && (float) $points_earned >= 0
         ? (float) $points_earned
         : null;
 
     return '';
 }
-add_filter( 'wc_points_rewards_earn_points_message', 'cr2026_checkout_capture_earn_points_message', 9999, 2 );
 
-/** Suppress only the Checkout redeem notice; Cart keeps the plugin's message. */
+/** Suppress the native redeem notice whenever this Checkout-scoped filter is installed. */
 function cr2026_checkout_suppress_redeem_points_message( $message, $points_redeemed = null ) {
-    return cr2026_checkout_is_benefits_request() ? '' : $message;
+    return '';
 }
-add_filter( 'wc_points_rewards_redeem_points_message', 'cr2026_checkout_suppress_redeem_points_message', 9999, 2 );
+
+/** Install both public Points & Rewards filters only while rendering Checkout. */
+function cr2026_checkout_register_points_rewards_filters() {
+    add_filter( 'wc_points_rewards_earn_points_message', 'cr2026_checkout_capture_earn_points_message', 9999, 2 );
+    add_filter( 'wc_points_rewards_redeem_points_message', 'cr2026_checkout_suppress_redeem_points_message', 9999, 2 );
+}
+add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_register_points_rewards_filters', 1 );
 
 /**
  * Resolve a real free-shipping method for the currently matching shipping
