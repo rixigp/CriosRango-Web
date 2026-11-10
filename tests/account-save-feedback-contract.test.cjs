@@ -31,10 +31,16 @@ test('ADDRESS_SUCCESS_RETURNS_TO_THE_SHIPPING_EDITOR', () => {
   assert.match(php, /'shipping' !== \$load_address/);
 });
 
-test('LEGACY_SUCCESS_IS_SUPPRESSED_ONLY_ON_MOBILE_ACCOUNT_SAVE_ENDPOINTS', () => {
+test('LEGACY_ADDRESS_SUCCESS_IS_SUPPRESSED_ONLY_ON_MOBILE_SHIPPING_SAVE', () => {
   assert.match(php, /add_filter\(\s*'woocommerce_add_success',\s*'cr2026_account_filter_legacy_save_success'/);
-  assert.match(php, /function cr2026_account_filter_legacy_save_success\(\s*\$message\s*\)[\s\S]*?return cr2026_account_mobile_save_context\(\) \? '' : \$message;/);
-  assert.doesNotMatch(php.slice(php.indexOf('function cr2026_account_filter_legacy_save_success')), /woocommerce_add_error/);
+  const start = php.indexOf('function cr2026_account_filter_legacy_save_success');
+  const end = php.indexOf("\\nadd_filter( 'woocommerce_add_success'", start);
+  const filter = php.slice(start, end);
+  assert.match(filter, /cr2026_account_mobile_save_context\( 'edit-address' \)/);
+  assert.match(filter, /isset\( \$_POST\['save_address'\] \)/);
+  assert.match(filter, /Address changed successfully\\./);
+  assert.match(filter, /return \$message;/);
+  assert.doesNotMatch(filter, /woocommerce_add_error/);
 });
 
 test('LOADING_BLOCKS_DOUBLE_SUBMIT_AND_PRESERVES_NATIVE_SUBMITTER', () => {
