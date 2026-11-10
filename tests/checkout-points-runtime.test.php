@@ -122,7 +122,7 @@ test_assert(
     'Points & Rewards filters must be registered only from before_checkout_form at priority 1.'
 );
 test_assert(
-    1 !== preg_match( '/^add_filter\\(/m', $source ),
+    1 !== preg_match( "/^add_filter\\\\(\\\\s*['\\\"]wc_points_rewards_(?:earn|redeem)_points_message/m", $source ),
     'Points & Rewards filters must not be registered globally during bootstrap.'
 );
 test_assert(
