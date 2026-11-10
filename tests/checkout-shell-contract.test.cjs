@@ -560,7 +560,7 @@ test('Checkout benefits card reads live free-shipping zone configuration and ser
   assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_earn_points_message',\s*'cr2026_checkout_capture_earn_points_message',\s*9999,\s*2\s*\)/);
   assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_redeem_points_message',\s*'cr2026_checkout_suppress_redeem_points_message',\s*9999,\s*2\s*\)/);
   assert.match(woocommercePhp, /\$GLOBALS\['cr2026_checkout_points_earned'\]/);
-  assert.match(woocommercePhp, /cr2026_checkout_points_real_earn_callback/);
+  assert.match(woocommercePhp, /cr2026_find_points_rewards_callback/);
   assert.match(woocommercePhp, /woocommerce_update_order_review_fragments/);
   assert.match(woocommercePhp, /\.cr-checkout-benefits/);
   assert.match(checkoutCss, /\.cr-checkout-benefits__row/);
