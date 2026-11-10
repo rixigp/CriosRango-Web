@@ -1178,7 +1178,7 @@ function cr2026_checkout_benefits_points_earned() {
 
     try {
         ob_start();
-        $display_message = new \\Wlr\\App\\Controllers\\Site\\DisplayMessage();
+        $display_message = new \Wlr\App\Controllers\Site\DisplayMessage();
         $display_message->getCartMessage( false );
     } catch ( Throwable $error ) {
         $points_earned = null;
