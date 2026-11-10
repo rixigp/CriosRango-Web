@@ -755,3 +755,169 @@
     display: none !important;
   }
 }
+
+/*
+ * Canonical Account form-field contract.
+ * Shared by Personal Data, Shipping Address and Change Password.
+ * WooCommerce markup, names, IDs, validation and submission remain native.
+ */
+@media (max-width: 767px) {
+  body.woocommerce-account :is(
+    .woocommerce-EditAccountForm .form-row,
+    .woocommerce-address-fields .form-row
+  ) {
+    position: relative;
+    box-sizing: border-box;
+    padding-top: 5px;
+    margin-bottom: 18px;
+  }
+
+  body.woocommerce-account :is(
+    .woocommerce-EditAccountForm .form-row > label:not(.woocommerce-form__label-for-checkbox),
+    .woocommerce-address-fields .form-row > label:not(.woocommerce-form__label-for-checkbox)
+  ) {
+    position: absolute;
+    z-index: 2;
+    top: -3px;
+    left: 11px;
+    display: inline-block;
+    width: auto;
+    max-width: calc(100% - 24px);
+    margin: 0;
+    padding: 0 5px;
+    overflow: hidden;
+    background: var(--cr-app-canvas);
+    color: #777b77;
+    font: 300 11px/16px "Roboto", Arial, sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  body.woocommerce-account :is(
+    .woocommerce-EditAccountForm .form-row input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+    .woocommerce-EditAccountForm .form-row select,
+    .woocommerce-EditAccountForm .form-row textarea,
+    .woocommerce-address-fields .form-row input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+    .woocommerce-address-fields .form-row select,
+    .woocommerce-address-fields .form-row textarea,
+    .woocommerce-address-fields .form-row .select2-selection--single
+  ) {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    margin: 0;
+    padding: 12px 13px 9px;
+    border: 1px solid #d8d9d5;
+    border-radius: 9px;
+    outline: 0;
+    background-color: var(--cr-app-canvas);
+    color: var(--cr-ink);
+    box-shadow: none;
+    font: 400 14px/20px "Roboto", Arial, sans-serif;
+  }
+
+  body.woocommerce-account :is(
+    .woocommerce-EditAccountForm .form-row input:focus,
+    .woocommerce-EditAccountForm .form-row select:focus,
+    .woocommerce-EditAccountForm .form-row textarea:focus,
+    .woocommerce-address-fields .form-row input:focus,
+    .woocommerce-address-fields .form-row select:focus,
+    .woocommerce-address-fields .form-row textarea:focus,
+    .woocommerce-address-fields .form-row .select2-selection--single:focus
+  ) {
+    border-color: #aeb2ad;
+    outline: none;
+    box-shadow: none;
+  }
+
+  body.woocommerce-account :is(
+    .woocommerce-EditAccountForm .form-row textarea,
+    .woocommerce-address-fields .form-row textarea
+  ) {
+    min-height: 76px;
+    padding-top: 13px;
+    resize: vertical;
+  }
+
+  body.woocommerce-account .woocommerce-address-fields .form-row .select2-container {
+    display: block;
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection--single {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding: 0;
+  }
+
+  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection__rendered {
+    min-width: 0;
+    padding: 0 36px 0 13px;
+    color: var(--cr-ink);
+    font: 400 14px/20px "Roboto", Arial, sans-serif;
+  }
+
+  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection__arrow {
+    top: 0;
+    right: 8px;
+    height: 48px;
+  }
+
+  body.woocommerce-account .woocommerce-EditAccountForm .form-row .show-password-input {
+    top: 17px;
+    right: 12px;
+    margin: 0;
+    padding: 0;
+    transform: none;
+  }
+
+  body.woocommerce-account .woocommerce-EditAccountForm .form-row input[type="password"] {
+    padding-right: 46px;
+  }
+
+  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date {
+    padding-top: 5px;
+  }
+
+  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date > label {
+    top: -3px;
+    left: 11px;
+    margin: 0;
+    padding: 0 5px;
+    background: var(--cr-app-canvas);
+    color: #777b77;
+    font: 300 11px/16px "Roboto", Arial, sans-serif;
+  }
+
+  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date input[type="date"] {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 48px;
+    margin: 0;
+    padding: 12px 13px 9px;
+    border: 1px solid #d8d9d5;
+    border-radius: 9px;
+    background: var(--cr-app-canvas);
+    color: var(--cr-ink);
+    box-shadow: none;
+    font: 400 14px/20px "Roboto", Arial, sans-serif;
+  }
+
+  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date input[type="date"]:focus {
+    border-color: #aeb2ad;
+    outline: none;
+    box-shadow: none;
+  }
+
+  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date input[readonly] {
+    background: var(--cr-app-canvas);
+    color: var(--cr-ink);
+    opacity: 1;
+  }
+}
+
