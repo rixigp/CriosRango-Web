@@ -47,6 +47,7 @@ namespace {
     function wp_is_mobile() { return true; }
     function wp_verify_nonce( $nonce, $action ) { return $GLOBALS['test_nonce_valid'] && 'theme-nonce' === $nonce && 'cr2026_update_birth_date' === $action; }
     function sanitize_text_field( $value ) { return trim( (string) $value ); }
+    function sanitize_key( $value ) { return preg_replace( '/[^a-z0-9_\\-]/', '', strtolower( (string) $value ) ); }
     function wp_unslash( $value ) { return $value; }
     function wp_date( $format ) { return '2026-11-10'; }
     function apply_filters( $hook, $value, ...$args ) {
