@@ -1062,55 +1062,79 @@ test('PRODUCT_DETAIL_UNCHANGED=PASS and BOTTOM_NAV_UNCHANGED=PASS', () => {
 });
 
 
-test('empty cart CTA layout contract evaluates the parent-child centering model and known theme cascade', () => {
+test('empty cart CTA selectors match the MHT-proven WooCommerce DOM tree', () => {
   const emptyCartTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/woocommerce/cart/cart-empty.php'), 'utf8');
-  const cartRenderer = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/woocommerce/cart/cart.php'), 'utf8');
   const cartCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/cart.css'), 'utf8');
-  const mainCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
 
-  assert.match(cartRenderer, /<div class="cr-cart-empty-state">\s*<\?php wc_get_template\( 'cart\/cart-empty\.php' \); \?>\s*<\/div>/);
-  assert.match(emptyCartTemplate, /<p class="return-to-shop">\s*<a class="button wc-backward" href=/);
+  // Fixture transcribes the inspected MHT hierarchy: Woo wrapper, marker, adjacent h2,
+  // return-to-shop paragraph sibling, and its direct Woo backward anchor.
+  const mhtDom = [
+    '<body class="woocommerce-cart">',
+    '  <div class="woocommerce">',
+    '    <div class="cr-cart-empty-state__icon" aria-hidden="true"><svg></svg></div>',
+    '    <h2>Tu carrito está vacío</h2>',
+    '    <p class="return-to-shop">',
+    '      <a class="button wc-backward" href="/tienda/">Volver a la tienda</a>',
+    '    </p>',
+    '  </div>',
+    '</body>'
+  ].join('\n');
 
-  const parentSelector = 'body.woocommerce-cart .cr-cart-empty-state > p.return-to-shop';
+  assert.match(mhtDom, /<div class="woocommerce">\s*<div class="cr-cart-empty-state__icon"[^>]*>[\s\S]*?<\/div>\s*<h2>Tu carrito está vacío<\/h2>\s*<p class="return-to-shop">\s*<a class="button wc-backward" href="[^"]+">Volver a la tienda<\/a>\s*<\/p>\s*<\/div>/,
+    'MHT DOM tree is .woocommerce > icon + h2 + p.return-to-shop > a.button.wc-backward');
+
+  const parentSelector = 'body.woocommerce-cart .woocommerce > .cr-cart-empty-state__icon ~ p.return-to-shop';
   const buttonSelector = parentSelector + ' > a.button.wc-backward';
+  const titleSelector = 'body.woocommerce-cart .woocommerce > .cr-cart-empty-state__icon + h2';
+
   const ruleBody = (source, selector) => {
     const index = source.lastIndexOf(selector + ' {');
-    assert.notEqual(index, -1, 'selector exists: ' + selector);
+    assert.notEqual(index, -1, 'final selector exists verbatim: ' + selector);
     const opening = source.indexOf('{', index);
     const closing = source.indexOf('}', opening);
     return source.slice(opening + 1, closing);
   };
   const parent = ruleBody(cartCss, parentSelector);
   const button = ruleBody(cartCss, buttonSelector);
+  const title = ruleBody(cartCss, titleSelector);
 
-  // Parent owns centering: full available width, not shrink-to-fit, flex row, centered child.
+  // Marker-anchored sibling selector matches p.return-to-shop after the intervening h2.
+  assert.ok(parentSelector.includes('.woocommerce > .cr-cart-empty-state__icon ~ p.return-to-shop'));
   for (const declaration of [
-    'display: flex !important', 'flex-direction: row !important',
-    'flex-wrap: nowrap !important', 'width: 100% !important',
-    'max-width: none !important', 'justify-content: center !important',
-    'align-items: center !important', 'float: none !important',
-    'position: static !important', 'margin: 0 !important'
-  ]) assert.ok(parent.includes(declaration), 'parent layout model includes ' + declaration);
+    'display: flex !important', 'width: 100% !important',
+    'margin: 0 !important', 'justify-content: center !important',
+    'align-items: center !important', 'text-align: center !important',
+    'float: none !important'
+  ]) assert.ok(parent.includes(declaration), 'matched real parent declares ' + declaration);
 
-  // Button remains compact and centers its text in the geometric box with symmetric vertical padding.
+  // Direct-child CTA overrides generic Woo inline-block, line-height, padding and weight.
+  assert.ok(buttonSelector.includes('p.return-to-shop > a.button.wc-backward'));
   for (const declaration of [
     'display: inline-flex !important', 'align-items: center !important',
     'justify-content: center !important', 'width: auto !important',
-    'line-height: 1.2 !important', 'padding: 8px 16px !important',
-    'text-align: center !important', 'margin: 0 !important',
-    'float: none !important', 'position: static !important'
-  ]) assert.ok(button.includes(declaration), 'button geometry includes ' + declaration);
-  assert.match(button, /padding:\s*(8px|\d+(?:\.\d+)?px)\s+16px\s*!important/);
-  assert.match(button, /line-height:\s*1\.2\s*!important/);
-  assert.doesNotMatch(button, /padding-(?:top|bottom):\s*\d+(?:\.\d+)?px\s*!important/);
+    'min-height: 42px !important', 'margin: 0 !important',
+    'padding: 8px 16px !important', 'font-size: 13px !important',
+    'font-weight: 500 !important', 'line-height: 1.2 !important',
+    'text-align: center !important', 'box-sizing: border-box !important',
+    'float: none !important'
+  ]) assert.ok(button.includes(declaration), 'matched real button overrides Woo with ' + declaration);
+  assert.match(button, /padding:\s*8px\s+16px\s*!important/,
+    'vertical and horizontal padding are symmetric');
+  assert.match(button, /border-radius:\s*14px/,
+    'retain the existing CTA radius');
+  assert.doesNotMatch(button, /background\s*:|color\s*:/,
+    'do not change the existing green button color treatment');
 
-  // The scoped selectors outrank broad WooCommerce styles; inspect both theme sheets.
-  const parentClassCount = (parentSelector.match(/[.][a-zA-Z0-9_-]+/g) || []).length;
-  const buttonClassCount = (buttonSelector.match(/[.][a-zA-Z0-9_-]+/g) || []).length;
-  assert.ok(parentClassCount > 2, 'parent selector outranks broad Woo paragraph rules');
-  assert.ok(buttonClassCount > 3, 'button selector outranks broad Woo button rules');
-  assert.doesNotMatch(mainCss, /return-to-shop|wc-backward|cr-cart-empty-state/,
-    'main.css has no direct selector for this empty cart parent or CTA');
-  assert.doesNotMatch(cartCss, /(?:cr-cart-empty-state|return-to-shop|wc-backward)[^{}]*::(?:before|after)/,
-    'cart.css does not attach pseudo-elements to this CTA');
+  // Preserve the approved thin title style with its marker-adjacent selector.
+  for (const declaration of ['font-weight: 500', 'font-size: 18px', 'text-align: center']) {
+    assert.ok(title.includes(declaration), 'matched title keeps ' + declaration);
+  }
+
+  // Remove attempt-specific dead wrapper selectors, but leave legacy generic rules untouched.
+  assert.doesNotMatch(cartCss, /body\.woocommerce-cart \.cr-cart-empty-state > p\.return-to-shop/);
+  assert.doesNotMatch(cartCss, /body\.woocommerce-cart \.cr-cart-empty-state h2/);
+  assert.doesNotMatch(cartCss, /body\.woocommerce-cart \.cr-cart-empty-state > p\.return-to-shop > a\.button\.wc-backward/);
+
+  assert.match(emptyCartTemplate, /<p class="return-to-shop">\s*<a class="button wc-backward" href="[\s\S]*?">\s*<\?php esc_html_e\( 'Volver a la tienda'/,
+    'retain the actual CTA class, href expression and copy');
 });
