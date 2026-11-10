@@ -1302,3 +1302,48 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_
     gap: 8px;
   }
 }
+
+
+/* Checkout final action: no privacy or terms copy between payment and submit. */
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .woocommerce-privacy-policy-text,
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .woocommerce-terms-and-conditions-wrapper,
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .woocommerce-terms-and-conditions,
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .validate-required.woocommerce-terms-and-conditions,
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .form-row.terms,
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment #terms,
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment label[for="terms"] {
+  display: none !important;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment .form-row.place-order {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order {
+  display: block;
+  width: calc(100% - (2 * var(--cr-card-inline-inset)));
+  min-height: 56px;
+  margin: 0 var(--cr-card-inline-inset) 24px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: var(--cr-card-radius) !important;
+  background: var(--cr-green-dark) !important;
+  color: #fff !important;
+  font-size: 16px;
+  font-weight: 700 !important;
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order:hover {
+  background: var(--cr-green) !important;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order:focus-visible {
+  outline: 2px solid var(--cr-green);
+  outline-offset: 3px;
+}
