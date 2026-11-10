@@ -557,11 +557,10 @@ test('Checkout benefits card reads live free-shipping zone configuration and ser
   assert.match(woocommercePhp, /\$method->get_option\(\s*'min_amount'/);
   assert.match(woocommercePhp, /\$method->get_option\(\s*'ignore_discounts'/);
   assert.match(woocommercePhp, /get_displayed_subtotal\(\)/);
-  assert.match(woocommercePhp, /wc_points_rewards_earn_points_message/);
-  assert.match(woocommercePhp, /render_earn_points_message\(\)/);
-  assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_earn_points_message'[\s\S]*?PHP_INT_MAX\s*,\s*2\s*\)/);
-  assert.match(woocommercePhp, /\$points_cart->render_earn_points_message\(\)/);
-  assert.match(woocommercePhp, /remove_filter\(\s*'wc_points_rewards_earn_points_message'/);
+  assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_earn_points_message'[\s\S]*?cr2026_checkout_capture_earn_points_message'[\s\S]*?PHP_INT_MAX\s*,\s*2\s*\)/);
+  assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_redeem_points_message'[\s\S]*?cr2026_checkout_suppress_redeem_points_message/);
+  assert.match(woocommercePhp, /\$GLOBALS\['cr2026_checkout_points_earned'\]/);
+  assert.match(woocommercePhp, /cr2026_checkout_points_real_earn_callback/);
   assert.match(woocommercePhp, /woocommerce_update_order_review_fragments/);
   assert.match(woocommercePhp, /\.cr-checkout-benefits/);
   assert.match(checkoutCss, /\.cr-checkout-benefits__row/);
@@ -569,29 +568,56 @@ test('Checkout benefits card reads live free-shipping zone configuration and ser
 });
 
 
-test('Checkout legacy prompts are removed on the same render hook before native callbacks', () => {
-  assert.match(woocommercePhp, /add_action\(\s*'woocommerce_before_checkout_form',\s*'cr2026_checkout_remove_legacy_benefit_prompts',\s*1\s*\)/);
-  assert.match(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',[\s\S]*?render_earn_points_message'[\s\S]*?,\s*5\s*\)/);
-  assert.match(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',[\s\S]*?render_redeem_points_message'[\s\S]*?,\s*6\s*\)/);
-  assert.match(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',\s*'woocommerce_checkout_coupon_form',\s*10\s*\)/);
-  assert.doesNotMatch(woocommercePhp, /add_action\(\s*'(?:wp_loaded|admin_init)'\s*,\s*'cr2026_checkout_remove_legacy_benefit_prompts'/);
+test('Points & Rewards notices are suppressed only by public filters in normal Checkout, preserving Cart', () => {
+  assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_earn_points_message',\s*'cr2026_checkout_capture_earn_points_message',\s*PHP_INT_MAX,\s*2\s*\)/);
+  assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_redeem_points_message',\s*'cr2026_checkout_suppress_redeem_points_message',\s*PHP_INT_MAX,\s*1\s*\)/);
+  assert.match(woocommercePhp, /function cr2026_checkout_is_benefits_request\(\)/);
+  assert.match(woocommercePhp, /is_checkout\(\)[\s\S]*?is_order_received_page\(\)/);
+  assert.match(woocommercePhp, /return cr2026_checkout_is_benefits_request\(\) \? '' : \$message/);
+  assert.doesNotMatch(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',[\s\S]*?render_(?:earn|redeem)_points_message/);
   assert.doesNotMatch(woocommercePhp, /get_points_earned_for_purchase\s*\(/);
+  assert.doesNotMatch(woocommercePhp, /\$GLOBALS\['wc_points_rewards'\]->cart/);
 });
 
-test('Points & Rewards earned points are captured only through its public filter without parsing notice HTML', () => {
+test('Points row consumes the plugin earned-points argument captured by the real renderer', () => {
+  const capture = woocommercePhp.slice(
+    woocommercePhp.indexOf('function cr2026_checkout_capture_earn_points_message'),
+    woocommercePhp.indexOf('function cr2026_checkout_suppress_redeem_points_message')
+  );
+  assert.match(capture, /\$message,\s*\$points_earned/);
+  assert.match(capture, /\$GLOBALS\['cr2026_checkout_points_earned'\]/);
+  assert.match(capture, /return ''/);
+
+  const resolver = woocommercePhp.slice(
+    woocommercePhp.indexOf('function cr2026_checkout_points_real_earn_callback'),
+    woocommercePhp.indexOf('function cr2026_checkout_benefits_points_earned')
+  );
+  assert.match(resolver, /\$wp_filter\['woocommerce_before_checkout_form'\]/);
+  assert.match(resolver, /render_earn_points_message/);
+  assert.match(resolver, /get_class\(\$renderer\)/);
+  assert.match(resolver, /Points_Rewards/);
+  assert.match(resolver, /is_callable/);
+
   const pointsFn = woocommercePhp.slice(
     woocommercePhp.indexOf('function cr2026_checkout_benefits_points_earned'),
     woocommercePhp.indexOf('function cr2026_checkout_render_benefits_card')
   );
-  assert.match(pointsFn, /wc_points_rewards_earn_points_message/);
-  assert.match(pointsFn, /function\s*\(\s*\$message\s*,\s*\$earned\s*\)/);
-  assert.match(pointsFn, /return '';\s*\};/);
+  assert.match(pointsFn, /cr2026_checkout_points_real_earn_callback\(\)/);
+  assert.match(pointsFn, /add_filter\(\s*'wc_points_rewards_earn_points_message'/);
+  assert.match(pointsFn, /call_user_func\(\s*\$callback\s*\)/);
   assert.match(pointsFn, /ob_start\(\)/);
-  assert.match(pointsFn, /render_earn_points_message\(\)/);
   assert.match(pointsFn, /remove_filter\(/);
-  assert.doesNotMatch(pointsFn, /get_points_earned_for_purchase|DOMDocument|strip_tags|preg_match/);
+  assert.doesNotMatch(pointsFn, /get_points_earned_for_purchase|strip_tags|preg_match|wc_points_rewards'\]\s*->\s*cart/);
   assert.match(woocommercePhp, /Sumarás %s puntos con esta compra/);
+  assert.match(woocommercePhp, /cr2026_checkout_benefits_points_earned\( true \)/);
   assert.match(woocommercePhp, /woocommerce_update_order_review_fragments/);
+});
+
+test('Coupon prompt remains Checkout-only and the shipping implementation is unchanged by this points fix', () => {
+  assert.match(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',\s*'woocommerce_checkout_coupon_form',\s*10\s*\)/);
+  assert.doesNotMatch(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',[\s\S]*?render_(?:earn|redeem)_points_message/);
+  assert.match(woocommercePhp, /WC_Shipping_Zones::get_zone_matching_package\(\s*\$package\s*\)/);
+  assert.match(woocommercePhp, /get_displayed_subtotal\(\)/);
 });
 
 test('shipping checkout layout changes are isolated from cart shipping presentation', () => {
