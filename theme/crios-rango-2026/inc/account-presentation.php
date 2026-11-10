@@ -256,29 +256,80 @@ function cr2026_account_wlr_user( $email ) {
     }
 }
 
-/** Return WPLoyalty's canonical Y-m-d value, with its legacy timestamp fallback. */
-function cr2026_account_wlr_birth_date( $wlr_user ) {
+/** Read a WPLoyalty field without assuming whether its result is an array or model object. */
+function cr2026_account_wlr_field( $wlr_user, $field ) {
+    if ( is_array( $wlr_user ) ) {
+        return array_key_exists( $field, $wlr_user ) ? $wlr_user[ $field ] : null;
+    }
     if ( ! is_object( $wlr_user ) ) {
-        return '';
+        return null;
     }
-    if ( isset( $wlr_user->birthday_date ) && '' !== $wlr_user->birthday_date
-        && '0000-00-00' !== $wlr_user->birthday_date ) {
-        $date = \DateTimeImmutable::createFromFormat( '!Y-m-d', (string) $wlr_user->birthday_date );
-        return $date && $date->format( 'Y-m-d' ) === $wlr_user->birthday_date ? $date->format( 'Y-m-d' ) : '';
+    if ( $wlr_user instanceof \ArrayAccess && $wlr_user->offsetExists( $field ) ) {
+        return $wlr_user[ $field ];
     }
-    if ( ! empty( $wlr_user->birth_date ) && class_exists( '\Wlr\App\Helpers\Woocommerce' ) ) {
+    if ( isset( $wlr_user->{$field} ) ) {
+        return $wlr_user->{$field};
+    }
+    if ( property_exists( $wlr_user, $field ) ) {
+        try {
+            return $wlr_user->{$field};
+        } catch ( \Throwable $error ) {
+            return null;
+        }
+    }
+    return null;
+}
+
+/** Return a WPLoyalty field's presence without ever exposing its value. */
+function cr2026_account_wlr_field_present( $wlr_user, $field ) {
+    $value = cr2026_account_wlr_field( $wlr_user, $field );
+    return null !== $value && '' !== $value && '0000-00-00' !== $value && 0 !== $value && '0' !== $value;
+}
+
+/** Normalize WPLoyalty data to the ISO value required by input[type=date]. */
+function cr2026_account_wlr_birth_date( $wlr_user ) {
+    $birthday_date = cr2026_account_wlr_field( $wlr_user, 'birthday_date' );
+    if ( is_string( $birthday_date ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $birthday_date ) ) {
+        $date = \DateTimeImmutable::createFromFormat( '!Y-m-d', $birthday_date );
+        $errors = \DateTimeImmutable::getLastErrors();
+        if ( $date && $date->format( 'Y-m-d' ) === $birthday_date
+            && ( false === $errors || ( 0 === $errors['warning_count'] && 0 === $errors['error_count'] ) ) ) {
+            return $date->format( 'Y-m-d' );
+        }
+    }
+
+    $birth_date = cr2026_account_wlr_field( $wlr_user, 'birth_date' );
+    if ( is_numeric( $birth_date ) && (int) $birth_date > 0
+        && class_exists( '\Wlr\App\Helpers\Woocommerce' ) ) {
         try {
             $helper = \Wlr\App\Helpers\Woocommerce::getInstance();
-            $date = $helper->beforeDisplayDate( $wlr_user->birth_date, 'Y-m-d' );
+            $date = $helper->beforeDisplayDate( (int) $birth_date, 'Y-m-d' );
             if ( is_string( $date ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
                 $parsed = \DateTimeImmutable::createFromFormat( '!Y-m-d', $date );
-                return $parsed && $parsed->format( 'Y-m-d' ) === $date ? $date : '';
+                $errors = \DateTimeImmutable::getLastErrors();
+                if ( $parsed && $parsed->format( 'Y-m-d' ) === $date
+                    && ( false === $errors || ( 0 === $errors['warning_count'] && 0 === $errors['error_count'] ) ) ) {
+                    return $date;
+                }
             }
         } catch ( \Throwable $error ) {
             return '';
         }
     }
     return '';
+}
+
+/** Identify the WPLoyalty field actually used, without returning or logging its value. */
+function cr2026_account_wlr_birth_date_source( $wlr_user ) {
+    $birthday_date = cr2026_account_wlr_field( $wlr_user, 'birthday_date' );
+    if ( is_string( $birthday_date ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $birthday_date ) ) {
+        $date = \DateTimeImmutable::createFromFormat( '!Y-m-d', $birthday_date );
+        if ( $date && $date->format( 'Y-m-d' ) === $birthday_date ) {
+            return 'birthday_date';
+        }
+    }
+    $birth_date = cr2026_account_wlr_field( $wlr_user, 'birth_date' );
+    return is_numeric( $birth_date ) && (int) $birth_date > 0 ? 'birth_date' : 'NONE';
 }
 
 /** Delegate birthday editability to WPLoyalty's own helper and public filter. */
@@ -320,9 +371,19 @@ function cr2026_account_render_birth_date_field() {
     $wlr_user = cr2026_account_wlr_user( $current_user->user_email );
     $birth_date = cr2026_account_wlr_birth_date( $wlr_user );
     $editable = cr2026_account_wlr_can_edit_birth_date( $wlr_user );
+    $wlr_user_found = is_object( $wlr_user ) || is_array( $wlr_user );
+    $birthday_date_present = cr2026_account_wlr_field_present( $wlr_user, 'birthday_date' );
+    $birth_date_present = cr2026_account_wlr_field_present( $wlr_user, 'birth_date' );
+    $birth_date_source = cr2026_account_wlr_birth_date_source( $wlr_user );
     wp_nonce_field( 'cr2026_update_birth_date', 'cr2026_birth_date_nonce' );
     ?>
-    <p class="form-row form-row-wide cr-account-birth-date">
+    <p class="form-row form-row-wide cr-account-birth-date"
+        data-wlr-user-found="<?php echo $wlr_user_found ? 'yes' : 'no'; ?>"
+        data-wlr-birthday-date-present="<?php echo $birthday_date_present ? 'yes' : 'no'; ?>"
+        data-wlr-birth-date-present="<?php echo $birth_date_present ? 'yes' : 'no'; ?>"
+        data-birth-date-value-source="<?php echo esc_attr( $birth_date_source ); ?>"
+        data-birth-date-input-type="date"
+        data-birth-date-value-loaded="<?php echo '' !== $birth_date ? 'yes' : 'no'; ?>">
         <label for="cr2026_birth_date"><?php esc_html_e( 'Fecha de nacimiento', 'crios-rango-2026' ); ?></label>
         <?php if ( $editable ) : ?>
             <input type="date" id="cr2026_birth_date" name="cr2026_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" max="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>" />
