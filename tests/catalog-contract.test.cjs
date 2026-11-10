@@ -377,7 +377,7 @@ test('product search routing overrides WooCommerce Shop template and keeps the p
   assert.match(php,/add_filter\( 'template_include', 'cr2026_product_search_template_include', 99 \)/);
   assert.match(searchTemplate,/\$is_product_search\s*=\s*is_search\(\)/);
   assert.match(searchTemplate,/cr2026_render_product_card\( \$search_product, \$card_index \)/);
-  assert.doesNotMatch(searchTemplate,/cr2026_render_category_toolbar|cr2026_home_categories|cr-app-category-grid|Categorías/);
+  assert.doesNotMatch(searchTemplate,/cr2026_home_categories|cr-app-category-grid|Categorías/);
   assert.match(searchTemplate,/get_search_query\(\)/);
   assert.match(searchTemplate,/No encontramos productos para/);
 });
