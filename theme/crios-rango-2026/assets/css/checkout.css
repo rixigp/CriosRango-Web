@@ -1347,3 +1347,70 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order
   outline: 2px solid var(--cr-green);
   outline-offset: 3px;
 }
+
+
+/* Compact single-surface benefits summary above Checkout delivery. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0 0 18px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: var(--cr-card-radius);
+  background: #eff8f2;
+  color: var(--cr-ink);
+  box-shadow: none;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits__row + .cr-checkout-benefits__row {
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(35, 105, 65, 0.12);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits__icon {
+  display: inline-flex;
+  flex: 0 0 22px;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: var(--cr-green-dark);
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits__icon svg {
+  display: block;
+  width: 21px;
+  height: 21px;
+  fill: currentColor;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits__text {
+  min-width: 0;
+  font-weight: 400;
+}
+
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits__value,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits .woocommerce-Price-amount {
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits {
+    padding: 9px 12px;
+  }
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-benefits__row {
+    gap: 10px;
+    font-size: 13px;
+  }
+}

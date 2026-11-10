@@ -1119,3 +1119,217 @@ function cr2026_checkout_payment_result_page_payload() {
     }
     return null;
 }
+
+
+/**
+ * Checkout benefits card: suppress only the legacy Points & Rewards messages
+ * and the native coupon prompt on Checkout. Cart rendering and coupon behavior
+ * remain untouched.
+ */
+function cr2026_checkout_remove_legacy_benefit_prompts() {
+    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
+        return;
+    }
+
+    if ( isset( $GLOBALS['wc_points_rewards'] ) && is_object( $GLOBALS['wc_points_rewards'] )
+        && isset( $GLOBALS['wc_points_rewards']->cart )
+        && is_object( $GLOBALS['wc_points_rewards']->cart ) ) {
+        $points_cart = $GLOBALS['wc_points_rewards']->cart;
+
+        if ( method_exists( $points_cart, 'render_earn_points_message' ) ) {
+            remove_action( 'woocommerce_before_checkout_form', array( $points_cart, 'render_earn_points_message' ), 5 );
+        }
+        if ( method_exists( $points_cart, 'render_redeem_points_message' ) ) {
+            remove_action( 'woocommerce_before_checkout_form', array( $points_cart, 'render_redeem_points_message' ), 6 );
+        }
+    }
+
+    remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_form', 10 );
+}
+add_action( 'wp_loaded', 'cr2026_checkout_remove_legacy_benefit_prompts', 999 );
+add_action( 'admin_init', 'cr2026_checkout_remove_legacy_benefit_prompts', 999 );
+
+/**
+ * Resolve a real free-shipping method for the currently matching shipping
+ * package. Settings are read from the live zone instance; no threshold is
+ * hardcoded and no shipping rates are altered.
+ */
+function cr2026_checkout_benefits_shipping_data() {
+    if ( ! function_exists( 'WC' ) || ! WC()->cart || ! WC()->shipping()
+        || ! class_exists( 'WC_Shipping_Zones' ) ) {
+        return null;
+    }
+
+    $packages = WC()->shipping()->get_packages();
+    if ( ! is_array( $packages ) || empty( $packages ) ) {
+        $packages = WC()->cart->get_shipping_packages();
+    }
+    if ( ! is_array( $packages ) || empty( $packages ) ) {
+        return null;
+    }
+
+    foreach ( $packages as $package ) {
+        if ( ! is_array( $package ) ) {
+            continue;
+        }
+
+        $zone = WC_Shipping_Zones::get_zone_matching_package( $package );
+        if ( ! is_object( $zone ) || ! method_exists( $zone, 'get_shipping_methods' ) ) {
+            continue;
+        }
+
+        $methods = $zone->get_shipping_methods( true );
+        if ( ! is_array( $methods ) ) {
+            continue;
+        }
+
+        foreach ( $methods as $method ) {
+            if ( ! is_object( $method ) || ! isset( $method->id ) || 'free_shipping' !== $method->id
+                || ! method_exists( $method, 'get_option' ) ) {
+                continue;
+            }
+
+            $requires = (string) $method->get_option( 'requires', '' );
+            $threshold = $method->get_option( 'min_amount', '' );
+            $ignore_discounts = (string) $method->get_option( 'ignore_discounts', 'no' );
+            $threshold = is_numeric( $threshold ) ? (float) $threshold : null;
+
+            $free_rate_available = false;
+            if ( isset( $package['rates'] ) && is_array( $package['rates'] ) ) {
+                foreach ( $package['rates'] as $rate ) {
+                    if ( ! is_object( $rate ) || ! method_exists( $rate, 'get_method_id' )
+                        || ! method_exists( $rate, 'get_cost' ) ) {
+                        continue;
+                    }
+                    if ( 'free_shipping' === $rate->get_method_id()
+                        && (float) $rate->get_cost() <= 0 ) {
+                        $free_rate_available = true;
+                        break;
+                    }
+                }
+            }
+
+            $eligible_amount = null;
+            $remaining = null;
+            if ( null !== $threshold && in_array( $requires, array( 'min_amount', 'either', 'both' ), true )
+                && WC()->cart && method_exists( WC()->cart, 'get_displayed_subtotal' ) ) {
+                $eligible_amount = (float) WC()->cart->get_displayed_subtotal();
+
+                if ( 'no' === $ignore_discounts ) {
+                    $eligible_amount -= (float) WC()->cart->get_discount_total();
+                    if ( 'incl' === get_option( 'woocommerce_tax_display_cart' ) ) {
+                        $eligible_amount -= (float) WC()->cart->get_discount_tax();
+                    }
+                }
+
+                $precision = function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2;
+                $eligible_amount = max( 0, round( $eligible_amount, $precision ) );
+                $remaining = max( 0, round( $threshold - $eligible_amount, $precision ) );
+            }
+
+            return array(
+                'instance' => isset( $method->instance_id ) ? (string) $method->instance_id : 'unknown',
+                'requires' => $requires,
+                'threshold' => $threshold,
+                'ignore_discounts' => $ignore_discounts,
+                'eligible_amount' => $eligible_amount,
+                'remaining' => $remaining,
+                'free_rate_available' => $free_rate_available,
+            );
+        }
+    }
+
+    return null;
+}
+
+/** Read this cart's actual earned-points value from the plugin cart handler. */
+function cr2026_checkout_benefits_points_earned() {
+    if ( ! isset( $GLOBALS['wc_points_rewards'] ) || ! is_object( $GLOBALS['wc_points_rewards'] )
+        || ! isset( $GLOBALS['wc_points_rewards']->cart )
+        || ! is_object( $GLOBALS['wc_points_rewards']->cart ) ) {
+        return null;
+    }
+
+    $points_cart = $GLOBALS['wc_points_rewards']->cart;
+    if ( ! method_exists( $points_cart, 'get_points_earned_for_purchase' ) ) {
+        return null;
+    }
+
+    try {
+        $points = $points_cart->get_points_earned_for_purchase();
+    } catch ( Throwable $error ) {
+        // Older plugin releases may expose this calculation as non-public.
+        // Fail closed: don't derive a replacement or parse rendered notices.
+        return null;
+    }
+
+    return is_numeric( $points ) && (float) $points >= 0 ? (float) $points : null;
+}
+
+/** Render the single server-generated Checkout benefits card. */
+function cr2026_checkout_render_benefits_card() {
+    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
+        return;
+    }
+
+    $shipping = cr2026_checkout_benefits_shipping_data();
+    $points = cr2026_checkout_benefits_points_earned();
+    if ( null === $shipping && null === $points ) {
+        return;
+    }
+
+    echo '<div class="cr-checkout-benefits" aria-label="' . esc_attr__( 'Beneficios de tu compra', 'crios-rango-2026' ) . '">';
+
+    if ( null !== $shipping ) {
+        $shipping_copy = '';
+        if ( ! empty( $shipping['free_rate_available'] )
+            || ( null !== $shipping['remaining'] && $shipping['remaining'] <= 0 ) ) {
+            $shipping_copy = '¡Ya tienes envío gratis!';
+        } elseif ( null !== $shipping['remaining'] && null !== $shipping['threshold'] ) {
+            $amount = function_exists( 'wc_price' ) ? wc_price( $shipping['remaining'] ) : number_format_i18n( $shipping['remaining'], 2 ) . ' €';
+            $shipping_copy = sprintf( 'Te faltan %s para conseguir envío gratis', $amount );
+        }
+
+        if ( '' !== $shipping_copy ) {
+            echo '<div class="cr-checkout-benefits__row cr-checkout-benefits__row--shipping">'
+                . '<span class="cr-checkout-benefits__icon" aria-hidden="true">'
+                . '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>'
+                . '</span><span class="cr-checkout-benefits__text">' . wp_kses( $shipping_copy, array( 'span' => array( 'class' => array() ), 'bdi' => array(), 'strong' => array() ) ) . '</span></div>';
+        }
+    }
+
+    if ( null !== $points ) {
+        $precision = ( floor( $points ) === $points ) ? 0 : 2;
+        $points_label = number_format_i18n( $points, $precision );
+        echo '<div class="cr-checkout-benefits__row cr-checkout-benefits__row--points">'
+            . '<span class="cr-checkout-benefits__icon" aria-hidden="true">'
+            . '<svg viewBox="0 0 24 24" focusable="false"><path d="m12 2 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 16.8l-5.9 3.2 1.2-6.5L2.5 8.9 9.1 8z"/></svg>'
+            . '</span><span class="cr-checkout-benefits__text">' . sprintf( esc_html__( 'Sumarás %s puntos con esta compra', 'crios-rango-2026' ), '<span class="cr-checkout-benefits__value">' . esc_html( $points_label ) . '</span>' ) . '</span></div>';
+    }
+
+    echo '</div>';
+}
+add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_render_benefits_card', 20 );
+
+/** Keep the benefits card synchronized with WooCommerce's order-review AJAX. */
+function cr2026_checkout_benefits_order_review_fragment( $fragments ) {
+    if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
+        return $fragments;
+    }
+
+    ob_start();
+    cr2026_checkout_render_benefits_card();
+    $html = ob_get_clean();
+
+    if ( '' !== $html ) {
+        $fragments['.cr-checkout-benefits'] = $html;
+    } else {
+        $fragments['.cr-checkout-benefits'] = '<div class="cr-checkout-benefits" hidden></div>';
+    }
+
+    return $fragments;
+}
+add_filter( 'woocommerce_update_order_review_fragments', 'cr2026_checkout_benefits_order_review_fragment', 20, 1 );
