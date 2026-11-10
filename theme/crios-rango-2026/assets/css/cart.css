@@ -1081,3 +1081,30 @@ body.woocommerce-cart .cr-cart-promo-card > .cr-cart-apply-button {
 body.woocommerce-cart .cr-cart-promotions__available {
   margin: 0;
 }
+
+/* Empty cart: compact three-part composition; populated cart styles stay untouched. */
+body.woocommerce-cart .cr-cart-empty-state__icon {
+  margin-bottom: 14px;
+}
+body.woocommerce-cart .cr-cart-empty-state > p:not(.return-to-shop) {
+  display: none !important;
+}
+body.woocommerce-cart .cr-cart-empty-state h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+body.woocommerce-cart .cr-cart-empty-state .return-to-shop {
+  margin: 0;
+}
+body.woocommerce-cart .cr-cart-empty-state .return-to-shop .button {
+  min-height: 42px;
+  margin-top: 0;
+  padding: 8px 16px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 500;
+  white-space: nowrap;
+}
