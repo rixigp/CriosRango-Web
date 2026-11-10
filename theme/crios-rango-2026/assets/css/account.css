@@ -469,10 +469,14 @@
 .cr-account-profile-home__icon svg, .cr-account-profile-home__action-icon svg { width: 21px; height: 21px; }
 .cr-account-profile-home__chevron { margin-left: auto; color: #8a918b; font: 300 24px/1 Arial,sans-serif; }
 .cr-account-profile-home__action { min-height: 58px; margin-top: 14px; border: 1px solid rgba(24,59,53,.06); border-radius: 17px; }
-.cr-account-profile-home__action--delete { background: #fbf4dc; color: #5b4a1f; }
-.cr-account-profile-home__action--delete .cr-account-profile-home__action-icon { color: #8a6b1e; }
-.cr-account-profile-home__action--logout { background: #fbeeee; color: #754747; }
-.cr-account-profile-home__action--logout .cr-account-profile-home__action-icon { color: #925757; }
+.cr-account-profile-home__action--delete { background: #fbf4dc; color: #a27d25; }
+.cr-account-profile-home__action--delete .cr-account-profile-home__action-icon,
+.cr-account-profile-home__action--delete .cr-account-profile-home__chevron,
+.cr-account-profile-home__action--delete > span:nth-child(2) { color: #a27d25; }
+.cr-account-profile-home__action--logout { background: #fbeeee; color: #925757; }
+.cr-account-profile-home__action--logout .cr-account-profile-home__action-icon,
+.cr-account-profile-home__action--logout .cr-account-profile-home__chevron,
+.cr-account-profile-home__action--logout > span:nth-child(2) { color: #925757; }
 @media (max-width: 767px) {
  body.woocommerce-account .cr-account-profile-home { width: calc(100% - 32px); }
  body.woocommerce-account:has(.cr-account-profile-home) .cr-page__header { display: none !important; }
