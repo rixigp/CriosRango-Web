@@ -21,9 +21,20 @@
   const restore = (form, button) => {
     form.dataset.crAccountSubmitting = '0';
     button.disabled = false;
+    form.classList.remove('cr-account-form--loading');
     button.classList.remove('cr-account-submit--loading');
     button.removeAttribute('aria-busy');
     button.removeAttribute('aria-disabled');
+  };
+
+  const positionSuccessFeedback = (form, button) => {
+    const feedback = form.querySelector('.cr-account-save-feedback')
+      || document.querySelector('.cr-account-save-feedback');
+    if (!feedback) return;
+    const buttonRow = button.closest('p, .form-row') || button;
+    if (buttonRow.parentNode && feedback.nextElementSibling !== buttonRow) {
+      buttonRow.parentNode.insertBefore(feedback, buttonRow);
+    }
   };
 
   const moveErrorsInline = (form, button) => {
@@ -44,6 +55,7 @@
     if (!button) return;
 
     moveErrorsInline(form, button);
+    positionSuccessFeedback(form, button);
     ensureLabel(button);
 
     form.addEventListener('submit', (event) => {
@@ -53,6 +65,7 @@
       }
 
       form.dataset.crAccountSubmitting = '1';
+      form.classList.add('cr-account-form--loading');
       button.classList.add('cr-account-submit--loading');
       button.setAttribute('aria-busy', 'true');
       button.setAttribute('aria-disabled', 'true');

@@ -81,6 +81,12 @@ test('catalog, cart, checkout and account canonical routes remain intact', () =>
   assert.match(account, /cr2026_account_render_endpoint_toolbar/);
 });
 
+test('shipping address uses exactly one canonical delivery title', () => {
+  assert.match(account, /function cr2026_account_address_endpoint_toolbar[\s\S]*?\$title = 'billing' === \$address_type[\s\S]*?__\( 'Dirección de entrega'/);
+  assert.match(account, /cr2026_account_render_endpoint_toolbar\( \$title, wc_get_account_endpoint_url\( 'edit-account' \) \)/);
+  assert.match(account, /function cr2026_account_edit_address_title[\s\S]*?return '';/);
+});
+
 test('Orders and order detail use the canonical title component on mobile', () => {
   assert.match(orders, /wp_is_mobile\(\)[\s\S]*?cr2026_render_category_toolbar\( __\( 'Pedidos'/);
   assert.doesNotMatch(orders, /cr-account-orders__toolbar/);

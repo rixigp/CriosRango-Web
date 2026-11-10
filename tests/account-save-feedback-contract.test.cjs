@@ -49,6 +49,25 @@ test('LOADING_BLOCKS_DOUBLE_SUBMIT_AND_PRESERVES_NATIVE_SUBMITTER', () => {
   assert.match(css, /\.cr-account-submit__label\s*\{\s*visibility:\s*hidden/);
 });
 
+test('ADDRESS_LOADING_VISUALLY_DISABLES_FORM_AND_REUSES_INLINE_FEEDBACK_ABOVE_CTA', () => {
+  assert.match(js, /form\.classList\.add\('cr-account-form--loading'\)/);
+  assert.match(js, /form\.classList\.remove\('cr-account-form--loading'\)/);
+  assert.match(js, /positionSuccessFeedback/);
+  assert.match(js, /insertBefore\(feedback, buttonRow\)/);
+  assert.match(css, /\.cr-account-form--loading\s*\{\s*pointer-events:\s*none/);
+  assert.match(css, /\.cr-account-form--loading[\s\S]*?opacity:\s*\.48/);
+});
+
+test('ADDRESS_LEGACY_SUCCESS_FILTER_IS_EXACT_AND_MOBILE_SHIPPING_SAVE_ONLY', () => {
+  const start = php.indexOf('function cr2026_account_filter_legacy_save_success');
+  const end = php.indexOf("\nadd_filter( 'woocommerce_add_success'", start);
+  const filter = php.slice(start, end);
+  assert.match(filter, /cr2026_account_mobile_save_context\( 'edit-address' \)/);
+  assert.match(filter, /isset\( \$_POST\['save_address'\] \)/);
+  assert.match(filter, /Address changed successfully\./);
+  assert.match(filter, /return \$message;/);
+});
+
 test('ERROR_CONTENT_IS_MOVED_INLINE_WITHOUT_REWRITING_THE_MESSAGE', () => {
   assert.match(js, /\.woocommerce-error/);
   assert.match(js, /buttonRow\.parentNode\.insertBefore\(notice, buttonRow\)/);

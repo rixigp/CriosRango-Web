@@ -85,7 +85,7 @@ function splitCssDeclarations(source) {
     if (colon < 0) return null;
     return {
       property: part.slice(0, colon).trim().toLowerCase(),
-      value: part.slice(colon + 1).trim().replace(/\\s*!important\\s*$/i, ''),
+      value: part.slice(colon + 1).trim().replace(/\s*!important\s*$/i, ''),
     };
   }).filter(Boolean);
 }
@@ -95,7 +95,7 @@ function parseAccountCssRules(source) {
   function visit(block) {
     let cursor = 0;
     while (cursor < block.length) {
-      while (cursor < block.length && /\\s/.test(block[cursor])) cursor += 1;
+      while (cursor < block.length && /\s/.test(block[cursor])) cursor += 1;
       if (block.startsWith('/*', cursor)) {
         const endComment = block.indexOf('*/', cursor + 2);
         if (endComment < 0) break;
@@ -122,7 +122,7 @@ function cssPaddingLeft(rule) {
   if (explicit) return explicit.value.toLowerCase();
   const shorthand = [...rule.declarations].reverse().find(item => item.property === 'padding');
   if (!shorthand) return null;
-  const values = shorthand.value.trim().split(/\\s+/);
+  const values = shorthand.value.trim().split(/\s+/);
   if (values.length === 1) return values[0].toLowerCase();
   if (values.length === 2) return values[1].toLowerCase();
   if (values.length === 3) return values[1].toLowerCase();
@@ -160,29 +160,29 @@ test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
   const rules = parseAccountCssRules(accountCss);
   const genericRules = rules.filter(rule => {
     const selector = rule.selector;
-    return /body\\s*\\.woocommerce-account/i.test(selector)
+    return /body\s*\.woocommerce-account/i.test(selector)
       && /woocommerce-address-fields/i.test(selector)
       && /woocommerce-EditAccountForm/i.test(selector)
-      && /\\binput\\b/i.test(selector)
-      && /\\bselect\\b/i.test(selector)
-      && /\\btextarea\\b/i.test(selector);
+      && /\binput\b/i.test(selector)
+      && /\bselect\b/i.test(selector)
+      && /\btextarea\b/i.test(selector);
   });
 
   assert.ok(genericRules.length > 0, 'shared Account field selector exists');
-  assert.ok(genericRules.every(rule => !/\\.select2-selection--single/i.test(rule.selector)),
+  assert.ok(genericRules.every(rule => !/\.select2-selection--single/i.test(rule.selector)),
     'generic field selectors exclude the Select2 outer wrapper');
   assert.ok(genericRules.some(rule => cssPaddingLeft(rule) === '13px'),
     'generic input/select/textarea fields use a 13px left inset');
 
   const select2OuterRules = rules.filter(rule =>
-    /\\.select2-selection--single/i.test(rule.selector)
-    && !/\\.select2-selection__rendered/i.test(rule.selector)
+    /\.select2-selection--single/i.test(rule.selector)
+    && !/\.select2-selection__rendered/i.test(rule.selector)
   );
   assert.ok(select2OuterRules.some(rule => cssPaddingLeft(rule) === '0'),
     'dedicated Select2 outer rule resets padding to zero');
 
   const renderedValueRules = rules.filter(rule =>
-    /\\.select2-selection__rendered/i.test(rule.selector)
+    /\.select2-selection__rendered/i.test(rule.selector)
   );
   assert.ok(renderedValueRules.some(rule => cssPaddingLeft(rule) === '13px'),
     'Select2 rendered value uses the same 13px left inset as inputs');

@@ -1029,6 +1029,17 @@
 
 /* Shared mobile Account submit feedback: retain native CTA geometry while processing. */
 @media (max-width: 767px) {
+  body.woocommerce-account .cr-account-form--loading {
+    pointer-events: none !important;
+  }
+
+  body.woocommerce-account .cr-account-form--loading .woocommerce-address-fields__field-wrapper,
+  body.woocommerce-account .cr-account-form--loading .form-row,
+  body.woocommerce-account .cr-account-form--loading > p:not(:last-child),
+  body.woocommerce-account .cr-account-form--loading fieldset {
+    opacity: .48;
+  }
+
   body.woocommerce-account .cr-account-save-feedback {
     margin: 0 0 9px !important;
     padding: 0 !important;

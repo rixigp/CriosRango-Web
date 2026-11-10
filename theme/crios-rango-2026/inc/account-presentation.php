@@ -140,9 +140,11 @@ function cr2026_account_address_endpoint_toolbar( $endpoint_value = '' ) {
             $address_type = $matches[1];
         }
     }
-    $title = 'shipping' === $address_type
-        ? __( 'Dirección de entrega', 'crios-rango-2026' )
-        : ( 'billing' === $address_type ? __( 'Dirección de facturación', 'crios-rango-2026' ) : __( 'Direcciones', 'crios-rango-2026' ) );
+    // The mobile editor is the shipping address screen; WooCommerce can omit
+    // the endpoint subtype from the action argument on some permalink setups.
+    $title = 'billing' === $address_type
+        ? __( 'Dirección de facturación', 'crios-rango-2026' )
+        : __( 'Dirección de entrega', 'crios-rango-2026' );
 
     cr2026_account_render_endpoint_toolbar( $title, wc_get_account_endpoint_url( 'edit-account' ) );
 }
@@ -758,6 +760,11 @@ add_action( 'woocommerce_customer_save_address', 'cr2026_account_store_address_s
 
 /** Hide only WooCommerce success notices on the mobile Account save endpoints; errors remain native. */
 function cr2026_account_filter_legacy_save_success( $message ) {
-    return cr2026_account_mobile_save_context() ? '' : $message;
+    if ( ! cr2026_account_mobile_save_context( 'edit-address' )
+        || ! isset( $_POST['save_address'] )
+        || $message !== __( 'Address changed successfully.', 'woocommerce' ) ) {
+        return $message;
+    }
+    return '';
 }
 add_filter( 'woocommerce_add_success', 'cr2026_account_filter_legacy_save_success', 99, 1 );
