@@ -1068,7 +1068,7 @@ test('offline checkout success payload is emitted only after successful gateway 
   assert.match(checkoutSuccessPhp, /'success' !== \$result\['result'\]/);
   assert.match(checkoutSuccessPhp, /\$order->get_payment_method\(\)/);
   assert.match(checkoutSuccessPhp, /in_array\( \$gateway, array\( 'cheque', 'cod' \), true \)/);
-  assert.match(checkoutSuccessPhp, /'order_number' => \(string\) \$order->get_order_number\(\)/);
+  assert.match(checkoutSuccessPhp, /\$number = \(string\) \$order->get_order_number\(\)/);
   assert.match(checkoutSuccessPhp, /'order_id' => \(int\) \$order->get_id\(\)/);
   assert.match(checkoutSuccessPhp, /'enabled' => true/);
   assert.match(checkoutSuccessPhp, /\$result\['redirect'\] = '#cr-order-success'/);
