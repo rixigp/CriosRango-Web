@@ -70,8 +70,8 @@ function test_extract_function( $source, $name ) {
         $depth = 0;
         for ( $k = $j; $k < $count; $k++ ) {
             $token = $tokens[$k];
-            if ( '{' === $token || ( is_array($token) && T_CURLY_OPEN === $token[0] ) ) { $depth++; }
-            if ( '}' === $token || ( is_array($token) && T_CURLY_CLOSE === $token[0] ) ) {
+            if ( '{' === $token ) { $depth++; }
+            if ( '}' === $token ) {
                 $depth--;
                 if ( 0 === $depth ) {
                     $end = is_array($token) ? $token[1] + strlen($token[1]) : 1;
