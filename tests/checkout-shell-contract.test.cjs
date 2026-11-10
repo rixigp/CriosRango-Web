@@ -551,10 +551,17 @@ test('shipping native hook remains core while only the former theme heading call
   assert.doesNotMatch(templatePhp, /woocommerce_package_rates|woocommerce_shipping_rate_cost|woocommerce_shipping_methods/);
 });
 
-test('free-shipping progress is deferred because the cart has no shared threshold/subtotal progress source', () => {
-  assert.doesNotMatch(cartPhp, /free.?shipping|env[ií]o gratis|shipping.?threshold|amount_for_free/i);
-  assert.doesNotMatch(helpersPhp, /free.?shipping|env[ií]o gratis|shipping.?threshold|amount_for_free/i);
-  assert.doesNotMatch(woocommercePhp, /free.?shipping|env[ií]o gratis|shipping.?threshold|amount_for_free/i);
+test('Checkout benefits card reads live free-shipping zone configuration and server-rendered points, without replacing native shipping logic', () => {
+  assert.match(woocommercePhp, /WC_Shipping_Zones::get_zone_matching_package\(\s*\$package\s*\)/);
+  assert.match(woocommercePhp, /\$method->get_option\(\s*'requires'/);
+  assert.match(woocommercePhp, /\$method->get_option\(\s*'min_amount'/);
+  assert.match(woocommercePhp, /\$method->get_option\(\s*'ignore_discounts'/);
+  assert.match(woocommercePhp, /get_displayed_subtotal\(\)/);
+  assert.match(woocommercePhp, /get_points_earned_for_purchase\(\)/);
+  assert.match(woocommercePhp, /woocommerce_update_order_review_fragments/);
+  assert.match(woocommercePhp, /\.cr-checkout-benefits/);
+  assert.match(checkoutCss, /\.cr-checkout-benefits__row/);
+  assert.doesNotMatch(woocommercePhp, /woocommerce_package_rates|woocommerce_shipping_rate_cost|woocommerce_shipping_methods/);
 });
 
 
