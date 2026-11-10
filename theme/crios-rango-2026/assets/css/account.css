@@ -300,3 +300,83 @@
   body.woocommerce-account .wlr-myaccount-page .wlr-update-birthday { border-radius: 999px; }
   body.woocommerce-account .wlr-myaccount-page .wlr-enable-email-sent-blog .wlr-sent-email { justify-content: flex-start; flex-wrap: wrap; }
 }
+
+/* Native WooCommerce profile and address forms. */
+.cr-account-profile__section-title { margin: 0 0 12px; color: #183b35; font: 400 17px/23px "Roboto", Arial, sans-serif; }
+.cr-account-profile__address { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 12px; padding: 15px 16px; border: 1px solid rgba(24,59,53,.08); border-radius: 16px; background: #fff; color: #303630; text-decoration: none; font-family: "Roboto", Arial, sans-serif; }
+.cr-account-profile__address span:first-child { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cr-account-profile__address strong { color: #244436; font: 400 14px/19px "Roboto", Arial, sans-serif; }
+.cr-account-profile__address small { color: #777b76; font: 300 11px/16px "Roboto", Arial, sans-serif; }
+.cr-account-profile__chevron { color: #8a918b; font: 300 23px/1 Arial,sans-serif; }
+.cr-account-profile__logout { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; margin-top: 12px; padding: 0 18px; border: 1px solid rgba(36,68,54,.28); border-radius: 999px; color: #244436; text-decoration: none; font: 400 13px/18px "Roboto", Arial, sans-serif; }
+@media (max-width: 767px) {
+  body.woocommerce-account .woocommerce-EditAccountForm,
+  body.woocommerce-account .woocommerce-address-fields,
+  body.woocommerce-account .woocommerce-Addresses {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+  }
+  body.woocommerce-account .woocommerce-EditAccountForm {
+    padding: 16px !important;
+    border: 1px solid rgba(24,59,53,.08) !important;
+    border-radius: 18px !important;
+    background: #fff !important;
+  }
+  body.woocommerce-account .woocommerce-EditAccountForm .form-row,
+  body.woocommerce-account .woocommerce-address-fields .form-row {
+    float: none;
+    width: 100%;
+    margin: 0 0 14px;
+  }
+  body.woocommerce-account .woocommerce-EditAccountForm fieldset {
+    margin: 18px 0 14px;
+    padding: 14px 0 0;
+    border: 0;
+    border-top: 1px solid rgba(32,36,31,.09);
+  }
+  body.woocommerce-account .woocommerce-EditAccountForm fieldset legend {
+    padding: 0 0 10px;
+    color: #183b35;
+    font: 400 16px/22px "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account .woocommerce-EditAccountForm label,
+  body.woocommerce-account .woocommerce-address-fields label {
+    color: #5d665f;
+    font: 300 12px/17px "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account .woocommerce-EditAccountForm input.input-text,
+  body.woocommerce-account .woocommerce-address-fields input.input-text,
+  body.woocommerce-account .woocommerce-address-fields select,
+  body.woocommerce-account .woocommerce-address-fields textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid rgba(24,59,53,.15);
+    border-radius: 12px;
+    background: #fff;
+    padding: 10px 12px;
+  }
+  body.woocommerce-account .woocommerce-EditAccountForm button[type="submit"],
+  body.woocommerce-account .woocommerce-address-fields button[type="submit"] {
+    min-height: 44px;
+    margin-top: 4px;
+  }
+  body.woocommerce-account .woocommerce-address-fields {
+    padding: 16px;
+    border: 1px solid rgba(24,59,53,.08);
+    border-radius: 18px;
+    background: #fff;
+  }
+  body.woocommerce-account .woocommerce-Addresses { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  body.woocommerce-account .woocommerce-Address {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 15px;
+    border: 1px solid rgba(24,59,53,.08);
+    border-radius: 16px;
+    background: #fff;
+  }
+  body.woocommerce-account .woocommerce-Address-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  body.woocommerce-account .woocommerce-Address-title h2 { margin: 0; color: #244436; font: 400 14px/20px "Roboto", Arial, sans-serif; }
+}
