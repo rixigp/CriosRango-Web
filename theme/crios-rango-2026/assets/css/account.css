@@ -583,3 +583,62 @@
    font: 400 15px/20px "Roboto", Arial, sans-serif !important; box-shadow: none !important;
  }
 }
+
+
+/* Mobile native shipping address form: same canonical Profile rail and field system. */
+@media (max-width: 767px) {
+ body.woocommerce-account.woocommerce-edit-address .cr-main > .cr-shell.cr-page-shell {
+   width: 100%; max-width: none; margin-inline: auto; padding-block: 0;
+ }
+ body.woocommerce-account.woocommerce-edit-address .cr-page,
+ body.woocommerce-account.woocommerce-edit-address .cr-page .cr-prose {
+   width: 100%; max-width: none; margin: 0; background: transparent;
+ }
+ body.woocommerce-account.woocommerce-edit-address .cr-page__header,
+ body.woocommerce-account.woocommerce-edit-address .cr-footer { display: none !important; }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content {
+   box-sizing: border-box; width: 100% !important; max-width: none; margin: 0 !important; padding: 0;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content > h2,
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields > h2,
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields > h3 { display: none !important; }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields {
+   box-sizing: border-box; width: min(calc(100% - 40px), var(--cr-shell)); margin: 0 auto;
+   padding: 0 0 calc(88px + env(safe-area-inset-bottom)) !important;
+   border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields__field-wrapper {
+   box-sizing: border-box; width: 100%; margin: 0; padding: 0;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row {
+   position: relative; float: none; box-sizing: border-box; width: 100%; margin: 0 0 16px; padding: 0;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields label {
+   display: block; margin: 0 0 6px; color: #183b35; font: 300 12px/17px "Roboto", Arial, sans-serif;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields input.input-text,
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields textarea,
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields select,
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection--single {
+   box-sizing: border-box; display: block; width: 100%; min-width: 0; min-height: 50px;
+   border: 1.5px solid #183b35; border-radius: 12px; background: #fff; color: #20241f;
+   padding: 12px 14px; box-shadow: none; font: 300 15px/1.35 "Roboto", Arial, sans-serif;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-container {
+   width: 100% !important; min-width: 0;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection--single {
+   display: flex; align-items: center; height: 50px; padding: 0;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection__rendered {
+   min-width: 0; padding: 0 36px 0 14px; color: #20241f; font: 300 15px/1.35 "Roboto", Arial, sans-serif;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection__arrow {
+   top: 0; right: 8px; height: 50px;
+ }
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields button[type="submit"] {
+   box-sizing: border-box; display: block; width: 100%; min-height: 50px; margin: 8px 0 0; padding: 0 20px;
+   border: 0; border-radius: 13px; background: #183b35 !important; color: #fff !important;
+   font: 400 15px/20px "Roboto", Arial, sans-serif !important; box-shadow: none !important;
+ }
+}
