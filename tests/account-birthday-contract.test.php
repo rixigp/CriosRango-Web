@@ -47,6 +47,11 @@ namespace {
     function wp_is_mobile() { return true; }
     function wp_verify_nonce( $nonce, $action ) { return $GLOBALS['test_nonce_valid'] && 'theme-nonce' === $nonce && 'cr2026_update_birth_date' === $action; }
     function sanitize_text_field( $value ) { return trim( (string) $value ); }
+    function wp_parse_args( $args, $defaults = array() ) { return array_merge( $defaults, (array) $args ); }
+    function is_account_page() { return true; }
+    function wc_get_page_permalink( $page ) { return '/mi-cuenta/'; }
+    function cr2026_render_category_toolbar( $title, $back_url, $kind, $flag ) { $GLOBALS['test_toolbar'] = array( $title, $back_url, $kind, $flag ); }
+    function get_query_var( $key ) { return ''; }
     function sanitize_key( $value ) { return preg_replace( '/[^a-z0-9_\\-]/', '', strtolower( (string) $value ) ); }
     function wp_unslash( $value ) { return $value; }
     function wp_date( $format ) { return '2026-11-10'; }
@@ -94,6 +99,29 @@ namespace {
     contract_reset();
     \Wlr\App\Helpers\EarnCampaign::$user = (object) array( 'birth_date' => strtotime( '1991-06-07 UTC' ) );
     contract_assert( '1991-06-07' === cr2026_account_wlr_birth_date( \Wlr\App\Helpers\EarnCampaign::$user ), 'legacy birth_date timestamp fallback is converted through WPLoyalty helper' );
+
+    contract_reset();
+    $array_user = array( 'birthday_date' => '2026-10-07', 'birth_date' => strtotime( '1991-06-07 UTC' ) );
+    contract_assert( '2026-10-07' === cr2026_account_wlr_birth_date( $array_user ), 'array-shaped WPLoyalty data preserves ISO birthday_date' );
+    contract_assert( 'birthday_date' === cr2026_account_wlr_birth_date_source( $array_user ), 'birthday_date is identified as the selected source' );
+
+    contract_reset();
+    $invalid_primary = array( 'birthday_date' => '2026-02-31', 'birth_date' => strtotime( '1991-06-07 UTC' ) );
+    contract_assert( '1991-06-07' === cr2026_account_wlr_birth_date( $invalid_primary ), 'invalid birthday_date falls back to the WPLoyalty timestamp helper' );
+
+    $shipping_fields = cr2026_account_shipping_address_fields( array(
+        'shipping_address_1' => array( 'type' => 'text' ),
+        'shipping_phone' => array( 'type' => 'tel', 'required' => true ),
+    ), 'ES' );
+    contract_assert( isset( $shipping_fields['shipping_address_2'] ), 'native shipping_address_2 field is retained in the address form schema' );
+    contract_assert( 'Dirección adicional / Piso, puerta, etc. (opcional)' === $shipping_fields['shipping_address_2']['label'], 'shipping_address_2 uses the requested mobile label' );
+    contract_assert( false === $shipping_fields['shipping_address_2']['required'] && false === $shipping_fields['shipping_address_2']['hidden'], 'shipping_address_2 remains optional and visible' );
+    contract_assert( true === $shipping_fields['shipping_phone']['required'], 'existing shipping_phone required policy is preserved' );
+
+    $GLOBALS['test_toolbar'] = null;
+    cr2026_account_address_endpoint_toolbar( 'shipping' );
+    contract_assert( 'Dirección de entrega' === $GLOBALS['test_toolbar'][0], 'shipping endpoint argument selects the canonical delivery toolbar heading' );
+    contract_assert( '' === cr2026_account_edit_address_title( 'Shipping address', 'shipping' ), 'WooCommerce secondary shipping heading is removed in mobile markup' );
 
     contract_reset();
     $GLOBALS['test_authenticated'] = false;
