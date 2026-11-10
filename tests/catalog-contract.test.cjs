@@ -1105,8 +1105,8 @@ test('empty cart CTA layout contract evaluates the parent-child centering model 
   assert.doesNotMatch(button, /padding-(?:top|bottom):\s*\d+(?:\.\d+)?px\s*!important/);
 
   // The scoped selectors outrank broad WooCommerce styles; inspect both theme sheets.
-  const parentClassCount = (parentSelector.match(/\\.[\\w-]+/g) || []).length;
-  const buttonClassCount = (buttonSelector.match(/\\.[\\w-]+/g) || []).length;
+  const parentClassCount = (parentSelector.match(/[.][a-zA-Z0-9_-]+/g) || []).length;
+  const buttonClassCount = (buttonSelector.match(/[.][a-zA-Z0-9_-]+/g) || []).length;
   assert.ok(parentClassCount > 2, 'parent selector outranks broad Woo paragraph rules');
   assert.ok(buttonClassCount > 3, 'button selector outranks broad Woo button rules');
   assert.doesNotMatch(mainCss, /return-to-shop|wc-backward|cr-cart-empty-state/,
