@@ -1063,8 +1063,8 @@ test('PRODUCT_DETAIL_UNCHANGED=PASS and BOTTOM_NAV_UNCHANGED=PASS', () => {
 
 
 test('empty cart CTA centering selector matches the actual WooCommerce empty template markup', () => {
-  const emptyCartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-empty.php'), 'utf8');
-  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+  const emptyCartTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/woocommerce/cart/cart-empty.php'), 'utf8');
+  const cartCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/cart.css'), 'utf8');
 
   assert.match(emptyCartTemplate, /<div class="cr-cart-empty-state">/);
   assert.match(emptyCartTemplate, /<p class="return-to-shop">\s*<a class="button wc-backward" href=/);
