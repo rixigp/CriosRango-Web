@@ -557,7 +557,7 @@ test('Checkout benefits card reads live free-shipping zone configuration and ser
   assert.match(woocommercePhp, /\$method->get_option\(\s*'min_amount'/);
   assert.match(woocommercePhp, /\$method->get_option\(\s*'ignore_discounts'/);
   assert.match(woocommercePhp, /get_displayed_subtotal\(\)/);
-  assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_earn_points_message'[\s\S]*?cr2026_checkout_capture_earn_points_message'[\s\S]*?PHP_INT_MAX\s*,\s*2\s*\)/);
+  assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_earn_points_message',\s*'cr2026_checkout_capture_earn_points_message',\s*9999,\s*2\s*\)/);
   assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_redeem_points_message',\s*'cr2026_checkout_suppress_redeem_points_message',\s*9999,\s*2\s*\)/);
   assert.match(woocommercePhp, /\$GLOBALS\['cr2026_checkout_points_earned'\]/);
   assert.match(woocommercePhp, /cr2026_checkout_points_real_earn_callback/);
@@ -569,7 +569,7 @@ test('Checkout benefits card reads live free-shipping zone configuration and ser
 
 
 test('Points & Rewards notices are suppressed only by public filters in normal Checkout, preserving Cart', () => {
-  assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_earn_points_message',\s*'cr2026_checkout_capture_earn_points_message',\s*PHP_INT_MAX,\s*2\s*\)/);
+  assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_earn_points_message',\s*'cr2026_checkout_capture_earn_points_message',\s*9999,\s*2\s*\)/);
   assert.match(woocommercePhp, /add_filter\(\s*'wc_points_rewards_redeem_points_message',\s*'cr2026_checkout_suppress_redeem_points_message',\s*9999,\s*2\s*\)/);
   assert.match(woocommercePhp, /function cr2026_checkout_is_benefits_request\(\)/);
   assert.match(woocommercePhp, /is_checkout\(\)[\s\S]*?is_wc_endpoint_url\( 'order-received' \)/);
