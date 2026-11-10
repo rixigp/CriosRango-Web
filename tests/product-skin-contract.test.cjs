@@ -1048,7 +1048,7 @@ test('mobile cart uses one WooCommerce table cell card and cart-only WPLoyalty f
   assert.match(cartCss, /button\[name="update_cart"\].*clip-path:inset\(50%\)/);
   assert.match(cartCss, /body\.woocommerce-cart \.cr-footer \{ display:none!important; \}/);
   assert.match(emptyTemplate, /Tu carrito está vacío/);
-  assert.match(emptyTemplate, /Añade algo que te guste para continuar/);
+  assert.doesNotMatch(emptyTemplate, /Añade algo que te guste para continuar/);
   assert.match(emptyTemplate, /wc-backward/);
   assert.doesNotMatch(emptyTemplate, /woocommerce_cart_is_empty/);
 });
