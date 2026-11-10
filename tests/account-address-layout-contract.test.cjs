@@ -36,7 +36,7 @@ test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
 });
 
 test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
-  const genericStart = accountCss.indexOf('body.woocommerce-account :is(\\n    .woocommerce-EditAccountForm .form-row input');
+  const genericStart = accountCss.indexOf('.woocommerce-address-fields .form-row input:not([type="hidden"])');
   const genericEnd = accountCss.indexOf('body.woocommerce-account :is(\\n    .woocommerce-EditAccountForm .form-row input:focus', genericStart);
   const generic = accountCss.slice(genericStart, genericEnd);
   assert.ok(genericStart >= 0 && genericEnd > genericStart, 'generic field selector exists');
