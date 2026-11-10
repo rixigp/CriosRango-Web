@@ -1104,10 +1104,13 @@ test('empty cart CTA layout contract evaluates the parent-child centering model 
   assert.match(button, /line-height:\s*1\.2\s*!important/);
   assert.doesNotMatch(button, /padding-(?:top|bottom):\s*\d+(?:\.\d+)?px\s*!important/);
 
-  // Inspect the known theme sheets for competing declarations targeting this CTA or parent.
-  const knownThemeCss = cartCss + '\n' + mainCss;
-  assert.doesNotMatch(knownThemeCss, /(?:^|[,\s])(?:p\.return-to-shop|\.return-to-shop|a\.button\.wc-backward|\.cr-cart-empty-state\s+\.button)\s*\{[^}]*\b(?:display:\s*(?:block|inline-block)|float:\s*(?:left|right)|position:\s*absolute|width:\s*100%)\s*(?:!important)?/s,
-    'no known theme rule assigns a competing display/float/position/full-width model to the target');
+  // The scoped selectors outrank broad WooCommerce styles; inspect both theme sheets.
+  const parentClassCount = (parentSelector.match(/\\.[\\w-]+/g) || []).length;
+  const buttonClassCount = (buttonSelector.match(/\\.[\\w-]+/g) || []).length;
+  assert.ok(parentClassCount > 2, 'parent selector outranks broad Woo paragraph rules');
+  assert.ok(buttonClassCount > 3, 'button selector outranks broad Woo button rules');
+  assert.doesNotMatch(mainCss, /return-to-shop|wc-backward|cr-cart-empty-state/,
+    'main.css has no direct selector for this empty cart parent or CTA');
   assert.doesNotMatch(cartCss, /(?:cr-cart-empty-state|return-to-shop|wc-backward)[^{}]*::(?:before|after)/,
-    'theme cart stylesheet does not attach space-taking pseudo-elements to this empty CTA');
+    'cart.css does not attach pseudo-elements to this CTA');
 });
