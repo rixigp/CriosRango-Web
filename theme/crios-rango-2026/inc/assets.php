@@ -72,7 +72,11 @@ function cr2026_enqueue_assets() {
         cr2026_asset_version( 'assets/css/main.css' )
     );
 
-    if ( function_exists( 'is_account_page' ) && is_account_page() ) {
+    $uses_account_app_skin = function_exists( 'is_account_page' ) && is_account_page();
+    $uses_account_app_skin = $uses_account_app_skin
+        || ( function_exists( 'is_page' ) && is_page( array( 'ayuda', 'preguntas-frecuentes', 'contacto' ) ) );
+
+    if ( $uses_account_app_skin ) {
         wp_enqueue_style(
             'cr2026-account',
             CR2026_URI . '/assets/css/account.css',
