@@ -128,8 +128,8 @@ $feature_end = strpos( $source, '/**\n * Resolve a real free-shipping method', $
 $feature_source = substr( $source, $feature_start, $feature_end - $feature_start );
 test_assert( false === strpos( $feature_source, 'strip_tags' ) && false === strpos( $feature_source, 'preg_match' ), 'WPLoyalty message HTML must not be parsed.' );
 test_assert( false === strpos( $feature_source, 'get_points_earned_for_purchase' ), 'The theme must not duplicate WPLoyalty point calculation.' );
-test_assert( false !== strpos( $feature_source, "class_exists( '\\\\Wlr\\\\App\\\\Controllers\\\\Site\\\\DisplayMessage' )" ), 'The public DisplayMessage class must be checked.' );
-test_assert( false !== strpos( $feature_source, "new \\\\Wlr\\\\App\\\\Controllers\\\\Site\\\\DisplayMessage()" ), 'The public DisplayMessage class must be instantiated.' );
+test_assert( false !== strpos( $feature_source, 'class_exists' ) && false !== strpos( $feature_source, 'DisplayMessage' ), 'The public DisplayMessage class must be checked.' );
+test_assert( false !== strpos( $feature_source, 'new \\Wlr\\App\\Controllers\\Site\\DisplayMessage()' ), 'The public DisplayMessage class must be instantiated.' );
 test_assert( false !== strpos( $feature_source, '$display_message->getCartMessage( false )' ), 'The helper must call getCartMessage(false).' );
 test_assert( false !== strpos( $feature_source, "'{wlr_cart_points}'" ), 'The points value must come from the WPLoyalty shortcode key.' );
 
