@@ -8,6 +8,9 @@ get_header( 'shop' );
 ?>
 <main id="primary" class="cr-main cr-main--woocommerce cr-brands-index">
     <div class="cr-brands-index__shell">
+        <?php if ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) : ?>
+            <?php cr2026_render_category_toolbar( __( 'Nuestras marcas', 'crios-rango-2026' ), home_url( '/' ), 'parent', false ); ?>
+        <?php endif; ?>
         <header class="cr-brands-index__toolbar">
             <a class="cr-parent-category__back" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Volver a Inicio', 'crios-rango-2026' ); ?>">
                 <?php echo cr2026_icon( 'arrow' ); ?>

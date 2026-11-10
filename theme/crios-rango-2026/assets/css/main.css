@@ -2025,6 +2025,16 @@ body.cr-parent-category-view .cr-parent-category__canvas {
   font: 300 21px/28px "Roboto", Arial, sans-serif;
   letter-spacing: 0;
 }
+
+.cr-parent-category__toolbar--no-back { grid-template-columns: minmax(0, 1fr) auto; }
+
+@media (max-width: 767px) {
+  .cr-page__header { display: none !important; }
+  .cr-brands-index__toolbar { display: none !important; }
+  .cr-brand-archive__back-row { display: none !important; }
+  .cr-empty-state > h1 { display: none !important; }
+}
+
 .cr-parent-category__filters {
   min-height: 38px;
   padding: 0 16px;

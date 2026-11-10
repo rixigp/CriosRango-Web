@@ -13,12 +13,16 @@ $account_url = wc_get_page_permalink( 'myaccount' );
 $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_permalink( 'shop' ) );
 ?>
 <section class="cr-account-orders" aria-labelledby="cr-account-orders-title">
-    <div class="cr-account-orders__toolbar">
-        <a class="cr-account-orders__back" href="<?php echo esc_url( $account_url ); ?>" aria-label="<?php esc_attr_e( 'Volver a Cuenta', 'crios-rango-2026' ); ?>">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"></path></svg>
-        </a>
-        <h1 id="cr-account-orders-title"><?php esc_html_e( 'Pedidos', 'crios-rango-2026' ); ?></h1>
-    </div>
+    <?php if ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) : ?>
+        <?php cr2026_render_category_toolbar( __( 'Pedidos', 'crios-rango-2026' ), $account_url, 'parent', false, '', 'cr-account-orders-title' ); ?>
+    <?php else : ?>
+        <div class="cr-account-orders__desktop-toolbar">
+            <a class="cr-account-orders__back" href="<?php echo esc_url( $account_url ); ?>" aria-label="<?php esc_attr_e( 'Volver a Cuenta', 'crios-rango-2026' ); ?>">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"></path></svg>
+            </a>
+            <h1 id="cr-account-orders-title" class="cr-account-orders__desktop-title"><?php esc_html_e( 'Pedidos', 'crios-rango-2026' ); ?></h1>
+        </div>
+    <?php endif; ?>
 
     <?php if ( $has_orders ) : ?>
         <div class="cr-account-orders__filters" role="group" aria-label="<?php esc_attr_e( 'Filtrar pedidos', 'crios-rango-2026' ); ?>">

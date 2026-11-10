@@ -174,10 +174,13 @@ function cr2026_checkout_render_toolbar() {
 }
 add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_render_toolbar', 5 );
 
-function cr2026_render_category_toolbar( $title, $back_url, $filter_context = 'parent', $show_filters = true, $right_action_html = '', $title_id = '' ) {
+function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context = 'parent', $show_filters = true, $right_action_html = '', $title_id = '' ) {
     $title_id_attribute = '' !== $title_id ? ' id="' . esc_attr( $title_id ) . '"' : '';
-    echo '<div class="cr-parent-category__toolbar">';
-    echo '<a class="cr-parent-category__back" href="' . esc_url( $back_url ) . '" aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
+    $toolbar_class = '' === $back_url ? 'cr-parent-category__toolbar cr-parent-category__toolbar--no-back' : 'cr-parent-category__toolbar';
+    echo '<div class="' . esc_attr( $toolbar_class ) . '">';
+    if ( '' !== $back_url ) {
+        echo '<a class="cr-parent-category__back" href="' . esc_url( $back_url ) . '" aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
+    }
     echo '<h1 class="cr-parent-category__title"' . $title_id_attribute . '>' . esc_html( $title ) . '</h1>';
     if ( '' !== $right_action_html ) {
         echo $right_action_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- locally generated action control.

@@ -17,6 +17,23 @@ function cr2026_account_render_endpoint_toolbar( $title, $back_url = '' ) {
     cr2026_render_category_toolbar( $title, $back_url, 'parent', false );
 }
 
+
+/** Mobile page title for the native WooCommerce order-detail endpoint. */
+function cr2026_account_view_order_endpoint_toolbar( $order_id = 0 ) {
+    if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
+        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
+        return;
+    }
+    $order = function_exists( 'wc_get_order' ) ? wc_get_order( absint( $order_id ) ) : false;
+    if ( $order instanceof WC_Order && (int) $order->get_customer_id() === (int) get_current_user_id() ) {
+        $title = sprintf( __( 'Pedido #%s', 'crios-rango-2026' ), $order->get_order_number() );
+    } else {
+        $title = __( 'Detalle del pedido', 'crios-rango-2026' );
+    }
+    cr2026_account_render_endpoint_toolbar( $title, wc_get_account_endpoint_url( 'orders' ) );
+}
+add_action( 'woocommerce_account_view-order_endpoint', 'cr2026_account_view_order_endpoint_toolbar', 1 );
+
 /** Add the title before WPLoyalty renders its native reward page. */
 function cr2026_account_loyalty_endpoint_toolbar() {
     if ( function_exists( 'is_account_page' ) && is_account_page()

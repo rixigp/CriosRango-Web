@@ -27,6 +27,9 @@ if ( $is_product_search && ! empty( $GLOBALS['wp_query']->posts ) ) {
 ?>
 <main id="primary" class="cr-main<?php echo $is_product_search ? ' cr-search-results-page' : ''; ?>">
     <div class="cr-shell cr-page-shell">
+        <?php if ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) : ?>
+            <?php cr2026_render_category_toolbar( sprintf( __( 'Buscar: %s', 'crios-rango-2026' ), $search_query ), cr2026_shop_url(), 'parent', false ); ?>
+        <?php endif; ?>
         <?php if ( ! $is_product_search ) : ?>
             <header class="cr-page__header">
                 <p class="cr-eyebrow"><?php esc_html_e( 'Resultados', 'crios-rango-2026' ); ?></p>

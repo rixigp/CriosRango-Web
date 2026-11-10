@@ -35,6 +35,12 @@ get_header( 'shop' );
     data-brand-term-slug="<?php echo esc_attr( $brand_term->slug ); ?>"
     data-brand-term-count="<?php echo esc_attr( (int) $brand_term->count ); ?>">
     <div class="cr-product-listing__shell cr-brand-archive__shell">
+        <?php if ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) : ?>
+            <?php
+            $brand_filter_action = '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
+            cr2026_render_category_toolbar( $brand_term->name, $brands_index_url, 'parent', false, $brand_filter_action );
+            ?>
+        <?php endif; ?>
         <div class="cr-brand-archive__back-row">
             <a class="cr-parent-category__back" href="<?php echo esc_url( $brands_index_url ); ?>"
                 data-fallback-url="<?php echo esc_url( $brands_index_url ); ?>"
