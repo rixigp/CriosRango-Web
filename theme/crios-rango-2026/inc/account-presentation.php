@@ -329,7 +329,7 @@ function cr2026_account_wlr_user( $email ) {
     }
 }
 
-/** Read a WPLoyalty field without assuming whether its result is an array or model object. */
+/** Read WPLoyalty values from arrays, ArrayAccess objects and model-backed properties. */
 function cr2026_account_wlr_field( $wlr_user, $field ) {
     if ( is_array( $wlr_user ) ) {
         return array_key_exists( $field, $wlr_user ) ? $wlr_user[ $field ] : null;
@@ -345,15 +345,69 @@ function cr2026_account_wlr_field( $wlr_user, $field ) {
     }
     if ( property_exists( $wlr_user, $field ) ) {
         try {
-            return $wlr_user->{$field};
+            $property = new \ReflectionProperty( $wlr_user, $field );
+            return $property->getValue( $wlr_user );
         } catch ( \Throwable $error ) {
-            return null;
+            // Continue to the model's supported attribute accessors below.
+        }
+    }
+    if ( is_callable( array( $wlr_user, 'getAttribute' ) ) ) {
+        try {
+            $value = $wlr_user->getAttribute( $field );
+            if ( null !== $value ) {
+                return $value;
+            }
+        } catch ( \Throwable $error ) {
+            // Try the model's array accessors below.
+        }
+    }
+    foreach ( array( 'getAttributes', 'toArray', 'getData' ) as $method ) {
+        if ( ! is_callable( array( $wlr_user, $method ) ) ) {
+            continue;
+        }
+        try {
+            $data = $wlr_user->{$method}();
+            if ( is_array( $data ) && array_key_exists( $field, $data ) ) {
+                return $data[ $field ];
+            }
+        } catch ( \Throwable $error ) {
+            // An unsupported accessor must not break the Account page.
         }
     }
     return null;
 }
 
-/** Return a WPLoyalty field's presence without ever exposing its value. */
+/** Check field existence independently from whether its stored value is empty. */
+function cr2026_account_wlr_field_exists( $wlr_user, $field ) {
+    if ( is_array( $wlr_user ) ) {
+        return array_key_exists( $field, $wlr_user );
+    }
+    if ( ! is_object( $wlr_user ) ) {
+        return false;
+    }
+    if ( $wlr_user instanceof \ArrayAccess && $wlr_user->offsetExists( $field ) ) {
+        return true;
+    }
+    if ( property_exists( $wlr_user, $field ) || isset( $wlr_user->{$field} ) ) {
+        return true;
+    }
+    foreach ( array( 'getAttributes', 'toArray', 'getData' ) as $method ) {
+        if ( ! is_callable( array( $wlr_user, $method ) ) ) {
+            continue;
+        }
+        try {
+            $data = $wlr_user->{$method}();
+            if ( is_array( $data ) && array_key_exists( $field, $data ) ) {
+                return true;
+            }
+        } catch ( \Throwable $error ) {
+            // Keep the diagnostic read-only and fail closed.
+        }
+    }
+    return false;
+}
+
+/** Return only whether a WPLoyalty field contains a non-empty value. */
 function cr2026_account_wlr_field_present( $wlr_user, $field ) {
     $value = cr2026_account_wlr_field( $wlr_user, $field );
     return null !== $value && '' !== $value && '0000-00-00' !== $value && 0 !== $value && '0' !== $value;
@@ -446,19 +500,24 @@ function cr2026_account_render_birth_date_field() {
         return;
     }
     $current_user = wp_get_current_user();
-    $wlr_user = cr2026_account_wlr_user( $current_user->user_email );
+    $user_email = isset( $current_user->user_email ) ? (string) $current_user->user_email : '';
+    $wlr_user = cr2026_account_wlr_user( $user_email );
     $birth_date = cr2026_account_wlr_birth_date( $wlr_user );
     $editable = cr2026_account_wlr_can_edit_birth_date( $wlr_user );
     $wlr_user_found = is_object( $wlr_user ) || is_array( $wlr_user );
-    $birthday_date_present = cr2026_account_wlr_field_present( $wlr_user, 'birthday_date' );
-    $birth_date_present = cr2026_account_wlr_field_present( $wlr_user, 'birth_date' );
+    $birthday_date_property_exists = cr2026_account_wlr_field_exists( $wlr_user, 'birthday_date' );
+    $birthday_date_has_value = cr2026_account_wlr_field_present( $wlr_user, 'birthday_date' );
+    $birth_date_property_exists = cr2026_account_wlr_field_exists( $wlr_user, 'birth_date' );
+    $birth_date_has_value = cr2026_account_wlr_field_present( $wlr_user, 'birth_date' );
     $birth_date_source = cr2026_account_wlr_birth_date_source( $wlr_user );
     wp_nonce_field( 'cr2026_update_birth_date', 'cr2026_birth_date_nonce' );
     ?>
     <p class="form-row form-row-wide cr-account-birth-date"
         data-wlr-user-found="<?php echo $wlr_user_found ? 'yes' : 'no'; ?>"
-        data-wlr-birthday-date-present="<?php echo $birthday_date_present ? 'yes' : 'no'; ?>"
-        data-wlr-birth-date-present="<?php echo $birth_date_present ? 'yes' : 'no'; ?>"
+        data-wlr-birthday-date-property-exists="<?php echo $birthday_date_property_exists ? 'yes' : 'no'; ?>"
+        data-wlr-birthday-date-has-value="<?php echo $birthday_date_has_value ? 'yes' : 'no'; ?>"
+        data-wlr-birth-date-property-exists="<?php echo $birth_date_property_exists ? 'yes' : 'no'; ?>"
+        data-wlr-birth-date-has-value="<?php echo $birth_date_has_value ? 'yes' : 'no'; ?>"
         data-birth-date-value-source="<?php echo esc_attr( $birth_date_source ); ?>"
         data-birth-date-input-type="date"
         data-birth-date-value-loaded="<?php echo '' !== $birth_date ? 'yes' : 'no'; ?>">

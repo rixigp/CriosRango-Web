@@ -109,6 +109,13 @@ test('legacy page headings are hidden on mobile while their desktop presentation
   assert.match(brandArchive, /<div class="cr-brand-archive__back-row">/);
 });
 
+test('Account page template does not emit its generic page title on mobile Account endpoints', () => {
+  assert.match(page, /\$is_mobile_account\s*=\s*function_exists\( 'wp_is_mobile' \)[\s\S]*?is_account_page\(\)/);
+  assert.match(page, /if \( ! \$is_mobile_account && function_exists\( 'wp_is_mobile' \)/);
+  assert.match(page, /if \( ! \$is_mobile_account \) : \?>[\s\S]*?<header class="cr-page__header">/);
+  assert.match(account, /cr2026_account_render_endpoint_toolbar\( \$title/);
+});
+
 test('one mobile PAGE TITLE is emitted per route and Product Detail remains excluded', () => {
   assert.doesNotMatch(orders, /cr-account-orders__toolbar/);
   assert.match(page, /! cr2026_account_is_help_page\(\)/);
