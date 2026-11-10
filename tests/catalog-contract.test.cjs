@@ -377,6 +377,7 @@ test('product search routing overrides WooCommerce Shop template and keeps the p
   assert.match(php,/add_filter\( 'template_include', 'cr2026_product_search_template_include', 99 \)/);
   assert.match(searchTemplate,/\$is_product_search\s*=\s*is_search\(\)/);
   assert.match(searchTemplate,/cr2026_render_product_card\( \$search_product, \$card_index \)/);
+  assert.match(searchTemplate,/cr2026_render_category_toolbar\( sprintf\( __\( 'Buscar: %s'/);
   assert.doesNotMatch(searchTemplate,/cr2026_home_categories|cr-app-category-grid|Categorías/);
   assert.match(searchTemplate,/get_search_query\(\)/);
   assert.match(searchTemplate,/No encontramos productos para/);
@@ -469,7 +470,8 @@ test('product_brand archives use the fixed brand context and shared catalog-page
   assert.match(brandArchive, /data-cr-product-grid/);
   assert.match(brandArchive, /data-cr-product-load-more/);
   assert.doesNotMatch(brandArchive, /while \( have_posts\(\) \)|the_post\(\)|the_posts_pagination\(/);
-  assert.doesNotMatch(brandArchive, /new WP_Query|cr2026_render_category_toolbar|cr2026_home_categories|Categorías/);
+  assert.match(brandArchive, /cr2026_render_category_toolbar\( \$brand_term->name, \$brands_index_url/);
+  assert.doesNotMatch(brandArchive, /new WP_Query|cr2026_home_categories|Categorías/);
   assert.match(helpers, /is_tax\( 'product_brand' \)/);
   assert.match(helpers, /function cr2026_home_brand_image_url\( \$term \)/);
   assert.match(helpers, /array\( 'thumbnail_id', 'image_id' \)/);
