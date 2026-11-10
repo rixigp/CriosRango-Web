@@ -1122,14 +1122,8 @@ function cr2026_checkout_payment_result_page_payload() {
 
 
 /**
- * Checkout benefits card: suppress only the legacy Points & Rewards messages
- * and the native coupon prompt on Checkout. Cart rendering and coupon behavior
- * remain untouched.
- */
-/**
- * Suppress only the native Checkout benefit prompts immediately before
- * WooCommerce renders them. Reaching this hook is the Checkout-context guard;
- * no early conditional query-tag check is needed.
+ * Checkout benefits card: suppress Points & Rewards through its public filters
+ * and remove only the native coupon prompt. Cart behavior remains untouched.
  */
 /**
  * The coupon form is Checkout-only. Points & Rewards notices are suppressed
@@ -1272,7 +1266,7 @@ function cr2026_checkout_points_real_earn_callback() {
     global $wp_filter;
 
     if ( ! isset( $wp_filter['woocommerce_before_checkout_form'] )
-        || ! $wp_filter['woocommerce_before_checkout_form'] instanceof WP_Hook ) {
+        || ! ( $wp_filter['woocommerce_before_checkout_form'] instanceof WP_Hook ) ) {
         return null;
     }
 
@@ -1302,6 +1296,7 @@ function cr2026_checkout_benefits_points_earned( $refresh_from_real_callback = f
     if ( $refresh_from_real_callback ) {
         $callback = cr2026_checkout_points_real_earn_callback();
         if ( null === $callback ) {
+            $GLOBALS['cr2026_checkout_points_earned'] = null;
             return null;
         }
 
