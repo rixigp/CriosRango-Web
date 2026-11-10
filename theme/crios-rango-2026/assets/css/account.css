@@ -426,3 +426,5 @@
   .cr-account-help__hours p span:last-child { color: #303630; text-align: right; }
   body.cr-account-help-page .cr-account-help + * { margin-top: 18px; }
 }
+
+@media (min-width: 768px) { .cr-account-help { display: none !important; } }
