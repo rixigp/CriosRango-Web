@@ -519,3 +519,69 @@
  body.woocommerce-account .wpfda-delete-account-container select { box-sizing: border-box; width: 100%; min-height: 46px; border: 1px solid rgba(24,59,53,.15); border-radius: 12px; background: #fff; padding: 10px 12px; }
  body.woocommerce-account .wpfda-delete-account-container button { min-height: 46px; border-radius: 12px; background: #183b35; color: #fff; font: 400 14px/20px "Roboto", Arial, sans-serif; }
 }
+
+
+/* Personal data app subview: preserve the native edit-account form and POST. */
+@media (max-width: 767px) {
+ body.woocommerce-account.cr-account-profile-view-personal .cr-main > .cr-shell.cr-page-shell,
+ body.woocommerce-account.cr-account-profile-view-password .cr-main > .cr-shell.cr-page-shell {
+   width: 100%; max-width: none; margin-inline: auto; padding-block: 0;
+ }
+ body.woocommerce-account.cr-account-profile-view-personal .cr-page,
+ body.woocommerce-account.cr-account-profile-view-personal .cr-page .cr-prose,
+ body.woocommerce-account.cr-account-profile-view-password .cr-page,
+ body.woocommerce-account.cr-account-profile-view-password .cr-page .cr-prose {
+   width: 100%; max-width: none; margin: 0; background: transparent;
+ }
+ body.woocommerce-account.cr-account-profile-view-personal .cr-page__header,
+ body.woocommerce-account.cr-account-profile-view-password .cr-page__header,
+ body.woocommerce-account.cr-account-profile-view-personal .cr-footer,
+ body.woocommerce-account.cr-account-profile-view-password .cr-footer { display: none !important; }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-MyAccount-content,
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-MyAccount-content {
+   box-sizing: border-box; width: 100% !important; max-width: none; margin: 0 !important; padding: 0;
+ }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm,
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm {
+   box-sizing: border-box; width: min(calc(100% - 40px), var(--cr-shell)); margin: 0 auto;
+   padding: 0 0 calc(88px + env(safe-area-inset-bottom)) !important;
+   border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
+ }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p.form-row,
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p.form-row {
+   position: relative; float: none; box-sizing: border-box; width: 100%; margin: 0 0 16px; padding: 0;
+ }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm label,
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm label {
+   display: block; margin: 0 0 6px; color: #183b35; font: 300 12px/17px "Roboto", Arial, sans-serif;
+ }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm input.input-text,
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm input.input-text {
+   box-sizing: border-box; display: block; width: 100%; min-width: 0; min-height: 50px;
+   border: 1.5px solid #183b35; border-radius: 12px; background: #fff; color: #20241f;
+   padding: 12px 14px; box-shadow: none; font: 300 15px/1.35 "Roboto", Arial, sans-serif;
+ }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_display_name) {
+   display: none !important;
+ }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm fieldset { display: none !important; }
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_first_name),
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_last_name),
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_display_name),
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_email),
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > .clear { display: none !important; }
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset {
+   display: block !important; margin: 0; padding: 0; border: 0;
+ }
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset legend { display: none !important; }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm > p:has(button[name="save_account_details"]),
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > p:has(button[name="save_account_details"]) {
+   width: 100%; margin: 8px 0 0;
+ }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm button[type="submit"],
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm button[type="submit"] {
+   box-sizing: border-box; display: block; width: 100%; min-height: 50px; margin: 0; padding: 0 20px;
+   border: 0; border-radius: 13px; background: #183b35 !important; color: #fff !important;
+   font: 400 15px/20px "Roboto", Arial, sans-serif !important; box-shadow: none !important;
+ }
+}
