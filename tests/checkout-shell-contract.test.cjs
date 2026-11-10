@@ -552,21 +552,21 @@ test('shipping native hook remains core while only the former theme heading call
 });
 
 test('Checkout benefits card keeps live shipping and obtains points through the WPLoyalty public API', () => {
-  assert.match(woocommercePhp, /WC_Shipping_Zones::get_zone_matching_package\\(\\s*\\$package\\s*\\)/);
-  assert.match(woocommercePhp, /\\$method->get_option\\(\\s*'requires'/);
-  assert.match(woocommercePhp, /\\$method->get_option\\(\\s*'min_amount'/);
-  assert.match(woocommercePhp, /\\$method->get_option\\(\\s*'ignore_discounts'/);
-  assert.match(woocommercePhp, /get_displayed_subtotal\\(\\)/);
-  assert.match(woocommercePhp, /add_filter\\(\\s*'wlr_is_checkout_earn_message_enabled',\\s*'__return_false'\\s*\\)/);
-  assert.match(woocommercePhp, /add_filter\\(\\s*'wlr_is_checkout_redeem_message_enabled',\\s*'__return_false'\\s*\\)/);
-  assert.match(woocommercePhp, /add_filter\\(\\s*'wlr_points_rewards_earn_points_message'/);
-  assert.match(woocommercePhp, /\\$short_code_list\\['\\{wlr_cart_points\\}'\\]/);
-  assert.match(woocommercePhp, /class_exists\\(\\s*'\\\\\\\\Wlr\\\\\\\\App\\\\\\\\Controllers\\\\\\\\Site\\\\\\\\DisplayMessage'\\s*\\)/);
-  assert.match(woocommercePhp, /new \\\\Wlr\\\\App\\\\Controllers\\\\Site\\\\DisplayMessage\\(\\)/);
-  assert.match(woocommercePhp, /->getCartMessage\\(\\s*false\\s*\\)/);
+  assert.match(woocommercePhp, /WC_Shipping_Zones::get_zone_matching_package\(\s*\$package\s*\)/);
+  assert.match(woocommercePhp, /\$method->get_option\(\s*'requires'/);
+  assert.match(woocommercePhp, /\$method->get_option\(\s*'min_amount'/);
+  assert.match(woocommercePhp, /\$method->get_option\(\s*'ignore_discounts'/);
+  assert.match(woocommercePhp, /get_displayed_subtotal\(\)/);
+  assert.match(woocommercePhp, /add_filter\(\s*'wlr_is_checkout_earn_message_enabled',\s*'__return_false'\s*\)/);
+  assert.match(woocommercePhp, /add_filter\(\s*'wlr_is_checkout_redeem_message_enabled',\s*'__return_false'\s*\)/);
+  assert.match(woocommercePhp, /add_filter\(\s*'wlr_points_rewards_earn_points_message'/);
+  assert.match(woocommercePhp, /\$short_code_list\['\{wlr_cart_points\}'\]/);
+  assert.match(woocommercePhp, /class_exists/);
+  assert.match(woocommercePhp, /new \\Wlr\\App\\Controllers\\Site\\DisplayMessage\(\)/);
+  assert.match(woocommercePhp, /->getCartMessage\(\s*false\s*\)/);
   assert.match(woocommercePhp, /woocommerce_update_order_review_fragments/);
-  assert.match(woocommercePhp, /\\.cr-checkout-benefits/);
-  assert.match(checkoutCss, /\\.cr-checkout-benefits__row/);
+  assert.match(woocommercePhp, /\.cr-checkout-benefits/);
+  assert.match(checkoutCss, /\.cr-checkout-benefits__row/);
   assert.doesNotMatch(woocommercePhp, /woocommerce_package_rates|woocommerce_shipping_rate_cost|woocommerce_shipping_methods/);
 });
 
@@ -582,12 +582,12 @@ test('WPLoyalty native Checkout messages are disabled without Cart changes or le
     woocommercePhp.indexOf('/** Render the single server-generated Checkout benefits card')
   );
   assert.match(pointsFn, /class_exists/);
-  assert.match(pointsFn, /new \\\\Wlr\\\\App\\\\Controllers\\\\Site\\\\DisplayMessage/);
-  assert.match(pointsFn, /getCartMessage\\( false \\)/);
+  assert.match(pointsFn, /new \\Wlr\\App\\Controllers\\Site\\DisplayMessage/);
+  assert.match(pointsFn, /getCartMessage\(\s*false\s*\)/);
   assert.match(pointsFn, /wlr_points_rewards_earn_points_message/);
-  assert.match(pointsFn, /remove_filter\\(/);
+  assert.match(pointsFn, /remove_filter\(/);
   assert.doesNotMatch(pointsFn, /strip_tags|preg_match|get_points_earned_for_purchase|WP_Hook/);
-  assert.match(woocommercePhp, /cr2026_checkout_benefits_points_earned\\(\\)/);
+  assert.match(woocommercePhp, /cr2026_checkout_benefits_points_earned\(\)/);
   assert.match(woocommercePhp, /woocommerce_update_order_review_fragments/);
 });
 
