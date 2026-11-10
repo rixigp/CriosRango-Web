@@ -165,3 +165,138 @@
 @media (min-width: 768px) {
   .cr-account-orders { max-width: 900px; margin-inline: auto; }
 }
+
+/* WPLoyalty native reward page: app-skin presentation only. */
+.cr-account-endpoint-toolbar { min-height: 44px; display: flex; align-items: center; gap: 12px; margin: 0 0 16px; color: #183b35; font-family: "Roboto", Arial, sans-serif; }
+.cr-account-endpoint-toolbar__back { width: 34px; height: 34px; display: inline-flex; flex: 0 0 34px; align-items: center; justify-content: center; color: #183b35; text-decoration: none; }
+.cr-account-endpoint-toolbar__back svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.cr-account-endpoint-toolbar h1 { margin: 0; color: #183b35; font: 400 21px/28px "Roboto", Arial, sans-serif; }
+@media (max-width: 767px) {
+  body.woocommerce-account .wlr-myaccount-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: var(--cr-app-canvas) !important;
+    color: #20241f;
+    font-family: "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account .wlr-myaccount-page > * { margin-block: 10px; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-heading-container { max-width: none; margin: 0 0 10px; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-heading {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    color: #183b35 !important;
+    font: 400 17px/23px "Roboto", Arial, sans-serif !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+  body.woocommerce-account .wlr-myaccount-page .wlr-points-container { gap: 10px; margin-bottom: 16px; }
+  body.woocommerce-account .wlr-myaccount-page #wlr-points {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px !important;
+    width: 100%;
+  }
+  body.woocommerce-account .wlr-myaccount-page #wlr-available-points,
+  body.woocommerce-account .wlr-myaccount-page #wlr-redeemed-points,
+  body.woocommerce-account .wlr-myaccount-page #wlr-used-rewards {
+    box-sizing: border-box;
+    width: 100% !important;
+    min-width: 0;
+    min-height: 100px;
+    padding: 12px !important;
+    gap: 8px;
+    border: 1px solid rgba(24,59,53,.09) !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+  }
+  body.woocommerce-account .wlr-myaccount-page #wlr-used-rewards { grid-column: 1 / -1; }
+  body.woocommerce-account .wlr-myaccount-page #wlr-available-points-heading,
+  body.woocommerce-account .wlr-myaccount-page #wlr-redeemed-points-heading,
+  body.woocommerce-account .wlr-myaccount-page #wlr-used-rewards-heading {
+    color: #66716a !important;
+    font: 300 11px/16px "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account .wlr-myaccount-page #wlr-available-point-value,
+  body.woocommerce-account .wlr-myaccount-page #wlr-redeemed-point-value,
+  body.woocommerce-account .wlr-myaccount-page #wlr-used-reward-value-count {
+    color: #244436 !important;
+    font: 400 21px/26px "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account .wlr-myaccount-page #wlr-levels {
+    width: 100%;
+    border: 1px solid rgba(24,59,53,.09) !important;
+    border-radius: 16px !important;
+    background: #fff;
+  }
+  body.woocommerce-account .wlr-myaccount-page #wlr-levels .wlr-level-name-section { padding: 14px 14px 0; }
+  body.woocommerce-account .wlr-myaccount-page .level-points { padding: 16px 14px !important; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-referral-box,
+  body.woocommerce-account .wlr-myaccount-page .wlr-transaction-blog,
+  body.woocommerce-account .wlr-myaccount-page .wlr-enable-email-sent-blog,
+  body.woocommerce-account .wlr-myaccount-page .wlr-level-details,
+  body.woocommerce-account .wlr-myaccount-page .wlr-user-details,
+  body.woocommerce-account .wlr-myaccount-page .wlr-referral-blog,
+  body.woocommerce-account .wlr-myaccount-page .wlr-your-reward,
+  body.woocommerce-account .wlr-myaccount-page .wlr-earning-options {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  body.woocommerce-account .wlr-myaccount-page .wlr-my-rewards-sections,
+  body.woocommerce-account .wlr-myaccount-page .wlr-user-reward-contents { min-width: 0; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-user-reward-titles {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    overflow-x: auto;
+    border-bottom: 1px solid rgba(24,59,53,.1) !important;
+  }
+  body.woocommerce-account .wlr-myaccount-page .wlr-my-rewards-title {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 8px 12px;
+    color: #66716a;
+    font: 300 12px/18px "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account .wlr-myaccount-page .wlr-my-rewards-title.active {
+    border-bottom: 2px solid #244436 !important;
+    color: #244436 !important;
+  }
+  body.woocommerce-account .wlr-myaccount-page .wlr-my-rewards-title.active h4,
+  body.woocommerce-account .wlr-myaccount-page .wlr-my-rewards-title.active i { color: #244436 !important; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-customer-reward,
+  body.woocommerce-account .wlr-myaccount-page .wlr-campaign-container {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+  }
+  body.woocommerce-account .wlr-myaccount-page .wlr-reward-card,
+  body.woocommerce-account .wlr-myaccount-page .wlr-coupon-card,
+  body.woocommerce-account .wlr-myaccount-page .wlr-card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0 !important;
+    min-height: 0;
+    padding: 12px !important;
+    border: 1px solid rgba(24,59,53,.1) !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+  }
+  body.woocommerce-account .wlr-myaccount-page .wlr-myaccount-page table,
+  body.woocommerce-account .wlr-myaccount-page .wlr-table {
+    width: 100%;
+    max-width: 100%;
+  }
+  body.woocommerce-account .wlr-myaccount-page .wlr-transaction-blog { overflow-x: auto; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-transaction-blog table { min-width: 520px; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-referral-box { display: flex; flex-wrap: wrap; gap: 8px; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-referral-box input { box-sizing: border-box; min-width: 0; max-width: 100%; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-code { border-radius: 10px; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-button,
+  body.woocommerce-account .wlr-myaccount-page .wlr-update-birthday { border-radius: 999px; }
+  body.woocommerce-account .wlr-myaccount-page .wlr-enable-email-sent-blog .wlr-sent-email { justify-content: flex-start; flex-wrap: wrap; }
+}
