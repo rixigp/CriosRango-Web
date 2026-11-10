@@ -715,3 +715,43 @@
     font: 300 11px/16px "Roboto", Arial, sans-serif;
   }
 }
+
+
+/* Final mobile Account content-only corrections; preserve existing rail and control geometry. */
+@media (max-width: 767px) {
+  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_display_name) {
+    position: absolute !important;
+    display: block !important;
+    inset-inline-start: -10000px !important;
+    width: 1px !important;
+    height: 1px !important;
+    min-height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date {
+    display: block !important;
+    visibility: visible !important;
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    clip: auto !important;
+    clip-path: none !important;
+    margin: 0 0 16px !important;
+  }
+  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content > h1,
+  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content > h2,
+  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content > h3,
+  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content .woocommerce-Address-title,
+  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content .woocommerce-column__title,
+  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content .woocommerce-address-fields > h1,
+  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content .woocommerce-address-fields > h2,
+  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content .woocommerce-address-fields > h3 {
+    display: none !important;
+  }
+}
