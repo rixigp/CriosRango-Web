@@ -1060,3 +1060,31 @@ test('PRODUCT_DETAIL_UNCHANGED=PASS and BOTTOM_NAV_UNCHANGED=PASS', () => {
   assert.doesNotMatch(cartCss, /product-detail-skin/);
   assert.doesNotMatch(cartCss, /\.cr-mobile-bottom-nav|\.cr-app-header/);
 });
+
+
+test('empty cart CTA centering selector matches the actual WooCommerce empty template markup', () => {
+  const emptyCartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-empty.php'), 'utf8');
+  const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
+
+  assert.match(emptyCartTemplate, /<div class="cr-cart-empty-state">/);
+  assert.match(emptyCartTemplate, /<p class="return-to-shop">\s*<a class="button wc-backward" href=/);
+
+  const actualCtaSelector = 'body.woocommerce-cart .cr-cart-empty-state > p.return-to-shop > a.button.wc-backward';
+  const actualParentSelector = 'body.woocommerce-cart .cr-cart-empty-state > p.return-to-shop';
+  assert.ok(cartCss.includes(actualParentSelector + ' {'), 'CSS targets the actual immediate paragraph parent');
+  assert.ok(cartCss.includes(actualCtaSelector + ' {'), 'CSS targets the actual template CTA anchor');
+  const ctaRule = cartCss.slice(cartCss.indexOf(actualCtaSelector + ' {'));
+  const ctaDeclarations = ctaRule.slice(0, ctaRule.indexOf('}'));
+  for (const declaration of [
+    'display: flex !important',
+    'width: fit-content !important',
+    'margin-inline: auto !important',
+    'align-items: center !important',
+    'justify-content: center !important',
+    'text-align: center !important',
+    'padding: 8px 16px !important',
+  ]) {
+    assert.ok(ctaDeclarations.includes(declaration), declaration + ' is present in the matching actual CTA rule');
+  }
+  assert.doesNotMatch(ctaRule, /::(?:before|after)/, 'actual CTA selector does not introduce a pseudo-element');
+});
