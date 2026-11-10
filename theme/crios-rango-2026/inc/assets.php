@@ -17,8 +17,33 @@ function cr2026_enqueue_assets() {
     $uses_product_detail_skin = function_exists( 'is_product' ) && is_product();
     $uses_checkout_shell = function_exists( 'is_checkout' ) && is_checkout()
         && ( ! function_exists( 'is_order_received_page' ) || ! is_order_received_page() );
+    $uses_payment_result_modal = $uses_checkout_shell
+        || ( function_exists( 'is_cart' ) && is_cart() )
+        || ( function_exists( 'is_order_received_page' ) && is_order_received_page() );
 
     $main_style_dependencies = array();
+
+    if ( $uses_payment_result_modal ) {
+        wp_enqueue_script(
+            'cr2026-checkout-success-modal',
+            CR2026_URI . '/assets/js/checkout-success-modal.js',
+            array( 'jquery' ),
+            cr2026_asset_version( 'assets/js/checkout-success-modal.js' ),
+            true
+        );
+        wp_localize_script( 'cr2026-checkout-success-modal', 'CR2026CheckoutSuccess', array(
+            'shopUrl' => function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : cr2026_shop_url(),
+        ) );
+        $payment_result_payload = function_exists( 'cr2026_checkout_payment_result_page_payload' )
+            ? cr2026_checkout_payment_result_page_payload() : null;
+        if ( is_array( $payment_result_payload ) ) {
+            wp_add_inline_script(
+                'cr2026-checkout-success-modal',
+                'window.CR2026CheckoutSuccess = Object.assign(window.CR2026CheckoutSuccess || {}, ' . wp_json_encode( array( 'result' => $payment_result_payload ) ) . ');',
+                'before'
+            );
+        }
+    }
 
     if ( $uses_product_detail_skin ) {
         wp_enqueue_style(
@@ -69,16 +94,6 @@ function cr2026_enqueue_assets() {
             true
         );
 
-        wp_enqueue_script(
-            'cr2026-checkout-success-modal',
-            CR2026_URI . '/assets/js/checkout-success-modal.js',
-            array( 'jquery' ),
-            cr2026_asset_version( 'assets/js/checkout-success-modal.js' ),
-            true
-        );
-        wp_localize_script( 'cr2026-checkout-success-modal', 'CR2026CheckoutSuccess', array(
-            'shopUrl' => function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : cr2026_shop_url(),
-        ) );
     }
 
     if ( $uses_product_detail_skin ) {

@@ -1072,7 +1072,7 @@ test('offline checkout success payload is emitted only after successful gateway 
   assert.match(checkoutSuccessPhp, /'order_id' => \(int\) \$order->get_id\(\)/);
   assert.match(checkoutSuccessPhp, /'enabled' => true/);
   assert.match(checkoutSuccessPhp, /\$result\['redirect'\] = '#cr-order-success'/);
-  assert.doesNotMatch(checkoutSuccessPhp, /'cecabank_gateway'/);
+  assert.match(checkoutSuccessPhp, /in_array\( \$gateway, array\( 'cheque', 'cod' \), true \)/);
 });
 
 test('shared success modal is idempotent, accessible, and binds only the WooCommerce success event', () => {
@@ -1093,21 +1093,52 @@ test('shared success modal is idempotent, accessible, and binds only the WooComm
   assert.match(checkoutSuccessJs, /updated_checkout\.crOrderSuccessModal/);
 });
 
-test('Bizum and in-store copy are separate and dynamic; continue destination uses Woo shop permalink', () => {
-  assert.match(checkoutSuccessJs, /'Realiza el pago por Bizum al 679 97 28 88 y utiliza el número de pedido como referencia de pago\.'/);
-  assert.match(checkoutSuccessJs, /'Tu pedido no se procesará hasta que se haya recibido el importe\.'/);
-  assert.match(checkoutSuccessJs, /'Podrás realizar el pago en efectivo en la tienda al recoger tu pedido\.'/);
-  assert.match(checkoutSuccessJs, /'Utiliza el número de pedido como referencia cuando vengas a recogerlo\.'/);
-  assert.match(checkoutSuccessJs, /'Tu pedido #' \+ number \+ ' ha sido recibido\.'/);
-  assert.match(checkoutSuccessJs, /'Seguir comprando'/);
+test('all four payment result variants carry exact copy and dynamic WooCommerce order numbers', () => {
+  for (const copy of [
+    'Realiza el pago por Bizum al 679 97 28 88 y utiliza el número de pedido como referencia de pago.',
+    'Tu pedido no se procesará hasta que se haya recibido el importe.',
+    'Podrás realizar el pago en efectivo en la tienda al recoger tu pedido.',
+    'Utiliza el número de pedido como referencia cuando vengas a recogerlo.',
+    ' se ha pagado correctamente.',
+    'Pago no completado',
+    'No se ha podido completar el pago.',
+    'Puedes volver a intentarlo desde tu carrito.',
+    'Seguir comprando',
+    'Cerrar'
+  ]) assert.ok(checkoutSuccessPhp.includes(copy), 'missing modal copy: ' + copy);
+  assert.ok(checkoutSuccessPhp.includes("'Tu pedido #' . $number"));
+  assert.match(checkoutSuccessPhp, /\$order->get_order_number\(\)/);
   assert.match(assets, /'shopUrl' => function_exists\( 'wc_get_page_permalink' \) \? wc_get_page_permalink\( 'shop' \) : cr2026_shop_url\(\)/);
   assert.match(assets, /assets\/js\/checkout-success-modal\.js/);
-  assert.doesNotMatch(checkoutSuccessJs, /'Bizum'[^\n]*'cod'/);
+  assert.match(checkoutSuccessJs, /'bizum_success', 'store_success', 'card_success', 'card_failure'/);
+  assert.match(checkoutSuccessJs, /payload.action === 'close'/);
 });
-
 test('failure responses and non-target gateways keep WooCommerce standard result handling', () => {
   assert.match(checkoutSuccessPhp, /'success' !== \$result\['result'\][\s\S]*?return \$result;/);
   assert.match(checkoutSuccessPhp, /in_array\( \$gateway, array\( 'cheque', 'cod' \), true \)/);
   assert.match(checkoutSuccessJs, /if \(!payload \|\| payload\.enabled !== true/);
   assert.match(checkoutSuccessJs, /return true;/);
+});
+
+
+test('Cecabank success and failure require a matching WooCommerce order, gateway and final state', () => {
+  assert.match(checkoutSuccessPhp, /is_order_received_page\(\)/);
+  assert.match(checkoutSuccessPhp, /'cecabank_gateway' === \$order->get_payment_method\(\)/);
+  assert.match(checkoutSuccessPhp, /\$order->is_paid\(\)/);
+  assert.match(checkoutSuccessPhp, /\$_GET\['key'\]/);
+  assert.match(checkoutSuccessPhp, /\$_GET\['cancel_order'\]/);
+  assert.match(checkoutSuccessPhp, /wc_get_order_id_by_order_key/);
+  assert.match(checkoutSuccessPhp, /in_array\( \$order->get_status\(\), array\( 'cancelled', 'failed' \), true \)/);
+  assert.match(checkoutSuccessPhp, /Tu pedido se ha cancelado\./);
+  assert.match(checkoutSuccessJs, /config\.result/);
+  assert.match(checkoutSuccessJs, /closeModal\(overlay\)/);
+  assert.match(checkoutSuccessJs, /window\.location\.assign\(shopUrl\)/);
+});
+
+test('only the verified Cecabank cancellation notice is removed and Cart is supported', () => {
+  assert.match(checkoutSuccessPhp, /cr2026_checkout_hide_cecabank_cancel_notice/);
+  assert.match(checkoutSuccessPhp, /hash_equals\( \(string\) \$order->get_order_key\(\), \(string\) \$order_key \)/);
+  assert.match(checkoutSuccessPhp, /return 'Tu pedido se ha cancelado\.' !== trim\( \$message \);/);
+  assert.match(assets, /is_cart\(\)/);
+  assert.match(assets, /is_order_received_page\(\)/);
 });

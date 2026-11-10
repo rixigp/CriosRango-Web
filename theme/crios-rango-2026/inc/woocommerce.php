@@ -1002,12 +1002,8 @@ function cr2026_checkout_offline_success_modal_result( $result, $order_id ) {
         return $result;
     }
 
-    $result['cr_order_success'] = array(
-        'enabled' => true,
-        'gateway' => $gateway,
-        'order_id' => (int) $order->get_id(),
-        'order_number' => (string) $order->get_order_number(),
-    );
+    $variant = 'cheque' === $gateway ? 'bizum_success' : 'store_success';
+    $result['cr_order_success'] = cr2026_checkout_payment_result_modal_payload( $order, $variant );
 
     // WooCommerce's checkout JS assigns window.location to this hash. On the
     // current Checkout document that is same-page navigation, not a reload.
@@ -1015,3 +1011,79 @@ function cr2026_checkout_offline_success_modal_result( $result, $order_id ) {
     return $result;
 }
 add_filter( 'woocommerce_payment_successful_result', 'cr2026_checkout_offline_success_modal_result', 9999, 2 );
+
+function cr2026_checkout_payment_result_modal_payload( $order, $variant ) {
+    if ( ! $order instanceof WC_Order ) { return null; }
+    $number = (string) $order->get_order_number();
+    $gateway = 'bizum_success' === $variant ? 'cheque' : ( 'store_success' === $variant ? 'cod' : 'cecabank_gateway' );
+    $payload = array(
+        'enabled' => true, 'variant' => $variant, 'gateway' => $gateway,
+        'order_id' => (int) $order->get_id(), 'order_number' => $number,
+        'title' => 'Pedido recibido', 'paragraphs' => array(),
+        'action' => 'shop', 'action_label' => 'Seguir comprando',
+    );
+    if ( 'bizum_success' === $variant ) {
+        $payload['paragraphs'] = array(
+            'Tu pedido #' . $number . ' ha sido recibido.',
+            'Realiza el pago por Bizum al 679 97 28 88 y utiliza el número de pedido como referencia de pago.',
+            'Tu pedido no se procesará hasta que se haya recibido el importe.',
+        );
+    } elseif ( 'store_success' === $variant ) {
+        $payload['paragraphs'] = array(
+            'Tu pedido #' . $number . ' ha sido recibido.',
+            'Podrás realizar el pago en efectivo en la tienda al recoger tu pedido.',
+            'Utiliza el número de pedido como referencia cuando vengas a recogerlo.',
+        );
+    } elseif ( 'card_success' === $variant ) {
+        $payload['paragraphs'] = array( 'Tu pedido #' . $number . ' se ha pagado correctamente.' );
+    } elseif ( 'card_failure' === $variant ) {
+        $payload['title'] = 'Pago no completado';
+        $payload['paragraphs'] = array( 'No se ha podido completar el pago.', 'Puedes volver a intentarlo desde tu carrito.' );
+        $payload['action'] = 'close';
+        $payload['action_label'] = 'Cerrar';
+    } else { return null; }
+    return $payload;
+}
+
+function cr2026_checkout_hide_cecabank_cancel_notice() {
+    if ( ! function_exists( 'wc_get_notices' ) || ! function_exists( 'wc_set_notices' ) ) { return; }
+    $notices = wc_get_notices();
+    foreach ( $notices as $type => $items ) {
+        if ( ! is_array( $items ) ) { continue; }
+        $notices[ $type ] = array_values( array_filter( $items, function ( $item ) {
+            $message = is_array( $item ) && isset( $item['notice'] ) ? wp_strip_all_tags( $item['notice'] ) : '';
+            return 'Tu pedido se ha cancelado.' !== trim( $message );
+        } ) );
+    }
+    wc_set_notices( $notices );
+}
+
+function cr2026_checkout_payment_result_page_payload() {
+    if ( ! function_exists( 'wc_get_order' ) ) { return null; }
+    if ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) {
+        $order_id = absint( get_query_var( 'order-received' ) );
+        $order_key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
+        $order = $order_id ? wc_get_order( $order_id ) : false;
+        if ( $order instanceof WC_Order && '' !== $order_key
+            && hash_equals( (string) $order->get_order_key(), (string) $order_key )
+            && 'cecabank_gateway' === $order->get_payment_method() && $order->is_paid() ) {
+            return cr2026_checkout_payment_result_modal_payload( $order, 'card_success' );
+        }
+    }
+    if ( function_exists( 'is_cart' ) && is_cart()
+        && isset( $_GET['cancel_order'], $_GET['order'] )
+        && 'true' === sanitize_key( wp_unslash( $_GET['cancel_order'] ) ) ) {
+        $order_key = wc_clean( wp_unslash( $_GET['order'] ) );
+        $order_id = function_exists( 'wc_get_order_id_by_order_key' )
+            ? absint( wc_get_order_id_by_order_key( $order_key ) ) : 0;
+        $order = $order_id ? wc_get_order( $order_id ) : false;
+        if ( $order instanceof WC_Order && '' !== $order_key
+            && hash_equals( (string) $order->get_order_key(), (string) $order_key )
+            && 'cecabank_gateway' === $order->get_payment_method()
+            && in_array( $order->get_status(), array( 'cancelled', 'failed' ), true ) ) {
+            cr2026_checkout_hide_cecabank_cancel_notice();
+            return cr2026_checkout_payment_result_modal_payload( $order, 'card_failure' );
+        }
+    }
+    return null;
+}
