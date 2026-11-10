@@ -364,8 +364,8 @@ function cr2026_account_wlr_normalize_date_value( $value ) {
     if ( is_string( $value ) ) {
         $value = trim( $value );
         foreach ( array( '!Y-m-d', '!d/m/Y', '!d-m-Y' ) as $format ) {
-            $date = \\DateTimeImmutable::createFromFormat( $format, $value );
-            $errors = \\DateTimeImmutable::getLastErrors();
+            $date = \DateTimeImmutable::createFromFormat( $format, $value );
+            $errors = \DateTimeImmutable::getLastErrors();
             if ( $date && ( false === $errors || ( 0 === $errors['warning_count'] && 0 === $errors['error_count'] ) )
                 && $date->format( substr( $format, 1 ) ) === $value ) {
                 return $date->format( 'Y-m-d' );
@@ -374,14 +374,14 @@ function cr2026_account_wlr_normalize_date_value( $value ) {
     }
 
     if ( is_numeric( $value ) && (int) $value > 0
-        && class_exists( '\\Wlr\\App\\Helpers\\Woocommerce' ) ) {
+        && class_exists( '\Wlr\App\Helpers\Woocommerce' ) ) {
         try {
-            $helper = \\Wlr\\App\\Helpers\\Woocommerce::getInstance();
+            $helper = \Wlr\App\Helpers\Woocommerce::getInstance();
             $date = $helper->beforeDisplayDate( (int) $value, 'Y-m-d' );
             if ( is_string( $date ) ) {
                 return cr2026_account_wlr_normalize_date_value( $date );
             }
-        } catch ( \\Throwable $error ) {
+        } catch ( \Throwable $error ) {
             return '';
         }
     }
