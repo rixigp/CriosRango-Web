@@ -431,6 +431,57 @@ function cr2026_account_address_save_form_feedback() {
 }
 add_action( 'woocommerce_after_edit_address_form_shipping', 'cr2026_account_address_save_form_feedback', 99 );
 
+/**
+ * WooCommerce's native password fields are the only source of change intent.
+ * Do not store passwords; retain only the pre-save hash for this request so
+ * the success marker can prove the new credential differs from the old one.
+ */
+function cr2026_account_password_change_intent() {
+    foreach ( array( 'password_current', 'password_1', 'password_2' ) as $field ) {
+        if ( ! isset( $_POST[ $field ] ) || ! is_string( $_POST[ $field ] )
+            || '' === (string) wp_unslash( $_POST[ $field ] ) ) {
+            return false;
+        }
+    }
+    return $_POST['password_1'] === $_POST['password_2'];
+}
+
+/** Capture the existing hash before WooCommerce applies its validated password update. */
+function cr2026_account_capture_password_before_save( $errors, $user ) {
+    if ( ! cr2026_account_mobile_save_context( 'edit-account' )
+        || 'password' !== cr2026_account_profile_view()
+        || ! cr2026_account_password_change_intent() ) {
+        return;
+    }
+    $existing_user = get_user_by( 'id', (int) get_current_user_id() );
+    if ( $existing_user && isset( $existing_user->user_pass ) ) {
+        $GLOBALS['cr2026_account_password_before_save_hash'] = (string) $existing_user->user_pass;
+    }
+}
+add_action( 'woocommerce_save_account_details_errors', 'cr2026_account_capture_password_before_save', 999, 2 );
+
+/** Shorten only WooCommerce's three native password labels on the mobile password subview. */
+function cr2026_account_password_field_labels( $translated_text, $text, $domain ) {
+    if ( 'woocommerce' !== $domain
+        || ! cr2026_account_mobile_save_context( 'edit-account' )
+        || 'password' !== cr2026_account_profile_view() ) {
+        return $translated_text;
+    }
+    $labels = array(
+        'Current password (leave blank to leave unchanged)' => 'Contraseña actual',
+        'New password (leave blank to leave unchanged)' => 'Nueva contraseña',
+        'Confirm new password' => 'Confirmar nueva contraseña',
+        'Contraseña actual (déjalo en blanco para no cambiarla)' => 'Contraseña actual',
+        'Nueva contraseña (déjalo en blanco para no cambiarla)' => 'Nueva contraseña',
+        'Confirmar nueva contraseña (déjalo en blanco para no cambiarla)' => 'Confirmar nueva contraseña',
+    );
+    if ( isset( $labels[ $text ] ) ) {
+        return $labels[ $text ];
+    }
+    return isset( $labels[ $translated_text ] ) ? $labels[ $translated_text ] : $translated_text;
+}
+add_filter( 'gettext', 'cr2026_account_password_field_labels', 20, 3 );
+
 /** Store success only after WooCommerce's native account save action completed without errors. */
 function cr2026_account_store_profile_save_feedback( $user_id ) {
     if ( ! cr2026_account_mobile_save_context( 'edit-account' ) ) {
@@ -445,7 +496,29 @@ function cr2026_account_store_profile_save_feedback( $user_id ) {
     if ( function_exists( 'wc_get_notices' ) && wc_get_notices( 'error' ) ) {
         return;
     }
-    cr2026_account_store_save_feedback( $view );
+
+    if ( 'password' === $view ) {
+        $before_hash = isset( $GLOBALS['cr2026_account_password_before_save_hash'] )
+            ? (string) $GLOBALS['cr2026_account_password_before_save_hash']
+            : '';
+        $new_password = isset( $_POST['password_1'] ) && is_string( $_POST['password_1'] )
+            ? (string) $_POST['password_1'] : '';
+        $saved_user = get_user_by( 'id', (int) $user_id );
+        $password_actually_changed = cr2026_account_password_change_intent()
+            && '' !== $before_hash
+            && $saved_user && isset( $saved_user->user_pass )
+            && wp_check_password( $new_password, $saved_user->user_pass, (int) $user_id )
+            && ! wp_check_password( $new_password, $before_hash, (int) $user_id );
+
+        if ( $password_actually_changed ) {
+            cr2026_account_store_save_feedback( 'password' );
+        } elseif ( 'password' === get_user_meta( (int) $user_id, '_cr2026_account_save_feedback', true ) ) {
+            delete_user_meta( (int) $user_id, '_cr2026_account_save_feedback' );
+        }
+    } else {
+        cr2026_account_store_save_feedback( 'personal' );
+    }
+
     // WooCommerce's core handler redirects immediately after this action; keep
     // the selected mobile subview and let the native save finish before returning.
     $url = wc_get_endpoint_url( 'edit-account', '', wc_get_page_permalink( 'myaccount' ) );
