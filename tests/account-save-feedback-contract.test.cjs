@@ -247,9 +247,7 @@ test('ADDRESS_RENDER_HOOK_PROVIDES_SHIPPING_TYPE_WITHOUT_REDETECTION', () => {
 test('PASSWORD_SUCCESS_FEEDBACK_USES_NATIVE_FIELD_PRESENCE_AND_WOOCOMMERCE_VALIDATION', () => {
   assert.match(php, /add_action\(\s*'woocommerce_save_account_details',\s*'cr2026_account_store_profile_save_feedback'/);
   assert.doesNotMatch(php, /woocommerce_save_account_details_errors|cr2026_account_capture_password_before_save|password_before_save_hash|wp_check_password|cr2026_account_password_change_intent/);
-  const start = php.indexOf('function cr2026_account_store_profile_save_feedback');
-  const end = php.indexOf("\\nadd_action( 'woocommerce_save_account_details'", start);
-  const store = php.slice(start, end);
+  const store = extractPhpFunction('cr2026_account_store_profile_save_feedback');
   for (const field of ['password_current', 'password_1', 'password_2']) {
     assert.match(store, new RegExp("isset\\( \\$_POST\\['" + field + "'\\] \\)"));
     assert.match(store, new RegExp("is_string\\( \\$_POST\\['" + field + "'\\] \\)"));
@@ -258,7 +256,12 @@ test('PASSWORD_SUCCESS_FEEDBACK_USES_NATIVE_FIELD_PRESENCE_AND_WOOCOMMERCE_VALID
   assert.match(store, /wc_notice_count\( 'error' \) === 0/);
   assert.match(store, /cr2026_account_store_save_feedback\( 'password' \)/);
   assert.match(store, /delete_user_meta\( \(int\) \$user_id, '_cr2026_account_save_feedback' \)/);
-  assert.doesNotMatch(store, /wp_unslash\( \\$_POST\['password_|sanitize|update_user_meta\(.*password_/s);
+  assert.match(store, /sanitize_key\( wp_unslash\( \\$_POST\['cr2026_account_profile_view'\] \) \)/);
+  for (const field of ['password_current', 'password_1', 'password_2']) {
+    const postField = String.raw`\\$_POST['${field}']`;
+    assert.doesNotMatch(store, new RegExp(String.raw`(?:sanitize_[a-z0-9_]+|wp_unslash)\s*\(\s*${postField}`), `password field ${field} is never manually sanitized or unslashed`);
+    assert.doesNotMatch(store, new RegExp(String.raw`(?:update_user_meta|add_user_meta|wp_update_user|set_user_meta|\$wpdb->\w+)\s*\([^;]*${postField}`, 's'), `password field ${field} is never manually persisted`);
+  }
 });
 
 test('EMPTY_REAL_AND_INVALID_PASSWORD_SUBMITS_GATE_ONLY_THE_ONE_SHOT_FEEDBACK', () => {
@@ -318,8 +321,8 @@ echo json_encode(compact('empty','real','invalid','partial'));
 });
 
 test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_WHITE_WITHOUT_GEOMETRY_OVERRIDES', () => {
-  assert.match(php, /'Current password \\(leave blank to leave unchanged\\)'\s*=>\s*'Contraseña actual'/);
-  assert.match(php, /'New password \\(leave blank to leave unchanged\\)'\s*=>\s*'Nueva contraseña'/);
+  assert.match(php, /'Current password \(leave blank to leave unchanged\)'\s*=>\s*'Contraseña actual'/);
+  assert.match(php, /'New password \(leave blank to leave unchanged\)'\s*=>\s*'Nueva contraseña'/);
   assert.match(php, /'Confirm new password'\s*=>\s*'Confirmar nueva contraseña'/);
   assert.match(css, /body\.woocommerce-account\.cr-account-profile-view-password \.woocommerce-EditAccountForm fieldset \.form-row input\[type="password"\]\s*\{\s*background-color:\s*#FFFFFF !important/);
   assert.match(css, /\.cr-account-submit__spinner/);
