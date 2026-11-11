@@ -250,7 +250,7 @@ test('staging FULL deploy is limited to confirmed absence or confirmed divergenc
   const abortBranch = stagingBaseline.slice(abortStart);
   assert.match(abortBranch, /DEPLOY_MODE="ABORTED"/);
   assert.match(abortBranch, /exit 1/);
-  assert.ok(stagingBaseline.includes('if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then'),
+  assert.ok(deployStep.includes('if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then'),
     'incremental upload processing must be gated by the selected staging mode');
 
   assert.ok(!stagingBaseline.includes("Production deploys retain"),
