@@ -9,6 +9,21 @@ const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/a
 const js = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/js/account-save-feedback.js'), 'utf8');
 const assets = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/assets.php'), 'utf8');
 
+function extractPhpFunction(name) {
+  const start = php.indexOf(`function ${name}(`);
+  assert.notEqual(start, -1, `${name} exists`);
+  const open = php.indexOf('{', start);
+  let depth = 0;
+  for (let i = open; i < php.length; i += 1) {
+    if (php[i] === '{') depth += 1;
+    if (php[i] === '}') {
+      depth -= 1;
+      if (depth === 0) return php.slice(start, i + 1);
+    }
+  }
+  throw new Error(`Unclosed function ${name}`);
+}
+
 test('ACCOUNT_SAVE_FEEDBACK_USES_PRIVATE_USER_META_AND_INLINE_COMPONENT', () => {
   const feedback = php.slice(php.indexOf('Shared mobile Account save-feedback contract'));
   assert.match(feedback, /update_user_meta\(\s*\$user_id,\s*'_cr2026_account_save_feedback',\s*\$feedback\s*\)/);
@@ -109,9 +124,7 @@ test('ADDRESS_SUCCESS_RETURNS_TO_THE_SHIPPING_EDITOR', () => {
 
 test('LEGACY_ADDRESS_SUCCESS_IS_SUPPRESSED_ONLY_ON_MOBILE_SHIPPING_SAVE', () => {
   assert.match(php, /add_filter\(\s*'woocommerce_add_success',\s*'cr2026_account_filter_legacy_save_success'/);
-  const start = php.indexOf('function cr2026_account_filter_legacy_save_success');
-  const end = php.indexOf("\\nadd_filter( 'woocommerce_add_success'", start);
-  const filter = php.slice(start, end);
+  const filter = extractPhpFunction('cr2026_account_filter_legacy_save_success');
   assert.match(filter, /cr2026_account_mobile_save_context\( 'edit-address' \)/);
   assert.match(filter, /isset\( \$_POST\['save_address'\] \)/);
   assert.ok(filter.includes("Address changed successfully."));
@@ -284,7 +297,7 @@ function wp_safe_redirect($url) {}
 ${storeFeedback}
 ${handler}
 function run_case($post, $errors) {
-  $GLOBALS['meta'][41]['_cr2026_account_save_feedback'] = 'stale';
+  $GLOBALS['meta'][41]['_cr2026_account_save_feedback'] = 'password';
   $_POST = $post;
   $GLOBALS['errors'] = $errors;
   cr2026_account_store_profile_save_feedback(41);
