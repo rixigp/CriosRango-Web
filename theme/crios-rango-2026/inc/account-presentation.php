@@ -308,7 +308,8 @@ function cr2026_account_mobile_field_marker_styles() {
         return;
     }
     echo '<style id="cr2026-account-mobile-field-markers">'
-        . 'body.woocommerce-account :is(.woocommerce-EditAccountForm,.woocommerce-address-fields) label :is(abbr.required,span.required){display:none!important;}'
+        . '.woocommerce-EditAccountForm label .required{display:none!important;}'
+        . 'body.woocommerce-account .woocommerce-address-fields label :is(abbr.required,span.required){display:none!important;}'
         . '</style>';
 }
 add_action( 'wp_head', 'cr2026_account_mobile_field_marker_styles', 99 );
