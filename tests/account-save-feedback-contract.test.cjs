@@ -258,9 +258,9 @@ test('PASSWORD_SUCCESS_FEEDBACK_USES_NATIVE_FIELD_PRESENCE_AND_WOOCOMMERCE_VALID
   assert.match(store, /delete_user_meta\( \(int\) \$user_id, '_cr2026_account_save_feedback' \)/);
   assert.match(store, /sanitize_key\( wp_unslash\( \$_POST\['cr2026_account_profile_view'\] \) \)/);
   for (const field of ['password_current', 'password_1', 'password_2']) {
-    const postField = String.raw`\\$_POST['${field}']`;
-    assert.doesNotMatch(store, new RegExp(String.raw`(?:sanitize_[a-z0-9_]+|wp_unslash)\s*\(\s*${postField}`), `password field ${field} is never manually sanitized or unslashed`);
-    assert.doesNotMatch(store, new RegExp(String.raw`(?:update_user_meta|add_user_meta|wp_update_user|set_user_meta|\$wpdb->\w+)\s*\([^;]*${postField}`, 's'), `password field ${field} is never manually persisted`);
+    const postField = "\\$_POST['" + field + "']";
+    assert.doesNotMatch(store, new RegExp("(?:sanitize_[a-z0-9_]+|wp_unslash)\\s*\\(\\s*" + postField), `password field ${field} is never manually sanitized or unslashed`);
+    assert.doesNotMatch(store, new RegExp("(?:update_user_meta|add_user_meta|wp_update_user|set_user_meta|\\$wpdb->\\w+)\\s*\\([^;]*" + postField, 's'), `password field ${field} is never manually persisted`);
   }
 });
 
