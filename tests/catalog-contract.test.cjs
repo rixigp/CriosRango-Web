@@ -195,8 +195,8 @@ test('catalog endpoint echoes page size and staging debug exposes all ID layers 
 
 test('staging FULL deploy is limited to confirmed absence or confirmed divergence', () => {
   const deployStep = extractWorkflowStep(deploy, 'Deploy theme by FTP');
-  const stagingStart = deployStep.indexOf('if [ "$IS_STAGING" = true ]; then\\n            BASELINE_STATUS="UNAVAILABLE"');
-  const productionBoundary = deployStep.indexOf('\\n          else\\n            # Production deploys retain the explicitly documented full-deploy policy.');
+  const stagingStart = deployStep.indexOf('if [ "$IS_STAGING" = true ]; then\n            BASELINE_STATUS="UNAVAILABLE"');
+  const productionBoundary = deployStep.indexOf('\n          else\n            # Production deploys retain the explicitly documented full-deploy policy.');
   assert.ok(stagingStart >= 0 && productionBoundary > stagingStart,
     'the staging baseline branch must be structurally separated from the production branch');
   const stagingBaseline = deployStep.slice(stagingStart, productionBoundary);
@@ -205,7 +205,7 @@ test('staging FULL deploy is limited to confirmed absence or confirmed divergenc
   const divergentStart = stagingBaseline.indexOf('elif ! git merge-base --is-ancestor');
   const diffStart = stagingBaseline.indexOf('elif ! git diff --name-status -z --find-renames --find-copies');
   const absentStart = stagingBaseline.indexOf('elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then');
-  const unavailableStart = stagingBaseline.indexOf('else\\n              BASELINE_STATUS="UNAVAILABLE"', absentStart);
+  const unavailableStart = stagingBaseline.indexOf('else\n              BASELINE_STATUS="UNAVAILABLE"', absentStart);
   const abortStart = stagingBaseline.indexOf('if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then');
   const abortReason = stagingBaseline.indexOf('DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE');
 
