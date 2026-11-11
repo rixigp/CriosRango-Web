@@ -5,7 +5,7 @@
   // Bind to that outer form rather than incorrectly requiring the DIV class
   // to be present on the form element itself.
   const forms = Array.from(document.querySelectorAll(
-    'body.woocommerce-account form.woocommerce-EditAccountForm, body.woocommerce-account form:has(.woocommerce-address-fields)'
+    'body.woocommerce-account form.woocommerce-EditAccountForm, body.woocommerce-account form:has(.woocommerce-address-fields), body.woocommerce-account form:has(.wpfda-delete-account-container), body.woocommerce-account .wpfda-delete-account-container form'
   ));
   if (!forms.length) return;
 
@@ -56,7 +56,9 @@
     items.forEach((item) => {
       const message = item.textContent.trim();
       if (/your current password is incorrect|contraseña actual.{0,30}(incorrecta|no es correcta)/i.test(message)) {
-        item.textContent = 'La contraseña actual no es correcta.';
+        item.textContent = document.querySelector('.wpfda-delete-account-container') ? 'La contraseña no es correcta.' : 'La contraseña actual no es correcta.';
+      } else if (/incorrect password|password is incorrect|contraseña.{0,25}(incorrecta|no es correcta)/i.test(message) && document.querySelector('.wpfda-delete-account-container')) {
+        item.textContent = 'La contraseña no es correcta.';
       } else if (/new passwords do not match|las nuevas contraseñas no coinciden/i.test(message)) {
         item.textContent = 'Las nuevas contraseñas no coinciden.';
       } else if (/please fill out all password fields|please enter your current password|please re-enter your password/i.test(message)) {
@@ -107,13 +109,39 @@
   };
 
   forms.forEach((form) => {
-    const button = form.querySelector(submitSelector);
+    const deleteContainer = form.closest('.wpfda-delete-account-container') || form.querySelector('.wpfda-delete-account-container');
+    const isDeleteAccount = !!deleteContainer;
+    const button = isDeleteAccount ? form.querySelector('button[type="submit"]') : form.querySelector(submitSelector);
     if (!button) return;
 
     moveErrorsInline(form, button);
     positionSuccessFeedback(form, button);
     neutralizePasswordHint(form);
     ensureLabel(button);
+    if (isDeleteAccount && button.querySelector('.cr-account-submit__label')) button.querySelector('.cr-account-submit__label').textContent = 'Eliminar cuenta';
+
+    if (isDeleteAccount) {
+      const password = form.querySelector('input[type="password"]');
+      if (password) {
+        const row = password.closest('p, .form-row, div') || password.parentNode;
+        if (row && !row.classList.contains('cr-account-delete-password-row')) row.classList.add('cr-account-delete-password-row');
+        const fieldLabel = (password.id && form.querySelector('label[for="' + password.id + '"]')) || password.closest('label');
+        if (fieldLabel) fieldLabel.textContent = 'Contraseña';
+        if (!form.querySelector('.cr-account-delete-password-toggle')) {
+          const toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = 'cr-account-delete-password-toggle';
+          toggle.setAttribute('aria-label', 'Mostrar contraseña'); toggle.setAttribute('aria-pressed', 'false');
+          toggle.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+          toggle.addEventListener('click', () => { const shown = password.type === 'text'; password.type = shown ? 'password' : 'text'; toggle.setAttribute('aria-pressed', shown ? 'false' : 'true'); toggle.setAttribute('aria-label', shown ? 'Mostrar contraseña' : 'Ocultar contraseña'); });
+          if (row) row.appendChild(toggle);
+        }
+      }
+      ['Esta acción es permanente y no se puede deshacer.','Introduce tu contraseña para confirmar la eliminación de tu cuenta.'].forEach((message,index) => {
+        if (!deleteContainer.querySelector('.cr-account-delete-description[data-copy-index="'+index+'"]')) {
+          const paragraph=document.createElement('p');paragraph.className='cr-account-delete-description';paragraph.dataset.copyIndex=String(index);paragraph.textContent=message;
+          const anchor=deleteContainer.querySelector('form')||deleteContainer;if(anchor.parentNode)anchor.parentNode.insertBefore(paragraph,anchor);
+        }
+      });
+    }
 
     form.addEventListener('submit', (event) => {
       // This second submit is the native continuation after the loading state
@@ -138,6 +166,12 @@
       if (form.dataset.crAccountSubmitting === '1') {
         event.preventDefault();
         return;
+      }
+
+      if (isDeleteAccount) {
+        const password=form.querySelector('input[type="password"]');
+        if (!password || password.value.length===0) {event.preventDefault();showPasswordError(form,button,'Introduce tu contraseña para continuar.');return;}
+        const priorClientError=form.querySelector('.cr-password-inline-error');if(priorClientError)priorClientError.remove();
       }
 
       if (document.body.classList.contains('cr-account-profile-view-password')) {

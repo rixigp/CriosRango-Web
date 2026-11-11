@@ -1279,3 +1279,22 @@
     font: 300 11px/15px "Roboto", Arial, sans-serif !important;
   }
 }
+
+
+/* Mobile Delete Account endpoint: remove the plugin's legacy card skin while retaining its native form. */
+@media (max-width: 767px) {
+ body.woocommerce-account .wpfda-delete-account-container {box-sizing:border-box!important;width:min(calc(100% - 40px),var(--cr-shell))!important;max-width:none!important;margin:0 auto!important;padding:0 0 calc(88px + env(safe-area-inset-bottom))!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#20241f!important;font:300 12px/17px "Roboto",Arial,sans-serif!important;}
+ body.woocommerce-account .wpfda-delete-account-container :is(form,fieldset) {box-sizing:border-box!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;}
+ body.woocommerce-account .wpfda-delete-account-container :is(p,.form-row) {position:relative!important;float:none!important;box-sizing:border-box!important;width:100%!important;margin:0 0 16px!important;padding:0!important;}
+ body.woocommerce-account .wpfda-delete-account-container label {display:block!important;margin:0 0 6px!important;color:#183b35!important;font:300 12px/17px "Roboto",Arial,sans-serif!important;}
+ body.woocommerce-account .wpfda-delete-account-container input[type="password"] {box-sizing:border-box!important;display:block!important;width:100%!important;min-width:0!important;min-height:50px!important;border:1.5px solid #183b35!important;border-radius:12px!important;background:#FFFFFF!important;color:#20241f!important;padding:12px 44px 12px 14px!important;box-shadow:none!important;font:300 15px/1.35 "Roboto",Arial,sans-serif!important;}
+ body.woocommerce-account .wpfda-delete-account-container .cr-account-delete-password-row {position:relative!important;margin:0 0 16px!important;}
+ body.woocommerce-account .wpfda-delete-account-container .cr-account-delete-password-toggle {position:absolute!important;right:12px!important;bottom:12px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;width:24px!important;height:24px!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#183b35!important;box-shadow:none!important;}
+ body.woocommerce-account .wpfda-delete-account-container .cr-account-delete-password-toggle svg {display:block!important;width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;}
+ body.woocommerce-account .wpfda-delete-account-container button[type="submit"] {box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-height:50px!important;margin:12px 0 0!important;padding:14px 16px!important;border:0!important;border-radius:12px!important;background:#f3d9dc!important;color:#8a3e46!important;font:400 14px/20px "Roboto",Arial,sans-serif!important;text-align:center!important;box-shadow:none!important;}
+ body.woocommerce-account .wpfda-delete-account-container button[type="submit"].cr-account-submit--loading {background:#e1e5e1!important;color:#183b35!important;}
+ body.woocommerce-account .wpfda-delete-account-container .cr-account-delete-description {display:block!important;margin:0 0 8px!important;color:#777b76!important;font:300 12px/17px "Roboto",Arial,sans-serif!important;}
+ body.woocommerce-account .wpfda-delete-account-container .cr-password-inline-error {margin:0 0 10px!important;padding:9px 11px!important;border:1px solid #efc5c1!important;border-radius:9px!important;background:#fdf0ef!important;color:#8a3e36!important;font:300 12px/17px "Roboto",Arial,sans-serif!important;}
+ body.woocommerce-account .wpfda-delete-account-container .cr-password-inline-error__icon {flex:0 0 18px!important;}
+ body.woocommerce-account .wpfda-delete-account-container .cr-password-inline-error__text {flex:1 1 auto!important;min-width:0!important;}
+}

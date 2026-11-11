@@ -414,3 +414,22 @@ test('PASSWORD_FIELDS_WHITE_HINT_NEUTRAL_AND_STRENGTH_METER_LOGIC_UNCHANGED', ()
   assert.ok(!php.includes('password_before_save_hash'));
   assert.ok(!php.includes('woocommerce_save_account_details_errors'));
 });
+
+
+test('DELETE_ACCOUNT_ENDPOINT_REUSES_ACCOUNT_PRESENTATION_AND_NATIVE_DELETE_FORM', () => {
+  assert.ok(css.includes('Mobile Delete Account endpoint:'));
+  assert.ok(css.includes('.wpfda-delete-account-container'));
+  assert.ok(css.includes('background:transparent!important'));
+  assert.ok(css.includes('background:#FFFFFF!important'));
+  assert.ok(css.includes('background:#f3d9dc!important'));
+  assert.ok(js.includes('form:has(.wpfda-delete-account-container)'));
+  assert.ok(js.includes("textContent = 'Eliminar cuenta'"));
+  assert.ok(js.includes("fieldLabel.textContent = 'Contraseña'"));
+  assert.ok(js.includes('cr-account-delete-password-toggle'));
+  assert.ok(js.includes('Esta acción es permanente y no se puede deshacer.'));
+  assert.ok(js.includes('Introduce tu contraseña para confirmar la eliminación de tu cuenta.'));
+  assert.ok(js.includes('Introduce tu contraseña para continuar.'));
+  assert.ok(js.includes('La contraseña no es correcta.'));
+  assert.ok(js.includes('cr-account-submit__spinner'));
+  assert.doesNotMatch(php, /wpf-delete-account|wpfda-delete-account-container/);
+});
