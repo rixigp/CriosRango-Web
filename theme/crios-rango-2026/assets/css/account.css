@@ -1112,3 +1112,20 @@
 @keyframes cr-account-submit-spin {
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
+
+
+/* Address endpoint has a higher-specificity normal CTA rule; override it only while loading. */
+@media (max-width: 767px) {
+  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields button[type="submit"].cr-account-submit--loading {
+    background: #e1e5e1 !important;
+  }
+}
+
+
+/* Endpoint-specific CTA colors must yield to the shared loading state. */
+@media (max-width: 767px) {
+  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm button[type="submit"].cr-account-submit--loading,
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm button[type="submit"].cr-account-submit--loading {
+    background: #e1e5e1 !important;
+  }
+}

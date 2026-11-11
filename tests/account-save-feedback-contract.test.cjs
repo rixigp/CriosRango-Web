@@ -116,3 +116,20 @@ test('SHARED_ACCOUNT_LOADING_SPINNER_IS_A_REAL_DOM_ELEMENT_VISIBLE_CENTERED_AND_
   assert.match(css, /button\.cr-account-submit--loading\s*\{[\s\S]*?background:\s*#e1e5e1\s*!important/);
   assert.doesNotMatch(css, /\.cr-account-submit--loading::(?:before|after)/);
 });
+
+
+test('ACCOUNT_SUBMIT_LOADING_BACKGROUND_CONTRAST_OVERRIDES_ENDPOINT_RULES_WITHOUT_CHANGING_SPINNER_OR_JS', () => {
+  const addressNormal = css.match(/body\.woocommerce-account\.woocommerce-edit-address \.woocommerce-address-fields button\[type="submit"\]\s*\{([^}]+)\}/);
+  assert.ok(addressNormal, 'Address normal button background rule exists');
+  assert.match(addressNormal[1], /background:\s*#183b35\s*!important/);
+  const addressLoading = css.match(/body\.woocommerce-account\.woocommerce-edit-address \.woocommerce-address-fields button\[type="submit"\]\.cr-account-submit--loading\s*\{([^}]+)\}/);
+  assert.ok(addressLoading, 'Address loading override has sufficient selector specificity');
+  assert.match(addressLoading[1], /background:\s*#e1e5e1\s*!important/);
+  assert.match(css, /body\.woocommerce-account button\.cr-account-submit--loading\s*\{[^}]*background:\s*#e1e5e1\s*!important/);
+  assert.match(css, /body\.woocommerce-account button\.cr-account-submit--loading \.cr-account-submit__spinner\s*\{[^}]*border-top-color:\s*#183b35\s*!important/);
+  assert.match(js, /createElement\('span'\)/);
+  assert.match(js, /spinner\.className = 'cr-account-submit__spinner'/);
+  assert.match(js, /form\.addEventListener\(\s*'submit'/);
+  assert.match(css, /body\.woocommerce-account\.cr-account-profile-view-personal \.woocommerce-EditAccountForm button\[type="submit"\]\.cr-account-submit--loading,\s*body\.woocommerce-account\.cr-account-profile-view-password \.woocommerce-EditAccountForm button\[type="submit"\]\.cr-account-submit--loading\s*\{[^}]*background:\s*#e1e5e1\s*!important/);
+
+});
