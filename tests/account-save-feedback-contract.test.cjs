@@ -133,3 +133,5 @@ test('ACCOUNT_SUBMIT_LOADING_BACKGROUND_CONTRAST_OVERRIDES_ENDPOINT_RULES_WITHOU
   assert.match(css, /body\.woocommerce-account\.cr-account-profile-view-personal \.woocommerce-EditAccountForm button\[type="submit"\]\.cr-account-submit--loading,\s*body\.woocommerce-account\.cr-account-profile-view-password \.woocommerce-EditAccountForm button\[type="submit"\]\.cr-account-submit--loading\s*\{[^}]*background:\s*#e1e5e1\s*!important/);
 
 });
+
+// Keep the loading-contrast contract on the staging deploy validation path.
