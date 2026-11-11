@@ -13,11 +13,20 @@
 
   const ensureLabel = (button) => {
     let label = button.querySelector('.cr-account-submit__label');
-    if (label) return label;
-    label = document.createElement('span');
-    label.className = 'cr-account-submit__label';
-    while (button.firstChild) label.appendChild(button.firstChild);
-    button.appendChild(label);
+    if (!label) {
+      label = document.createElement('span');
+      label.className = 'cr-account-submit__label';
+      while (button.firstChild) label.appendChild(button.firstChild);
+      button.appendChild(label);
+    }
+
+    let spinner = button.querySelector('.cr-account-submit__spinner');
+    if (!spinner) {
+      spinner = document.createElement('span');
+      spinner.className = 'cr-account-submit__spinner';
+      spinner.setAttribute('aria-hidden', 'true');
+      button.appendChild(spinner);
+    }
     return label;
   };
 

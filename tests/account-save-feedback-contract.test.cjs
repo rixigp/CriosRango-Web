@@ -51,7 +51,8 @@ test('LOADING_BLOCKS_DOUBLE_SUBMIT_AND_PRESERVES_NATIVE_SUBMITTER', () => {
   assert.match(js, /window\.setTimeout/);
   assert.match(js, /captured/);
   assert.match(js, /clicked submitter/);
-  assert.match(css, /\.cr-account-submit--loading::after/);
+  assert.match(js, /cr-account-submit__spinner/);
+  assert.match(css, /\.cr-account-submit__spinner/);
   assert.match(css, /\.cr-account-submit__label\s*\{\s*visibility:\s*hidden/);
 });
 
@@ -92,20 +93,26 @@ test('SHIPPING_ADDRESS_FORM_BINDING_AND_LOADING_PAINT_PRECEDE_NATIVE_SUBMIT', ()
   assert.match(js, /window\.requestAnimationFrame\(\(\) => \{/);
   assert.match(js, /form\.requestSubmit\(button\)/);
   assert.match(js, /cr-account-submit--loading/);
-  assert.match(css, /\.cr-account-submit--loading::after/);
+  assert.match(js, /cr-account-submit__spinner/);
+  assert.match(css, /\.cr-account-submit__spinner/);
   assert.doesNotMatch(js, /form\.querySelectorAll\([^)]*input[^)]*\)\.forEach\([^)]*disabled/);
 });
 
-test('SHARED_ACCOUNT_LOADING_SPINNER_IS_VISIBLE_CENTERED_AND_ANIMATED_AS_PSEUDO', () => {
-  const spinner = css.slice(css.indexOf('body.woocommerce-account button.cr-account-submit--loading::after'));
-  assert.match(spinner, /content:\s*""\s*!important/);
+test('SHARED_ACCOUNT_LOADING_SPINNER_IS_A_REAL_DOM_ELEMENT_VISIBLE_CENTERED_AND_ANIMATED', () => {
+  assert.match(js, /createElement\('span'\)/);
+  assert.match(js, /spinner\.className = 'cr-account-submit__spinner'/);
+  assert.match(js, /spinner\.setAttribute\('aria-hidden', 'true'\)/);
+  const spinner = css.slice(css.indexOf('body.woocommerce-account button.cr-account-submit--loading .cr-account-submit__spinner'));
   assert.match(spinner, /display:\s*block\s*!important/);
   assert.match(spinner, /position:\s*absolute\s*!important/);
   assert.match(spinner, /top:\s*50%\s*!important/);
   assert.match(spinner, /left:\s*50%\s*!important/);
+  assert.match(spinner, /width:\s*19px\s*!important/);
+  assert.match(spinner, /height:\s*19px\s*!important/);
   assert.match(spinner, /transform:\s*translate\(-50%,\s*-50%\)\s*!important/);
   assert.match(spinner, /border-top-color:\s*#183b35\s*!important/);
   assert.match(spinner, /animation:\s*cr-account-submit-spin\s*\.7s\s*linear\s*infinite\s*!important/);
   assert.match(css, /@keyframes cr-account-submit-spin\s*\{\s*to\s*\{\s*transform:\s*translate\(-50%,\s*-50%\)\s*rotate\(360deg\)/);
-  assert.match(css, /\.cr-account-submit--loading\s*\{[\s\S]*?background:\s*#e1e5e1\s*!important/);
+  assert.match(css, /button\.cr-account-submit--loading\s*\{[\s\S]*?background:\s*#e1e5e1\s*!important/);
+  assert.doesNotMatch(css, /\.cr-account-submit--loading::(?:before|after)/);
 });
