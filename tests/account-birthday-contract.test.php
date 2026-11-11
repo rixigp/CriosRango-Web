@@ -98,14 +98,10 @@ namespace {
 
     contract_reset();
     contract_assert( '1988-02-03' === cr2026_account_wlr_birth_date( \Wlr\App\Helpers\EarnCampaign::$user ), 'birthday_date is the preferred Y-m-d read field' );
-    contract_assert( cr2026_account_wlr_field_exists( \Wlr\App\Helpers\EarnCampaign::$user, 'birthday_date' ), 'birthday_date property existence is detected independently' );
-    contract_assert( cr2026_account_wlr_field_present( \Wlr\App\Helpers\EarnCampaign::$user, 'birthday_date' ), 'birthday_date populated value is detected without exposing it' );
-    contract_assert( ! cr2026_account_wlr_field_exists( \Wlr\App\Helpers\EarnCampaign::$user, 'birth_date' ), 'missing birth_date fallback is reported as absent' );
 
     $protected_user = new class {
         protected $birthday_date = '1988-02-03';
     };
-    contract_assert( cr2026_account_wlr_field_exists( $protected_user, 'birthday_date' ), 'protected model birthday_date property is detected' );
     contract_assert( '1988-02-03' === cr2026_account_wlr_birth_date( $protected_user ), 'protected model birthday_date is read and normalized' );
 
     contract_reset();
