@@ -215,7 +215,8 @@ test('staging FULL deploy is limited to confirmed absence or confirmed divergenc
   assert.ok(validBranch.includes('git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"'),
     'the staging baseline scope must include the remote SHA ancestry check');
   assert.ok(validBranch.includes('git diff --name-status -z --find-renames --find-copies'));
-  assert.match(validBranch, /else\\s+DEPLOY_MODE="INCREMENTAL"/);
+  assert.ok(validBranch.split("\n").some(line => line.trim() === 'DEPLOY_MODE="INCREMENTAL"'),
+    'a valid staging baseline must select INCREMENTAL');
 
   assert.ok(absentStart >= 0 && unavailableStart > absentStart,
     'only the explicit FTP 550 missing-manifest response may select absent');
@@ -249,10 +250,15 @@ test('staging FULL deploy is limited to confirmed absence or confirmed divergenc
   const abortBranch = stagingBaseline.slice(abortStart);
   assert.match(abortBranch, /DEPLOY_MODE="ABORTED"/);
   assert.match(abortBranch, /exit 1/);
-  assert.match(stagingBaseline, /if \\[ "\\$DEPLOY_MODE" = "INCREMENTAL" \\]; then/);
+  assert.ok(stagingBaseline.includes('if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then'),
+    'incremental upload processing must be gated by the selected staging mode');
 
-  assert.doesNotMatch(stagingBaseline, /Production deploys retain/);
-  assert.match(deployStep, /else\\s+# Production deploys retain the explicitly documented full-deploy policy\\.\\s+DEPLOY_MODE="FULL"/);
+  assert.ok(!stagingBaseline.includes("Production deploys retain"),
+    'production policy must not be part of the extracted staging baseline');
+  const productionBranch = deployStep.slice(productionBoundary);
+  assert.ok(productionBranch.includes("# Production deploys retain the explicitly documented full-deploy policy."));
+  assert.ok(productionBranch.split("\n").some(line => line.trim() === 'DEPLOY_MODE="FULL"'),
+    'production FULL policy must remain outside the staging-only FULL assignment count');
 });
 test('staging deploy is exact-HEAD guarded, incremental and verifies the deployed runtime SHA', () => {
   assert.ok(deploy.includes('Check exact PR13 staging HEAD'));
