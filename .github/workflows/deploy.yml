@@ -807,7 +807,8 @@ jobs:
             trap 'rm -f "$DIFF_FILE" "$MANIFEST_FILE" "$BASELINE_ERROR_FILE" "$BASELINE_MANIFEST_FILE" "$EXPECTED_REMOTE_FILES"' EXIT
             for FILE in "${UPLOAD_FILES[@]}"; do
               safe_relative_path "$FILE" || { echo "ERROR: unsafe expected FTP path."; exit 1; }
-              printf '%s\\n' "${FILE#"$THEME_ROOT"/}" >> "$EXPECTED_REMOTE_FILES"
+              printf '%s' "${FILE#"$THEME_ROOT"/}" >> "$EXPECTED_REMOTE_FILES"
+              echo >> "$EXPECTED_REMOTE_FILES"
             done
             export SFTP_HOST SFTP_PORT SFTP_USER SFTP_PASSWORD REMOTE_ROOT EXPECTED_REMOTE_FILES
             python3 - <<'PYFTP'
