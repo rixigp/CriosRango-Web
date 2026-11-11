@@ -668,11 +668,13 @@ function cr2026_account_take_save_feedback( $expected ) {
         return false;
     }
     $feedback = (string) $session->get( 'cr2026_account_save_feedback', '' );
-    if ( $feedback !== (string) $expected ) {
+    if ( '' === $feedback ) {
         return false;
     }
+    // Consume the one-shot marker on the first account editor render, even if
+    // the redirect lands on a different subview; never leak stale success.
     $session->set( 'cr2026_account_save_feedback', '' );
-    return true;
+    return $feedback === (string) $expected;
 }
 
 function cr2026_account_render_save_feedback( $feedback ) {
@@ -717,7 +719,7 @@ function cr2026_account_address_save_form_feedback() {
         cr2026_account_render_save_feedback( 'address' );
     }
 }
-add_action( 'woocommerce_after_edit_address_form', 'cr2026_account_address_save_form_feedback', 99 );
+add_action( 'woocommerce_after_edit_address_form_shipping', 'cr2026_account_address_save_form_feedback', 99 );
 
 /** Store success only after WooCommerce's native account save action completed without errors. */
 function cr2026_account_store_profile_save_feedback( $user_id ) {

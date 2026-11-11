@@ -21,9 +21,21 @@ test('ACCOUNT_SAVE_FEEDBACK_USES_ONE_SHARED_SESSION_AND_INLINE_COMPONENT', () =>
 test('NATIVE_WOOCOMMERCE_SAVE_ACTIONS_REMAIN_THE_ONLY_PERSISTENCE_PATH', () => {
   assert.match(php, /add_action\(\s*'woocommerce_save_account_details',\s*'cr2026_account_store_profile_save_feedback'/);
   assert.match(php, /add_action\(\s*'woocommerce_customer_save_address',\s*'cr2026_account_store_address_save_feedback'/);
+  assert.match(php, /add_action\(\s*'woocommerce_after_edit_address_form_shipping',\s*'cr2026_account_address_save_form_feedback',\s*99\s*\)/);
+  assert.doesNotMatch(php, /add_action\(\s*'woocommerce_after_edit_address_form',\s*'cr2026_account_address_save_form_feedback'/);
   assert.match(php, /wp_safe_redirect\( add_query_arg\( 'profile_view', \$view, \$url \) \)/);
   assert.match(php, /wp_safe_redirect\( \$url \)/);
   assert.doesNotMatch(php.slice(php.indexOf('Shared mobile Account save-feedback contract')), /update_user_meta\s*\(|wp_update_user\s*\(|\$wpdb->/);
+});
+
+test('SUCCESS_MARKER_IS_CONSUMED_ONCE_EVEN_WHEN_THE_REDIRECT_SUBVIEW_DOES_NOT_MATCH', () => {
+  const start = php.indexOf('function cr2026_account_take_save_feedback');
+  const end = php.indexOf('\n}', start) + 2;
+  const take = php.slice(start, end);
+  assert.match(take, /\$session->get\(\s*'cr2026_account_save_feedback'/);
+  assert.match(take, /\$session->set\(\s*'cr2026_account_save_feedback',\s*''\s*\)/);
+  assert.match(take, /return \$feedback === \(string\) \$expected/);
+  assert.ok(take.indexOf("$session->set") < take.indexOf("return $feedback ==="));
 });
 
 test('ADDRESS_SUCCESS_RETURNS_TO_THE_SHIPPING_EDITOR', () => {
