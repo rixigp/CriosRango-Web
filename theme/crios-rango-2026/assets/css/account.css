@@ -1097,7 +1097,9 @@
     border: 3px solid rgba(24,59,53,.22) !important;
     border-top-color: #183b35 !important;
     border-radius: 50% !important;
-    transform: translate(-50%, -50%) !important;
+    margin-top: -9.5px !important;
+    margin-left: -9.5px !important;
+    transform: none !important;
     animation: cr-account-submit-spin .7s linear infinite !important;
     opacity: 1 !important;
     visibility: visible !important;
@@ -1110,7 +1112,8 @@
 }
 
 @keyframes cr-account-submit-spin {
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 

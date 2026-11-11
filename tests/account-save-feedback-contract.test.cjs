@@ -109,10 +109,15 @@ test('SHARED_ACCOUNT_LOADING_SPINNER_IS_A_REAL_DOM_ELEMENT_VISIBLE_CENTERED_AND_
   assert.match(spinner, /left:\s*50%\s*!important/);
   assert.match(spinner, /width:\s*19px\s*!important/);
   assert.match(spinner, /height:\s*19px\s*!important/);
-  assert.match(spinner, /transform:\s*translate\(-50%,\s*-50%\)\s*!important/);
+  assert.match(spinner, /top:\s*50%\s*!important/);
+  assert.match(spinner, /left:\s*50%\s*!important/);
+  assert.match(spinner, /margin-top:\s*-9\.5px\s*!important/);
+  assert.match(spinner, /margin-left:\s*-9\.5px\s*!important/);
+  assert.match(spinner, /transform:\s*none\s*!important/);
   assert.match(spinner, /border-top-color:\s*#183b35\s*!important/);
   assert.match(spinner, /animation:\s*cr-account-submit-spin\s*\.7s\s*linear\s*infinite\s*!important/);
-  assert.match(css, /@keyframes cr-account-submit-spin\s*\{\s*to\s*\{\s*transform:\s*translate\(-50%,\s*-50%\)\s*rotate\(360deg\)/);
+  assert.match(css, /@keyframes cr-account-submit-spin\s*\{\s*0%\s*\{\s*transform:\s*rotate\(0deg\)/);
+  assert.match(css, /100%\s*\{\s*transform:\s*rotate\(360deg\)/);
   assert.match(css, /button\.cr-account-submit--loading\s*\{[\s\S]*?background:\s*#e1e5e1\s*!important/);
   assert.doesNotMatch(css, /\.cr-account-submit--loading::(?:before|after)/);
 });
