@@ -64,7 +64,8 @@
 
     form.addEventListener('submit', (event) => {
       // This second submit is the native continuation after the loading state
-      // has had a rendering opportunity. Keep the original Woo submitter.
+      // has had a rendering opportunity. The clicked submitter is captured
+      // and preserved through requestSubmit(button) for WooCommerce's POST.
       if (form.dataset.crAccountSubmitting === '1'
         && form.dataset.crAccountNativeSubmitReady === '1') {
         form.dataset.crAccountNativeSubmitReady = '0';
