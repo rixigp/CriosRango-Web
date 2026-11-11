@@ -733,7 +733,7 @@ jobs:
               esac
             done < "$DIFF_FILE"
           else
-            echo "BASELINE_STATUS=ABSENT; confirmed missing remote manifest, using documented full deploy."
+            echo "FULL deploy selected: remote manifest absent or confirmed divergent baseline."
             while IFS= read -r -d '' FILE; do
               PATH_NAME="${FILE#./}"
               if ! safe_relative_path "$PATH_NAME"; then
