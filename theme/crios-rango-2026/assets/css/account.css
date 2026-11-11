@@ -1075,19 +1075,27 @@
     visibility: hidden !important;
   }
 
-  body.woocommerce-account .cr-account-submit--loading::after {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 18px;
-    height: 18px;
-    box-sizing: border-box;
-    margin: -9px 0 0 -9px;
-    border: 2px solid rgba(24,59,53,.22);
-    border-top-color: #183b35;
-    border-radius: 50%;
-    content: "";
-    animation: cr-account-submit-spin .7s linear infinite;
+  /* Explicitly defeat Woo/plugin button pseudo-element loading rules. */
+  body.woocommerce-account button.cr-account-submit--loading::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 18px !important;
+    height: 18px !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    border: 2px solid rgba(24,59,53,.22) !important;
+    border-top-color: #183b35 !important;
+    border-radius: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    animation: cr-account-submit-spin .7s linear infinite !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 2 !important;
   }
 
   body.woocommerce-account .cr-account-submit--loading:disabled {
@@ -1096,5 +1104,5 @@
 }
 
 @keyframes cr-account-submit-spin {
-  to { transform: rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }

@@ -95,3 +95,17 @@ test('SHIPPING_ADDRESS_FORM_BINDING_AND_LOADING_PAINT_PRECEDE_NATIVE_SUBMIT', ()
   assert.match(css, /\.cr-account-submit--loading::after/);
   assert.doesNotMatch(js, /form\.querySelectorAll\([^)]*input[^)]*\)\.forEach\([^)]*disabled/);
 });
+
+test('SHARED_ACCOUNT_LOADING_SPINNER_IS_VISIBLE_CENTERED_AND_ANIMATED_AS_PSEUDO', () => {
+  const spinner = css.slice(css.indexOf('body.woocommerce-account button.cr-account-submit--loading::after'));
+  assert.match(spinner, /content:\s*""\s*!important/);
+  assert.match(spinner, /display:\s*block\s*!important/);
+  assert.match(spinner, /position:\s*absolute\s*!important/);
+  assert.match(spinner, /top:\s*50%\s*!important/);
+  assert.match(spinner, /left:\s*50%\s*!important/);
+  assert.match(spinner, /transform:\s*translate\(-50%,\s*-50%\)\s*!important/);
+  assert.match(spinner, /border-top-color:\s*#183b35\s*!important/);
+  assert.match(spinner, /animation:\s*cr-account-submit-spin\s*\.7s\s*linear\s*infinite\s*!important/);
+  assert.match(css, /@keyframes cr-account-submit-spin\s*\{\s*to\s*\{\s*transform:\s*translate\(-50%,\s*-50%\)\s*rotate\(360deg\)/);
+  assert.match(css, /\.cr-account-submit--loading\s*\{[\s\S]*?background:\s*#e1e5e1\s*!important/);
+});
