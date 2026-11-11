@@ -229,3 +229,28 @@ test('ADDRESS_RENDER_HOOK_PROVIDES_SHIPPING_TYPE_WITHOUT_REDETECTION', () => {
   assert.match(renderer, /cr2026_account_mobile_save_context\(\s*'edit-address'\s*\)/);
   assert.match(renderer, /cr2026_account_render_save_feedback\(\s*'address'\s*\)/);
 });
+
+
+test('PASSWORD_SUCCESS_REQUIRES_A_REAL_WOOCOMMERCE_PASSWORD_CHANGE', () => {
+  assert.match(php, /array\(\s*'password_current',\s*'password_1',\s*'password_2'\s*\)/);
+  assert.match(php, /add_action\(\s*'woocommerce_save_account_details_errors',\s*'cr2026_account_capture_password_before_save'/);
+  assert.match(php, /\$GLOBALS\['cr2026_account_password_before_save_hash'\]/);
+  assert.match(php, /wp_check_password\(\s*\$new_password,\s*\$saved_user->user_pass/);
+  assert.match(php, /!\s*wp_check_password\(\s*\$new_password,\s*\$before_hash/);
+  assert.match(php, /cr2026_account_store_save_feedback\(\s*'password'\s*\)/);
+  const start = php.indexOf('function cr2026_account_store_profile_save_feedback');
+  const end = php.indexOf("\\nadd_action( 'woocommerce_save_account_details'", start);
+  const store = php.slice(start, end);
+  assert.match(store, /wc_get_notices\(\s*'error'\s*\)/);
+  assert.match(store, /cr2026_account_password_change_intent\(\)/);
+  assert.match(store, /delete_user_meta\(\s*\(int\) \$user_id,\s*'_cr2026_account_save_feedback'\s*\)/);
+});
+
+test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_WHITE_WITHOUT_GEOMETRY_OVERRIDES', () => {
+  assert.match(php, /'Current password \(leave blank to leave unchanged\)'\s*=>\s*'Contraseña actual'/);
+  assert.match(php, /'New password \(leave blank to leave unchanged\)'\s*=>\s*'Nueva contraseña'/);
+  assert.match(php, /'Confirm new password'\s*=>\s*'Confirmar nueva contraseña'/);
+  assert.match(css, /body\\.woocommerce-account\\.cr-account-profile-view-password \\.woocommerce-EditAccountForm fieldset \\.form-row input\\[type="password"\\]\\s*\\{\\s*background-color:\\s*#FFFFFF !important/);
+  assert.match(css, /\.cr-account-submit__spinner/);
+  assert.match(js, /cr-account-submit--loading/);
+});
