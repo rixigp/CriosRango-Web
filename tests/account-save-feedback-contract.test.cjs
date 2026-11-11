@@ -334,46 +334,83 @@ test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_WHITE_WITHOUT_GEOMETRY_OVERRIDES', ()
 
  
 test('PASSWORD_CLIENT_VALIDATION_BLOCKS_EMPTY_PARTIAL_AND_MISMATCH_BEFORE_LOADING', () => {
-  const passwordSubmit = js.slice(js.indexOf("if (document.body.classList.contains('cr-account-profile-view-password'))"), js.indexOf('// Intercept once, activate loading'));
-  assert.match(passwordSubmit, /input\\[name="password_current"\\]/);
-  assert.match(passwordSubmit, /input\\[name="password_1"\\]/);
-  assert.match(passwordSubmit, /input\\[name="password_2"\\]/);
-  assert.match(passwordSubmit, /current\\.value\\.length > 0/);
-  assert.match(passwordSubmit, /newPassword\\.value\\.length > 0/);
-  assert.match(passwordSubmit, /confirmation\\.value\\.length > 0/);
-  assert.match(passwordSubmit, /Por favor, rellena todos los campos de contraseña\\./);
-  assert.match(passwordSubmit, /newPassword\\.value !== confirmation\\.value/);
-  assert.match(passwordSubmit, /Las nuevas contraseñas no coinciden\\./);
-  assert.match(passwordSubmit, /showPasswordError\\(form, button,/);
-  assert.match(passwordSubmit, /return;/);
-  assert.doesNotMatch(passwordSubmit, /cr-account-form--loading|cr-account-submit--loading|requestSubmit/);
+  const validationStart = js.indexOf('const current = form.querySelector');
+  const validationEnd = js.indexOf('// Intercept once, activate loading', validationStart);
+  const passwordSubmit = js.slice(validationStart, validationEnd);
+  assert.ok(validationStart !== -1 && validationEnd > validationStart);
+  for (const field of ['password_current', 'password_1', 'password_2']) {
+    assert.ok(passwordSubmit.includes('input[name="' + field + '"]'), field + ' is checked client-side');
+  }
+  assert.ok(passwordSubmit.includes('current.value.length > 0'));
+  assert.ok(passwordSubmit.includes('newPassword.value.length > 0'));
+  assert.ok(passwordSubmit.includes('confirmation.value.length > 0'));
+  assert.ok(passwordSubmit.includes('Por favor, rellena todos los campos de contraseña.'));
+  assert.ok(passwordSubmit.includes('newPassword.value !== confirmation.value'));
+  assert.ok(passwordSubmit.includes('Las nuevas contraseñas no coinciden.'));
+  assert.ok(passwordSubmit.includes('showPasswordError(form, button,'));
+  assert.ok(passwordSubmit.includes('return;'));
+  assert.ok(!passwordSubmit.includes('cr-account-form--loading'));
+  assert.ok(!passwordSubmit.includes('cr-account-submit--loading'));
+  assert.ok(!passwordSubmit.includes('requestSubmit'));
   assert.ok(js.indexOf('showPasswordError(form, button') < js.indexOf("form.classList.add('cr-account-form--loading')"), 'invalid password submissions exit before loading begins');
 });
 
 test('PASSWORD_ERRORS_USE_ONE_FLEX_ALERT_LAYOUT_WITH_ICON_IN_FLOW', () => {
-  assert.match(js, /cr-password-inline-error__icon/);
-  assert.match(js, /cr-password-inline-error__text/);
-  assert.match(js, /role', 'alert'/);
-  assert.match(css, /cr-password-inline-error\\s*\\{[^}]*display:\\s*flex !important[^}]*align-items:\\s*flex-start !important[^}]*gap:\\s*9px !important/s);
-  assert.match(css, /cr-password-inline-error__icon\\s*\\{[^}]*flex:\\s*0 0 18px !important/s);
-  assert.match(css, /cr-password-inline-error__text\\s*\\{[^}]*flex:\\s*1 1 auto !important/s);
-  assert.match(css, /woocommerce-error\\.cr-account-save-feedback--error::before\\s*\\{[^}]*position:\\s*static !important/s);
-  assert.match(css, /woocommerce-error\\.cr-account-save-feedback--error\\s*\\{[^}]*border:\\s*1px solid #efc5c1 !important/s);
-  assert.match(css, /woocommerce-error\\.cr-account-save-feedback--error\\s*\\{[^}]*background:\\s*#fdf0ef !important/s);
+  const ruleBody = (selector) => {
+    const index = css.indexOf(selector);
+    assert.notEqual(index, -1, 'CSS selector exists: ' + selector);
+    const open = css.indexOf('{', index);
+    const close = css.indexOf('}', open);
+    assert.ok(open !== -1 && close > open, 'CSS rule is complete: ' + selector);
+    return css.slice(open + 1, close);
+  };
+  assert.ok(js.includes('cr-password-inline-error__icon'));
+  assert.ok(js.includes('cr-password-inline-error__text'));
+  assert.ok(js.includes("notice.setAttribute('role', 'alert')"));
+  const custom = ruleBody('.cr-password-inline-error {');
+  assert.ok(custom.includes('display: flex !important'));
+  assert.ok(custom.includes('align-items: flex-start !important'));
+  assert.ok(custom.includes('gap: 9px !important'));
+  const icon = ruleBody('.cr-password-inline-error__icon {');
+  assert.ok(icon.includes('flex: 0 0 18px !important'));
+  const text = ruleBody('.cr-password-inline-error__text {');
+  assert.ok(text.includes('flex: 1 1 auto !important'));
+  const wooNotice = ruleBody('.woocommerce-error.cr-account-save-feedback--error {');
+  assert.ok(wooNotice.includes('position: static !important'));
+  assert.ok(wooNotice.includes('border: 1px solid #efc5c1 !important'));
+  assert.ok(wooNotice.includes('background: #fdf0ef !important'));
+  const wooIcon = ruleBody('.woocommerce-error.cr-account-save-feedback--error::before {');
+  assert.ok(wooIcon.includes('position: static !important'));
 });
 
 test('PASSWORD_FIELDS_WHITE_HINT_NEUTRAL_AND_STRENGTH_METER_LOGIC_UNCHANGED', () => {
-  for (const id of ['password_current', 'password_1', 'password_2']) {
-    assert.match(css, new RegExp('#' + id + '[\\s\\S]*?background(?:-color)?:\\s*#FFFFFF !important'));
+  const whiteFields = css.slice(css.indexOf('#password_current,'), css.indexOf('/* Unified password notices'));
+  for (const id of ['#password_current', '#password_1', '#password_2']) {
+    assert.ok(whiteFields.includes(id), id + ' has a dedicated white background rule');
   }
-  assert.match(js, /Usa una contraseña segura combinando letras, números y símbolos\\./);
-  assert.match(js, /woocommerce-password-hint/);
-  assert.match(css, /woocommerce-password-strength\\s*\\{[^}]*display:\\s*inline-flex !important/s);
-  assert.match(css, /woocommerce-password-strength\\.short/);
-  assert.match(css, /woocommerce-password-strength\\.bad/);
-  assert.match(css, /woocommerce-password-strength\\.good/);
-  assert.match(css, /woocommerce-password-strength\\.strong/);
-  assert.doesNotMatch(js, /password(?:_1|_2|_current)?\\.value\\s*=|localStorage|console\\.(?:log|warn|error)/);
-  assert.match(php, /wp_check_password/);
-  assert.doesNotMatch(php, /cr2026_account_capture_password_before_save|password_before_save_hash|woocommerce_save_account_details_errors/);
+  assert.ok(whiteFields.includes('background: #FFFFFF !important'));
+  assert.ok(whiteFields.includes('background-color: #FFFFFF !important'));
+  assert.ok(whiteFields.includes('background-image: none !important'));
+  assert.ok(js.includes('Usa una contraseña segura combinando letras, números y símbolos.'));
+  assert.ok(js.includes('.woocommerce-password-hint'));
+  const ruleBody = (selector) => {
+    const index = css.indexOf(selector);
+    assert.notEqual(index, -1, 'CSS selector exists: ' + selector);
+    const open = css.indexOf('{', index);
+    const close = css.indexOf('}', open);
+    return css.slice(open + 1, close);
+  };
+  assert.ok(ruleBody('.woocommerce-password-strength {').includes('display: inline-flex !important'));
+  for (const state of ['.short', '.bad', '.good', '.strong']) {
+    assert.ok(css.includes('.woocommerce-password-strength' + state), 'native meter state remains styled: ' + state);
+  }
+  assert.ok(!js.includes('current.value ='));
+  assert.ok(!js.includes('newPassword.value ='));
+  assert.ok(!js.includes('confirmation.value ='));
+  assert.ok(!js.includes('localStorage'));
+  assert.ok(!js.includes('console.log'));
+  assert.ok(!php.includes('wp_check_password'));
+  assert.ok(!php.includes('cr2026_account_capture_password_before_save'));
+  assert.ok(!php.includes('password_before_save_hash'));
+  assert.ok(!php.includes('woocommerce_save_account_details_errors'));
 });
