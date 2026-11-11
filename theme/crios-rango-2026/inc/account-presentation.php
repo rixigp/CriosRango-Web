@@ -645,36 +645,27 @@ function cr2026_account_mobile_save_context( $endpoint = '' ) {
     return is_wc_endpoint_url( 'edit-account' ) || is_wc_endpoint_url( 'edit-address' );
 }
 
-function cr2026_account_save_feedback_session() {
-    if ( ! function_exists( 'WC' ) ) {
-        return false;
-    }
-    $woocommerce = WC();
-    return is_object( $woocommerce ) && isset( $woocommerce->session )
-        && is_object( $woocommerce->session ) && method_exists( $woocommerce->session, 'get' )
-        && method_exists( $woocommerce->session, 'set' ) ? $woocommerce->session : false;
-}
-
 function cr2026_account_store_save_feedback( $feedback ) {
-    $session = cr2026_account_save_feedback_session();
-    if ( $session ) {
-        $session->set( 'cr2026_account_save_feedback', (string) $feedback );
+    $user_id = (int) get_current_user_id();
+    $allowed = array( 'personal', 'address', 'password' );
+    if ( $user_id <= 0 || ! in_array( $feedback, $allowed, true ) ) {
+        return;
     }
+    update_user_meta( $user_id, '_cr2026_account_save_feedback', $feedback );
 }
 
 function cr2026_account_take_save_feedback( $expected ) {
-    $session = cr2026_account_save_feedback_session();
-    if ( ! $session ) {
+    $user_id = (int) get_current_user_id();
+    if ( $user_id <= 0 ) {
         return false;
     }
-    $feedback = (string) $session->get( 'cr2026_account_save_feedback', '' );
-    if ( '' === $feedback ) {
-        return false;
-    }
-    // Consume the one-shot marker on the first account editor render, even if
-    // the redirect lands on a different subview; never leak stale success.
-    $session->set( 'cr2026_account_save_feedback', '' );
-    return $feedback === (string) $expected;
+
+    $feedback = get_user_meta( $user_id, '_cr2026_account_save_feedback', true );
+    // Consume immediately so a refresh can never repeat the success message.
+    delete_user_meta( $user_id, '_cr2026_account_save_feedback' );
+
+    $allowed = array( 'personal', 'address', 'password' );
+    return in_array( $feedback, $allowed, true ) && $feedback === $expected;
 }
 
 function cr2026_account_render_save_feedback( $feedback ) {

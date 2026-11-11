@@ -9,13 +9,16 @@ const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/a
 const js = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/js/account-save-feedback.js'), 'utf8');
 const assets = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/assets.php'), 'utf8');
 
-test('ACCOUNT_SAVE_FEEDBACK_USES_ONE_SHARED_SESSION_AND_INLINE_COMPONENT', () => {
-  assert.match(php, /function cr2026_account_store_save_feedback\(\s*\$feedback\s*\)/);
-  assert.match(php, /function cr2026_account_take_save_feedback\(\s*\$expected\s*\)/);
-  assert.match(php, /class="cr-account-save-feedback"/);
-  assert.match(php, /'personal'\s*=>\s*__\(\s*'Datos actualizados'/);
-  assert.match(php, /'address'\s*=>\s*__\(\s*'Dirección actualizada'/);
-  assert.match(php, /'password'\s*=>\s*__\(\s*'Contraseña actualizada'/);
+test('ACCOUNT_SAVE_FEEDBACK_USES_PRIVATE_USER_META_AND_INLINE_COMPONENT', () => {
+  const feedback = php.slice(php.indexOf('Shared mobile Account save-feedback contract'));
+  assert.match(feedback, /update_user_meta\(\s*\$user_id,\s*'_cr2026_account_save_feedback',\s*\$feedback\s*\)/);
+  assert.match(feedback, /get_user_meta\(\s*\$user_id,\s*'_cr2026_account_save_feedback',\s*true\s*\)/);
+  assert.match(feedback, /delete_user_meta\(\s*\$user_id,\s*'_cr2026_account_save_feedback'\s*\)/);
+  assert.doesNotMatch(feedback, /cr2026_account_save_feedback_session|WC\(\)->session|session->(?:get|set)/);
+  assert.match(feedback, /class="cr-account-save-feedback"/);
+  assert.match(feedback, /'personal'\s*=>\s*__\(\s*'Datos actualizados'/);
+  assert.match(feedback, /'address'\s*=>\s*__\(\s*'Dirección actualizada'/);
+  assert.match(feedback, /'password'\s*=>\s*__\(\s*'Contraseña actualizada'/);
 });
 
 test('NATIVE_WOOCOMMERCE_SAVE_ACTIONS_REMAIN_THE_ONLY_PERSISTENCE_PATH', () => {
@@ -25,17 +28,78 @@ test('NATIVE_WOOCOMMERCE_SAVE_ACTIONS_REMAIN_THE_ONLY_PERSISTENCE_PATH', () => {
   assert.doesNotMatch(php, /add_action\(\s*'woocommerce_after_edit_address_form',\s*'cr2026_account_address_save_form_feedback'/);
   assert.match(php, /wp_safe_redirect\( add_query_arg\( 'profile_view', \$view, \$url \) \)/);
   assert.match(php, /wp_safe_redirect\( \$url \)/);
-  assert.doesNotMatch(php.slice(php.indexOf('Shared mobile Account save-feedback contract')), /update_user_meta\s*\(|wp_update_user\s*\(|\$wpdb->/);
+  assert.doesNotMatch(php.slice(php.indexOf('Shared mobile Account save-feedback contract')), /wp_update_user\s*\(|\$wpdb->/);
 });
 
-test('SUCCESS_MARKER_IS_CONSUMED_ONCE_EVEN_WHEN_THE_REDIRECT_SUBVIEW_DOES_NOT_MATCH', () => {
-  const start = php.indexOf('function cr2026_account_take_save_feedback');
-  const end = php.indexOf('\n}', start) + 2;
-  const take = php.slice(start, end);
-  assert.match(take, /\$session->get\(\s*'cr2026_account_save_feedback'/);
-  assert.match(take, /\$session->set\(\s*'cr2026_account_save_feedback',\s*''\s*\)/);
-  assert.match(take, /return \$feedback === \(string\) \$expected/);
-  assert.ok(take.indexOf("$session->set") < take.indexOf("return $feedback ==="));
+test('USER_META_STORE_TAKE_AND_ONE_SHOT_CONSUMPTION_EXECUTE_WITH_WORDPRESS_STUBS', () => {
+  const extractFunction = (name) => {
+    const start = php.indexOf(`function ${name}(`);
+    assert.notEqual(start, -1, `${name} exists`);
+    const open = php.indexOf('{', start);
+    let depth = 0;
+    for (let i = open; i < php.length; i += 1) {
+      if (php[i] === '{') depth += 1;
+      if (php[i] === '}') {
+        depth -= 1;
+        if (depth === 0) return php.slice(start, i + 1);
+      }
+    }
+    throw new Error(`Unclosed function ${name}`);
+  };
+  const store = extractFunction('cr2026_account_store_save_feedback');
+  const take = extractFunction('cr2026_account_take_save_feedback');
+  const harness = `$GLOBALS['uid'] = 41;
+$GLOBALS['meta'] = [];
+function get_current_user_id() { return $GLOBALS['uid']; }
+function update_user_meta($id, $key, $value) { $GLOBALS['meta'][$id][$key] = $value; return true; }
+function get_user_meta($id, $key, $single = false) { return $GLOBALS['meta'][$id][$key] ?? ''; }
+function delete_user_meta($id, $key) { unset($GLOBALS['meta'][$id][$key]); return true; }
+${store}
+${take}
+cr2026_account_store_save_feedback('address');
+$stored = $GLOBALS['meta'][41]['_cr2026_account_save_feedback'] ?? null;
+$first = cr2026_account_take_save_feedback('address');
+$exists_after_take = array_key_exists('_cr2026_account_save_feedback', $GLOBALS['meta'][41] ?? []);
+$refresh = cr2026_account_take_save_feedback('address');
+cr2026_account_store_save_feedback('personal');
+$mismatch = cr2026_account_take_save_feedback('password');
+$mismatch_consumed = !array_key_exists('_cr2026_account_save_feedback', $GLOBALS['meta'][41] ?? []);
+cr2026_account_store_save_feedback('invalid');
+$invalid_stored = $GLOBALS['meta'][41]['_cr2026_account_save_feedback'] ?? null;
+$GLOBALS['uid'] = 0;
+cr2026_account_store_save_feedback('password');
+$anonymous_take = cr2026_account_take_save_feedback('password');
+echo json_encode(compact('stored', 'first', 'exists_after_take', 'refresh', 'mismatch', 'mismatch_consumed', 'invalid_stored', 'anonymous_take'));
+`;
+  const { execFileSync } = require('node:child_process');
+  const output = execFileSync('php', ['-r', harness], { encoding: 'utf8' });
+  const result = JSON.parse(output);
+  assert.deepEqual(result, {
+    stored: 'address',
+    first: true,
+    exists_after_take: false,
+    refresh: false,
+    mismatch: false,
+    mismatch_consumed: true,
+    invalid_stored: null,
+    anonymous_take: false,
+  });
+});
+
+test('WOOCOMMERCE_VALIDATION_ERRORS_BLOCK_SUCCESS_MARKER_CREATION', () => {
+  for (const name of ['cr2026_account_store_profile_save_feedback', 'cr2026_account_store_address_save_feedback']) {
+    const start = php.indexOf(`function ${name}(`);
+    const open = php.indexOf('{', start);
+    let depth = 0, end = -1;
+    for (let i = open; i < php.length; i += 1) {
+      if (php[i] === '{') depth += 1;
+      if (php[i] === '}' && --depth === 0) { end = i + 1; break; }
+    }
+    const body = php.slice(start, end);
+    const guard = body.indexOf("wc_get_notices( 'error' )");
+    const store = body.indexOf('cr2026_account_store_save_feedback(');
+    assert.ok(guard !== -1 && store !== -1 && guard < store, `${name} checks WooCommerce errors before storing`);
+  }
 });
 
 test('ADDRESS_SUCCESS_RETURNS_TO_THE_SHIPPING_EDITOR', () => {
