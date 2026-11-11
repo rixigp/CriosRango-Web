@@ -699,16 +699,7 @@ function cr2026_account_address_save_form_feedback() {
     if ( ! cr2026_account_mobile_save_context( 'edit-address' ) ) {
         return;
     }
-    $address_type = (string) get_query_var( 'edit-address' );
-    if ( 'shipping' !== $address_type && isset( $_SERVER['REQUEST_URI'] ) ) {
-        $path = (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH );
-        if ( preg_match( '#/edit-address/shipping/?$#', $path ) ) {
-            $address_type = 'shipping';
-        }
-    }
-    if ( 'shipping' === $address_type ) {
-        cr2026_account_render_save_feedback( 'address' );
-    }
+    cr2026_account_render_save_feedback( 'address' );
 }
 add_action( 'woocommerce_after_edit_address_form_shipping', 'cr2026_account_address_save_form_feedback', 99 );
 

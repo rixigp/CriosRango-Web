@@ -218,3 +218,14 @@ test('ACCOUNT_SUBMIT_LOADING_BACKGROUND_CONTRAST_OVERRIDES_ENDPOINT_RULES_WITHOU
 });
 
 // Keep the loading-contrast contract on the staging deploy validation path.
+
+
+test('ADDRESS_RENDER_HOOK_PROVIDES_SHIPPING_TYPE_WITHOUT_REDETECTION', () => {
+  const start = php.indexOf('function cr2026_account_address_save_form_feedback');
+  const end = php.indexOf("\nadd_action( 'woocommerce_after_edit_address_form_shipping'", start);
+  const renderer = php.slice(start, end);
+  assert.match(php, /add_action\(\s*'woocommerce_after_edit_address_form_shipping',\s*'cr2026_account_address_save_form_feedback'/);
+  assert.doesNotMatch(renderer, /get_query_var|\$_SERVER\['REQUEST_URI'\]|preg_match|address_type/);
+  assert.match(renderer, /cr2026_account_mobile_save_context\(\s*'edit-address'\s*\)/);
+  assert.match(renderer, /cr2026_account_render_save_feedback\(\s*'address'\s*\)/);
+});
