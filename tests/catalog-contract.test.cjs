@@ -184,48 +184,62 @@ test('catalog endpoint echoes page size and staging debug exposes all ID layers 
 });
 
 test('staging FULL deploy is limited to confirmed absence or confirmed divergence', () => {
-  const validStart = deploy.indexOf('BASELINE_STATUS="VALID"');
-  const divergentStart = deploy.indexOf('elif ! git merge-base --is-ancestor');
-  const diffStart = deploy.indexOf('elif ! git diff --name-status -z --find-renames --find-copies');
-  const absentStart = deploy.indexOf('elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then');
-  const unavailableStart = deploy.indexOf('else\n              BASELINE_STATUS="UNAVAILABLE"', absentStart);
-  const abortStart = deploy.indexOf('if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then');
-  const abortReason = deploy.indexOf('DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE');
-  const deleteLoop = deploy.indexOf('for FILE in "${DELETE_FILES[@]}"');
-  const uploadLoop = deploy.indexOf('for FILE in "${UPLOAD_FILES[@]}"');
+  // Inspect the complete baseline decision block, including the ancestry check.
+  const baselineStart = deploy.indexOf('BASELINE_STATUS="NOT_APPLICABLE"');
+  const incrementalStart = deploy.indexOf('if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then', baselineStart);
+  assert.ok(baselineStart >= 0 && incrementalStart > baselineStart,
+    'the complete baseline block must have stable start and end markers');
+  const baseline = deploy.slice(baselineStart, incrementalStart);
+
+  const validStart = baseline.indexOf('BASELINE_STATUS="VALID"');
+  const divergentStart = baseline.indexOf('elif ! git merge-base --is-ancestor');
+  const diffStart = baseline.indexOf('elif ! git diff --name-status -z --find-renames --find-copies');
+  const absentStart = baseline.indexOf('elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then');
+  const unavailableStart = baseline.indexOf('else\n              BASELINE_STATUS="UNAVAILABLE"', absentStart);
+  const abortStart = baseline.indexOf('if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then');
+  const abortReason = baseline.indexOf('DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE');
 
   assert.ok(validStart >= 0 && divergentStart > validStart && diffStart > divergentStart,
     'a present, parseable manifest must be checked for ancestry before diffing');
-  const validBranch = deploy.slice(diffStart, absentStart);
-  assert.match(validBranch, /else\s+DEPLOY_MODE="INCREMENTAL"/);
-  assert.ok(validBranch.includes('git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"'));
+  const validBranch = baseline.slice(validStart, absentStart);
+  assert.ok(validBranch.includes('git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"'),
+    'the complete baseline scope must include the remote SHA ancestry check');
   assert.ok(validBranch.includes('git diff --name-status -z --find-renames --find-copies'));
+  assert.match(validBranch, /else\s+DEPLOY_MODE="INCREMENTAL"/);
 
   assert.ok(absentStart >= 0 && unavailableStart > absentStart,
     'only the explicit FTP 550 missing-manifest response may select absent');
-  const absentBranch = deploy.slice(absentStart, unavailableStart);
+  const absentBranch = baseline.slice(absentStart, unavailableStart);
   assert.match(absentBranch, /BASELINE_STATUS="ABSENT"/);
   assert.match(absentBranch, /DEPLOY_MODE="FULL"/);
 
-  const divergentBranch = deploy.slice(divergentStart, diffStart);
+  const divergentBranch = baseline.slice(divergentStart, diffStart);
   assert.match(divergentBranch, /BASELINE_STATUS="DIVERGED"/);
   assert.match(divergentBranch, /BASELINE_ERROR="remote_sha_not_ancestor_of_head"/);
   assert.match(divergentBranch, /DEPLOY_MODE="FULL"/);
 
-  const unknownHandling = deploy.slice(validStart, abortStart);
-  assert.match(unknownHandling, /BASELINE_ERROR="invalid_or_unparseable_manifest"/);
-  assert.match(unknownHandling, /BASELINE_ERROR="remote_sha_not_available_in_git"/);
-  assert.match(unknownHandling, /BASELINE_ERROR="git_diff_failed"/);
-  assert.match(unknownHandling, /BASELINE_ERROR="curl_exit_\$\{BASELINE_CURL_EXIT\}"/);
-  assert.doesNotMatch(unknownHandling, /DEPLOY_MODE="FULL"/,
-    'unconfirmed manifest, Git and FTP errors must not select FULL');
+  const fullAssignments = [...baseline.matchAll(/DEPLOY_MODE="FULL"/g)].map(match => match.index);
+  assert.equal(fullAssignments.length, 2,
+    'FULL may be selected only by the confirmed absent and divergent branches');
+  assert.ok(fullAssignments.every(index =>
+    (index >= absentStart && index < unavailableStart) ||
+    (index >= divergentStart && index < diffStart)
+  ), 'no unconfirmed error branch may select FULL');
 
+  const unknownErrorCases = [
+    'BASELINE_ERROR="invalid_or_unparseable_manifest"',
+    'BASELINE_ERROR="remote_sha_not_available_in_git"',
+    'BASELINE_ERROR="git_diff_failed"',
+    'BASELINE_ERROR="curl_exit_${BASELINE_CURL_EXIT}"'
+  ];
+  for (const errorCase of unknownErrorCases) {
+    assert.ok(baseline.includes(errorCase), `missing fail-closed handling for ${errorCase}`);
+  }
   assert.ok(abortStart >= 0 && abortReason > abortStart);
-  assert.match(deploy.slice(abortStart, deleteLoop), /DEPLOY_MODE="ABORTED"/);
-  assert.match(deploy.slice(abortStart, deleteLoop), /exit 1/);
-  assert.ok(deleteLoop > abortReason && uploadLoop > abortReason,
-    'unknown errors must abort before any FTP delete/upload loop');
-  assert.match(deploy, /if \[ "\$DEPLOY_MODE" = "INCREMENTAL" \]; then/);
+  const abortBranch = baseline.slice(abortStart);
+  assert.match(abortBranch, /DEPLOY_MODE="ABORTED"/);
+  assert.match(abortBranch, /exit 1/);
+  assert.match(baseline, /if \[ "\$DEPLOY_MODE" = "INCREMENTAL" \]; then/);
 });
 
 test('staging deploy is exact-HEAD guarded, incremental and verifies the deployed runtime SHA', () => {
