@@ -1131,3 +1131,11 @@
     background: #e1e5e1 !important;
   }
 }
+
+
+/* Password screen fields stay white above the shared canvas field override; geometry is untouched. */
+@media (max-width: 767px) {
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset .form-row input[type="password"] {
+    background-color: #FFFFFF !important;
+  }
+}
