@@ -301,7 +301,7 @@ add_filter( 'the_content', 'cr2026_account_help_content', 20 );
 
 
 
-/** Mobile Account-only cosmetic corrections; required semantics and date editing remain native. */
+/** Preserve the existing mobile Account/Address required-marker presentation. */
 function cr2026_account_mobile_field_marker_styles() {
     if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
         || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
@@ -309,153 +309,11 @@ function cr2026_account_mobile_field_marker_styles() {
     }
     echo '<style id="cr2026-account-mobile-field-markers">'
         . 'body.woocommerce-account :is(.woocommerce-EditAccountForm,.woocommerce-address-fields) label :is(abbr.required,span.required){display:none!important;}'
-        . 'body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date input[type="date"]{-webkit-appearance:none!important;appearance:none!important;background-image:none!important;}'
-        . 'body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date input[type="date"]::-webkit-calendar-picker-indicator{display:none!important;-webkit-appearance:none!important;}'
-        . 'body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date:before,body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date:after{content:none!important;display:none!important;}'
         . '</style>';
 }
 add_action( 'wp_head', 'cr2026_account_mobile_field_marker_styles', 99 );
 
-/**
- * WPLoyalty 1.4.9 birthday integration for the mobile Personal Data view.
- * WooCommerce keeps ownership of the account form and its native POST.
- */
-function cr2026_account_wlr_user( $email ) {
-    if ( ! class_exists( '\Wlr\App\Helpers\EarnCampaign' ) || ! is_email( $email ) ) {
-        return false;
-    }
-    try {
-        $campaign = \Wlr\App\Helpers\EarnCampaign::getInstance();
-        return is_object( $campaign ) && method_exists( $campaign, 'getPointUserByEmail' )
-            ? $campaign->getPointUserByEmail( $email ) : false;
-    } catch ( \Throwable $error ) {
-        return false;
-    }
-}
-
-/** Read WPLoyalty values from arrays, ArrayAccess objects and model-backed properties. */
-function cr2026_account_wlr_field( $wlr_user, $field ) {
-    if ( is_array( $wlr_user ) ) {
-        return array_key_exists( $field, $wlr_user ) ? $wlr_user[ $field ] : null;
-    }
-    if ( ! is_object( $wlr_user ) ) {
-        return null;
-    }
-    if ( $wlr_user instanceof \ArrayAccess && $wlr_user->offsetExists( $field ) ) {
-        return $wlr_user[ $field ];
-    }
-    if ( isset( $wlr_user->{$field} ) ) {
-        return $wlr_user->{$field};
-    }
-    if ( property_exists( $wlr_user, $field ) ) {
-        try {
-            $property = new \ReflectionProperty( $wlr_user, $field );
-            return $property->getValue( $wlr_user );
-        } catch ( \Throwable $error ) {
-            // Continue to the model's supported attribute accessors below.
-        }
-    }
-    if ( is_callable( array( $wlr_user, 'getAttribute' ) ) ) {
-        try {
-            $value = $wlr_user->getAttribute( $field );
-            if ( null !== $value ) {
-                return $value;
-            }
-        } catch ( \Throwable $error ) {
-            // Try the model's array accessors below.
-        }
-    }
-    foreach ( array( 'getAttributes', 'toArray', 'getData' ) as $method ) {
-        if ( ! is_callable( array( $wlr_user, $method ) ) ) {
-            continue;
-        }
-        try {
-            $data = $wlr_user->{$method}();
-            if ( is_array( $data ) && array_key_exists( $field, $data ) ) {
-                return $data[ $field ];
-            }
-        } catch ( \Throwable $error ) {
-            // An unsupported accessor must not break the Account page.
-        }
-    }
-    return null;
-}
-
-
-/** Normalize WPLoyalty data to the ISO value required by input[type=date]. */
-function cr2026_account_wlr_normalize_date_value( $value ) {
-    if ( is_string( $value ) ) {
-        $value = trim( $value );
-        foreach ( array( '!Y-m-d', '!d/m/Y', '!d-m-Y' ) as $format ) {
-            $date = \DateTimeImmutable::createFromFormat( $format, $value );
-            $errors = \DateTimeImmutable::getLastErrors();
-            if ( $date && ( false === $errors || ( 0 === $errors['warning_count'] && 0 === $errors['error_count'] ) )
-                && $date->format( substr( $format, 1 ) ) === $value ) {
-                return $date->format( 'Y-m-d' );
-            }
-        }
-    }
-
-    if ( is_numeric( $value ) && (int) $value > 0
-        && class_exists( '\Wlr\App\Helpers\Woocommerce' ) ) {
-        try {
-            $helper = \Wlr\App\Helpers\Woocommerce::getInstance();
-            $date = $helper->beforeDisplayDate( (int) $value, 'Y-m-d' );
-            if ( is_string( $date ) ) {
-                return cr2026_account_wlr_normalize_date_value( $date );
-            }
-        } catch ( \Throwable $error ) {
-            return '';
-        }
-    }
-    return '';
-}
-
-
-/** Classify the raw field format without exposing the customer's birthday. */
-function cr2026_account_wlr_birth_date_raw_format( $value ) {
-    if ( is_numeric( $value ) && (int) $value > 0 ) {
-        return 'timestamp';
-    }
-    if ( ! is_string( $value ) || '' === trim( $value ) ) {
-        return 'EMPTY';
-    }
-    $value = trim( $value );
-    foreach ( array( 'Y-m-d', 'd/m/Y', 'd-m-Y' ) as $format ) {
-        $date = \DateTimeImmutable::createFromFormat( '!' . $format, $value );
-        $errors = \DateTimeImmutable::getLastErrors();
-        if ( $date && $date->format( $format ) === $value
-            && ( false === $errors || ( 0 === $errors['warning_count'] && 0 === $errors['error_count'] ) ) ) {
-            return $format;
-        }
-    }
-    return 'UNRECOGNIZED';
-}
-
-/** Normalize WPLoyalty's preferred birthday_date, then its legacy birth_date fallback. */
-function cr2026_account_wlr_birth_date( $wlr_user ) {
-    $birthday_date = cr2026_account_wlr_normalize_date_value(
-        cr2026_account_wlr_field( $wlr_user, 'birthday_date' )
-    );
-    if ( '' !== $birthday_date ) {
-        return $birthday_date;
-    }
-    return cr2026_account_wlr_normalize_date_value(
-        cr2026_account_wlr_field( $wlr_user, 'birth_date' )
-    );
-}
-
-/** Identify the WPLoyalty field actually used, without returning or logging its value. */
-function cr2026_account_wlr_birth_date_source( $wlr_user ) {
-    if ( '' !== cr2026_account_wlr_normalize_date_value( cr2026_account_wlr_field( $wlr_user, 'birthday_date' ) ) ) {
-        return 'birthday_date';
-    }
-    return '' !== cr2026_account_wlr_normalize_date_value( cr2026_account_wlr_field( $wlr_user, 'birth_date' ) )
-        ? 'birth_date' : 'NONE';
-}
-
-
-/** Display the fixed WPLoyalty birthday as read-only text in mobile Personal Data. */
+/** Display the canonical app-owned WordPress birth date as read-only text. */
 function cr2026_account_render_birth_date_field() {
     if ( ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
         || ! function_exists( 'is_account_page' ) || ! is_account_page()
@@ -463,32 +321,29 @@ function cr2026_account_render_birth_date_field() {
         || 'personal' !== cr2026_account_profile_view() || ! is_user_logged_in() ) {
         return;
     }
-    $current_user = wp_get_current_user();
-    $user_email = isset( $current_user->user_email ) ? (string) $current_user->user_email : '';
-    $wlr_user = cr2026_account_wlr_user( $user_email );
-    $birth_date = cr2026_account_wlr_birth_date( $wlr_user );
+
+    $user_id = (int) get_current_user_id();
+    if ( $user_id <= 0 ) {
+        return;
+    }
+
+    $birth_date_raw = (string) get_user_meta( $user_id, 'criosrango_birth_date', true );
     $birth_date_display = '';
-    if ( '' !== $birth_date ) {
-        $date = \DateTimeImmutable::createFromFormat( '!Y-m-d', $birth_date );
-        if ( $date && $date->format( 'Y-m-d' ) === $birth_date ) {
+
+    if ( '' === $birth_date_raw ) {
+        $birth_date_display = __( 'No registrada', 'crios-rango-2026' );
+    } else {
+        $date = \DateTimeImmutable::createFromFormat( '!Y-m-d', $birth_date_raw );
+        $errors = \DateTimeImmutable::getLastErrors();
+        if ( $date && $date->format( 'Y-m-d' ) === $birth_date_raw
+            && ( false === $errors || ( 0 === $errors['warning_count'] && 0 === $errors['error_count'] ) ) ) {
             $birth_date_display = $date->format( 'd/m/Y' );
+        } else {
+            $birth_date_display = __( 'Fecha no válida', 'crios-rango-2026' );
         }
     }
-    if ( '' === $birth_date_display ) {
-        $birth_date_display = __( 'No registrada', 'crios-rango-2026' );
-    }
-    $wlr_user_found = is_object( $wlr_user ) || is_array( $wlr_user );
-    $birth_date_source = cr2026_account_wlr_birth_date_source( $wlr_user );
-    $raw_field = 'birthday_date' === $birth_date_source ? 'birthday_date' : 'birth_date';
-    $raw_value = cr2026_account_wlr_field( $wlr_user, $raw_field );
-    $raw_format = cr2026_account_wlr_birth_date_raw_format( $raw_value );
     ?>
-    <p class="form-row form-row-wide cr-account-birth-date"
-        data-wlr-user-found="<?php echo $wlr_user_found ? 'yes' : 'no'; ?>"
-        data-birth-date-source-field="<?php echo esc_attr( $birth_date_source ); ?>"
-        data-birth-date-raw-format="<?php echo esc_attr( $raw_format ); ?>"
-        data-birth-date-control-type="read-only-display"
-        data-birth-date-value-loaded="<?php echo 'NONE' !== $birth_date_source && '' !== $birth_date ? 'yes' : 'no'; ?>">
+    <p class="form-row form-row-wide cr-account-birth-date" data-birth-date-source="wordpress-user-meta" data-birth-date-control-type="read-only-display">
         <label><?php esc_html_e( 'Fecha de nacimiento', 'crios-rango-2026' ); ?></label>
         <span class="cr-account-birth-date__value"><?php echo esc_html( $birth_date_display ); ?></span>
     </p>
@@ -496,7 +351,6 @@ function cr2026_account_render_birth_date_field() {
 }
 
 add_action( 'woocommerce_edit_account_form', 'cr2026_account_render_birth_date_field', 1 );
-
 
 
 /**
