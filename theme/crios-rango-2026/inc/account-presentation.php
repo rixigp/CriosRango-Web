@@ -487,14 +487,6 @@ function cr2026_account_wlr_can_edit_birth_date( $wlr_user ) {
     }
 }
 
-function cr2026_account_is_mobile_personal_post() {
-    return is_user_logged_in()
-        && function_exists( 'wp_is_mobile' ) && wp_is_mobile()
-        && 'personal' === cr2026_account_profile_view()
-        && isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) )
-        && isset( $_POST['save_account_details'] );
-}
-
 /** Add the WPLoyalty-owned birthday value inside WooCommerce's native account form. */
 function cr2026_account_render_birth_date_field() {
     if ( ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
