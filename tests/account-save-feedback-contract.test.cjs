@@ -102,7 +102,9 @@ test('SHARED_ACCOUNT_LOADING_SPINNER_IS_A_REAL_DOM_ELEMENT_VISIBLE_CENTERED_AND_
   assert.match(js, /createElement\('span'\)/);
   assert.match(js, /spinner\.className = 'cr-account-submit__spinner'/);
   assert.match(js, /spinner\.setAttribute\('aria-hidden', 'true'\)/);
-  const spinner = css.slice(css.indexOf('body.woocommerce-account button.cr-account-submit--loading .cr-account-submit__spinner'));
+  const spinnerRule = css.match(/body\.woocommerce-account button\.cr-account-submit--loading \.cr-account-submit__spinner\s*\{([^}]*)\}/);
+  assert.ok(spinnerRule, 'Shared spinner rule exists');
+  const spinner = spinnerRule[1];
   assert.match(spinner, /display:\s*block\s*!important/);
   assert.match(spinner, /position:\s*absolute\s*!important/);
   assert.match(spinner, /top:\s*50%\s*!important/);
@@ -113,7 +115,7 @@ test('SHARED_ACCOUNT_LOADING_SPINNER_IS_A_REAL_DOM_ELEMENT_VISIBLE_CENTERED_AND_
   assert.match(spinner, /left:\s*50%\s*!important/);
   assert.match(spinner, /margin-top:\s*-9\.5px\s*!important/);
   assert.match(spinner, /margin-left:\s*-9\.5px\s*!important/);
-  assert.match(spinner, /transform:\s*none\s*!important/);
+  assert.doesNotMatch(spinner, /transform\s*:[^;]*!important/i);
   assert.match(spinner, /border-top-color:\s*#183b35\s*!important/);
   assert.match(spinner, /animation:\s*cr-account-submit-spin\s*\.7s\s*linear\s*infinite\s*!important/);
   assert.match(css, /@keyframes cr-account-submit-spin\s*\{\s*0%\s*\{\s*transform:\s*rotate\(0deg\)/);

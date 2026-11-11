@@ -1099,7 +1099,6 @@
     border-radius: 50% !important;
     margin-top: -9.5px !important;
     margin-left: -9.5px !important;
-    transform: none !important;
     animation: cr-account-submit-spin .7s linear infinite !important;
     opacity: 1 !important;
     visibility: visible !important;
