@@ -381,41 +381,6 @@ function cr2026_account_wlr_field( $wlr_user, $field ) {
     return null;
 }
 
-/** Check field existence independently from whether its stored value is empty. */
-function cr2026_account_wlr_field_exists( $wlr_user, $field ) {
-    if ( is_array( $wlr_user ) ) {
-        return array_key_exists( $field, $wlr_user );
-    }
-    if ( ! is_object( $wlr_user ) ) {
-        return false;
-    }
-    if ( $wlr_user instanceof \ArrayAccess && $wlr_user->offsetExists( $field ) ) {
-        return true;
-    }
-    if ( property_exists( $wlr_user, $field ) || isset( $wlr_user->{$field} ) ) {
-        return true;
-    }
-    foreach ( array( 'getAttributes', 'toArray', 'getData' ) as $method ) {
-        if ( ! is_callable( array( $wlr_user, $method ) ) ) {
-            continue;
-        }
-        try {
-            $data = $wlr_user->{$method}();
-            if ( is_array( $data ) && array_key_exists( $field, $data ) ) {
-                return true;
-            }
-        } catch ( \Throwable $error ) {
-            // Keep the diagnostic read-only and fail closed.
-        }
-    }
-    return false;
-}
-
-/** Return only whether a WPLoyalty field contains a non-empty value. */
-function cr2026_account_wlr_field_present( $wlr_user, $field ) {
-    $value = cr2026_account_wlr_field( $wlr_user, $field );
-    return null !== $value && '' !== $value && '0000-00-00' !== $value && 0 !== $value && '0' !== $value;
-}
 
 /** Normalize WPLoyalty data to the ISO value required by input[type=date]. */
 function cr2026_account_wlr_normalize_date_value( $value ) {
@@ -446,6 +411,27 @@ function cr2026_account_wlr_normalize_date_value( $value ) {
     return '';
 }
 
+
+/** Classify the raw field format without exposing the customer's birthday. */
+function cr2026_account_wlr_birth_date_raw_format( $value ) {
+    if ( is_numeric( $value ) && (int) $value > 0 ) {
+        return 'timestamp';
+    }
+    if ( ! is_string( $value ) || '' === trim( $value ) ) {
+        return 'EMPTY';
+    }
+    $value = trim( $value );
+    foreach ( array( 'Y-m-d', 'd/m/Y', 'd-m-Y' ) as $format ) {
+        $date = \DateTimeImmutable::createFromFormat( '!' . $format, $value );
+        $errors = \DateTimeImmutable::getLastErrors();
+        if ( $date && $date->format( $format ) === $value
+            && ( false === $errors || ( 0 === $errors['warning_count'] && 0 === $errors['error_count'] ) ) ) {
+            return $format;
+        }
+    }
+    return 'UNRECOGNIZED';
+}
+
 /** Normalize WPLoyalty's preferred birthday_date, then its legacy birth_date fallback. */
 function cr2026_account_wlr_birth_date( $wlr_user ) {
     $birthday_date = cr2026_account_wlr_normalize_date_value(
@@ -468,26 +454,8 @@ function cr2026_account_wlr_birth_date_source( $wlr_user ) {
         ? 'birth_date' : 'NONE';
 }
 
-/** Delegate birthday editability to WPLoyalty's own helper and public filter. */
-function cr2026_account_wlr_can_edit_birth_date( $wlr_user ) {
-    if ( ! class_exists( '\Wlr\App\Helpers\Woocommerce' ) ) {
-        return false;
-    }
-    try {
-        $helper = \Wlr\App\Helpers\Woocommerce::getInstance();
-        if ( ! is_object( $helper ) || ! method_exists( $helper, 'canShowBirthdateField' )
-            || ! $helper->canShowBirthdateField() ) {
-            $allowed = false;
-        } else {
-            $allowed = true;
-        }
-        return (bool) apply_filters( 'wlr_allow_my_account_edit_birth_date', $allowed, is_user_logged_in(), is_object( $wlr_user ) ? $wlr_user : new \stdClass() );
-    } catch ( \Throwable $error ) {
-        return false;
-    }
-}
 
-/** Add the WPLoyalty-owned birthday value inside WooCommerce's native account form. */
+/** Display the fixed WPLoyalty birthday as read-only text in mobile Personal Data. */
 function cr2026_account_render_birth_date_field() {
     if ( ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
         || ! function_exists( 'is_account_page' ) || ! is_account_page()
@@ -499,123 +467,36 @@ function cr2026_account_render_birth_date_field() {
     $user_email = isset( $current_user->user_email ) ? (string) $current_user->user_email : '';
     $wlr_user = cr2026_account_wlr_user( $user_email );
     $birth_date = cr2026_account_wlr_birth_date( $wlr_user );
-    $editable = cr2026_account_wlr_can_edit_birth_date( $wlr_user );
+    $birth_date_display = '';
+    if ( '' !== $birth_date ) {
+        $date = \DateTimeImmutable::createFromFormat( '!Y-m-d', $birth_date );
+        if ( $date && $date->format( 'Y-m-d' ) === $birth_date ) {
+            $birth_date_display = $date->format( 'd/m/Y' );
+        }
+    }
+    if ( '' === $birth_date_display ) {
+        $birth_date_display = __( 'No registrada', 'crios-rango-2026' );
+    }
     $wlr_user_found = is_object( $wlr_user ) || is_array( $wlr_user );
-    $birthday_date_property_exists = cr2026_account_wlr_field_exists( $wlr_user, 'birthday_date' );
-    $birthday_date_has_value = cr2026_account_wlr_field_present( $wlr_user, 'birthday_date' );
-    $birth_date_property_exists = cr2026_account_wlr_field_exists( $wlr_user, 'birth_date' );
-    $birth_date_has_value = cr2026_account_wlr_field_present( $wlr_user, 'birth_date' );
     $birth_date_source = cr2026_account_wlr_birth_date_source( $wlr_user );
-    wp_nonce_field( 'cr2026_update_birth_date', 'cr2026_birth_date_nonce' );
+    $raw_field = 'birthday_date' === $birth_date_source ? 'birthday_date' : 'birth_date';
+    $raw_value = cr2026_account_wlr_field( $wlr_user, $raw_field );
+    $raw_format = cr2026_account_wlr_birth_date_raw_format( $raw_value );
     ?>
     <p class="form-row form-row-wide cr-account-birth-date"
         data-wlr-user-found="<?php echo $wlr_user_found ? 'yes' : 'no'; ?>"
-        data-wlr-birthday-date-property-exists="<?php echo $birthday_date_property_exists ? 'yes' : 'no'; ?>"
-        data-wlr-birthday-date-has-value="<?php echo $birthday_date_has_value ? 'yes' : 'no'; ?>"
-        data-wlr-birth-date-property-exists="<?php echo $birth_date_property_exists ? 'yes' : 'no'; ?>"
-        data-wlr-birth-date-has-value="<?php echo $birth_date_has_value ? 'yes' : 'no'; ?>"
-        data-birth-date-value-source="<?php echo esc_attr( $birth_date_source ); ?>"
-        data-birth-date-input-type="date"
-        data-birth-date-value-loaded="<?php echo '' !== $birth_date ? 'yes' : 'no'; ?>">
-        <label for="cr2026_birth_date"><?php esc_html_e( 'Fecha de nacimiento', 'crios-rango-2026' ); ?></label>
-        <?php if ( $editable ) : ?>
-            <input type="date" id="cr2026_birth_date" name="cr2026_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" max="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>" />
-        <?php else : ?>
-            <input type="date" id="cr2026_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" readonly aria-readonly="true" />
-            <span class="cr-account-birth-date__status"><?php esc_html_e( 'No editable', 'crios-rango-2026' ); ?></span>
-        <?php endif; ?>
+        data-birth-date-source-field="<?php echo esc_attr( $birth_date_source ); ?>"
+        data-birth-date-raw-format="<?php echo esc_attr( $raw_format ); ?>"
+        data-birth-date-control-type="read-only-display"
+        data-birth-date-value-loaded="<?php echo 'NONE' !== $birth_date_source && '' !== $birth_date ? 'yes' : 'no'; ?>">
+        <label><?php esc_html_e( 'Fecha de nacimiento', 'crios-rango-2026' ); ?></label>
+        <span class="cr-account-birth-date__value"><?php echo esc_html( $birth_date_display ); ?></span>
     </p>
     <?php
 }
+
 add_action( 'woocommerce_edit_account_form', 'cr2026_account_render_birth_date_field', 1 );
 
-/** Validate the theme nonce, WPLoyalty policy and strict calendar date before WooCommerce saves. */
-function cr2026_account_validate_birth_date( $errors, $user ) {
-    if ( ! cr2026_account_is_mobile_personal_post() ) {
-        return;
-    }
-    $nonce = isset( $_POST['cr2026_birth_date_nonce'] )
-        ? sanitize_text_field( wp_unslash( $_POST['cr2026_birth_date_nonce'] ) ) : '';
-    if ( ! wp_verify_nonce( $nonce, 'cr2026_update_birth_date' ) ) {
-        $errors->add( 'cr2026_birth_date_nonce', __( 'No se pudo validar la seguridad de la fecha de nacimiento. Recarga la página e inténtalo de nuevo.', 'crios-rango-2026' ) );
-        return;
-    }
-    if ( ! isset( $_POST['cr2026_birth_date'] ) ) {
-        return; // Read-only WPLoyalty birthdays are intentionally not submitted.
-    }
-    $current_user = wp_get_current_user();
-    $wlr_user = cr2026_account_wlr_user( $current_user->user_email );
-    if ( ! cr2026_account_wlr_can_edit_birth_date( $wlr_user ) ) {
-        $errors->add( 'cr2026_birth_date_locked', __( 'WPLoyalty no permite modificar esta fecha de nacimiento.', 'crios-rango-2026' ) );
-        return;
-    }
-    $value = sanitize_text_field( wp_unslash( $_POST['cr2026_birth_date'] ) );
-    $date = \DateTimeImmutable::createFromFormat( '!Y-m-d', $value );
-    $date_errors = \DateTimeImmutable::getLastErrors();
-    $valid_date = $date && $date->format( 'Y-m-d' ) === $value
-        && ( false === $date_errors || ( 0 === $date_errors['warning_count'] && 0 === $date_errors['error_count'] ) );
-    if ( ! $valid_date || $value > wp_date( 'Y-m-d' ) ) {
-        $errors->add( 'cr2026_birth_date_invalid', __( 'Introduce una fecha de nacimiento válida y que no sea futura.', 'crios-rango-2026' ) );
-        return;
-    }
-    $GLOBALS['cr2026_account_pending_birth_date'] = $value;
-}
-add_action( 'woocommerce_save_account_details_errors', 'cr2026_account_validate_birth_date', 20, 2 );
-
-/** Persist through WPLoyalty's supported extra-action model after WooCommerce's native save. */
-function cr2026_account_save_birth_date( $user_id ) {
-    if ( ! isset( $GLOBALS['cr2026_account_pending_birth_date'] ) ) {
-        return;
-    }
-    $birth_date = (string) $GLOBALS['cr2026_account_pending_birth_date'];
-    unset( $GLOBALS['cr2026_account_pending_birth_date'] );
-
-    $current_user = wp_get_current_user();
-    if ( ! is_user_logged_in() || ! $current_user || (int) $current_user->ID !== (int) $user_id ) {
-        cr2026_account_birth_date_save_error();
-        return;
-    }
-    $wlr_user = cr2026_account_wlr_user( $current_user->user_email );
-    if ( ! cr2026_account_wlr_can_edit_birth_date( $wlr_user )
-        || ! class_exists( '\Wlr\App\Helpers\Base' ) ) {
-        cr2026_account_birth_date_save_error();
-        return;
-    }
-
-    try {
-        $base = \Wlr\App\Helpers\Base::getInstance();
-        if ( ! is_object( $base ) || ! method_exists( $base, 'addExtraPointAction' ) ) {
-            cr2026_account_birth_date_save_error();
-            return;
-        }
-        $action_data = array(
-            'user_email'          => $current_user->user_email,
-            'birthday_date'       => $birth_date,
-            'action_type'          => 'birthday_change',
-            'action_process_type'  => 'customer_change',
-            'customer_note'       => 'Customer updated birthday from mobile account personal data.',
-            'note'                => 'Customer birthday update',
-            'points'              => '0',
-        );
-        $result = $base->addExtraPointAction( $action_data, 'credit' );
-        $updated_user = cr2026_account_wlr_user( $current_user->user_email );
-        $updated_date = cr2026_account_wlr_birth_date( $updated_user );
-        if ( false === $result || null === $result || $updated_date !== $birth_date ) {
-            cr2026_account_birth_date_save_error();
-        }
-    } catch ( \Throwable $error ) {
-        cr2026_account_birth_date_save_error();
-    }
-}
-add_action( 'woocommerce_save_account_details', 'cr2026_account_save_birth_date', 20, 1 );
-
-/** Suppress WooCommerce's generic success notice if the independent loyalty save failed. */
-function cr2026_account_birth_date_save_error() {
-    add_filter( 'woocommerce_add_success', '__return_empty_string', 99 );
-    if ( function_exists( 'wc_add_notice' ) ) {
-        wc_add_notice( __( 'Tus datos de WooCommerce se han guardado, pero no se pudo guardar la fecha de nacimiento en WPLoyalty. No se ha confirmado el guardado completo; vuelve a intentarlo o contacta con soporte.', 'crios-rango-2026' ), 'error' );
-    }
-}
 
 
 /**

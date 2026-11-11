@@ -700,7 +700,7 @@
     color: #183b35;
     font: 300 12px/17px "Roboto", Arial, sans-serif;
   }
-  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date input[type="date"] {
+  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date__value {
     box-sizing: border-box;
     display: block;
     width: 100%;
@@ -714,7 +714,7 @@
     box-shadow: none;
     font: 300 15px/1.35 "Roboto", Arial, sans-serif;
   }
-  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date input[readonly] {
+  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date__value {
     background: #f5f6f4;
     color: #66716a;
   }
@@ -902,7 +902,7 @@
     font: 300 11px/16px "Roboto", Arial, sans-serif;
   }
 
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date input[type="date"] {
+  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date__value {
     box-sizing: border-box;
     width: 100%;
     min-height: 48px;
@@ -916,13 +916,13 @@
     font: 400 14px/20px "Roboto", Arial, sans-serif;
   }
 
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date input[type="date"]:focus {
+  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date__value:focus {
     border-color: #aeb2ad;
     outline: none;
     box-shadow: none;
   }
 
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date input[readonly] {
+  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date__value {
     background: var(--cr-app-canvas);
     color: var(--cr-ink);
     opacity: 1;
@@ -946,7 +946,7 @@
   }
 
   body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row :is(input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), select, textarea),
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date input[type="date"] {
+  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date__value {
     min-height: 48px !important;
     border: 1px solid #d8d9d5 !important;
     border-radius: 9px !important;

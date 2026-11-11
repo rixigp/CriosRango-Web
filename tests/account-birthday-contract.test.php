@@ -49,6 +49,10 @@ namespace {
     function sanitize_text_field( $value ) { return trim( (string) $value ); }
     function wp_parse_args( $args, $defaults = array() ) { return array_merge( $defaults, (array) $args ); }
     function is_account_page() { return true; }
+    function is_wc_endpoint_url( $endpoint ) { return 'edit-account' === $endpoint; }
+    function esc_attr( $value ) { return htmlspecialchars( (string) $value, ENT_QUOTES, 'UTF-8' ); }
+    function esc_html( $value ) { return htmlspecialchars( (string) $value, ENT_QUOTES, 'UTF-8' ); }
+    function esc_html_e( $value ) { echo esc_html( $value ); }
     function wc_get_page_permalink( $page ) { return '/mi-cuenta/'; }
     function wc_get_account_endpoint_url( $endpoint ) { return '/mi-cuenta/' . $endpoint . '/'; }
     function cr2026_render_category_toolbar( $title, $back_url, $kind, $flag ) { $GLOBALS['test_toolbar'] = array( $title, $back_url, $kind, $flag ); }
@@ -78,8 +82,6 @@ namespace {
         $_GET = array( 'profile_view' => 'personal' );
         $_POST = array(
             'save_account_details' => 'Save',
-            'cr2026_birth_date_nonce' => 'theme-nonce',
-            'cr2026_birth_date' => '1990-05-12',
             'user_email' => 'attacker@example.test',
             'user_id' => '999',
         );
@@ -134,43 +136,64 @@ namespace {
     contract_assert( 'Dirección de entrega' === $GLOBALS['test_toolbar'][0], 'shipping endpoint argument selects the canonical delivery toolbar heading' );
     contract_assert( '' === cr2026_account_edit_address_title( 'Shipping address', 'shipping' ), 'WooCommerce secondary shipping heading is removed in mobile markup' );
 
-    contract_reset();
-    $GLOBALS['test_authenticated'] = false;
-    contract_assert( false === cr2026_account_is_mobile_personal_post(), 'unauthenticated account save is rejected' );
-
-    contract_reset();
-    $GLOBALS['test_nonce_valid'] = false;
-    $errors = new ContractErrors();
-    cr2026_account_validate_birth_date( $errors, null );
-    contract_assert( isset( $errors->errors['cr2026_birth_date_nonce'] ), 'invalid theme nonce is rejected' );
-
-    contract_reset();
-    $_POST['cr2026_birth_date'] = '2026-02-31';
-    $errors = new ContractErrors();
-    cr2026_account_validate_birth_date( $errors, null );
-    contract_assert( isset( $errors->errors['cr2026_birth_date_invalid'] ), 'invalid calendar date is rejected' );
-
-    contract_reset();
-    \Wlr\App\Helpers\Woocommerce::$editable = false;
-    $errors = new ContractErrors();
-    cr2026_account_validate_birth_date( $errors, null );
-    contract_assert( isset( $errors->errors['cr2026_birth_date_locked'] ), 'WPLoyalty non-editable policy is respected' );
-
-    contract_reset();
-    $errors = new ContractErrors();
-    cr2026_account_validate_birth_date( $errors, null );
-    contract_assert( ! $errors->has_errors(), 'valid birthday request passes theme and WPLoyalty validation' );
-    cr2026_account_save_birth_date( 73 );
-    $action = \Wlr\App\Helpers\Base::$actionData;
-    contract_assert( 'contract@example.test' === \Wlr\App\Helpers\EarnCampaign::$lookedUpEmail, 'loyalty lookup uses canonical current-user email, not POST email' );
-    contract_assert( ! isset( $action['user_id'] ) && ! isset( $action['user_email'] ) || 'contract@example.test' === $action['user_email'], 'client-supplied user_id and email do not select the loyalty account' );
-    contract_assert( 'birthday_change' === $action['action_type'], 'WPLoyalty action_type is birthday_change' );
-    contract_assert( 'customer_change' === $action['action_process_type'], 'WPLoyalty action_process_type is customer_change' );
-    contract_assert( '0' === $action['points'], 'birthday update awards zero points' );
-    contract_assert( 'credit' === \Wlr\App\Helpers\Base::$transactionType, 'WPLoyalty transaction type is credit' );
-    contract_assert( '1990-05-12' === \Wlr\App\Helpers\EarnCampaign::$user->birthday_date, 'WPLoyalty model action persists the requested date' );
-
     $source = file_get_contents( __DIR__ . '/../theme/crios-rango-2026/inc/account-presentation.php' );
-    contract_assert( false === strpos( $source, '$wpdb->update' ) && false === strpos( $source, 'insertOrUpdate(' ), 'theme does not write WPLoyalty tables or bypass its Users model' );
+    contract_assert( false === strpos( $source, 'cr2026_account_validate_birth_date' ), 'birthday validation callback is removed from the profile save flow' );
+    contract_assert( false === strpos( $source, 'cr2026_account_save_birth_date' ), 'birthday profile write handler is removed' );
+    contract_assert( false === strpos( $source, 'cr2026_birth_date_nonce' ), 'profile no longer emits or verifies a birthday nonce' );
+    contract_assert( false === strpos( $source, 'woocommerce_save_account_details_errors' ), 'profile save no longer attaches birthday validation to WooCommerce errors' );
+    contract_assert( false === strpos( $source, 'cr2026_birth_date' ), 'profile contains no birthday POST field or input identifier' );
+    contract_assert( false === strpos( $source, '<input type="date"' ), 'birthday renderer uses no date input or picker' );
+    contract_assert( false === strpos( $source, 'cr2026_account_birth_date_save_error' ), 'birthday cannot inject a profile save error' );
+
+    contract_assert( 'd/m/Y' === cr2026_account_wlr_birth_date_raw_format( '03/02/1988' ), 'raw d/m/Y format is detected' );
+    contract_assert( 'Y-m-d' === cr2026_account_wlr_birth_date_raw_format( '1988-02-03' ), 'raw ISO format is detected' );
+    contract_assert( 'timestamp' === cr2026_account_wlr_birth_date_raw_format( strtotime( '1988-02-03 UTC' ) ), 'raw timestamp format is detected' );
+
+    contract_reset();
+    $_GET['profile_view'] = 'personal';
+    \Wlr\App\Helpers\EarnCampaign::$user = (object) array( 'birthday_date' => '1988-02-03' );
+    ob_start();
+    cr2026_account_render_birth_date_field();
+    $rendered = ob_get_clean();
+    contract_assert( 'contract@example.test' === \Wlr\App\Helpers\EarnCampaign::$lookedUpEmail, 'birthday display reads WPLoyalty by current account email' );
+    contract_assert( false !== strpos( $rendered, 'data-wlr-user-found="yes"' ), 'WPLoyalty user-found status is reflected for renderer contract' );
+    contract_assert( false !== strpos( $rendered, 'data-birth-date-source-field="birthday_date"' ), 'birthday_date is selected before legacy fallback' );
+    contract_assert( false !== strpos( $rendered, 'data-birth-date-raw-format="Y-m-d"' ), 'renderer identifies raw WPLoyalty date format' );
+    contract_assert( false !== strpos( $rendered, 'data-birth-date-control-type="read-only-display"' ), 'birthday control is marked read-only display' );
+    contract_assert( false !== strpos( $rendered, '03/02/1988' ), 'normalized birthday is displayed as DD/MM/YYYY' );
+    contract_assert( false !== strpos( $rendered, '<span class="cr-account-birth-date__value">' ), 'birthday value is rendered as a span' );
+    contract_assert( false === strpos( $rendered, '<input' ), 'birthday renderer has no input, picker or editable control' );
+
+    contract_reset();
+    $_GET['profile_view'] = 'personal';
+    \Wlr\App\Helpers\EarnCampaign::$user = (object) array( 'birth_date' => strtotime( '1991-06-07 UTC' ) );
+    ob_start();
+    cr2026_account_render_birth_date_field();
+    $legacy_rendered = ob_get_clean();
+    contract_assert( false !== strpos( $legacy_rendered, 'data-birth-date-source-field="birth_date"' ), 'legacy birth_date is used only as fallback source' );
+    contract_assert( false !== strpos( $legacy_rendered, '07/06/1991' ), 'legacy timestamp fallback is displayed normalized' );
+
+    contract_reset();
+    $_GET['profile_view'] = 'personal';
+    \Wlr\App\Helpers\EarnCampaign::$user = false;
+    ob_start();
+    cr2026_account_render_birth_date_field();
+    $missing_rendered = ob_get_clean();
+    contract_assert( false !== strpos( $missing_rendered, 'No registrada' ), 'missing WPLoyalty birthday displays No registrada' );
+    contract_assert( false !== strpos( $missing_rendered, 'data-wlr-user-found="no"' ), 'missing WPLoyalty account is indicated without blocking profile save' );
+
+    $theme_files = array(
+        __DIR__ . '/../theme/crios-rango-2026/inc/login.php',
+        __DIR__ . '/../theme/crios-rango-2026/woocommerce/myaccount/dashboard.php',
+    );
+    $registration_birthday_found = false;
+    foreach ( $theme_files as $theme_file ) {
+        $registration_source = file_get_contents( $theme_file );
+        if ( false !== strpos( $registration_source, 'birth_date' ) || false !== strpos( $registration_source, 'birthday_date' ) ) {
+            $registration_birthday_found = true;
+        }
+    }
+    contract_assert( false === $registration_birthday_found, 'theme authentication/dashboard templates contain no custom registration birthday field' );
+
     echo "BIRTH_DATE_CONTRACT=PASS\n";
 }
