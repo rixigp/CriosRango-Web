@@ -19,6 +19,16 @@ const css = fs.readFileSync(cssPath, 'utf8');
 const archive = fs.readFileSync(archivePath, 'utf8');
 const deploy = fs.readFileSync(deployPath, 'utf8');
 
+function extractWorkflowStep(workflow, stepName) {
+  const escapedName = stepName.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&');
+  const step = workflow.match(new RegExp(
+    `^      - name: ${escapedName}\\n([\\s\\S]*?)(?=^      - name: )`,
+    'm'
+  ));
+  assert.ok(step, `workflow step not found: ${stepName}`);
+  return step[1];
+}
+
 function catalogStateApi() {
   const window = {};
   const document = {
@@ -184,47 +194,47 @@ test('catalog endpoint echoes page size and staging debug exposes all ID layers 
 });
 
 test('staging FULL deploy is limited to confirmed absence or confirmed divergence', () => {
-  // Inspect the complete baseline decision block, including the ancestry check.
-  const baselineStart = deploy.indexOf('BASELINE_STATUS="NOT_APPLICABLE"');
-  const incrementalStart = deploy.indexOf('if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then', baselineStart);
-  assert.ok(baselineStart >= 0 && incrementalStart > baselineStart,
-    'the complete baseline block must have stable start and end markers');
-  const baseline = deploy.slice(baselineStart, incrementalStart);
+  const deployStep = extractWorkflowStep(deploy, 'Deploy theme by FTP');
+  const stagingStart = deployStep.indexOf('if [ "$IS_STAGING" = true ]; then\\n            BASELINE_STATUS="UNAVAILABLE"');
+  const productionBoundary = deployStep.indexOf('\\n          else\\n            # Production deploys retain the explicitly documented full-deploy policy.');
+  assert.ok(stagingStart >= 0 && productionBoundary > stagingStart,
+    'the staging baseline branch must be structurally separated from the production branch');
+  const stagingBaseline = deployStep.slice(stagingStart, productionBoundary);
 
-  const validStart = baseline.indexOf('BASELINE_STATUS="VALID"');
-  const divergentStart = baseline.indexOf('elif ! git merge-base --is-ancestor');
-  const diffStart = baseline.indexOf('elif ! git diff --name-status -z --find-renames --find-copies');
-  const absentStart = baseline.indexOf('elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then');
-  const unavailableStart = baseline.indexOf('else\n              BASELINE_STATUS="UNAVAILABLE"', absentStart);
-  const abortStart = baseline.indexOf('if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then');
-  const abortReason = baseline.indexOf('DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE');
+  const validStart = stagingBaseline.indexOf('BASELINE_STATUS="VALID"');
+  const divergentStart = stagingBaseline.indexOf('elif ! git merge-base --is-ancestor');
+  const diffStart = stagingBaseline.indexOf('elif ! git diff --name-status -z --find-renames --find-copies');
+  const absentStart = stagingBaseline.indexOf('elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then');
+  const unavailableStart = stagingBaseline.indexOf('else\\n              BASELINE_STATUS="UNAVAILABLE"', absentStart);
+  const abortStart = stagingBaseline.indexOf('if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then');
+  const abortReason = stagingBaseline.indexOf('DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE');
 
   assert.ok(validStart >= 0 && divergentStart > validStart && diffStart > divergentStart,
     'a present, parseable manifest must be checked for ancestry before diffing');
-  const validBranch = baseline.slice(validStart, absentStart);
+  const validBranch = stagingBaseline.slice(validStart, absentStart);
   assert.ok(validBranch.includes('git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"'),
-    'the complete baseline scope must include the remote SHA ancestry check');
+    'the staging baseline scope must include the remote SHA ancestry check');
   assert.ok(validBranch.includes('git diff --name-status -z --find-renames --find-copies'));
-  assert.match(validBranch, /else\s+DEPLOY_MODE="INCREMENTAL"/);
+  assert.match(validBranch, /else\\s+DEPLOY_MODE="INCREMENTAL"/);
 
   assert.ok(absentStart >= 0 && unavailableStart > absentStart,
     'only the explicit FTP 550 missing-manifest response may select absent');
-  const absentBranch = baseline.slice(absentStart, unavailableStart);
+  const absentBranch = stagingBaseline.slice(absentStart, unavailableStart);
   assert.match(absentBranch, /BASELINE_STATUS="ABSENT"/);
   assert.match(absentBranch, /DEPLOY_MODE="FULL"/);
 
-  const divergentBranch = baseline.slice(divergentStart, diffStart);
+  const divergentBranch = stagingBaseline.slice(divergentStart, diffStart);
   assert.match(divergentBranch, /BASELINE_STATUS="DIVERGED"/);
   assert.match(divergentBranch, /BASELINE_ERROR="remote_sha_not_ancestor_of_head"/);
   assert.match(divergentBranch, /DEPLOY_MODE="FULL"/);
 
-  const fullAssignments = [...baseline.matchAll(/DEPLOY_MODE="FULL"/g)].map(match => match.index);
+  const fullAssignments = [...stagingBaseline.matchAll(/DEPLOY_MODE="FULL"/g)].map(match => match.index);
   assert.equal(fullAssignments.length, 2,
-    'FULL may be selected only by the confirmed absent and divergent branches');
+    'staging may select FULL only for confirmed absent and confirmed divergent baselines');
   assert.ok(fullAssignments.every(index =>
     (index >= absentStart && index < unavailableStart) ||
     (index >= divergentStart && index < diffStart)
-  ), 'no unconfirmed error branch may select FULL');
+  ), 'no unconfirmed staging error branch may select FULL');
 
   const unknownErrorCases = [
     'BASELINE_ERROR="invalid_or_unparseable_manifest"',
@@ -233,15 +243,17 @@ test('staging FULL deploy is limited to confirmed absence or confirmed divergenc
     'BASELINE_ERROR="curl_exit_${BASELINE_CURL_EXIT}"'
   ];
   for (const errorCase of unknownErrorCases) {
-    assert.ok(baseline.includes(errorCase), `missing fail-closed handling for ${errorCase}`);
+    assert.ok(stagingBaseline.includes(errorCase), `missing fail-closed handling for ${errorCase}`);
   }
   assert.ok(abortStart >= 0 && abortReason > abortStart);
-  const abortBranch = baseline.slice(abortStart);
+  const abortBranch = stagingBaseline.slice(abortStart);
   assert.match(abortBranch, /DEPLOY_MODE="ABORTED"/);
   assert.match(abortBranch, /exit 1/);
-  assert.match(baseline, /if \[ "\$DEPLOY_MODE" = "INCREMENTAL" \]; then/);
-});
+  assert.match(stagingBaseline, /if \\[ "\\$DEPLOY_MODE" = "INCREMENTAL" \\]; then/);
 
+  assert.doesNotMatch(stagingBaseline, /Production deploys retain/);
+  assert.match(deployStep, /else\\s+# Production deploys retain the explicitly documented full-deploy policy\\.\\s+DEPLOY_MODE="FULL"/);
+});
 test('staging deploy is exact-HEAD guarded, incremental and verifies the deployed runtime SHA', () => {
   assert.ok(deploy.includes('Check exact PR13 staging HEAD'));
   assert.ok(deploy.includes('git fetch origin fix/catalog-runtime-parity'));
