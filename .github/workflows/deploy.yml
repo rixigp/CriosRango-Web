@@ -404,12 +404,17 @@ jobs:
       - name: Run mobile Account Help contract tests
         run: node --test tests/account-help-contract.test.cjs
 
-      - name: Install validation and FTP tools
+      - name: Verify PHP runtime availability
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq php-cli lftp
+          if ! command -v php >/dev/null 2>&1; then
+            echo "PHP_RUNTIME_MISSING"
+            exit 1
+          fi
+          echo "PHP_AVAILABLE=YES"
+          echo "PHP_RUNTIME_SOURCE=$(command -v php)"
+          php -v
 
       - name: Run checkout Points & Rewards runtime contract test
         run: php tests/checkout-points-runtime.test.php
@@ -540,6 +545,8 @@ jobs:
             exit 1
           fi
           echo "Remote theme path validated."
+          echo "FTP_CLIENT=curl"
+          echo "CURL_FTPS_USED=YES"
 
       - name: Deploy theme by FTP
         id: deploy
@@ -563,6 +570,8 @@ jobs:
           REMOTE_ROOT="${REMOTE_ROOT%/}"
           BASE_URL="ftp://${SFTP_HOST}:${SFTP_PORT}/${REMOTE_ROOT}"
           MANIFEST_URL="${BASE_URL}/build.json"
+          echo "FTP_CLIENT=curl"
+          echo "CURL_FTPS_USED=YES"
           IS_STAGING=false
 
           case "$GITHUB_REF" in
