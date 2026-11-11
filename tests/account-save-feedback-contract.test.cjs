@@ -231,26 +231,84 @@ test('ADDRESS_RENDER_HOOK_PROVIDES_SHIPPING_TYPE_WITHOUT_REDETECTION', () => {
 });
 
 
-test('PASSWORD_SUCCESS_REQUIRES_A_REAL_WOOCOMMERCE_PASSWORD_CHANGE', () => {
-  assert.match(php, /array\(\s*'password_current',\s*'password_1',\s*'password_2'\s*\)/);
-  assert.match(php, /add_action\(\s*'woocommerce_save_account_details_errors',\s*'cr2026_account_capture_password_before_save'/);
-  assert.match(php, /\$GLOBALS\['cr2026_account_password_before_save_hash'\]/);
-  assert.match(php, /wp_check_password\(\s*\$new_password,\s*\$saved_user->user_pass/);
-  assert.match(php, /!\s*wp_check_password\(\s*\$new_password,\s*\$before_hash/);
-  assert.match(php, /cr2026_account_store_save_feedback\(\s*'password'\s*\)/);
+test('PASSWORD_SUCCESS_FEEDBACK_USES_NATIVE_FIELD_PRESENCE_AND_WOOCOMMERCE_VALIDATION', () => {
+  assert.match(php, /add_action\(\s*'woocommerce_save_account_details',\s*'cr2026_account_store_profile_save_feedback'/);
+  assert.doesNotMatch(php, /woocommerce_save_account_details_errors|cr2026_account_capture_password_before_save|password_before_save_hash|wp_check_password|cr2026_account_password_change_intent/);
   const start = php.indexOf('function cr2026_account_store_profile_save_feedback');
   const end = php.indexOf("\\nadd_action( 'woocommerce_save_account_details'", start);
   const store = php.slice(start, end);
-  assert.match(store, /wc_get_notices\(\s*'error'\s*\)/);
-  assert.match(store, /cr2026_account_password_change_intent\(\)/);
-  assert.match(store, /delete_user_meta\(\s*\(int\) \$user_id,\s*'_cr2026_account_save_feedback'\s*\)/);
+  for (const field of ['password_current', 'password_1', 'password_2']) {
+    assert.match(store, new RegExp("isset\\( \\$_POST\\['" + field + "'\\] \\)"));
+    assert.match(store, new RegExp("is_string\\( \\$_POST\\['" + field + "'\\] \\)"));
+    assert.match(store, new RegExp("'' !== \\$_POST\\['" + field + "'\\]"));
+  }
+  assert.match(store, /wc_notice_count\( 'error' \) === 0/);
+  assert.match(store, /cr2026_account_store_save_feedback\( 'password' \)/);
+  assert.match(store, /delete_user_meta\( \(int\) \$user_id, '_cr2026_account_save_feedback' \)/);
+  assert.doesNotMatch(store, /wp_unslash\( \\$_POST\['password_|sanitize|update_user_meta\(.*password_/s);
+});
+
+test('EMPTY_REAL_AND_INVALID_PASSWORD_SUBMITS_GATE_ONLY_THE_ONE_SHOT_FEEDBACK', () => {
+  const extractFunction = (name) => {
+    const start = php.indexOf(`function ${name}(`);
+    assert.notEqual(start, -1, `${name} exists`);
+    const open = php.indexOf('{', start);
+    let depth = 0;
+    for (let i = open; i < php.length; i += 1) {
+      if (php[i] === '{') depth += 1;
+      if (php[i] === '}') {
+        depth -= 1;
+        if (depth === 0) return php.slice(start, i + 1);
+      }
+    }
+    throw new Error(`Unclosed function ${name}`);
+  };
+  const storeFeedback = extractFunction('cr2026_account_store_save_feedback');
+  const handler = extractFunction('cr2026_account_store_profile_save_feedback').replace(/\bexit\s*;/, 'return;');
+  const harness = `$GLOBALS['uid'] = 41;
+$GLOBALS['meta'] = [];
+$GLOBALS['errors'] = 0;
+function cr2026_account_mobile_save_context($endpoint) { return 'edit-account' === $endpoint; }
+function sanitize_key($value) { return preg_replace('/[^a-z0-9_\\-]/', '', strtolower((string) $value)); }
+function wp_unslash($value) { return $value; }
+function wc_notice_count($type) { return $GLOBALS['errors']; }
+function wc_get_notices($type) { return $GLOBALS['errors'] ? array('error') : array(); }
+function get_current_user_id() { return $GLOBALS['uid']; }
+function get_user_meta($id, $key, $single = false) { return $GLOBALS['meta'][$id][$key] ?? ''; }
+function update_user_meta($id, $key, $value) { $GLOBALS['meta'][$id][$key] = $value; return true; }
+function delete_user_meta($id, $key) { unset($GLOBALS['meta'][$id][$key]); return true; }
+function wc_get_endpoint_url(...$args) { return '/mi-cuenta/edit-account/'; }
+function wc_get_page_permalink($page) { return '/mi-cuenta/'; }
+function add_query_arg($key, $value, $url) { return $url . '?profile_view=' . $value; }
+function wp_safe_redirect($url) {}
+${storeFeedback}
+${handler}
+function run_case($post, $errors) {
+  $GLOBALS['meta'][41]['_cr2026_account_save_feedback'] = 'stale';
+  $_POST = $post;
+  $GLOBALS['errors'] = $errors;
+  cr2026_account_store_profile_save_feedback(41);
+  return $GLOBALS['meta'][41]['_cr2026_account_save_feedback'] ?? null;
+}
+$empty = run_case(array('cr2026_account_profile_view'=>'password','password_current'=>'','password_1'=>'','password_2'=>''), 0);
+$real = run_case(array('cr2026_account_profile_view'=>'password','password_current'=>'opaque-current','password_1'=>'opaque-new','password_2'=>'opaque-new'), 0);
+$invalid = run_case(array('cr2026_account_profile_view'=>'password','password_current'=>'opaque-current','password_1'=>'opaque-new','password_2'=>'opaque-new'), 1);
+$partial = run_case(array('cr2026_account_profile_view'=>'password','password_current'=>'opaque-current','password_1'=>'opaque-new','password_2'=>''), 0);
+echo json_encode(compact('empty','real','invalid','partial'));
+`;
+  const { execFileSync } = require('node:child_process');
+  const result = JSON.parse(execFileSync('php', ['-r', harness], { encoding: 'utf8' }));
+  assert.equal(result.empty, null, 'empty password fields create no success marker');
+  assert.equal(result.real, 'password', 'native save action with all fields and zero WooCommerce errors creates one-shot success');
+  assert.equal(result.invalid, null, 'WooCommerce validation errors create no success marker');
+  assert.equal(result.partial, null, 'missing native password field creates no success marker');
 });
 
 test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_WHITE_WITHOUT_GEOMETRY_OVERRIDES', () => {
-  assert.match(php, /'Current password \(leave blank to leave unchanged\)'\s*=>\s*'Contraseña actual'/);
-  assert.match(php, /'New password \(leave blank to leave unchanged\)'\s*=>\s*'Nueva contraseña'/);
+  assert.match(php, /'Current password \\(leave blank to leave unchanged\\)'\s*=>\s*'Contraseña actual'/);
+  assert.match(php, /'New password \\(leave blank to leave unchanged\\)'\s*=>\s*'Nueva contraseña'/);
   assert.match(php, /'Confirm new password'\s*=>\s*'Confirmar nueva contraseña'/);
-  assert.match(css, /body\\.woocommerce-account\\.cr-account-profile-view-password \\.woocommerce-EditAccountForm fieldset \\.form-row input\\[type="password"\\]\\s*\\{\\s*background-color:\\s*#FFFFFF !important/);
+  assert.match(css, /body\.woocommerce-account\.cr-account-profile-view-password \.woocommerce-EditAccountForm fieldset \.form-row input\[type="password"\]\s*\{\s*background-color:\s*#FFFFFF !important/);
   assert.match(css, /\.cr-account-submit__spinner/);
   assert.match(js, /cr-account-submit--loading/);
 });
