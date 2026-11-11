@@ -331,3 +331,49 @@ test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_WHITE_WITHOUT_GEOMETRY_OVERRIDES', ()
   assert.match(css, /\.cr-account-submit__spinner/);
   assert.match(js, /cr-account-submit--loading/);
 });
+
+ 
+test('PASSWORD_CLIENT_VALIDATION_BLOCKS_EMPTY_PARTIAL_AND_MISMATCH_BEFORE_LOADING', () => {
+  const passwordSubmit = js.slice(js.indexOf("if (document.body.classList.contains('cr-account-profile-view-password'))"), js.indexOf('// Intercept once, activate loading'));
+  assert.match(passwordSubmit, /input\\[name="password_current"\\]/);
+  assert.match(passwordSubmit, /input\\[name="password_1"\\]/);
+  assert.match(passwordSubmit, /input\\[name="password_2"\\]/);
+  assert.match(passwordSubmit, /current\\.value\\.length > 0/);
+  assert.match(passwordSubmit, /newPassword\\.value\\.length > 0/);
+  assert.match(passwordSubmit, /confirmation\\.value\\.length > 0/);
+  assert.match(passwordSubmit, /Por favor, rellena todos los campos de contraseña\\./);
+  assert.match(passwordSubmit, /newPassword\\.value !== confirmation\\.value/);
+  assert.match(passwordSubmit, /Las nuevas contraseñas no coinciden\\./);
+  assert.match(passwordSubmit, /showPasswordError\\(form, button,/);
+  assert.match(passwordSubmit, /return;/);
+  assert.doesNotMatch(passwordSubmit, /cr-account-form--loading|cr-account-submit--loading|requestSubmit/);
+  assert.ok(js.indexOf('showPasswordError(form, button') < js.indexOf("form.classList.add('cr-account-form--loading')"), 'invalid password submissions exit before loading begins');
+});
+
+test('PASSWORD_ERRORS_USE_ONE_FLEX_ALERT_LAYOUT_WITH_ICON_IN_FLOW', () => {
+  assert.match(js, /cr-password-inline-error__icon/);
+  assert.match(js, /cr-password-inline-error__text/);
+  assert.match(js, /role', 'alert'/);
+  assert.match(css, /cr-password-inline-error\\s*\\{[^}]*display:\\s*flex !important[^}]*align-items:\\s*flex-start !important[^}]*gap:\\s*9px !important/s);
+  assert.match(css, /cr-password-inline-error__icon\\s*\\{[^}]*flex:\\s*0 0 18px !important/s);
+  assert.match(css, /cr-password-inline-error__text\\s*\\{[^}]*flex:\\s*1 1 auto !important/s);
+  assert.match(css, /woocommerce-error\\.cr-account-save-feedback--error::before\\s*\\{[^}]*position:\\s*static !important/s);
+  assert.match(css, /woocommerce-error\\.cr-account-save-feedback--error\\s*\\{[^}]*border:\\s*1px solid #efc5c1 !important/s);
+  assert.match(css, /woocommerce-error\\.cr-account-save-feedback--error\\s*\\{[^}]*background:\\s*#fdf0ef !important/s);
+});
+
+test('PASSWORD_FIELDS_WHITE_HINT_NEUTRAL_AND_STRENGTH_METER_LOGIC_UNCHANGED', () => {
+  for (const id of ['password_current', 'password_1', 'password_2']) {
+    assert.match(css, new RegExp('#' + id + '[\\s\\S]*?background(?:-color)?:\\s*#FFFFFF !important'));
+  }
+  assert.match(js, /Usa una contraseña segura combinando letras, números y símbolos\\./);
+  assert.match(js, /woocommerce-password-hint/);
+  assert.match(css, /woocommerce-password-strength\\s*\\{[^}]*display:\\s*inline-flex !important/s);
+  assert.match(css, /woocommerce-password-strength\\.short/);
+  assert.match(css, /woocommerce-password-strength\\.bad/);
+  assert.match(css, /woocommerce-password-strength\\.good/);
+  assert.match(css, /woocommerce-password-strength\\.strong/);
+  assert.doesNotMatch(js, /password(?:_1|_2|_current)?\\.value\\s*=|localStorage|console\\.(?:log|warn|error)/);
+  assert.match(php, /wp_check_password/);
+  assert.doesNotMatch(php, /cr2026_account_capture_password_before_save|password_before_save_hash|woocommerce_save_account_details_errors/);
+});

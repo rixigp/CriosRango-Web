@@ -1139,3 +1139,143 @@
     background-color: #FFFFFF !important;
   }
 }
+
+ 
+/* Password endpoint: force the three native controls to true white without altering field geometry. */
+@media (max-width: 767px) {
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm #password_current,
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm #password_1,
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm #password_2 {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    background-image: none !important;
+  }
+
+  /* Unified password notices: one soft alert surface, with the icon in normal flex flow. */
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .woocommerce-error.cr-account-save-feedback--error {
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 9px !important;
+    width: 100% !important;
+    margin: 0 0 10px !important;
+    padding: 10px 12px !important;
+    border: 1px solid #efc5c1 !important;
+    border-radius: 9px !important;
+    border-top: 1px solid #efc5c1 !important;
+    background: #fdf0ef !important;
+    color: #8c312b !important;
+    box-shadow: none !important;
+    text-align: left !important;
+    font: 400 12px/17px "Roboto", Arial, sans-serif !important;
+    list-style: none !important;
+    position: static !important;
+  }
+
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .woocommerce-error.cr-account-save-feedback--error::before {
+    content: "!" !important;
+    position: static !important;
+    inset: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 1px solid #c96c63 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    color: #a33c34 !important;
+    font: 700 11px/16px Arial, sans-serif !important;
+  }
+
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .woocommerce-error.cr-account-save-feedback--error li {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #8c312b !important;
+    font: 400 12px/17px "Roboto", Arial, sans-serif !important;
+  }
+
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .cr-password-inline-error {
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 9px !important;
+    width: 100% !important;
+    margin: 0 0 10px !important;
+    padding: 10px 12px !important;
+    border: 1px solid #efc5c1 !important;
+    border-radius: 9px !important;
+    background: #fdf0ef !important;
+    color: #8c312b !important;
+    text-align: left !important;
+    font: 400 12px/17px "Roboto", Arial, sans-serif !important;
+  }
+
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .cr-password-inline-error__icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    border: 1px solid #c96c63 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    color: #a33c34 !important;
+    font: 700 11px/16px Arial, sans-serif !important;
+  }
+
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .cr-password-inline-error__text {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    color: #8c312b !important;
+    font: 400 12px/17px "Roboto", Arial, sans-serif !important;
+  }
+
+  /* Keep WooCommerce's real strength meter and states; only compact its presentation. */
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .woocommerce-password-strength {
+    display: inline-flex !important;
+    align-items: center !important;
+    min-height: 0 !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 4px 0 0 !important;
+    padding: 3px 8px !important;
+    border: 0 !important;
+    border-radius: 6px !important;
+    background: #f1eee8 !important;
+    color: #62594c !important;
+    font: 400 11px/15px "Roboto", Arial, sans-serif !important;
+    box-shadow: none !important;
+  }
+
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .woocommerce-password-strength.short,
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .woocommerce-password-strength.bad {
+    background: #fdf0ef !important;
+    color: #8c312b !important;
+  }
+
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .woocommerce-password-strength.good {
+    background: #f5f0e2 !important;
+    color: #78602a !important;
+  }
+
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .woocommerce-password-strength.strong {
+    background: #e7f0e9 !important;
+    color: #244436 !important;
+  }
+
+  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .woocommerce-password-hint {
+    margin: 4px 0 0 !important;
+    color: #777b76 !important;
+    font: 300 11px/15px "Roboto", Arial, sans-serif !important;
+  }
+}
