@@ -183,22 +183,48 @@ test('catalog endpoint echoes page size and staging debug exposes all ID layers 
   assert.match(js, /prices,returned_total:responseData\.total,total:responseData\.total/);
 });
 
-test('staging baseline failure is fail-closed and FULL is reserved for confirmed absence', () => {
-  assert.match(deploy, /BASELINE_STATUS="VALID"/);
-  assert.match(deploy, /BASELINE_STATUS="ABSENT"/);
-  assert.match(deploy, /BASELINE_STATUS="UNAVAILABLE"/);
-  assert.match(deploy, /BASELINE_ERROR="curl_exit_\$\{BASELINE_CURL_EXIT\}"/);
-  assert.ok(deploy.includes('elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then'));
-  assert.match(deploy, /DEPLOY_MODE="ABORTED"/);
-  assert.match(deploy, /DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE/);
-  assert.match(deploy, /--retry 2/);
-  assert.match(deploy, /BASELINE_STATUS=ABSENT; confirmed missing remote manifest/);
-  assert.doesNotMatch(deploy, /Incremental baseline unavailable or unsafe; using full runtime fallback/);
-  const abortAt = deploy.indexOf('DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE');
-  const deleteLoopAt = deploy.indexOf('for FILE in "${DELETE_FILES[@]}"');
-  const uploadLoopAt = deploy.indexOf('for FILE in "${UPLOAD_FILES[@]}"');
-  assert.ok(abortAt >= 0 && deleteLoopAt > abortAt && uploadLoopAt > abortAt,
-    'abort must exit before any FTP delete/upload loop');
+test('staging FULL deploy is limited to confirmed absence or confirmed divergence', () => {
+  const validStart = deploy.indexOf('BASELINE_STATUS="VALID"');
+  const divergentStart = deploy.indexOf('elif ! git merge-base --is-ancestor');
+  const diffStart = deploy.indexOf('elif ! git diff --name-status -z --find-renames --find-copies');
+  const absentStart = deploy.indexOf('elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then');
+  const unavailableStart = deploy.indexOf('else\n              BASELINE_STATUS="UNAVAILABLE"', absentStart);
+  const abortStart = deploy.indexOf('if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then');
+  const abortReason = deploy.indexOf('DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE');
+  const deleteLoop = deploy.indexOf('for FILE in "${DELETE_FILES[@]}"');
+  const uploadLoop = deploy.indexOf('for FILE in "${UPLOAD_FILES[@]}"');
+
+  assert.ok(validStart >= 0 && divergentStart > validStart && diffStart > divergentStart,
+    'a present, parseable manifest must be checked for ancestry before diffing');
+  const validBranch = deploy.slice(diffStart, absentStart);
+  assert.match(validBranch, /else\s+DEPLOY_MODE="INCREMENTAL"/);
+  assert.ok(validBranch.includes('git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"'));
+  assert.ok(validBranch.includes('git diff --name-status -z --find-renames --find-copies'));
+
+  assert.ok(absentStart >= 0 && unavailableStart > absentStart,
+    'only the explicit FTP 550 missing-manifest response may select absent');
+  const absentBranch = deploy.slice(absentStart, unavailableStart);
+  assert.match(absentBranch, /BASELINE_STATUS="ABSENT"/);
+  assert.match(absentBranch, /DEPLOY_MODE="FULL"/);
+
+  const divergentBranch = deploy.slice(divergentStart, diffStart);
+  assert.match(divergentBranch, /BASELINE_STATUS="DIVERGED"/);
+  assert.match(divergentBranch, /BASELINE_ERROR="remote_sha_not_ancestor_of_head"/);
+  assert.match(divergentBranch, /DEPLOY_MODE="FULL"/);
+
+  const unknownHandling = deploy.slice(validStart, abortStart);
+  assert.match(unknownHandling, /BASELINE_ERROR="invalid_or_unparseable_manifest"/);
+  assert.match(unknownHandling, /BASELINE_ERROR="remote_sha_not_available_in_git"/);
+  assert.match(unknownHandling, /BASELINE_ERROR="git_diff_failed"/);
+  assert.match(unknownHandling, /BASELINE_ERROR="curl_exit_\$\{BASELINE_CURL_EXIT\}"/);
+  assert.doesNotMatch(unknownHandling, /DEPLOY_MODE="FULL"/,
+    'unconfirmed manifest, Git and FTP errors must not select FULL');
+
+  assert.ok(abortStart >= 0 && abortReason > abortStart);
+  assert.match(deploy.slice(abortStart, deleteLoop), /DEPLOY_MODE="ABORTED"/);
+  assert.match(deploy.slice(abortStart, deleteLoop), /exit 1/);
+  assert.ok(deleteLoop > abortReason && uploadLoop > abortReason,
+    'unknown errors must abort before any FTP delete/upload loop');
   assert.match(deploy, /if \[ "\$DEPLOY_MODE" = "INCREMENTAL" \]; then/);
 });
 
