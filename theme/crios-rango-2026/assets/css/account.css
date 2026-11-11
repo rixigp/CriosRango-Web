@@ -1112,3 +1112,11 @@
 @keyframes cr-account-submit-spin {
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
+
+
+/* Address endpoint has a higher-specificity normal CTA rule; override it only while loading. */
+@media (max-width: 767px) {
+  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields button[type="submit"].cr-account-submit--loading {
+    background: #e1e5e1 !important;
+  }
+}
