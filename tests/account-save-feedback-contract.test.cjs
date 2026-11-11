@@ -255,6 +255,9 @@ test('PASSWORD_SUCCESS_FEEDBACK_USES_NATIVE_FIELD_PRESENCE_AND_WOOCOMMERCE_VALID
   }
   assert.match(store, /wc_notice_count\( 'error' \) === 0/);
   assert.match(store, /cr2026_account_store_save_feedback\( 'password' \)/);
+  const zeroErrorGuard = store.indexOf("wc_notice_count( 'error' ) === 0");
+  const passwordSuccessMarker = store.indexOf("cr2026_account_store_save_feedback( 'password' )");
+  assert.ok(zeroErrorGuard !== -1 && passwordSuccessMarker !== -1 && zeroErrorGuard < passwordSuccessMarker, 'zero WooCommerce errors are required before password success feedback');
   assert.match(store, /delete_user_meta\( \(int\) \$user_id, '_cr2026_account_save_feedback' \)/);
   assert.match(store, /sanitize_key\( wp_unslash\( \$_POST\['cr2026_account_profile_view'\] \) \)/);
   for (const field of ['password_current', 'password_1', 'password_2']) {
