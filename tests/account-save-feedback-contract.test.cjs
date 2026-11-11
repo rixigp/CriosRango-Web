@@ -87,11 +87,11 @@ test('ACCOUNT_LOADING_SCRIPT_IS_ENQUEUED_ONLY_FOR_MOBILE_ACCOUNT', () => {
 
 
 test('SHIPPING_ADDRESS_FORM_BINDING_AND_LOADING_PAINT_PRECEDE_NATIVE_SUBMIT', () => {
-  assert.match(js, /form:has\\(\\.woocommerce-address-fields\\)/);
-  assert.match(js, /form\\.addEventListener\\(\\s*'submit'/);
-  assert.match(js, /window\\.requestAnimationFrame\\(\\(\\) => \\{/);
-  assert.match(js, /form\\.requestSubmit\\(button\\)/);
+  assert.match(js, /form:has\(\.woocommerce-address-fields\)/);
+  assert.match(js, /form\.addEventListener\(\s*'submit'/);
+  assert.match(js, /window\.requestAnimationFrame\(\(\) => \{/);
+  assert.match(js, /form\.requestSubmit\(button\)/);
   assert.match(js, /cr-account-submit--loading/);
-  assert.match(css, /\\.cr-account-submit--loading::after/);
-  assert.doesNotMatch(js, /form\\.querySelectorAll\\([^)]*input[^)]*\\)\\.forEach\\([^)]*disabled/);
+  assert.match(css, /\.cr-account-submit--loading::after/);
+  assert.doesNotMatch(js, /form\.querySelectorAll\([^)]*input[^)]*\)\.forEach\([^)]*disabled/);
 });
