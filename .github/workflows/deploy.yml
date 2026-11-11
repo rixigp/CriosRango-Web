@@ -645,8 +645,11 @@ jobs:
                   BASELINE_STATUS="UNAVAILABLE"
                   BASELINE_ERROR="remote_sha_not_available_in_git"
                 elif ! git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"; then
-                  BASELINE_STATUS="UNAVAILABLE"
+                  # A present commit that is not an ancestor is a confirmed divergent baseline.
+                  # Do not diff across histories; reconcile staging with a controlled full theme deploy.
+                  BASELINE_STATUS="DIVERGED"
                   BASELINE_ERROR="remote_sha_not_ancestor_of_head"
+                  DEPLOY_MODE="FULL"
                 elif ! git diff --name-status -z --find-renames --find-copies \
                   "$REMOTE_SHA" "$HEAD_SHA" -- "$THEME_ROOT" > "$DIFF_FILE"; then
                   BASELINE_STATUS="UNAVAILABLE"
@@ -675,6 +678,11 @@ jobs:
               echo "UPLOAD_COUNT=0"
               echo "DELETE_COUNT=0"
               exit 1
+            fi
+            if [ "$BASELINE_STATUS" = "DIVERGED" ]; then
+              echo "REMOTE_BASELINE_DIVERGED=YES"
+              echo "FULL_DEPLOY_REQUIRED=YES"
+              echo "DEPLOY_MODE=FULL"
             fi
           else
             # Production deploys retain the explicitly documented full-deploy policy.
@@ -791,6 +799,63 @@ jobs:
               --user "${SFTP_USER}:${SFTP_PASSWORD}" \
               --upload-file "$FILE" "${BASE_URL}/${ENCODED_REL}"
           done
+
+          # On a controlled staging FULL deploy, remove stale files/directories only
+          # inside this theme root. The expected set is exactly the runtime files uploaded above.
+          if [ "$IS_STAGING" = true ] && [ "$DEPLOY_MODE" = "FULL" ]; then
+            EXPECTED_REMOTE_FILES="$(mktemp)"
+            trap 'rm -f "$DIFF_FILE" "$MANIFEST_FILE" "$BASELINE_ERROR_FILE" "$BASELINE_MANIFEST_FILE" "$EXPECTED_REMOTE_FILES"' EXIT
+            for FILE in "${UPLOAD_FILES[@]}"; do
+              safe_relative_path "$FILE" || { echo "ERROR: unsafe expected FTP path."; exit 1; }
+              printf '%s\\n' "${FILE#"$THEME_ROOT"/}" >> "$EXPECTED_REMOTE_FILES"
+            done
+            export SFTP_HOST SFTP_PORT SFTP_USER SFTP_PASSWORD REMOTE_ROOT EXPECTED_REMOTE_FILES
+            python3 - <<'PYFTP'
+          import os
+          from ftplib import FTP_TLS
+
+          expected = {line.strip() for line in open(os.environ["EXPECTED_REMOTE_FILES"], encoding="utf-8") if line.strip()}
+          expected_dirs = set()
+          for path in expected:
+              parts = path.split("/")[:-1]
+              for i in range(1, len(parts) + 1):
+                  expected_dirs.add("/".join(parts[:i]))
+
+          ftp = FTP_TLS()
+          ftp.connect(os.environ["SFTP_HOST"], int(os.environ["SFTP_PORT"]), timeout=30)
+          ftp.login(os.environ["SFTP_USER"], os.environ["SFTP_PASSWORD"])
+          ftp.prot_p()
+          root = "/" + os.environ["REMOTE_ROOT"].strip("/")
+          ftp.cwd(root)
+
+          def reconcile(prefix=""):
+              entries = list(ftp.mlsd())
+              for name, facts in entries:
+                  if name in (".", ".."):
+                      continue
+                  rel = f"{prefix}/{name}" if prefix else name
+                  kind = facts.get("type", "").lower()
+                  if kind == "dir":
+                      ftp.cwd(name)
+                      reconcile(rel)
+                      ftp.cwd("..")
+                      if rel not in expected_dirs:
+                          ftp.rmd(name)
+                          print(f"REMOTE_STALE_DIR_REMOVED={rel}")
+                  elif kind == "file":
+                      if rel not in expected:
+                          ftp.delete(name)
+                          print(f"REMOTE_STALE_FILE_REMOVED={rel}")
+                  elif kind in ("cdir", "pdir"):
+                      continue
+                  else:
+                      raise RuntimeError(f"Unsupported FTP entry type at theme root: {rel} ({kind})")
+
+          reconcile()
+          ftp.quit()
+          print("REMOTE_THEME_CLEANUP=PASS")
+          PYFTP
+          fi
 
           echo "theme_deploy_sha=$THEME_DEPLOY_SHA" >> "$GITHUB_OUTPUT"
           echo "deploy_mode=$DEPLOY_MODE" >> "$GITHUB_OUTPUT"
