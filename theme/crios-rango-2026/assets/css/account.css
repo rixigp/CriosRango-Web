@@ -175,7 +175,7 @@
 .cr-account-order__number { overflow-wrap: anywhere; color: #263b32; font: 400 14px/19px "Roboto", Arial, sans-serif; }
 .cr-account-order__details time { color: #777b76; font: 300 11px/16px "Roboto", Arial, sans-serif; }
 .cr-account-order__total { color: #244436; font: 400 12px/17px "Roboto", Arial, sans-serif; }
-.cr-account-order__status { flex: 0 0 auto; max-width: 35%; padding: 4px 8px; border-radius: 999px; background: #edf2ed; color: #355f4b; font: 300 10px/14px "Roboto", Arial, sans-serif; text-align: center; overflow-wrap: anywhere; }
+.cr-account-order__status { position: absolute; top: 16px; right: 16px; z-index: 1; max-width: 34%; padding: 4px 8px; border-radius: 999px; background: #edf2ed; color: #355f4b; font: 300 10px/14px "Roboto", Arial, sans-serif; text-align: center; overflow-wrap: anywhere; }
 .cr-account-order__status--cancelled, .cr-account-order__status--failed { background: #f7e9e7; color: #9b554c; }
 .cr-account-order__status--pending, .cr-account-order__status--on-hold { background: #f5f0e2; color: #76633c; }
 .cr-account-order__status--refunded { background: #eeeaf5; color: #66548a; }
