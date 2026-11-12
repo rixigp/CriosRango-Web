@@ -38,7 +38,15 @@ test('products show the base product name and formatted variation metadata witho
   assert.match(template, /\$item->get_name\(\)/);
   assert.match(template, /\$parent_product->get_name\(\)/);
   assert.match(template, /\$item->get_formatted_meta_data\(\)/);
-  assert.match(template, /implode\( ' · ', \$meta_values \)/);
+  assert.match(template, /\$meta->display_key/);
+  assert.match(template, /\$meta->display_value/);
+  assert.match(template, /'color' => ''/);
+  assert.match(template, /'size'\s*=> ''/);
+  assert.match(template, /'Color: ' \. \$variation_values\['color'\]/);
+  assert.match(template, /'Talla: ' \. \$variation_values\['size'\]/);
+  assert.match(template, /implode\( ' · ', \$variation_labels \)/);
+  assert.doesNotMatch(template, /\$meta_values/);
+  assert.match(css, /\.cr-order-detail\s*\{[^}]*padding:0 0 calc\(72px \+ env\(safe-area-inset-bottom\)\)/);
   assert.match(template, /\$item->get_quantity\(\)/);
   const productsCard = template.split('cr-order-detail__card--products')[1].split('</article>')[0];
   assert.match(productsCard, /\$product_name/);

@@ -99,15 +99,36 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
                 $parent_name = trim( (string) $parent_product->get_name() );
                 if ( '' !== $parent_name ) { $product_name = $parent_name; }
             }
-            $meta_values = array();
+            /*
+             * Render only customer-facing variation attributes from WooCommerce's
+             * formatted order-item metadata. Never expose internal item meta.
+             */
+            $variation_values = array(
+                'color' => '',
+                'size'  => '',
+            );
             foreach ( $item->get_formatted_meta_data() as $meta ) {
                 $key = trim( wp_strip_all_tags( (string) $meta->display_key ) );
+                $normalized_key = strtolower( remove_accents( $key ) );
                 $value = trim( wp_strip_all_tags( (string) $meta->display_value ) );
-                if ( '' !== $key && '' !== $value ) {
-                    $meta_values[] = $key . ': ' . $value;
+
+                if ( '' === $value ) {
+                    continue;
+                }
+                if ( in_array( $normalized_key, array( 'color', 'colour' ), true ) ) {
+                    $variation_values['color'] = $value;
+                } elseif ( in_array( $normalized_key, array( 'talla', 'size' ), true ) ) {
+                    $variation_values['size'] = $value;
                 }
             }
-            $variation_summary = implode( ' · ', $meta_values );
+            $variation_labels = array();
+            if ( '' !== $variation_values['color'] ) {
+                $variation_labels[] = 'Color: ' . $variation_values['color'];
+            }
+            if ( '' !== $variation_values['size'] ) {
+                $variation_labels[] = 'Talla: ' . $variation_values['size'];
+            }
+            $variation_summary = implode( ' · ', $variation_labels );
             $qty = (int) $item->get_quantity();
             ?>
             <div class="cr-order-detail__product">
