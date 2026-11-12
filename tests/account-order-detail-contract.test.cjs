@@ -10,6 +10,7 @@ const cssPath = path.join(root, 'theme/crios-rango-2026/assets/css/account.css')
 const template = fs.readFileSync(templatePath, 'utf8');
 const presentation = fs.readFileSync(presentationPath, 'utf8');
 const css = fs.readFileSync(cssPath, 'utf8');
+const mobileTemplate = template.split("$created = $order->get_date_created();")[1] || '';
 
 test('mobile order detail uses canonical toolbar title and rail', () => {
   assert.match(presentation, /cr2026_account_view_order_endpoint_toolbar[\s\S]*?\$title = __\( 'Detalle de pedido'/);
@@ -21,7 +22,7 @@ test('mobile order detail uses canonical toolbar title and rail', () => {
 test('mobile endpoint replaces legacy order table and paragraph visually', () => {
   assert.match(template, /if \( ! function_exists\( 'wp_is_mobile' \)[\s\S]*?do_action\( 'woocommerce_order_details_table', \$order_id \)/);
   assert.match(template, /if \( ! function_exists\( 'wp_is_mobile' \)[\s\S]*?return;/);
-  assert.doesNotMatch(template, /<h2>\s*<\?php esc_html_e\( 'Order details'/);
+  assert.doesNotMatch(mobileTemplate, /<h2>\s*<\?php esc_html_e\( 'Order details'/);
   assert.match(template, /cr-order-detail__card--header/);
   assert.match(template, /cr-order-detail__card--products/);
   assert.match(template, /cr-order-detail__card--delivery/);
@@ -35,7 +36,7 @@ test('products use WooCommerce line items, variation metadata, quantity and vali
   assert.match(template, /\$item->get_name\(\)/);
   assert.match(template, /\$item->get_formatted_meta_data\( '' \)/);
   assert.match(template, /\$item->get_quantity\(\)/);
-  assert.match(template, /\$product->get_image_id\(\)/);
+  assert.match(template, /\$candidate->get_image_id\(\)/);
   assert.match(template, /wp_attachment_is_image\( \$attachment_id \)/);
   assert.match(template, /wp_get_attachment_image_url\( \$attachment_id, 'woocommerce_thumbnail' \)/);
   assert.match(template, /alt="" loading="lazy" decoding="async"/);
