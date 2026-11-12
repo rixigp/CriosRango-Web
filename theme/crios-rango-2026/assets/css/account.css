@@ -105,15 +105,24 @@
     margin: 0;
   }
 
+  /* The page toolbar owns the global 20px rail. Keep the Account outer
+     content full-bleed; inner forms retain their independent content rail. */
   body.woocommerce-account .woocommerce-MyAccount-content {
     float: none !important;
-    width: calc(100% - 40px) !important;
-    max-width: 720px;
-    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
     border-radius: 0 !important;
     background: transparent !important;
+  }
+
+  body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields, .woocommerce-Addresses) {
+    box-sizing: border-box;
+    width: min(calc(100% - 40px), 720px);
+    max-width: 720px;
+    margin-inline: auto;
   }
 
   body.woocommerce-account:has(.cr-account-home) .woocommerce-MyAccount-content {
