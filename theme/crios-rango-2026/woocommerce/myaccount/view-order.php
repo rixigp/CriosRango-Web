@@ -75,12 +75,13 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
             $product = $item->get_product();
             if ( ! $product instanceof WC_Product ) { $product = wc_get_product( $item->get_product_id() ); }
             $image_url = '';
+            $parent_product = null;
+            if ( $product instanceof WC_Product && $product->is_type( 'variation' ) ) {
+                $parent_product = wc_get_product( $product->get_parent_id() );
+            }
             if ( $product instanceof WC_Product ) {
                 $image_candidates = array( $product );
-                if ( $product->is_type( 'variation' ) ) {
-                    $parent_product = wc_get_product( $product->get_parent_id() );
-                    if ( $parent_product instanceof WC_Product ) { $image_candidates[] = $parent_product; }
-                }
+                if ( $parent_product instanceof WC_Product ) { $image_candidates[] = $parent_product; }
                 foreach ( $image_candidates as $candidate ) {
                     $attachment_id = (int) $candidate->get_image_id();
                     if ( $attachment_id && wp_attachment_is_image( $attachment_id ) ) {
@@ -92,16 +93,21 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
                     }
                 }
             }
+            /* Prefer the real parent product name for variations; never parse the item label. */
+            $product_name = $item->get_name();
+            if ( $parent_product instanceof WC_Product ) {
+                $parent_name = trim( (string) $parent_product->get_name() );
+                if ( '' !== $parent_name ) { $product_name = $parent_name; }
+            }
             $meta_values = array();
-            foreach ( $item->get_formatted_meta_data( '' ) as $meta ) {
+            foreach ( $item->get_formatted_meta_data() as $meta ) {
                 $key = trim( wp_strip_all_tags( (string) $meta->display_key ) );
                 $value = trim( wp_strip_all_tags( (string) $meta->display_value ) );
-                if ( '' !== $key && '' !== $value && ! in_array( strtolower( $key ), array( 'pa_color', 'pa_talla', 'color', 'talla', 'size' ), true ) ) {
-                    $meta_values[] = $key . ': ' . $value;
-                } elseif ( '' !== $key && '' !== $value ) {
+                if ( '' !== $key && '' !== $value ) {
                     $meta_values[] = $key . ': ' . $value;
                 }
             }
+            $variation_summary = implode( ' · ', $meta_values );
             $qty = (int) $item->get_quantity();
             ?>
             <div class="cr-order-detail__product">
@@ -110,10 +116,9 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
                     <?php if ( $image_url ) : ?><img src="<?php echo esc_url( $image_url ); ?>" alt="" loading="lazy" decoding="async"><?php endif; ?>
                 </div>
                 <div class="cr-order-detail__product-info">
-                    <strong class="cr-order-detail__product-name"><?php echo esc_html( $item->get_name() ); ?></strong>
-                    <?php foreach ( $meta_values as $meta_line ) : ?><span class="cr-order-detail__meta"><?php echo esc_html( $meta_line ); ?></span><?php endforeach; ?>
+                    <strong class="cr-order-detail__product-name"><?php echo esc_html( $product_name ); ?></strong>
+                    <?php if ( '' !== $variation_summary ) : ?><span class="cr-order-detail__meta"><?php echo esc_html( $variation_summary ); ?></span><?php endif; ?>
                     <span class="cr-order-detail__meta"><?php echo esc_html( sprintf( __( 'Cantidad: %d', 'crios-rango-2026' ), $qty ) ); ?></span>
-                    <span class="cr-order-detail__price"><?php echo wp_kses_post( $order->get_formatted_line_subtotal( $item ) ); ?></span>
                 </div>
             </div>
         <?php endforeach; ?>
@@ -121,16 +126,20 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
 
     <article class="cr-order-detail__card cr-order-detail__card--delivery">
         <h2 class="cr-order-detail__heading"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></svg><?php esc_html_e( 'Entrega', 'crios-rango-2026' ); ?></h2>
-        <?php if ( $pickup ) : ?>
-            <div class="cr-order-detail__strong"><?php echo esc_html( $store_label ? $store_label : __( 'Recogida en tienda', 'crios-rango-2026' ) ); ?></div>
-            <?php if ( $formatted_shipping && false === stripos( $formatted_shipping, 'Tarancón' ) ) : ?><div class="cr-order-detail__address"><?php echo nl2br( esc_html( $formatted_shipping ) ); ?></div><?php endif; ?>
-            <?php if ( false !== stripos( $store_label, 'Tarancón' ) ) : ?><div class="cr-order-detail__address">Tarancón</div><?php endif; ?>
+        <?php if ( $pickup ) :
+            $pickup_location = preg_replace( '/^(?:recogida\s+en\s+tienda|local\s+pickup|pickup)\s*/iu', '', $shipping_method );
+            $pickup_location = trim( preg_replace( '/^[\s:–—-]+/u', '', (string) $pickup_location ) );
+            if ( '' === $pickup_location ) { $pickup_location = $formatted_shipping; }
+            ?>
+            <div class="cr-order-detail__strong"><?php esc_html_e( 'Recogida en tienda', 'crios-rango-2026' ); ?></div>
+            <?php if ( $pickup_location ) : ?><div class="cr-order-detail__address"><?php echo nl2br( esc_html( $pickup_location ) ); ?></div><?php endif; ?>
         <?php elseif ( $formatted_shipping ) : ?>
             <div class="cr-order-detail__address"><?php echo nl2br( esc_html( $formatted_shipping ) ); ?></div>
+            <div class="cr-order-detail__muted"><?php echo wp_kses_post( 0.0 === $shipping_total ? __( 'Envío gratuito', 'crios-rango-2026' ) : wc_price( $shipping_total, array( 'currency' => $order->get_currency() ) ) ); ?></div>
         <?php else : ?>
             <div class="cr-order-detail__muted"><?php esc_html_e( 'Datos de entrega no disponibles', 'crios-rango-2026' ); ?></div>
+            <div class="cr-order-detail__muted"><?php echo wp_kses_post( 0.0 === $shipping_total ? __( 'Envío gratuito', 'crios-rango-2026' ) : wc_price( $shipping_total, array( 'currency' => $order->get_currency() ) ) ); ?></div>
         <?php endif; ?>
-        <div class="cr-order-detail__muted"><?php echo wp_kses_post( 0.0 === $shipping_total ? __( 'Envío gratuito', 'crios-rango-2026' ) : wc_price( $shipping_total, array( 'currency' => $order->get_currency() ) ) ); ?></div>
     </article>
 
     <article class="cr-order-detail__card cr-order-detail__card--payment">
