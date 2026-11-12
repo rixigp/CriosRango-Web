@@ -72,3 +72,20 @@ test('ORDER_CARD_APP_VISUAL_CONTRACT_REMOVES_OUTLINED_DETAIL_BUTTON', () => {
   assert.match(php, /<div class="cr-account-order__bottom">\s*<a class="cr-account-order__view"/);
   assert.match(php, /<span aria-hidden="true">›<\/span>/);
 });
+
+test('ORDERS_FILTERS_AND_CARDS_REUSE_EXACT_PROFILE_MOBILE_RAIL_WITHOUT_MOVING_TOOLBAR', () => {
+  assert.match(css, /\.cr-account-home\s*\{[^}]*width:\s*min\(calc\(100%\s*-\s*40px\),\s*720px\);[^}]*margin-inline:\s*auto;/s);
+  assert.match(css, /body\.woocommerce-account \.cr-account-orders__filters,\s*body\.woocommerce-account \.cr-account-orders__list\s*\{[^}]*width:\s*min\(calc\(100%\s*-\s*40px\),\s*720px\);[^}]*max-width:\s*720px;[^}]*margin-inline:\s*auto;/s);
+  assert.match(css, /body\.woocommerce-account \.cr-account-orders__filters\s*\{[^}]*padding-inline:\s*0;/s);
+  assert.match(css, /\.cr-account-orders__filters\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*overflow-x:\s*auto;/s);
+  assert.match(php, /cr2026_render_category_toolbar\(\s*__\(\s*'Pedidos'/);
+});
+
+test('BROKEN_ORDER_IMAGE_IS_REMOVED_FROM_LAYOUT_AND_CLEAN_BAG_PLACEHOLDER_REMAINS', () => {
+  assert.match(js, /image\.hidden = true/);
+  assert.match(js, /image\.style\.display = 'none'/);
+  assert.match(js, /placeholder\.hidden = false/);
+  assert.match(js, /placeholder\.style\.display = 'grid'/);
+  assert.match(php, /cr-account-order__placeholder/);
+  assert.match(php, /alt="" loading="lazy"/);
+});

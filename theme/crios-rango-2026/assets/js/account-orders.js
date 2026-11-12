@@ -12,8 +12,12 @@
     const image = event.target;
     if (!(image instanceof HTMLImageElement) || !image.matches('.cr-account-order__thumbnail img')) return;
     image.hidden = true;
+    image.style.display = 'none';
     const placeholder = image.previousElementSibling;
-    if (placeholder) placeholder.hidden = false;
+    if (placeholder) {
+      placeholder.hidden = false;
+      placeholder.style.display = 'grid';
+    }
   }, true);
 
   filters.forEach((button) => {

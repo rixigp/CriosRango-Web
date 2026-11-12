@@ -1310,3 +1310,20 @@
  body.woocommerce-account .wpfda-delete-account-container .cr-password-inline-error__icon {flex:0 0 18px!important;}
  body.woocommerce-account .wpfda-delete-account-container .cr-password-inline-error__text {flex:1 1 auto!important;min-width:0!important;}
 }
+
+/* Orders content rail reuses the exact mobile Profile rail; toolbar stays full-width/canonical. */
+@media (max-width: 767px) {
+  body.woocommerce-account .cr-account-orders__filters,
+  body.woocommerce-account .cr-account-orders__list {
+    box-sizing: border-box;
+    width: min(calc(100% - 40px), 720px);
+    max-width: 720px;
+    margin-inline: auto;
+  }
+
+  body.woocommerce-account .cr-account-orders__filters {
+    margin-top: 0;
+    margin-bottom: 16px;
+    padding-inline: 0;
+  }
+}
