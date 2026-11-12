@@ -1327,3 +1327,35 @@
     padding-inline: 0;
   }
 }
+
+
+/* App-style mobile order detail; uses the same shell rail as account pages. */
+@media (max-width: 767px) {
+ body.woocommerce-account .cr-order-detail { box-sizing:border-box; width:min(calc(100% - 40px),720px); max-width:720px; margin:0 auto; padding:0 0 calc(88px + env(safe-area-inset-bottom)); display:grid; gap:12px; color:#20241f; font:300 12px/17px "Roboto",Arial,sans-serif; }
+ body.woocommerce-account .cr-order-detail__card { box-sizing:border-box; min-width:0; padding:16px; border:1px solid rgba(24,59,53,.09); border-radius:16px; background:#fff; box-shadow:0 2px 8px rgba(24,59,53,.045); }
+ body.woocommerce-account .cr-order-detail__heading { margin:0 0 12px; display:flex; align-items:center; gap:9px; color:#183b35; font:400 15px/21px "Roboto",Arial,sans-serif; }
+ body.woocommerce-account .cr-order-detail__heading svg { width:20px;height:20px;flex:0 0 20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round; }
+ body.woocommerce-account .cr-order-detail__number { margin:0 0 8px; color:#263b32; font:400 15px/21px "Roboto",Arial,sans-serif; }
+ body.woocommerce-account .cr-order-detail__status { display:inline-flex; align-items:center; gap:5px; margin:0 0 9px; padding:4px 9px; border-radius:999px; background:#edf2ed; color:#355f4b; font:300 10px/14px "Roboto",Arial,sans-serif; }
+ body.woocommerce-account .cr-order-detail__status--cancelled, body.woocommerce-account .cr-order-detail__status--failed {background:#f7e9e7;color:#9b554c;}
+ body.woocommerce-account .cr-order-detail__status--pending, body.woocommerce-account .cr-order-detail__status--on-hold {background:#f5f0e2;color:#76633c;}
+ body.woocommerce-account .cr-order-detail__status--refunded {background:#eeeaf5;color:#66548a;}
+ body.woocommerce-account .cr-order-detail__muted { color:#777b76; }
+ body.woocommerce-account .cr-order-detail__strong { color:#244436; font-weight:400; }
+ body.woocommerce-account .cr-order-detail__product { display:flex; gap:12px; min-width:0; padding:12px 0; border-top:1px solid rgba(32,36,31,.075); }
+ body.woocommerce-account .cr-order-detail__image { position:relative; width:72px;height:72px;flex:0 0 72px;overflow:hidden;border-radius:10px;background:#f3f1ec; }
+ body.woocommerce-account .cr-order-detail__image img {position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;}
+ body.woocommerce-account .cr-order-detail__image-placeholder {width:100%;height:100%;display:grid;place-items:center;color:#64756b;}
+ body.woocommerce-account .cr-order-detail__image-placeholder svg {width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.6;}
+ body.woocommerce-account .cr-order-detail__product-info {flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+ body.woocommerce-account .cr-order-detail__product-name {color:#263b32;font:400 12px/17px "Roboto",Arial,sans-serif;overflow-wrap:anywhere;}
+ body.woocommerce-account .cr-order-detail__meta {color:#777b76;font:300 11px/16px "Roboto",Arial,sans-serif;}
+ body.woocommerce-account .cr-order-detail__price {color:#244436;font:400 12px/17px "Roboto",Arial,sans-serif;}
+ body.woocommerce-account .cr-order-detail__address {white-space:normal;overflow-wrap:anywhere;color:#4b554e;font:300 12px/18px "Roboto",Arial,sans-serif;}
+ body.woocommerce-account .cr-order-detail__rows {display:grid;gap:8px;}
+ body.woocommerce-account .cr-order-detail__row {display:flex;justify-content:space-between;align-items:flex-start;gap:12px;color:#66716a;font:300 12px/17px "Roboto",Arial,sans-serif;}
+ body.woocommerce-account .cr-order-detail__row span:last-child {text-align:right;color:#303630;white-space:nowrap;}
+ body.woocommerce-account .cr-order-detail__divider {height:1px;margin:10px 0;background:rgba(32,36,31,.09);}
+ body.woocommerce-account .cr-order-detail__row--total {color:#183b35;font:400 14px/20px "Roboto",Arial,sans-serif;}
+ body.woocommerce-account .cr-order-detail__row--total span:last-child {color:#183b35;font-weight:400;}
+}

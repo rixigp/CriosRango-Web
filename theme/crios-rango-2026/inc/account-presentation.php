@@ -26,7 +26,7 @@ function cr2026_account_view_order_endpoint_toolbar( $order_id = 0 ) {
     }
     $order = function_exists( 'wc_get_order' ) ? wc_get_order( absint( $order_id ) ) : false;
     if ( $order instanceof WC_Order && (int) $order->get_customer_id() === (int) get_current_user_id() ) {
-        $title = sprintf( __( 'Pedido #%s', 'crios-rango-2026' ), $order->get_order_number() );
+        $title = __( 'Detalle de pedido', 'crios-rango-2026' );
     } else {
         $title = __( 'Detalle del pedido', 'crios-rango-2026' );
     }
