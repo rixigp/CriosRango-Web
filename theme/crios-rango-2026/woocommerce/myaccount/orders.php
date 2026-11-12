@@ -93,10 +93,9 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
                 <article class="cr-account-order" data-cr-order-card data-status="<?php echo esc_attr( $filter_status ); ?>">
                     <div class="cr-account-order__top">
                         <span class="cr-account-order__thumbnail" aria-hidden="true">
+                            <span class="cr-account-order__placeholder"><?php echo cr2026_icon( 'bag' ); ?></span>
                             <?php if ( $image_url ) : ?>
                                 <img src="<?php echo esc_url( $image_url ); ?>" alt="" loading="lazy" decoding="async">
-                            <?php else : ?>
-                                <span class="cr-account-order__placeholder"><?php echo cr2026_icon( 'bag' ); ?></span>
                             <?php endif; ?>
                         </span>
                         <div class="cr-account-order__details">
