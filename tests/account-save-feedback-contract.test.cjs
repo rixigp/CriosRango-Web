@@ -423,19 +423,30 @@ test('PASSWORD_FIELDS_WHITE_HINT_NEUTRAL_AND_STRENGTH_METER_LOGIC_UNCHANGED', ()
 
 
 test('DELETE_ACCOUNT_ENDPOINT_REUSES_ACCOUNT_PRESENTATION_AND_NATIVE_DELETE_FORM', () => {
-  assert.ok(css.includes('Mobile Delete Account endpoint:'));
-  assert.ok(css.includes('.wpfda-delete-account-container'));
-  assert.ok(css.includes('background:transparent!important'));
-  assert.ok(css.includes('background:#FFFFFF!important'));
-  assert.ok(css.includes('background:#f3d9dc!important'));
-  assert.ok(js.includes('form:has(.wpfda-delete-account-container)'));
-  assert.ok(js.includes("textContent = 'Eliminar cuenta'"));
-  assert.ok(js.includes("fieldLabel.textContent = 'Contraseña'"));
-  assert.ok(js.includes('cr-account-delete-password-toggle'));
+  // Keep the plugin's native endpoint, form and deletion backend; assert the
+  // Account presentation layer adapts them instead of banning internal hooks.
+  assert.match(php, /wc_get_account_endpoint_url\(\s*'wpf-delete-account'\s*\)/);
+  const nativeDeleteHook = php.match(/add_action\(\s*'woocommerce_account_wpf-delete-account_endpoint',\s*'cr2026_account_delete_endpoint_toolbar',\s*1\s*\)/g);
+  assert.equal(nativeDeleteHook && nativeDeleteHook.length, 1, 'native delete endpoint uses the Account toolbar hook exactly once');
+  assert.match(php, /function cr2026_account_delete_endpoint_toolbar\(\)[\s\S]*?cr2026_account_render_endpoint_toolbar\(\s*__\(\s*'Eliminar cuenta'/);
+  assert.match(js, /form:has\(\.wpfda-delete-account-container\)/);
+  assert.match(js, /form\.closest\('\.wpfda-delete-account-container'\)\s*\|\|\s*form\.querySelector\('\.wpfda-delete-account-container'\)/);
+  assert.ok(js.includes("textContent = 'Eliminar cuenta'"), 'native submit CTA is presented as Eliminar cuenta');
+  assert.ok(js.includes("fieldLabel.textContent = 'Contraseña'"), 'native password field uses Account label');
+  assert.ok(js.includes('cr-account-delete-password-toggle'), 'password visibility toggle exists');
   assert.ok(js.includes('Esta acción es permanente y no se puede deshacer.'));
   assert.ok(js.includes('Introduce tu contraseña para confirmar la eliminación de tu cuenta.'));
   assert.ok(js.includes('Introduce tu contraseña para continuar.'));
   assert.ok(js.includes('La contraseña no es correcta.'));
-  assert.ok(js.includes('cr-account-submit__spinner'));
-  assert.doesNotMatch(php, /wpf-delete-account|wpfda-delete-account-container/);
+  assert.ok(js.includes('cr-account-submit__spinner'), 'shared Account spinner is added');
+  assert.ok(js.includes("form.classList.add('cr-account-form--loading')"), 'shared Account loading state is activated');
+  assert.match(css, /\.wpfda-delete-account-container\s*\{[^}]*background:\s*transparent!important/i);
+  assert.match(css, /\.wpfda-delete-account-container\s*\{[^}]*border:\s*0!important/i);
+  assert.match(css, /\.wpfda-delete-account-container\s*\{[^}]*box-shadow:\s*none!important/i);
+  assert.match(css, /\.wpfda-delete-account-container :is\(form,fieldset\)\s*\{[^}]*background:\s*transparent!important/i);
+  // No custom delete-endpoint form renderer/handler is introduced in PHP;
+  // the plugin endpoint hook above remains the sole endpoint presentation hook.
+  assert.doesNotMatch(php, /function\s+cr2026_account_render_delete_account_form\s*\(/);
+  assert.doesNotMatch(php, /add_action\(\s*'woocommerce_account_wpf-delete-account_endpoint'\s*,\s*'[^']+'\s*,\s*10\s*\)/);
+  assert.ok(js.includes('form.requestSubmit(button)'), 'native submitter is preserved for backend POST');
 });
