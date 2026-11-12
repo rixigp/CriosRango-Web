@@ -25,6 +25,7 @@ on:
       - "tests/account-address-layout-contract.test.cjs"
       - "tests/account-save-feedback-contract.test.cjs"
       - "tests/account-orders-contract.test.cjs"
+      - "tests/account-order-detail-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
 
@@ -434,6 +435,9 @@ jobs:
 
       - name: Run mobile Account Orders app-skin contract test
         run: node --test tests/account-orders-contract.test.cjs
+
+      - name: Run mobile Account Order Detail app-skin contract test
+        run: node --test tests/account-order-detail-contract.test.cjs
 
       - name: Validate theme structure
         shell: bash
