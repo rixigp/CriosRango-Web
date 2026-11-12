@@ -816,22 +816,71 @@ function cr2026_product_cat_display_name( $term ) {
 }
 
 /**
- * Resolve manually uploaded category art by term slug and supported extension.
- * Fall back to the WooCommerce category thumbnail; never use product imagery.
+ * Resolve recovered subcategory and Outlet artwork from the real WooCommerce
+ * parent/child terms. Theme assets take priority over the category thumbnail.
  */
 function cr2026_subcategory_image_url( $term ) {
     if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) {
         return '';
     }
 
-    $relative_directory = 'assets/images/subcategories/';
-    $absolute_directory = trailingslashit( get_template_directory() ) . $relative_directory;
-    $public_directory   = trailingslashit( get_template_directory_uri() ) . $relative_directory;
+    $theme_directory = trailingslashit( get_template_directory() );
+    $theme_uri       = trailingslashit( get_template_directory_uri() );
+    $parent          = ( (int) $term->parent > 0 ) ? get_term( (int) $term->parent, 'product_cat' ) : null;
+    $parent_slug     = ( $parent instanceof WP_Term && ! is_wp_error( $parent ) )
+        ? sanitize_title( $parent->slug )
+        : '';
 
+    $relative_asset = '';
+
+    // Preserve the legacy WooCommerce typo without changing the stored term slug.
+    if ( 'outlet' === $parent_slug ) {
+        $outlet_slug = sanitize_title( $term->slug );
+        if ( 'nino-invierno-oulet' === $outlet_slug ) {
+            $relative_asset = 'assets/images/outlet/outlet_nino_invierno.png';
+        } elseif ( preg_match( '/^(hombre|mujer|nina|nino)-(invierno|verano)-outlet$/', $outlet_slug, $matches ) ) {
+            $relative_asset = 'assets/images/outlet/outlet_' . $matches[1] . '_' . $matches[2] . '.png';
+        }
+    } elseif ( in_array( $parent_slug, array(
+        'bebe-nino',
+        'bebe-nina',
+        'nino',
+        'nina',
+        'hombre',
+        'mujer',
+        'recien-nacido',
+    ), true ) ) {
+        $child_slug = sanitize_title( $term->slug );
+        $suffix     = '-' . $parent_slug;
+
+        if ( strlen( $child_slug ) > strlen( $suffix )
+            && substr( $child_slug, -strlen( $suffix ) ) === $suffix ) {
+            $child_slug = substr( $child_slug, 0, -strlen( $suffix ) );
+        }
+
+        $normalized_child = str_replace( '-', '_', $child_slug );
+        $normalized_child = preg_replace( '/_(?:y|de)_/', '_', $normalized_child );
+        $normalized_child = trim( preg_replace( '/_+/', '_', $normalized_child ), '_' );
+        $parent_prefix    = str_replace( '-', '_', $parent_slug );
+
+        if ( '' !== $normalized_child ) {
+            $relative_asset = 'assets/images/subcategories/' . $parent_slug
+                . '/subcat_' . $parent_prefix . '_' . $normalized_child . '.png';
+        }
+    }
+
+    // Never emit a theme URL unless the generated file physically exists.
+    if ( '' !== $relative_asset && file_exists( $theme_directory . $relative_asset ) ) {
+        $encoded_path = implode( '/', array_map( 'rawurlencode', explode( '/', $relative_asset ) ) );
+        return $theme_uri . $encoded_path;
+    }
+
+    // Keep compatibility with legacy flat subcategory artwork.
+    $legacy_directory = $theme_directory . 'assets/images/subcategories/';
     foreach ( array( 'webp', 'png', 'jpg', 'jpeg' ) as $extension ) {
         $filename = sanitize_file_name( $term->slug ) . '.' . $extension;
-        if ( file_exists( $absolute_directory . $filename ) ) {
-            return $public_directory . rawurlencode( $filename );
+        if ( file_exists( $legacy_directory . $filename ) ) {
+            return $theme_uri . 'assets/images/subcategories/' . rawurlencode( $filename );
         }
     }
 
