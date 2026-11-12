@@ -164,7 +164,7 @@
 .cr-account-orders__filters button { flex: 0 0 auto; white-space: nowrap; min-height: 38px; padding: 0 15px; border: 1px solid rgba(24,59,53,.16); border-radius: 999px; background: #fff; color: #66716a; font: 300 12px/18px "Roboto", Arial, sans-serif; cursor: pointer; }
 .cr-account-orders__filters button.is-active { border-color: #183b35; background: #183b35; color: #fff; }
 .cr-account-orders__list { display: grid; gap: 12px; }
-.cr-account-order { box-sizing: border-box; min-width: 0; padding: 14px; border: 1px solid rgba(24,59,53,.09); border-radius: 16px; background: #fff; box-shadow: 0 2px 8px rgba(24,59,53,.045); }
+.cr-account-order { position: relative; box-sizing: border-box; min-width: 0; padding: 14px; border: 1px solid rgba(24,59,53,.09); border-radius: 16px; background: #fff; box-shadow: 0 2px 8px rgba(24,59,53,.045); }
 .cr-account-order[hidden] { display: none !important; }
 .cr-account-order__top { display: flex; align-items: flex-start; gap: 11px; min-width: 0; }
 .cr-account-order__thumbnail { position: relative; width: 64px; height: 64px; flex: 0 0 64px; display: grid; place-items: center; overflow: hidden; border-radius: 10px; background: #f3f1ec; color: #64756b; }
