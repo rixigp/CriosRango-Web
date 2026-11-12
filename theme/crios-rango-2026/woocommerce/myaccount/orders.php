@@ -11,6 +11,7 @@ do_action( 'woocommerce_before_account_orders', $has_orders );
 
 $account_url = wc_get_page_permalink( 'myaccount' );
 $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_permalink( 'shop' ) );
+$cr_img_debug = is_user_logged_in() && isset( $_GET['cr_img_debug'] ) && ! is_array( $_GET['cr_img_debug'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['cr_img_debug'] ) );
 ?>
 <section class="cr-account-orders" aria-labelledby="cr-account-orders-title">
     <?php if ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) : ?>
@@ -48,6 +49,10 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
 
                 $created = $order->get_date_created();
                 $image_url = '';
+                $debug_order_item_id = 0;
+                $debug_product_id = 0;
+                $debug_variation_id = 0;
+                $debug_attachment_id = 0;
                 foreach ( $order->get_items() as $order_item ) {
                     if ( ! $order_item instanceof WC_Order_Item_Product ) {
                         continue;
@@ -83,6 +88,10 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
                         $resolved_image_url = wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' );
                         if ( is_string( $resolved_image_url ) && '' !== $resolved_image_url && wp_http_validate_url( $resolved_image_url ) ) {
                             $image_url = $resolved_image_url;
+                            $debug_order_item_id = (int) $order_item->get_id();
+                            $debug_product_id = (int) $order_item->get_product_id();
+                            $debug_variation_id = (int) $order_item->get_variation_id();
+                            $debug_attachment_id = $image_id;
                             break 2;
                         }
                     }
@@ -107,6 +116,14 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
                         </div>
                         <span class="cr-account-order__status cr-account-order__status--<?php echo esc_attr( sanitize_html_class( $status ) ); ?>"><?php echo esc_html( wc_get_order_status_name( $status ) ); ?></span>
                     </div>
+                    <?php if ( $cr_img_debug && '57784' === (string) $order->get_order_number() ) : ?>
+                        <pre class="cr-account-order__image-debug" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;line-height:1.4;margin:8px 0;padding:8px;background:#fff;border:1px solid #d8d9d5;border-radius:6px;">ORDER_NUMBER=<?php echo esc_html( $order->get_order_number() ); ?>
+ORDER_ITEM_ID=<?php echo esc_html( $debug_order_item_id ); ?>
+PRODUCT_ID=<?php echo esc_html( $debug_product_id ); ?>
+VARIATION_ID=<?php echo esc_html( $debug_variation_id ); ?>
+ATTACHMENT_ID=<?php echo esc_html( $debug_attachment_id ); ?>
+FINAL_IMG_SRC=<?php echo esc_html( $image_url ); ?></pre>
+                    <?php endif; ?>
                     <div class="cr-account-order__bottom">
                         <a class="cr-account-order__view" href="<?php echo esc_url( $view_url ); ?>"><?php esc_html_e( 'Ver detalle', 'crios-rango-2026' ); ?><span aria-hidden="true">›</span></a>
                     </div>
