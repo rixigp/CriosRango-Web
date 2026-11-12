@@ -4,10 +4,9 @@
   // WooCommerce wraps the .woocommerce-address-fields DIV in a plain form.
   // Bind to that outer form rather than incorrectly requiring the DIV class
   // to be present on the form element itself.
-  const forms = Array.from(document.querySelectorAll(
-    'body.woocommerce-account form.woocommerce-EditAccountForm, body.woocommerce-account form:has(.woocommerce-address-fields), body.woocommerce-account form:has(.wpfda-delete-account-container), body.woocommerce-account .wpfda-delete-account-container form'
-  ));
-  if (!forms.length) return;
+  // WP Frontend Delete Account emits an empty container, then React inserts
+  // its form during DOMContentLoaded. Observe the Account DOM for that render.
+  const formsSelector = 'body.woocommerce-account form.woocommerce-EditAccountForm, body.woocommerce-account form:has(.woocommerce-address-fields), body.woocommerce-account .wpfda-delete-account-container form';
 
   const submitSelector = 'button[name="save_account_details"], button[name="save_address"]';
 
@@ -108,11 +107,15 @@
     });
   };
 
-  forms.forEach((form) => {
+  const initForms = () => {
+    const forms = Array.from(document.querySelectorAll(formsSelector));
+    forms.forEach((form) => {
     const deleteContainer = form.closest('.wpfda-delete-account-container') || form.querySelector('.wpfda-delete-account-container');
     const isDeleteAccount = !!deleteContainer;
     const button = isDeleteAccount ? form.querySelector('button[type="submit"]') : form.querySelector(submitSelector);
     if (!button) return;
+    if (form.dataset.crAccountSaveFeedbackInitialized === '1') return;
+    form.dataset.crAccountSaveFeedbackInitialized = '1';
 
     moveErrorsInline(form, button);
     positionSuccessFeedback(form, button);
@@ -121,11 +124,11 @@
     if (isDeleteAccount && button.querySelector('.cr-account-submit__label')) button.querySelector('.cr-account-submit__label').textContent = 'Eliminar cuenta';
 
     if (isDeleteAccount) {
-      const password = form.querySelector('input[type="password"]');
+      const password = form.querySelector('input[name="wpfda-password"][type="password"]');
       if (password) {
         const row = password.closest('p, .form-row, div') || password.parentNode;
         if (row && !row.classList.contains('cr-account-delete-password-row')) row.classList.add('cr-account-delete-password-row');
-        const fieldLabel = (password.id && form.querySelector('label[for="' + password.id + '"]')) || password.closest('label');
+        const fieldLabel = form.querySelector('.wpfda-password-confirm label') || (password.id && form.querySelector('label[for="' + password.id + '"]')) || password.closest('label');
         if (fieldLabel) fieldLabel.textContent = 'Contraseña';
         if (!form.querySelector('.cr-account-delete-password-toggle')) {
           const toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = 'cr-account-delete-password-toggle';
@@ -169,7 +172,7 @@
       }
 
       if (isDeleteAccount) {
-        const password=form.querySelector('input[type="password"]');
+        const password=form.querySelector('input[name="wpfda-password"][type="password"]');
         if (!password || password.value.length===0) {event.preventDefault();showPasswordError(form,button,'Introduce tu contraseña para continuar.');return;}
         const priorClientError=form.querySelector('.cr-password-inline-error');if(priorClientError)priorClientError.remove();
       }
@@ -221,5 +224,18 @@
         });
       });
     }, false);
-  });
+    });
+  };
+
+  initForms();
+
+  if (document.body.classList.contains('woocommerce-account')
+    && !document.querySelector('body.woocommerce-account .wpfda-delete-account-container form')) {
+    const observer = new MutationObserver(() => {
+      const deleteForm = document.querySelector('body.woocommerce-account .wpfda-delete-account-container form');
+      initForms();
+      if (deleteForm) observer.disconnect();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
 })();

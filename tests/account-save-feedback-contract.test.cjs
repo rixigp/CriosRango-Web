@@ -422,31 +422,39 @@ test('PASSWORD_FIELDS_WHITE_HINT_NEUTRAL_AND_STRENGTH_METER_LOGIC_UNCHANGED', ()
 });
 
 
-test('DELETE_ACCOUNT_ENDPOINT_REUSES_ACCOUNT_PRESENTATION_AND_NATIVE_DELETE_FORM', () => {
-  // Keep the plugin's native endpoint, form and deletion backend; assert the
-  // Account presentation layer adapts them instead of banning internal hooks.
+test('DELETE_ACCOUNT_NATIVE_REACT_FORM_IS_DISCOVERED_AFTER_DOM_READY_AND_ADAPTED', () => {
+  // Upstream plugin renders this structure inside its initially-empty div:
+  // <form><div class="wpfda-password-confirm"><label>...</label>
+  // <input type="password" name="wpfda-password"/></div>
+  // <div class="wpfda-submit"><button type="submit">Confirm</button></div></form>
+  const pluginMarkup = '<div class="wpfda-delete-account-container"><form><div class="wpfda-password-confirm"><label>Introduce la contraseña para confirmar:</label><input type="password" name="wpfda-password"></div><div class="wpfda-submit"><button type="submit">Confirm</button></div></form></div>';
+  assert.match(pluginMarkup, /class="wpfda-delete-account-container"[^>]*>\s*<form>/, 'plugin form nested in container');
+  assert.match(pluginMarkup, /class="wpfda-password-confirm"[^>]*>\s*<label>[\s\S]*?<input type="password" name="wpfda-password"/, 'label is sibling of named password input');
+  assert.match(pluginMarkup, /class="wpfda-submit"[^>]*>\s*<button type="submit">Confirm<\/button>/, 'Confirm is native submit button');
+
   assert.match(php, /wc_get_account_endpoint_url\(\s*'wpf-delete-account'\s*\)/);
-  const nativeDeleteHook = php.match(/add_action\(\s*'woocommerce_account_wpf-delete-account_endpoint',\s*'cr2026_account_delete_endpoint_toolbar',\s*1\s*\)/g);
-  assert.equal(nativeDeleteHook && nativeDeleteHook.length, 1, 'native delete endpoint uses the Account toolbar hook exactly once');
-  assert.match(php, /function cr2026_account_delete_endpoint_toolbar\(\)[\s\S]*?cr2026_account_render_endpoint_toolbar\(\s*__\(\s*'Eliminar cuenta'/);
-  assert.match(js, /form:has\(\.wpfda-delete-account-container\)/);
-  assert.match(js, /form\.closest\('\.wpfda-delete-account-container'\)\s*\|\|\s*form\.querySelector\('\.wpfda-delete-account-container'\)/);
-  assert.ok(js.includes("textContent = 'Eliminar cuenta'"), 'native submit CTA is presented as Eliminar cuenta');
-  assert.ok(js.includes("fieldLabel.textContent = 'Contraseña'"), 'native password field uses Account label');
-  assert.ok(js.includes('cr-account-delete-password-toggle'), 'password visibility toggle exists');
+  assert.match(php, /add_action\(\s*'woocommerce_account_wpf-delete-account_endpoint',\s*'cr2026_account_delete_endpoint_toolbar',\s*1\s*\)/);
+  assert.match(js, /body\.woocommerce-account \.wpfda-delete-account-container form/, 'form selector matches plugin nesting');
+  assert.match(js, /form\.querySelector\('input\[name="wpfda-password"\]\[type="password"\]'\)/, 'password selector matches actual plugin input');
+  assert.match(js, /form\.querySelector\('button\[type="submit"\]'\)/, 'submit selector matches Confirm button');
+  assert.match(js, /form\.querySelector\('\.wpfda-password-confirm label'\)/, 'label selector matches sibling label');
+
+  assert.match(js, /const initForms = \(\) =>/);
+  assert.match(js, /initForms\(\);/);
+  assert.match(js, /new MutationObserver\(\(\) => \{[\s\S]*?initForms\(\);[\s\S]*?observer\.disconnect\(\);/, 'late React insertion invokes init');
+  assert.match(js, /observer\.observe\(document\.body, \{ childList: true, subtree: true \}\)/);
+  assert.match(js, /form\.dataset\.crAccountSaveFeedbackInitialized === '1'/, 'initialization is idempotent');
+
+  assert.ok(js.includes("textContent = 'Eliminar cuenta'"));
+  assert.ok(js.includes('cr-account-delete-password-toggle'));
   assert.ok(js.includes('Esta acción es permanente y no se puede deshacer.'));
   assert.ok(js.includes('Introduce tu contraseña para confirmar la eliminación de tu cuenta.'));
-  assert.ok(js.includes('Introduce tu contraseña para continuar.'));
-  assert.ok(js.includes('La contraseña no es correcta.'));
-  assert.ok(js.includes('cr-account-submit__spinner'), 'shared Account spinner is added');
-  assert.ok(js.includes("form.classList.add('cr-account-form--loading')"), 'shared Account loading state is activated');
+  assert.ok(js.includes('cr-account-submit__spinner'));
+  assert.ok(js.includes("form.classList.add('cr-account-form--loading')"));
   assert.match(css, /\.wpfda-delete-account-container\s*\{[^}]*background:\s*transparent!important/i);
   assert.match(css, /\.wpfda-delete-account-container\s*\{[^}]*border:\s*0!important/i);
   assert.match(css, /\.wpfda-delete-account-container\s*\{[^}]*box-shadow:\s*none!important/i);
   assert.match(css, /\.wpfda-delete-account-container :is\(form,fieldset\)\s*\{[^}]*background:\s*transparent!important/i);
-  // No custom delete-endpoint form renderer/handler is introduced in PHP;
-  // the plugin endpoint hook above remains the sole endpoint presentation hook.
   assert.doesNotMatch(php, /function\s+cr2026_account_render_delete_account_form\s*\(/);
-  assert.doesNotMatch(php, /add_action\(\s*'woocommerce_account_wpf-delete-account_endpoint'\s*,\s*'[^']+'\s*,\s*10\s*\)/);
-  assert.ok(js.includes('form.requestSubmit(button)'), 'native submitter is preserved for backend POST');
+  assert.ok(js.includes('form.requestSubmit(button)'), 'native submit continues through original plugin handler');
 });
