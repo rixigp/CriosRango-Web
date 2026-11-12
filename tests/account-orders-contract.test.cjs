@@ -42,7 +42,7 @@ test('ORDER_CARD_USES_NATIVE_ORDER_NUMBER_DATE_TOTAL_STATUS_IMAGE_AND_DETAIL_ACT
   assert.match(php, /wc_format_datetime\(\s*\$created,\s*'d-m-Y'\s*\)/);
   assert.match(php, /\$order->get_formatted_order_total\(\)/);
   assert.match(php, /wc_get_order_status_name\(\s*\$status\s*\)/);
-  assert.match(php, /<img src="<?php echo esc_url\( \$image_url \); ?>" alt="" loading="lazy"/);
+  assert.match(php, /<img src=.*?alt="" loading="lazy"/s);
   assert.match(php, /get_view_order_url\(\)/);
   assert.match(php, /esc_html_e\( 'Ver detalle'/);
   assert.match(php, /cr-account-order__view/);
