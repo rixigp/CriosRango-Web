@@ -40,7 +40,7 @@ test('products use WooCommerce line items, variation metadata, quantity and vali
   assert.match(template, /wp_attachment_is_image\( \$attachment_id \)/);
   assert.match(template, /wp_get_attachment_image_url\( \$attachment_id, 'woocommerce_thumbnail' \)/);
   assert.match(template, /alt="" loading="lazy" decoding="async"/);
-  assert.match(template, /object-fit:cover/);
+  assert.match(css, /object-fit:cover/);
 });
 
 test('delivery and payment are presentation-only and sourced from the order', () => {
