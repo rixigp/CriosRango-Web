@@ -47,34 +47,44 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
                     : ( in_array( $status, array( 'processing', 'completed', 'refunded', 'cancelled' ), true ) ? $status : 'other' );
 
                 $created = $order->get_date_created();
-                $first_product = false;
+                $image_url = '';
                 foreach ( $order->get_items() as $order_item ) {
                     if ( ! $order_item instanceof WC_Order_Item_Product ) {
                         continue;
                     }
-                    $candidate_product = $order_item->get_product();
-                    if ( $candidate_product instanceof WC_Product ) {
-                        $first_product = $candidate_product;
-                        break;
+
+                    $item_product = $order_item->get_product();
+                    if ( ! $item_product instanceof WC_Product ) {
+                        $item_product = wc_get_product( $order_item->get_product_id() );
                     }
-                }
+                    if ( ! $item_product instanceof WC_Product ) {
+                        continue;
+                    }
 
-                $image_url = '';
-                if ( $first_product instanceof WC_Product ) {
-                    $image_id = (int) $first_product->get_image_id();
-                    $resolved_image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' ) : false;
-
-                    if ( ( ! is_string( $resolved_image_url ) || '' === $resolved_image_url || ! wp_http_validate_url( $resolved_image_url ) )
-                        && $first_product->is_type( 'variation' ) ) {
-                        $parent_product = wc_get_product( $first_product->get_parent_id() );
+                    // Prefer the variation's own image, then its parent, then the order item's product.
+                    $image_candidates = array( $item_product );
+                    if ( $item_product->is_type( 'variation' ) ) {
+                        $parent_product = wc_get_product( $item_product->get_parent_id() );
                         if ( $parent_product instanceof WC_Product ) {
-                            $image_id = (int) $parent_product->get_image_id();
-                            $resolved_image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' ) : false;
+                            $image_candidates[] = $parent_product;
                         }
                     }
+                    $order_item_product = wc_get_product( $order_item->get_product_id() );
+                    if ( $order_item_product instanceof WC_Product ) {
+                        $image_candidates[] = $order_item_product;
+                    }
 
-                    if ( is_string( $resolved_image_url ) && '' !== $resolved_image_url && wp_http_validate_url( $resolved_image_url ) ) {
-                        $image_url = $resolved_image_url;
+                    foreach ( $image_candidates as $image_candidate ) {
+                        $image_id = (int) $image_candidate->get_image_id();
+                        if ( ! $image_id || ! wp_attachment_is_image( $image_id ) ) {
+                            continue;
+                        }
+
+                        $resolved_image_url = wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' );
+                        if ( is_string( $resolved_image_url ) && '' !== $resolved_image_url && wp_http_validate_url( $resolved_image_url ) ) {
+                            $image_url = $resolved_image_url;
+                            break 2;
+                        }
                     }
                 }
 
@@ -83,9 +93,10 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
                 <article class="cr-account-order" data-cr-order-card data-status="<?php echo esc_attr( $filter_status ); ?>">
                     <div class="cr-account-order__top">
                         <span class="cr-account-order__thumbnail" aria-hidden="true">
-                            <span class="cr-account-order__placeholder"><?php echo cr2026_icon( 'bag' ); ?></span>
                             <?php if ( $image_url ) : ?>
                                 <img src="<?php echo esc_url( $image_url ); ?>" alt="" loading="lazy" decoding="async">
+                            <?php else : ?>
+                                <span class="cr-account-order__placeholder"><?php echo cr2026_icon( 'bag' ); ?></span>
                             <?php endif; ?>
                         </span>
                         <div class="cr-account-order__details">

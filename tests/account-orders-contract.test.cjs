@@ -51,11 +51,12 @@ test('ORDER_CARD_USES_NATIVE_ORDER_NUMBER_DATE_TOTAL_STATUS_IMAGE_AND_DETAIL_ACT
 
 test('ORDER_IMAGE_RESOLUTION_USES_FIRST_VALID_PRODUCT_AND_VARIATION_PARENT_FALLBACK', () => {
   assert.match(php, /\$order_item instanceof WC_Order_Item_Product/);
-  assert.match(php, /\$candidate_product instanceof WC_Product/);
-  assert.match(php, /\$first_product->get_image_id\(\)/);
-  assert.match(php, /\$first_product->is_type\( 'variation' \)/);
-  assert.match(php, /wc_get_product\( \$first_product->get_parent_id\(\) \)/);
-  assert.match(php, /\$parent_product->get_image_id\(\)/);
+  assert.match(php, /\$item_product instanceof WC_Product/);
+  assert.match(php, /\$item_product->is_type\( 'variation' \)/);
+  assert.match(php, /wc_get_product\( \$item_product->get_parent_id\(\) \)/);
+  assert.match(php, /\$image_candidate->get_image_id\(\)/);
+  assert.match(php, /wc_get_product\( \$order_item->get_product_id\(\) \)/);
+  assert.match(php, /wp_attachment_is_image\( \$image_id \)/);
   assert.match(php, /wp_get_attachment_image_url\( \$image_id, 'woocommerce_thumbnail' \)/);
   assert.match(php, /wp_http_validate_url\( \$resolved_image_url \)/);
   assert.match(php, /cr-account-order__placeholder/);
@@ -66,7 +67,7 @@ test('ORDER_IMAGE_RESOLUTION_USES_FIRST_VALID_PRODUCT_AND_VARIATION_PARENT_FALLB
 
 test('ORDER_CARD_APP_VISUAL_CONTRACT_REMOVES_OUTLINED_DETAIL_BUTTON', () => {
   assert.match(css, /\.cr-account-order\s*\{[^}]*border:[^;]+;[^}]*border-radius:\s*16px;[^}]*background:\s*#fff;[^}]*box-shadow:/s);
-  assert.match(css, /\.cr-account-order__thumbnail\s*\{[^}]*width:\s*64px;[^}]*height:\s*64px;[^}]*overflow:\s*hidden;/s);
+  assert.match(css, /\.cr-account-order__thumbnail\s*\{[^}]*width:\s*92px;[^}]*height:\s*92px;[^}]*overflow:\s*hidden;/s);
   assert.match(css, /\.cr-account-order__view\s*\{[^}]*text-decoration:\s*none;/s);
   assert.doesNotMatch(css, /\.cr-account-order__view[^}]*border:\s*1px solid/i);
   assert.match(php, /<div class="cr-account-order__bottom">\s*<a class="cr-account-order__view"/);
@@ -84,8 +85,8 @@ test('ORDERS_FILTERS_AND_CARDS_REUSE_EXACT_PROFILE_MOBILE_RAIL_WITHOUT_MOVING_TO
 test('BROKEN_ORDER_IMAGE_IS_REMOVED_FROM_LAYOUT_AND_CLEAN_BAG_PLACEHOLDER_REMAINS', () => {
   assert.match(js, /image\.hidden = true/);
   assert.match(js, /image\.style\.display = 'none'/);
-  assert.match(js, /placeholder\.hidden = false/);
-  assert.match(js, /placeholder\.style\.display = 'grid'/);
-  assert.match(php, /cr-account-order__placeholder/);
+  assert.doesNotMatch(js, /placeholder\.hidden = false/);
+  assert.doesNotMatch(js, /placeholder\.style\.display = 'grid'/);
+  assert.match(php, /else\s*:\s*\?>\s*<span class="cr-account-order__placeholder"/);
   assert.match(php, /alt="" loading="lazy"/);
 });
