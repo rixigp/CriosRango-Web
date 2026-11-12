@@ -29,8 +29,9 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
             <button type="button" class="is-active" data-cr-order-filter="all" aria-pressed="true"><?php esc_html_e( 'Todos', 'crios-rango-2026' ); ?></button>
             <button type="button" data-cr-order-filter="waiting" aria-pressed="false"><?php esc_html_e( 'En espera', 'crios-rango-2026' ); ?></button>
             <button type="button" data-cr-order-filter="processing" aria-pressed="false"><?php esc_html_e( 'Procesando', 'crios-rango-2026' ); ?></button>
-            <button type="button" data-cr-order-filter="completed" aria-pressed="false"><?php esc_html_e( 'Completados', 'crios-rango-2026' ); ?></button>
-            <button type="button" data-cr-order-filter="cancelled" aria-pressed="false"><?php esc_html_e( 'Cancelados', 'crios-rango-2026' ); ?></button>
+            <button type="button" data-cr-order-filter="completed" aria-pressed="false"><?php esc_html_e( 'Completado', 'crios-rango-2026' ); ?></button>
+            <button type="button" data-cr-order-filter="refunded" aria-pressed="false"><?php esc_html_e( 'Reembolsado', 'crios-rango-2026' ); ?></button>
+            <button type="button" data-cr-order-filter="cancelled" aria-pressed="false"><?php esc_html_e( 'Cancelado', 'crios-rango-2026' ); ?></button>
         </div>
 
         <div class="cr-account-orders__list" data-cr-orders-list>
@@ -43,44 +44,61 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
                 $status = $order->get_status();
                 $filter_status = in_array( $status, array( 'pending', 'on-hold' ), true )
                     ? 'waiting'
-                    : ( in_array( $status, array( 'processing', 'completed', 'cancelled' ), true ) ? $status : 'other' );
+                    : ( in_array( $status, array( 'processing', 'completed', 'refunded', 'cancelled' ), true ) ? $status : 'other' );
 
                 $created = $order->get_date_created();
-                $item_count = $order->get_item_count();
-                $first_item = null;
+                $first_product = false;
                 foreach ( $order->get_items() as $order_item ) {
-                    $first_item = $order_item;
-                    break;
+                    if ( ! $order_item instanceof WC_Order_Item_Product ) {
+                        continue;
+                    }
+                    $candidate_product = $order_item->get_product();
+                    if ( $candidate_product instanceof WC_Product ) {
+                        $first_product = $candidate_product;
+                        break;
+                    }
                 }
-                $first_product = $first_item ? $first_item->get_product() : false;
-                $product_name = $first_item ? $first_item->get_name() : __( 'Productos del pedido', 'crios-rango-2026' );
-                $product_image = $first_product ? $first_product->get_image( 'woocommerce_thumbnail' ) : '';
+
+                $image_url = '';
+                if ( $first_product instanceof WC_Product ) {
+                    $image_id = (int) $first_product->get_image_id();
+                    $resolved_image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' ) : false;
+
+                    if ( ( ! is_string( $resolved_image_url ) || '' === $resolved_image_url || ! wp_http_validate_url( $resolved_image_url ) )
+                        && $first_product->is_type( 'variation' ) ) {
+                        $parent_product = wc_get_product( $first_product->get_parent_id() );
+                        if ( $parent_product instanceof WC_Product ) {
+                            $image_id = (int) $parent_product->get_image_id();
+                            $resolved_image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' ) : false;
+                        }
+                    }
+
+                    if ( is_string( $resolved_image_url ) && '' !== $resolved_image_url && wp_http_validate_url( $resolved_image_url ) ) {
+                        $image_url = $resolved_image_url;
+                    }
+                }
+
                 $view_url = $order->get_view_order_url();
             ?>
                 <article class="cr-account-order" data-cr-order-card data-status="<?php echo esc_attr( $filter_status ); ?>">
                     <div class="cr-account-order__top">
-                        <strong><?php echo esc_html( sprintf( __( 'Pedido #%s', 'crios-rango-2026' ), $order->get_order_number() ) ); ?></strong>
-                        <span class="cr-account-order__status cr-account-order__status--<?php echo esc_attr( sanitize_html_class( $status ) ); ?>"><?php echo esc_html( wc_get_order_status_name( $status ) ); ?></span>
-                    </div>
-                    <div class="cr-account-order__body">
                         <span class="cr-account-order__thumbnail" aria-hidden="true">
-                            <?php if ( $product_image ) : ?>
-                                <?php echo wp_kses_post( $product_image ); ?>
-                            <?php else : ?>
-                                <?php echo cr2026_icon( 'bag' ); ?>
+                            <span class="cr-account-order__placeholder"><?php echo cr2026_icon( 'bag' ); ?></span>
+                            <?php if ( $image_url ) : ?>
+                                <img src="<?php echo esc_url( $image_url ); ?>" alt="" loading="lazy" decoding="async">
                             <?php endif; ?>
                         </span>
                         <div class="cr-account-order__details">
-                            <strong class="cr-account-order__product"><?php echo esc_html( $product_name ); ?></strong>
-                            <span><?php echo esc_html( sprintf( _n( '%s artículo', '%s artículos', $item_count, 'crios-rango-2026' ), number_format_i18n( $item_count ) ) ); ?></span>
+                            <strong class="cr-account-order__number"><?php echo esc_html( sprintf( __( 'Pedido #%s', 'crios-rango-2026' ), $order->get_order_number() ) ); ?></strong>
                             <?php if ( $created ) : ?>
-                                <time datetime="<?php echo esc_attr( $created->date( 'c' ) ); ?>"><?php echo esc_html( wc_format_datetime( $created ) ); ?></time>
+                                <time datetime="<?php echo esc_attr( $created->date( 'c' ) ); ?>"><?php echo esc_html( sprintf( __( 'Realizado el %s', 'crios-rango-2026' ), wc_format_datetime( $created, 'd-m-Y' ) ) ); ?></time>
                             <?php endif; ?>
+                            <span class="cr-account-order__total"><?php echo wp_kses_post( sprintf( __( 'Total: %s', 'crios-rango-2026' ), $order->get_formatted_order_total() ) ); ?></span>
                         </div>
+                        <span class="cr-account-order__status cr-account-order__status--<?php echo esc_attr( sanitize_html_class( $status ) ); ?>"><?php echo esc_html( wc_get_order_status_name( $status ) ); ?></span>
                     </div>
                     <div class="cr-account-order__bottom">
-                        <span class="cr-account-order__total"><?php echo wp_kses_post( $order->get_formatted_order_total() ); ?></span>
-                        <a class="cr-account-order__view" href="<?php echo esc_url( $view_url ); ?>"><?php esc_html_e( 'Ver detalle', 'crios-rango-2026' ); ?></a>
+                        <a class="cr-account-order__view" href="<?php echo esc_url( $view_url ); ?>"><?php esc_html_e( 'Ver detalle', 'crios-rango-2026' ); ?><span aria-hidden="true">›</span></a>
                     </div>
                 </article>
             <?php endforeach; ?>

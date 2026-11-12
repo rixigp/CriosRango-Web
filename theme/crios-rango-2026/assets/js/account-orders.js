@@ -8,6 +8,14 @@
   const cards = Array.from(root.querySelectorAll('[data-cr-order-card]'));
   const empty = root.querySelector('[data-cr-orders-filter-empty]');
 
+  root.addEventListener('error', (event) => {
+    const image = event.target;
+    if (!(image instanceof HTMLImageElement) || !image.matches('.cr-account-order__thumbnail img')) return;
+    image.hidden = true;
+    const placeholder = image.previousElementSibling;
+    if (placeholder) placeholder.hidden = false;
+  }, true);
+
   filters.forEach((button) => {
     button.addEventListener('click', () => {
       const selected = button.dataset.crOrderFilter || 'all';

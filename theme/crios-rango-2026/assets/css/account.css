@@ -155,38 +155,41 @@
 
 /* Native WooCommerce orders, presented as app-skin cards. */
 .cr-account-orders { width: 100%; color: #20241f; font-family: "Roboto", Arial, sans-serif; }
-.cr-account-orders__toolbar { min-height: 44px; display: flex; align-items: center; gap: 12px; margin: 0 0 14px; }
+.cr-account-orders__desktop-toolbar { min-height: 44px; display: flex; align-items: center; gap: 12px; margin: 0 0 14px; }
 .cr-account-orders__back { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; color: #183b35; text-decoration: none; }
 .cr-account-orders__back svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.cr-account-orders__toolbar h1 { margin: 0; color: #183b35; font: 400 21px/28px "Roboto", Arial, sans-serif; }
-.cr-account-orders__filters { display: flex; gap: 8px; overflow-x: auto; margin: 0 -20px 16px; padding: 0 20px 3px; scrollbar-width: none; }
+.cr-account-orders__desktop-title { margin: 0; color: #183b35; font: 400 21px/28px "Roboto", Arial, sans-serif; }
+.cr-account-orders__filters { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px 16px; padding: 0 20px 5px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .cr-account-orders__filters::-webkit-scrollbar { display: none; }
-.cr-account-orders__filters button { flex: 0 0 auto; min-height: 34px; padding: 0 13px; border: 1px solid rgba(24,59,53,.14); border-radius: 999px; background: transparent; color: #66716a; font: 300 12px/18px "Roboto", Arial, sans-serif; cursor: pointer; }
-.cr-account-orders__filters button.is-active { border-color: #244436; background: #244436; color: #fff; }
+.cr-account-orders__filters button { flex: 0 0 auto; white-space: nowrap; min-height: 36px; padding: 0 14px; border: 1px solid rgba(24,59,53,.16); border-radius: 999px; background: #fff; color: #66716a; font: 300 12px/18px "Roboto", Arial, sans-serif; cursor: pointer; }
+.cr-account-orders__filters button.is-active { border-color: #183b35; background: #183b35; color: #fff; }
 .cr-account-orders__list { display: grid; gap: 12px; }
-.cr-account-order { min-width: 0; padding: 14px; border: 1px solid rgba(24,59,53,.08); border-radius: 18px; background: #fff; }
+.cr-account-order { box-sizing: border-box; min-width: 0; padding: 14px; border: 1px solid rgba(24,59,53,.09); border-radius: 16px; background: #fff; box-shadow: 0 2px 8px rgba(24,59,53,.045); }
 .cr-account-order[hidden] { display: none !important; }
-.cr-account-order__top, .cr-account-order__bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.cr-account-order__top > strong { color: #263b32; font: 400 13px/19px "Roboto", Arial, sans-serif; }
-.cr-account-order__status { flex: 0 0 auto; padding: 5px 9px; border-radius: 999px; background: #edf2ed; color: #355f4b; font: 300 11px/15px "Roboto", Arial, sans-serif; }
+.cr-account-order__top { display: flex; align-items: flex-start; gap: 11px; min-width: 0; }
+.cr-account-order__thumbnail { position: relative; width: 64px; height: 64px; flex: 0 0 64px; display: grid; place-items: center; overflow: hidden; border-radius: 10px; background: #f3f1ec; color: #64756b; }
+.cr-account-order__thumbnail img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+.cr-account-order__placeholder { display: grid; place-items: center; width: 100%; height: 100%; }
+.cr-account-order__placeholder .cr-icon { width: 25px; height: 25px; }
+.cr-account-order__details { display: flex; flex: 1 1 auto; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; color: #777b76; font: 300 11px/16px "Roboto", Arial, sans-serif; }
+.cr-account-order__number { overflow-wrap: anywhere; color: #263b32; font: 400 14px/19px "Roboto", Arial, sans-serif; }
+.cr-account-order__details time { color: #777b76; font: 300 11px/16px "Roboto", Arial, sans-serif; }
+.cr-account-order__total { color: #244436; font: 400 12px/17px "Roboto", Arial, sans-serif; }
+.cr-account-order__status { flex: 0 0 auto; max-width: 35%; padding: 4px 8px; border-radius: 999px; background: #edf2ed; color: #355f4b; font: 300 10px/14px "Roboto", Arial, sans-serif; text-align: center; overflow-wrap: anywhere; }
 .cr-account-order__status--cancelled, .cr-account-order__status--failed { background: #f7e9e7; color: #9b554c; }
 .cr-account-order__status--pending, .cr-account-order__status--on-hold { background: #f5f0e2; color: #76633c; }
-.cr-account-order__body { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 13px 0; }
-.cr-account-order__thumbnail { width: 68px; height: 78px; flex: 0 0 68px; display: grid; place-items: center; overflow: hidden; border-radius: 12px; background: #f2f0eb; color: #64756b; }
-.cr-account-order__thumbnail img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.cr-account-order__thumbnail .cr-icon { width: 25px; height: 25px; }
-.cr-account-order__details { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; color: #777b76; font: 300 11px/16px "Roboto", Arial, sans-serif; }
-.cr-account-order__product { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: #303630; font: 400 13px/18px "Roboto", Arial, sans-serif; }
-.cr-account-order__bottom { padding-top: 11px; border-top: 1px solid rgba(32,36,31,.07); }
-.cr-account-order__total { color: #244436; font: 400 14px/20px "Roboto", Arial, sans-serif; }
-.cr-account-order__view, .cr-account-orders__empty a { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 0 15px; border: 1px solid #244436; border-radius: 999px; color: #244436; text-decoration: none; font: 400 12px/18px "Roboto", Arial, sans-serif; }
+.cr-account-order__status--refunded { background: #eeeaf5; color: #66548a; }
+.cr-account-order__bottom { display: flex; justify-content: flex-end; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(32,36,31,.075); }
+.cr-account-order__view { display: inline-flex; align-items: center; gap: 5px; color: #244436; text-decoration: none; font: 400 12px/18px "Roboto", Arial, sans-serif; }
+.cr-account-order__view span { color: #244436; font: 400 18px/16px Arial, sans-serif; }
 .cr-account-orders__filter-empty { margin: 16px 0; color: #777b76; text-align: center; font: 300 13px/20px "Roboto", Arial, sans-serif; }
 .cr-account-orders__pagination { display: flex; justify-content: space-between; gap: 10px; margin-top: 16px; }
 .cr-account-orders__pagination a { margin: 0 !important; }
-.cr-account-orders__empty { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 44px 16px; border: 1px solid rgba(24,59,53,.08); border-radius: 18px; background: #fff; text-align: center; }
+.cr-account-orders__empty { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 44px 16px; border: 1px solid rgba(24,59,53,.08); border-radius: 16px; background: #fff; text-align: center; }
 .cr-account-orders__empty-icon { color: #244436; }
 .cr-account-orders__empty-icon .cr-icon { width: 32px; height: 32px; }
 .cr-account-orders__empty p { margin: 0; color: #303630; font: 300 14px/21px "Roboto", Arial, sans-serif; }
+.cr-account-orders__empty a { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 0 15px; border: 1px solid #244436; border-radius: 999px; color: #244436; text-decoration: none; font: 400 12px/18px "Roboto", Arial, sans-serif; }
 @media (min-width: 768px) {
   .cr-account-orders { max-width: 900px; margin-inline: auto; }
 }
