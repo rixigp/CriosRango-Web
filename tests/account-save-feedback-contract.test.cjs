@@ -375,11 +375,17 @@ test('PASSWORD_ERRORS_USE_ONE_FLEX_ALERT_LAYOUT_WITH_ICON_IN_FLOW', () => {
   assert.ok(icon.includes('flex: 0 0 18px !important'));
   const text = ruleBody('.cr-password-inline-error__text {');
   assert.ok(text.includes('flex: 1 1 auto !important'));
-  const wooNotice = ruleBody('.woocommerce-error.cr-account-save-feedback--error {');
+  const passwordNoticeSelector = 'body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm .woocommerce-error.cr-account-save-feedback--error';
+  const passwordIconSelector = passwordNoticeSelector + '::before';
+  const wooNotice = ruleBody(passwordNoticeSelector + ' {');
+  assert.ok(wooNotice.includes('display: flex !important'));
+  assert.ok(wooNotice.includes('align-items: flex-start !important'));
+  assert.ok(wooNotice.includes('gap: 9px !important'));
   assert.ok(wooNotice.includes('position: static !important'));
   assert.ok(wooNotice.includes('border: 1px solid #efc5c1 !important'));
   assert.ok(wooNotice.includes('background: #fdf0ef !important'));
-  const wooIcon = ruleBody('.woocommerce-error.cr-account-save-feedback--error::before {');
+  const wooIcon = ruleBody(passwordIconSelector + ' {');
+  assert.ok(wooIcon.includes('display: inline-flex !important'));
   assert.ok(wooIcon.includes('position: static !important'));
 });
 
