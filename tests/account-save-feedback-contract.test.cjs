@@ -462,8 +462,8 @@ test('DELETE_ACCOUNT_NATIVE_REACT_FORM_IS_DISCOVERED_AFTER_DOM_READY_AND_ADAPTED
 
 test('ACCOUNT_SUBVIEW_TOOLBARS_USE_FULL_WIDTH_OUTER_CONTAINER_AND_KEEP_INNER_FORM_RAIL', () => {
   const mobileShell = css.slice(css.indexOf('/* Account app shell: reuse the canonical app canvas and shared mobile rail. */'), css.indexOf('/* Native WooCommerce orders, presented as app-skin cards. */'));
-  assert.match(mobileShell, /body\\.woocommerce-account \\.woocommerce-MyAccount-content\\s*\\{[^}]*width:\\s*100%\\s*!important;[^}]*max-width:\\s*none\\s*!important;[^}]*margin:\\s*0\\s*!important/s);
-  assert.match(mobileShell, /body\\.woocommerce-account :is\\(\\.woocommerce-EditAccountForm, \\.woocommerce-address-fields, \\.woocommerce-Addresses\\)\\s*\\{[^}]*width:\\s*min\\(calc\\(100% - 40px\\), 720px\\);[^}]*margin-inline:\\s*auto;/s);
-  assert.match(mobileShell, /body\\.woocommerce-account:has\\(\\.cr-account-home\\) \\.woocommerce-MyAccount-content\\s*\\{[^}]*width:\\s*100%\\s*!important;/s);
-  assert.doesNotMatch(mobileShell, /cr-account-profile-view-delete[^}]*?(?:margin-left|translate|left|padding-left)\\s*:/i);
+  assert.match(mobileShell, /body\.woocommerce-account \.woocommerce-MyAccount-content\s*\{[^}]*width:\s*100%\s*!important;[^}]*max-width:\s*none\s*!important;[^}]*margin:\s*0\s*!important/s);
+  assert.match(mobileShell, /body\.woocommerce-account :is\(\.woocommerce-EditAccountForm, \.woocommerce-address-fields, \.woocommerce-Addresses\)\s*\{[^}]*width:\s*min\(calc\(100% - 40px\), 720px\);[^}]*margin-inline:\s*auto;/s);
+  assert.match(mobileShell, /body\.woocommerce-account:has\(\.cr-account-home\) \.woocommerce-MyAccount-content\s*\{[^}]*width:\s*100%\s*!important;/s);
+  assert.doesNotMatch(mobileShell, /cr-account-profile-view-delete[^}]*?(?:margin-left|translate|left|padding-left)\s*:/i);
 });
