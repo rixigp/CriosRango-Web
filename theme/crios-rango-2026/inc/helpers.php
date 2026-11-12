@@ -830,18 +830,40 @@ function cr2026_subcategory_image_url( $term ) {
     $parent_slug     = ( $parent instanceof WP_Term && ! is_wp_error( $parent ) )
         ? sanitize_title( $parent->slug )
         : '';
-
+    $root_parent     = $parent;
+    if ( $parent instanceof WP_Term && (int) $parent->parent > 0 ) {
+        $grandparent = get_term( (int) $parent->parent, 'product_cat' );
+        if ( $grandparent instanceof WP_Term && ! is_wp_error( $grandparent ) ) {
+            $root_parent = $grandparent;
+        }
+    }
+    $root_parent_slug = ( $root_parent instanceof WP_Term && ! is_wp_error( $root_parent ) )
+        ? sanitize_title( $root_parent->slug )
+        : '';
+    $child_slug     = sanitize_title( $term->slug );
     $relative_asset = '';
 
+    // Explicit filename exceptions backed by the recovered artwork inventory.
+    if ( 'mujer' === $parent_slug && 'chaquetas' === $child_slug ) {
+        $relative_asset = 'assets/images/subcategories/mujer/subcat_mujer_chaquetas_chalecos.png';
+    } elseif ( 'mujer' === $parent_slug && 'vestidos-y-monos-casual' === $child_slug ) {
+        $relative_asset = 'assets/images/subcategories/mujer/subcat_mujer_vestidos_conjuntos_monos.png';
+    } elseif ( 'mujer' === $root_parent_slug && 'ropa-de-fiesta' === $parent_slug ) {
+        if ( 'conjuntos-y-monos' === $child_slug ) {
+            $relative_asset = 'assets/images/subcategories/mujer/subcat_mujer_fiesta_conjuntos_monos.png';
+        } elseif ( 'vestidos-de-fiesta' === $child_slug ) {
+            $relative_asset = 'assets/images/subcategories/mujer/subcat_mujer_fiesta_vestidos.png';
+        }
+    }
+
     // Preserve the legacy WooCommerce typo without changing the stored term slug.
-    if ( 'outlet' === $parent_slug ) {
-        $outlet_slug = sanitize_title( $term->slug );
-        if ( 'nino-invierno-oulet' === $outlet_slug ) {
+    if ( '' === $relative_asset && 'outlet' === $parent_slug ) {
+        if ( 'nino-invierno-oulet' === $child_slug ) {
             $relative_asset = 'assets/images/outlet/outlet_nino_invierno.png';
-        } elseif ( preg_match( '/^(hombre|mujer|nina|nino)-(invierno|verano)-outlet$/', $outlet_slug, $matches ) ) {
+        } elseif ( preg_match( '/^(hombre|mujer|nina|nino)-(invierno|verano)-outlet$/', $child_slug, $matches ) ) {
             $relative_asset = 'assets/images/outlet/outlet_' . $matches[1] . '_' . $matches[2] . '.png';
         }
-    } elseif ( in_array( $parent_slug, array(
+    } elseif ( '' === $relative_asset && in_array( $parent_slug, array(
         'bebe-nino',
         'bebe-nina',
         'nino',
@@ -850,19 +872,15 @@ function cr2026_subcategory_image_url( $term ) {
         'mujer',
         'recien-nacido',
     ), true ) ) {
-        $child_slug = sanitize_title( $term->slug );
-        $suffix     = '-' . $parent_slug;
-
+        $suffix = '-' . $parent_slug;
         if ( strlen( $child_slug ) > strlen( $suffix )
             && substr( $child_slug, -strlen( $suffix ) ) === $suffix ) {
             $child_slug = substr( $child_slug, 0, -strlen( $suffix ) );
         }
-
         $normalized_child = str_replace( '-', '_', $child_slug );
         $normalized_child = preg_replace( '/_(?:y|de)_/', '_', $normalized_child );
         $normalized_child = trim( preg_replace( '/_+/', '_', $normalized_child ), '_' );
         $parent_prefix    = str_replace( '-', '_', $parent_slug );
-
         if ( '' !== $normalized_child ) {
             $relative_asset = 'assets/images/subcategories/' . $parent_slug
                 . '/subcat_' . $parent_prefix . '_' . $normalized_child . '.png';
@@ -891,7 +909,6 @@ function cr2026_subcategory_image_url( $term ) {
             return $thumbnail_url;
         }
     }
-
     return '';
 }
 
