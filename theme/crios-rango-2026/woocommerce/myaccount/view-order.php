@@ -113,7 +113,7 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
                     <strong class="cr-order-detail__product-name"><?php echo esc_html( $item->get_name() ); ?></strong>
                     <?php foreach ( $meta_values as $meta_line ) : ?><span class="cr-order-detail__meta"><?php echo esc_html( $meta_line ); ?></span><?php endforeach; ?>
                     <span class="cr-order-detail__meta"><?php echo esc_html( sprintf( __( 'Cantidad: %d', 'crios-rango-2026' ), $qty ) ); ?></span>
-                    <span class="cr-order-detail__price"><?php echo wp_kses_post( $item->get_formatted_line_subtotal() ); ?></span>
+                    <span class="cr-order-detail__price"><?php echo wp_kses_post( $order->get_formatted_line_subtotal( $item ) ); ?></span>
                 </div>
             </div>
         <?php endforeach; ?>

@@ -15,7 +15,7 @@ test('mobile order detail uses canonical toolbar title and rail', () => {
   assert.match(presentation, /cr2026_account_view_order_endpoint_toolbar[\s\S]*?\$title = __\( 'Detalle de pedido'/);
   assert.match(presentation, /cr2026_account_render_endpoint_toolbar\( \$title, wc_get_account_endpoint_url\( 'orders' \) \)/);
   assert.match(template, /class="cr-order-detail"/);
-  assert.match(css, /\.cr-order-detail\s*\{[^}]*width:min\(calc\(100% - 40px\),720px\)/);
+  assert.match(css, /\.cr-order-detail\s*\{[^}]*width:100%; max-width:none; margin:0;/);
 });
 
 test('mobile endpoint replaces legacy order table and paragraph visually', () => {
