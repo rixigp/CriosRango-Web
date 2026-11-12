@@ -52,12 +52,24 @@ test('products show the base product name and formatted variation metadata witho
   assert.match(css, /object-fit:cover/);
 });
 
-test('pickup label and location are separate and pickup never shows free shipping', () => {
+test('pickup and home delivery render the correct mutually exclusive details', () => {
   const deliveryCard = template.split('cr-order-detail__card--delivery')[1].split('</article>')[0];
-  assert.match(deliveryCard, /Recogida en tienda/);
-  assert.match(deliveryCard, /\$pickup_location/);
-  assert.match(deliveryCard, /if \( ! \$pickup \)/);
-  assert.doesNotMatch(deliveryCard, /\$store_label \?/);
+  const pickupBranch = deliveryCard.split(/<\?php\s+if\s*\(\s*\$pickup\s*\)\s*:/)[1]?.split(/<\?php\s+elseif\s*\(\s*\$formatted_shipping\s*\)\s*:/)[0] || '';
+  const homeDeliveryBranch = deliveryCard.split(/<\?php\s+elseif\s*\(\s*\$formatted_shipping\s*\)\s*:/)[1]?.split(/<\?php\s+else\s*:/)[0] || '';
+  const fallbackBranch = deliveryCard.split(/<\?php\s+else\s*:/)[1]?.split(/<\?php\s+endif\s*;/)[0] || '';
+
+  assert.match(deliveryCard, /if\s*\(\s*\$pickup\s*\)\s*:/);
+  assert.match(pickupBranch, /Recogida en tienda/);
+  assert.match(pickupBranch, /\$pickup_location/);
+  assert.match(pickupBranch, /echo\s+nl2br\(\s*esc_html\(\s*\$pickup_location\s*\)\s*\)/);
+  assert.doesNotMatch(pickupBranch, /Envío gratuito|\$shipping_total|wc_price/);
+  assert.doesNotMatch(pickupBranch, /echo[^;]*\$formatted_shipping/);
+
+  assert.match(homeDeliveryBranch, /echo\s+nl2br\(\s*esc_html\(\s*\$formatted_shipping\s*\)\s*\)/);
+  assert.match(homeDeliveryBranch, /Envío gratuito/);
+  assert.match(homeDeliveryBranch, /\$shipping_total|wc_price/);
+  assert.match(fallbackBranch, /Envío gratuito/);
+  assert.match(fallbackBranch, /\$shipping_total|wc_price/);
   assert.match(template, /preg_replace\( '\/\^\(\?:recogida/);
 });
 
