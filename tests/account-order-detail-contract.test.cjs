@@ -46,7 +46,8 @@ test('products show the base product name and formatted variation metadata witho
   assert.match(template, /'Talla: ' \. \$variation_values\['size'\]/);
   assert.match(template, /implode\( ' · ', \$variation_labels \)/);
   assert.doesNotMatch(template, /\$meta_values/);
-  assert.match(css, /\.cr-order-detail\s*\{[^}]*padding:0 0 calc\(72px \+ env\(safe-area-inset-bottom\)\)/);
+  assert.match(css, /\.cr-order-detail\s*\{[^}]*padding:0;/);
+  assert.doesNotMatch(css, /\.cr-order-detail\s*\{[^}]*padding:[^;}]*calc\(72px \+ env\(safe-area-inset-bottom\)\)/);
   assert.match(template, /\$item->get_quantity\(\)/);
   const productsCard = template.split('cr-order-detail__card--products')[1].split('</article>')[0];
   assert.match(productsCard, /\$product_name/);
@@ -109,4 +110,19 @@ test('payment, tax and summary remain order-sourced and the canonical toolbar re
   assert.match(summaryCard, /get_total_tax/);
   assert.match(summaryCard, /get_formatted_order_total/);
   assert.match(presentation, /cr2026_account_render_endpoint_toolbar\( \$title, wc_get_account_endpoint_url\( 'orders' \) \)/);
+});
+
+test('temporary item metadata diagnostics are owner-gated and limited to order 57784', () => {
+  assert.match(template, /57784 === \$order_id/);
+  assert.match(template, /is_user_logged_in\(\)/);
+  assert.match(template, /\(int\) \$order->get_customer_id\(\) === \(int\) get_current_user_id\(\)/);
+  assert.match(template, /isset\( \$_GET\['cr_meta_debug'\] \)/);
+  assert.match(template, /'1' === sanitize_text_field\( wp_unslash\( \$_GET\['cr_meta_debug'\] \) \)/);
+  for (const label of ['FORMATTED_KEY=', 'FORMATTED_VALUE=', 'FORMATTED_DISPLAY_KEY=', 'FORMATTED_DISPLAY_VALUE=', 'RAW_KEY=', 'RAW_VALUE=']) {
+    assert.ok(template.includes(label), 'missing diagnostic field ' + label);
+  }
+  assert.match(template, /\$item->get_formatted_meta_data\(\)/);
+  assert.match(template, /\$item->get_meta_data\(\)/);
+  assert.match(template, /\$raw_meta->get_data\(\)/);
+  assert.match(template, /REDACTED: personal data/);
 });
