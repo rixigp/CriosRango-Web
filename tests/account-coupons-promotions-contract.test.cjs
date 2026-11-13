@@ -50,9 +50,11 @@ test('PROMOTIONS_USE_REAL_API_DATA_AND_RENDER_CONDITIONALLY_IN_SPANISH', () => {
   assert.match(js, /if \(!list\.length\) return null/);
   assert.match(js, /if \(!rewards\.length\) return null/);
   assert.match(js, /No tienes saldo disponible ni promociones activas en este momento/);
-  for (const legacy of ['My punto', 'Available punto', 'Redeemed punto', 'Total punto earned', 'Punto to Coupons', 'Used recompensas', 'recompensas value', 'My recompensas', 'EUR']) {
+  for (const legacy of ['My punto', 'Available punto', 'Redeemed punto', 'Total punto earned', 'Punto to Coupons', 'Used recompensas', 'recompensas value', 'My recompensas']) {
     assert.equal(js.includes(legacy), false, 'legacy visible copy must not be rendered: ' + legacy);
   }
+  assert.equal(js.includes("createElement('select'"), false, 'no currency selector is rendered');
+  assert.equal(js.includes('createElement("select"'), false, 'no currency selector is rendered');
 });
 
 test('APPLY_ACTION_REUSES_WOOCOMMERCE_STORE_API_APPLY_COUPON_ROUTE', () => {
