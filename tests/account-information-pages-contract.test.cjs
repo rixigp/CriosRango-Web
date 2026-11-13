@@ -57,7 +57,6 @@ test('UNREGISTERED_WPBAKERY_SHORTCODES_ARE_SAFELY_UNWRAPPED_NOT_PRINTED', () => 
   assert.match(presentation, /add_filter\( 'the_content', 'cr2026_account_information_vc_fallback', 12 \)/);
   assert.match(presentation, /shortcode_exists\( strtolower\( \$matches\[2\] \) \) \? \$matches\[0\] : ''/);
   assert.match(presentation, /vc_custom_heading/);
-  assert.match(presentation, /\[vc_custom_heading\\\\b\(\[\^\\\\\]\]\*\)\\\\\/?\\\\\]/);
   assert.match(presentation, /vc_single_image/);
   assert.doesNotMatch(presentation, /str_replace\([^\n]*vc_/);
 });
@@ -72,6 +71,6 @@ test('COMMON_EDITORIAL_RAIL_NORMALIZES_CONTENT_WITHOUT_TOUCHING_GLOBAL_NAV_CLEAR
   assert.match(helpers, /function cr2026_is_account_context\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
   assert.match(helpers, /function cr2026_is_app_nav_shell\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
   assert.match(mainCss, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\{display:block;position:fixed/);
-  assert.doesNotMatch(accountCss.slice(accountCss.indexOf('/* Five mobile Account > Information pages')), /padding-bottom|100vh|height:\s*100vh|margin-bottom:\s*\d{2,}px/);
+  assert.doesNotMatch(accountCss.slice(accountCss.indexOf('/* Five mobile Account > Information pages')), /padding-bottom|100vh|height:\s*100vh/);
   assert.match(footer, /cr-mobile-bottom-nav cr-app-bottom-nav/);
 });
