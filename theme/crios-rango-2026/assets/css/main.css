@@ -2979,3 +2979,20 @@ body.woocommerce-order-received .cr-order-success-modal__action:focus-visible {
   box-shadow: none !important;
   border-color: #fff !important;
 }
+
+
+/* 404 page: retain the canonical app shell and normalize only its editorial block. */
+body.error404 { background: var(--cr-app-canvas); }
+body.error404 .cr-main--404 { min-height: 60vh; background: var(--cr-app-canvas); }
+body.error404 .cr-404-page { color: #183B35; }
+body.error404 .cr-404-page h1 { margin: 0 0 12px; color: #183B35; font: 400 24px/32px "Roboto", Arial, sans-serif; }
+body.error404 .cr-404-page__message { margin: 0 0 20px; color: #555B56; font: 300 14px/22px "Roboto", Arial, sans-serif; }
+body.error404 .cr-404-page__cta { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; }
+@media (max-width: 767px) {
+  body.error404 .cr-page-shell { width: 100%; max-width: none; margin: 0; padding: 0 0 calc(88px + env(safe-area-inset-bottom)); background: var(--cr-app-canvas); }
+  body.error404 .cr-parent-category__toolbar { margin: 0 20px 16px; }
+  body.error404 .cr-404-page { box-sizing: border-box; width: min(calc(100% - 40px), 720px); max-width: 720px; margin: 0 auto; padding: 0 0 24px; text-align: left; }
+  body.error404 .cr-404-page h1 { display: none !important; }
+  body.error404 .cr-404-page__message { margin: 0 0 16px; font: 300 13px/21px "Roboto", Arial, sans-serif; }
+  body.error404 .cr-404-page__cta { min-height: 44px; margin: 0; }
+}

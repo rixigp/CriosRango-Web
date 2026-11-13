@@ -18,8 +18,9 @@ $is_cart_active = 'cart' === $active_nav_item;
 $is_account_active = 'account' === $active_nav_item;
 $is_mobile_account_active = cr2026_is_account_context();
 $is_mobile_account_context = function_exists( 'wp_is_mobile' ) && wp_is_mobile() && $is_mobile_account_active;
+$is_mobile_app_shell_context = function_exists( 'wp_is_mobile' ) && wp_is_mobile() && $is_app_nav_shell;
 ?>
-<?php if ( ! $is_app_home && ! $is_app_category_view && ! $is_app_categories_hub && ( ! function_exists( 'is_cart' ) || ! is_cart() ) && ! $is_checkout_form && ! $is_mobile_account_context ) : ?>
+<?php if ( ! $is_app_home && ! $is_app_category_view && ! $is_app_categories_hub && ( ! function_exists( 'is_cart' ) || ! is_cart() ) && ! $is_checkout_form && ! $is_mobile_account_context && ! $is_mobile_app_shell_context ) : ?>
 <footer class="cr-footer">
     <div class="cr-shell cr-footer__grid">
         <div>

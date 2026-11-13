@@ -349,6 +349,7 @@ function cr2026_is_app_nav_shell() {
         || ( function_exists( 'is_tax' ) && is_tax( 'product_brand' ) )
         || ( function_exists( 'get_query_var' ) && ( get_query_var( 'cr2026_brands_index' ) || get_query_var( 'cr2026_novelties' ) ) )
         || ( function_exists( 'is_product' ) && is_product() )
+        || ( function_exists( 'is_404' ) && is_404() )
         || ( function_exists( 'is_cart' ) && is_cart() )
         || ( function_exists( 'is_checkout' ) && is_checkout() )
         || ( function_exists( 'is_account_page' ) && is_account_page() )
