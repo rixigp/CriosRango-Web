@@ -66,7 +66,7 @@ test('wallet rendering and coupon entry/action remain intact', () => {
   assert.ok(walletStart >= 0 && walletEnd > walletStart);
   const wallet = cartUi.slice(walletStart, walletEnd);
   assert.ok(wallet.includes("node('h3', 'cr-cart-wallet__title', 'Monedero')"));
-  assert.ok(wallet.includes("node('h4', 'cr-cart-promotions__subheading', 'Saldo listo para usar')"));
+  assert.ok(wallet.includes("node('h4', 'cr-cart-promotions__subheading cr-account-loyalty__section-title', 'Saldo listo para usar')"));
   assert.ok(wallet.includes("createButton('Aplicar','cr-cart-apply-button'"));
   assert.ok(cartTemplate.includes('class="cr-cart-manual-coupon"'));
   assert.ok(cartTemplate.includes('Tengo otro código de descuento'));
