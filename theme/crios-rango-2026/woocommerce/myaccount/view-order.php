@@ -59,24 +59,7 @@ $pickup = ( false !== stripos( $shipping_method, 'recogida' ) || false !== strip
 $store_label = $shipping_method;
 $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>', "\n", $shipping_address ) ) : '';
 
-/*
- * Temporary order-item metadata diagnostics for the owner's specific test order.
- * Never expose order/customer metadata to anonymous users or other customers.
- */
-$meta_debug = is_user_logged_in()
-    && 57784 === $order_id
-    && (int) $order->get_customer_id() === (int) get_current_user_id()
-    && isset( $_GET['cr_meta_debug'] )
-    && '1' === sanitize_text_field( wp_unslash( $_GET['cr_meta_debug'] ) );
-$meta_debug_value = static function ( $value ) {
-    if ( is_scalar( $value ) || null === $value ) {
-        return (string) $value;
-    }
-    return (string) wp_json_encode( $value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
-};
-$meta_debug_is_personal = static function ( $key ) {
-    return (bool) preg_match( '/email|e-mail|phone|telephone|teléfono|telefono|address|dirección|direccion|first.?name|last.?name|surname|billing|shipping|customer|recipient|nombre|apellidos/i', (string) $key );
-};
+
 
 ?>
 <section class="cr-order-detail" aria-label="<?php esc_attr_e( 'Detalle de pedido', 'crios-rango-2026' ); ?>">
@@ -119,26 +102,63 @@ $meta_debug_is_personal = static function ( $key ) {
                 if ( '' !== $parent_name ) { $product_name = $parent_name; }
             }
             /*
-             * Render only customer-facing variation attributes from WooCommerce's
-             * formatted order-item metadata. Never expose internal item meta.
+             * Resolve supported variation keys from the order item's stored metadata.
+             * Prefer WooCommerce taxonomy term names, with a readable value fallback.
              */
             $variation_values = array(
                 'color' => '',
                 'size'  => '',
             );
-            foreach ( $item->get_formatted_meta_data() as $meta ) {
-                $key = trim( wp_strip_all_tags( (string) $meta->display_key ) );
-                $normalized_key = strtolower( remove_accents( $key ) );
-                $value = trim( wp_strip_all_tags( (string) $meta->display_value ) );
+            $variation_key_map = array(
+                'pa_color'            => 'color',
+                'attribute_pa_color'   => 'color',
+                'color'               => 'color',
+                'colour'              => 'color',
+                'pa_tallas'            => 'size',
+                'attribute_pa_tallas' => 'size',
+                'pa_talla'            => 'size',
+                'attribute_pa_talla'  => 'size',
+                'talla'               => 'size',
+                'size'                => 'size',
+            );
+            foreach ( $item->get_meta_data() as $item_meta ) {
+                $item_meta_data = $item_meta->get_data();
+                $raw_key = isset( $item_meta_data['key'] ) ? trim( (string) $item_meta_data['key'] ) : '';
+                $normalized_key = strtolower( remove_accents( $raw_key ) );
+                if ( ! isset( $variation_key_map[ $normalized_key ] ) ) {
+                    continue;
+                }
 
+                $value = isset( $item_meta_data['value'] ) && is_scalar( $item_meta_data['value'] )
+                    ? trim( (string) $item_meta_data['value'] )
+                    : '';
                 if ( '' === $value ) {
                     continue;
                 }
-                if ( in_array( $normalized_key, array( 'color', 'colour' ), true ) ) {
-                    $variation_values['color'] = $value;
-                } elseif ( in_array( $normalized_key, array( 'talla', 'size' ), true ) ) {
-                    $variation_values['size'] = $value;
+
+                $variation_type = $variation_key_map[ $normalized_key ];
+                $taxonomy = '';
+                if ( 0 === strpos( $normalized_key, 'attribute_pa_' ) ) {
+                    $taxonomy = substr( $normalized_key, strlen( 'attribute_' ) );
+                } elseif ( 0 === strpos( $normalized_key, 'pa_' ) ) {
+                    $taxonomy = $normalized_key;
                 }
+
+                if ( '' !== $taxonomy && taxonomy_exists( $taxonomy ) ) {
+                    $term = get_term_by( 'slug', sanitize_title( $value ), $taxonomy );
+                    if ( $term && ! is_wp_error( $term ) && isset( $term->name ) && '' !== trim( (string) $term->name ) ) {
+                        $value = trim( (string) $term->name );
+                    }
+                }
+
+                if ( 'size' === $variation_type ) {
+                    $value = strtoupper( $value );
+                } else {
+                    $value = function_exists( 'mb_convert_case' )
+                        ? mb_convert_case( $value, MB_CASE_TITLE, 'UTF-8' )
+                        : ucfirst( strtolower( $value ) );
+                }
+                $variation_values[ $variation_type ] = $value;
             }
             $variation_labels = array();
             if ( '' !== $variation_values['color'] ) {
@@ -159,39 +179,6 @@ $meta_debug_is_personal = static function ( $key ) {
                     <strong class="cr-order-detail__product-name"><?php echo esc_html( $product_name ); ?></strong>
                     <?php if ( '' !== $variation_summary ) : ?><span class="cr-order-detail__meta"><?php echo esc_html( $variation_summary ); ?></span><?php endif; ?>
                     <span class="cr-order-detail__meta"><?php echo esc_html( sprintf( __( 'Cantidad: %d', 'crios-rango-2026' ), $qty ) ); ?></span>
-                    <?php if ( $meta_debug ) : ?>
-                        <details class="cr-order-detail__meta-debug">
-                            <summary>Diagnóstico técnico de metadatos (temporal)</summary>
-                            <div class="cr-order-detail__meta-debug-group">
-                                <strong>get_formatted_meta_data()</strong>
-                                <?php foreach ( $item->get_formatted_meta_data() as $formatted_meta ) :
-                                    $formatted_key = (string) $formatted_meta->key;
-                                    $formatted_display_key = (string) $formatted_meta->display_key;
-                                    $formatted_is_personal = $meta_debug_is_personal( $formatted_key ) || $meta_debug_is_personal( $formatted_display_key );
-                                    ?>
-                                    <div class="cr-order-detail__meta-debug-entry">
-                                        <div>FORMATTED_KEY=<?php echo esc_html( $formatted_key ); ?></div>
-                                        <div>FORMATTED_VALUE=<?php echo esc_html( $formatted_is_personal ? '[REDACTED: personal data]' : $meta_debug_value( $formatted_meta->value ) ); ?></div>
-                                        <div>FORMATTED_DISPLAY_KEY=<?php echo esc_html( $formatted_display_key ); ?></div>
-                                        <div>FORMATTED_DISPLAY_VALUE=<?php echo esc_html( $formatted_is_personal ? '[REDACTED: personal data]' : wp_strip_all_tags( (string) $formatted_meta->display_value ) ); ?></div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                            <div class="cr-order-detail__meta-debug-group">
-                                <strong>get_meta_data()</strong>
-                                <?php foreach ( $item->get_meta_data() as $raw_meta ) :
-                                    $raw_data = $raw_meta->get_data();
-                                    $raw_key = isset( $raw_data['key'] ) ? (string) $raw_data['key'] : '';
-                                    $raw_value = isset( $raw_data['value'] ) ? $raw_data['value'] : null;
-                                    ?>
-                                    <div class="cr-order-detail__meta-debug-entry">
-                                        <div>RAW_KEY=<?php echo esc_html( $raw_key ); ?></div>
-                                        <div>RAW_VALUE=<?php echo esc_html( $meta_debug_is_personal( $raw_key ) ? '[REDACTED: personal data]' : $meta_debug_value( $raw_value ) ); ?></div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </details>
-                    <?php endif; ?>
                 </div>
             </div>
         <?php endforeach; ?>

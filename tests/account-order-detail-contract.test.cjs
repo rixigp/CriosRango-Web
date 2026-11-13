@@ -37,11 +37,18 @@ test('products show the base product name and formatted variation metadata witho
   assert.match(template, /\$item_count = count\( \$items \)/);
   assert.match(template, /\$item->get_name\(\)/);
   assert.match(template, /\$parent_product->get_name\(\)/);
-  assert.match(template, /\$item->get_formatted_meta_data\(\)/);
-  assert.match(template, /\$meta->display_key/);
-  assert.match(template, /\$meta->display_value/);
+  assert.match(template, /\$item->get_meta_data\(\)/);
+  assert.match(template, /\$item_meta->get_data\(\)/);
+  for (const key of ['pa_color', 'attribute_pa_color', 'color', 'colour', 'pa_tallas', 'attribute_pa_tallas', 'pa_talla', 'attribute_pa_talla', 'talla', 'size']) {
+    assert.ok(template.includes("'" + key + "'"), 'unsupported variation key ' + key);
+  }
+  assert.match(template, /taxonomy_exists\( \$taxonomy \)/);
+  assert.match(template, /get_term_by\( 'slug', sanitize_title\( \$value \), \$taxonomy \)/);
+  assert.match(template, /strtoupper\( \$value \)/);
+  assert.match(template, /MB_CASE_TITLE/);
   assert.match(template, /'color' => ''/);
   assert.match(template, /'size'\s*=> ''/);
+  assert.doesNotMatch(template, /cr_meta_debug|meta_debug|Diagnóstico técnico de metadatos \(temporal\)|FORMATTED_KEY=|RAW_KEY=/);
   assert.match(template, /'Color: ' \. \$variation_values\['color'\]/);
   assert.match(template, /'Talla: ' \. \$variation_values\['size'\]/);
   assert.match(template, /implode\( ' · ', \$variation_labels \)/);
@@ -112,17 +119,3 @@ test('payment, tax and summary remain order-sourced and the canonical toolbar re
   assert.match(presentation, /cr2026_account_render_endpoint_toolbar\( \$title, wc_get_account_endpoint_url\( 'orders' \) \)/);
 });
 
-test('temporary item metadata diagnostics are owner-gated and limited to order 57784', () => {
-  assert.match(template, /57784 === \$order_id/);
-  assert.match(template, /is_user_logged_in\(\)/);
-  assert.match(template, /\(int\) \$order->get_customer_id\(\) === \(int\) get_current_user_id\(\)/);
-  assert.match(template, /isset\( \$_GET\['cr_meta_debug'\] \)/);
-  assert.match(template, /'1' === sanitize_text_field\( wp_unslash\( \$_GET\['cr_meta_debug'\] \) \)/);
-  for (const label of ['FORMATTED_KEY=', 'FORMATTED_VALUE=', 'FORMATTED_DISPLAY_KEY=', 'FORMATTED_DISPLAY_VALUE=', 'RAW_KEY=', 'RAW_VALUE=']) {
-    assert.ok(template.includes(label), 'missing diagnostic field ' + label);
-  }
-  assert.match(template, /\$item->get_formatted_meta_data\(\)/);
-  assert.match(template, /\$item->get_meta_data\(\)/);
-  assert.match(template, /\$raw_meta->get_data\(\)/);
-  assert.match(template, /REDACTED: personal data/);
-});
