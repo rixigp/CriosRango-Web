@@ -52,11 +52,12 @@ test('WORDPRESS_CONTENT_IS_PRESERVED_AND_LEGAL_COPY_IS_NOT_HARDCODED', () => {
 });
 
 test('UNREGISTERED_WPBAKERY_SHORTCODES_ARE_SAFELY_UNWRAPPED_NOT_PRINTED', () => {
-  assert.match(presentation, /shortcode_exists\( 'vc_row' \)/);
+  assert.match(presentation, /shortcode_exists\( strtolower\( \$matches\[2\] \) \)/);
   assert.match(presentation, /cr2026_account_information_vc_fallback/);
   assert.match(presentation, /add_filter\( 'the_content', 'cr2026_account_information_vc_fallback', 12 \)/);
   assert.match(presentation, /shortcode_exists\( strtolower\( \$matches\[2\] \) \) \? \$matches\[0\] : ''/);
   assert.match(presentation, /vc_custom_heading/);
+  assert.match(presentation, /\[vc_custom_heading\\\\b\(\[\^\\\\\]\]\*\)\\\\\/?\\\\\]/);
   assert.match(presentation, /vc_single_image/);
   assert.doesNotMatch(presentation, /str_replace\([^\n]*vc_/);
 });

@@ -235,6 +235,24 @@ function cr2026_account_information_vc_fallback( $content ) {
         );
     }
 
+    if ( ! shortcode_exists( 'vc_custom_heading' ) ) {
+        $content = preg_replace_callback(
+            '/\[vc_custom_heading\b([^\]]*)\/?\]/i',
+            static function( $matches ) {
+                $atts = shortcode_parse_atts( $matches[1] );
+                $atts = is_array( $atts ) ? $atts : array();
+                $text = isset( $atts['text'] ) ? trim( (string) $atts['text'] ) : '';
+                if ( '' === $text ) {
+                    return '';
+                }
+                $tag = isset( $atts['el_tag'] ) && in_array( strtolower( $atts['el_tag'] ), array( 'h2', 'h3', 'h4', 'h5', 'h6' ), true )
+                    ? strtolower( $atts['el_tag'] ) : 'h2';
+                return '<' . $tag . '>' . wp_kses_post( $text ) . '</' . $tag . '>';
+            },
+            $content
+        );
+    }
+
     foreach ( array( 'vc_tta_section', 'vc_toggle' ) as $section_shortcode ) {
         if ( shortcode_exists( $section_shortcode ) ) {
             continue;
