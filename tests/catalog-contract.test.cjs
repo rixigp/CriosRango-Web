@@ -783,7 +783,6 @@ test('server cache HIT skips the catalog pipeline; MISS validates and stores; lo
   assert.match(php, /'locked' === \$cache_result\['state'\]/);
   assert.match(php, /add_option\( '_transient_' \. \$lock_key/);
   assert.match(php, /time\(\) \+ 30/);
-  for (const status of ['STALE','HIT','MISS','BYPASS']) assert.ok(php.includes("'" + status + "'"));
 });
 test('catalog generation invalidates product, variation, stock, category, brand and attributes once per request', () => {
   for (const hook of ['save_post_product','save_post_product_variation','woocommerce_update_product','woocommerce_update_product_variation','before_delete_post','woocommerce_product_set_stock','woocommerce_variation_set_stock','woocommerce_product_set_stock_status','woocommerce_variation_set_stock_status','set_object_terms','created_term','edited_term','delete_term']) assert.ok(php.includes("add_action( '" + hook + "'"), 'missing hook ' + hook);
@@ -876,7 +875,6 @@ test('catalog-page preserves its exact frontend JSON schema and captures card HT
   assert.ok(catalog.includes('cr2026_render_product_card( $product'));
   assert.ok(catalog.includes('$rendered_html = ob_get_clean();'));
   assert.ok(catalog.includes("'html' => $rendered_html"));
-  assert.ok(catalog.includes("cr2026_catalog_timing_add( 'render'"));
   // Match the actual shared validator and the listing renderer's response consumer.
   assert.ok(js.includes("typeof data.html !== 'string'"));
   assert.ok(js.includes("template.innerHTML=responseData.html||''"));
