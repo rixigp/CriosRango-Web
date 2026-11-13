@@ -200,6 +200,135 @@ function cr2026_account_profile_body_class( $classes ) {
 }
 add_filter( 'body_class', 'cr2026_account_profile_body_class' );
 
+/**
+ * Recover readable content from unregistered WPBakery shortcodes.
+ *
+ * WordPress already runs the_content() for these pages. If WPBakery is absent
+ * on staging, its vc_* tags are not registered and WordPress leaves them as
+ * literal text. This fallback removes only unregistered builder wrappers,
+ * preserving enclosed HTML/text and recovering common text/image elements.
+ */
+function cr2026_account_information_vc_fallback( $content ) {
+    if ( is_admin() || ! cr2026_is_account_information_page()
+        || ! preg_match( '/\[\/?vc_[a-z0-9_]+\b/i', $content ) ) {
+        return $content;
+    }
+
+    if ( ! shortcode_exists( 'vc_custom_heading' ) ) {
+        $content = preg_replace_callback(
+            '/\[vc_custom_heading\b([^\]]*)\](.*?)\[\/vc_custom_heading\]/is',
+            static function( $matches ) {
+                $atts = shortcode_parse_atts( $matches[1] );
+                $atts = is_array( $atts ) ? $atts : array();
+                $text = trim( $matches[2] );
+                if ( '' === $text && ! empty( $atts['text'] ) ) {
+                    $text = (string) $atts['text'];
+                }
+                if ( '' === trim( $text ) ) {
+                    return '';
+                }
+                $tag = isset( $atts['el_tag'] ) && in_array( strtolower( $atts['el_tag'] ), array( 'h2', 'h3', 'h4', 'h5', 'h6' ), true )
+                    ? strtolower( $atts['el_tag'] ) : 'h2';
+                return '<' . $tag . '>' . wp_kses_post( $text ) . '</' . $tag . '>';
+            },
+            $content
+        );
+    }
+
+    foreach ( array( 'vc_tta_section', 'vc_toggle' ) as $section_shortcode ) {
+        if ( shortcode_exists( $section_shortcode ) ) {
+            continue;
+        }
+        $pattern = '/\[' . preg_quote( $section_shortcode, '/' ) . '\b([^\]]*)\](.*?)\[\/' . preg_quote( $section_shortcode, '/' ) . '\]/is';
+        $content = preg_replace_callback(
+            $pattern,
+            static function( $matches ) {
+                $atts = shortcode_parse_atts( $matches[1] );
+                $atts = is_array( $atts ) ? $atts : array();
+                $inner = $matches[2];
+                $title = isset( $atts['title'] ) ? trim( (string) $atts['title'] ) : '';
+                return ( '' !== $title ? '<h3>' . esc_html( $title ) . '</h3>' : '' ) . $inner;
+            },
+            $content
+        );
+    }
+
+    if ( ! shortcode_exists( 'vc_raw_html' ) ) {
+        $content = preg_replace_callback(
+            '/\[vc_raw_html\b[^\]]*\](.*?)\[\/vc_raw_html\]/is',
+            static function( $matches ) {
+                $decoded = base64_decode( trim( wp_strip_all_tags( $matches[1] ) ), true );
+                return false === $decoded ? '' : wp_kses_post( $decoded );
+            },
+            $content
+        );
+    }
+
+    if ( ! shortcode_exists( 'vc_single_image' ) ) {
+        $content = preg_replace_callback(
+            '/\[vc_single_image\b([^\]]*)\/?\]/i',
+            static function( $matches ) {
+                $atts = shortcode_parse_atts( $matches[1] );
+                $atts = is_array( $atts ) ? $atts : array();
+                $attachment_id = isset( $atts['image'] ) ? absint( $atts['image'] )
+                    : ( isset( $atts['attachment_id'] ) ? absint( $atts['attachment_id'] ) : 0 );
+                return $attachment_id
+                    ? wp_get_attachment_image( $attachment_id, 'large', false, array( 'loading' => 'lazy', 'decoding' => 'async' ) )
+                    : '';
+            },
+            $content
+        );
+    }
+
+    // Keep registered shortcodes untouched; unwrap only builder tags WordPress cannot execute.
+    $content = preg_replace_callback(
+        '/\[(\/)?(vc_[a-z0-9_]+)\b[^\]]*\]/i',
+        static function( $matches ) {
+            return shortcode_exists( strtolower( $matches[2] ) ) ? $matches[0] : '';
+        },
+        $content
+    );
+    $content = preg_replace( '#<p>\s*(?:<br\s*/?>)?\s*</p>#i', '', $content );
+
+    return trim( $content );
+}
+add_filter( 'the_content', 'cr2026_account_information_vc_fallback', 12 );
+
+/** One mobile renderer for all five WordPress Information pages. */
+function cr2026_account_information_page_content( $content ) {
+    if ( is_admin() || ! is_main_query() || ! in_the_loop() || ! cr2026_is_account_information_page() ) {
+        return $content;
+    }
+
+    $page = get_queried_object();
+    if ( ! $page instanceof WP_Post ) {
+        return $content;
+    }
+
+    $title = get_the_title( $page );
+    $back_url = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : '';
+    if ( ! $back_url ) {
+        $back_url = home_url( '/mi-cuenta/' );
+    }
+
+    ob_start();
+    cr2026_render_category_toolbar( $title, $back_url, 'parent', false );
+    $toolbar = ob_get_clean();
+
+    return $toolbar . '<section class="cr-account-information" aria-label="' . esc_attr( $title ) . '">'
+        . '<div class="cr-account-information__content">' . $content . '</div></section>';
+}
+add_filter( 'the_content', 'cr2026_account_information_page_content', 30 );
+
+/** Mark only the five mobile Information pages for their shared app shell. */
+function cr2026_account_information_body_class( $classes ) {
+    if ( cr2026_is_account_information_page() ) {
+        $classes[] = 'cr-account-information-page';
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'cr2026_account_information_body_class' );
+
 /** Identify the existing Help/FAQ/Contact page selected by the Account home. */
 function cr2026_account_is_help_page() {
     return function_exists( 'is_page' ) && is_page( array( 'ayuda', 'preguntas-frecuentes', 'contacto' ) );

@@ -3,7 +3,8 @@ get_header();
 $is_checkout_form = function_exists( 'is_checkout' ) && is_checkout()
     && ( ! function_exists( 'is_order_received_page' ) || ! is_order_received_page() );
 $is_mobile_account = function_exists( 'wp_is_mobile' ) && wp_is_mobile()
-    && function_exists( 'is_account_page' ) && is_account_page();
+    && ( ( function_exists( 'is_account_page' ) && is_account_page() )
+        || ( function_exists( 'cr2026_is_account_information_page' ) && cr2026_is_account_information_page() ) );
 ?>
 <main id="primary" class="cr-main">
     <div class="cr-shell cr-page-shell">

@@ -282,8 +282,29 @@ function cr2026_app_nav_urls() {
 }
 
 /**
+ * The five editorial destinations linked from Account > Información.
+ * WordPress remains the source of each page ID, URL, title and body.
+ */
+function cr2026_account_information_page_slugs() {
+    return array(
+        'cambios-y-devoluciones',
+        'condiciones-generales-de-contratacion',
+        'politica-de-privacidad',
+        'aviso-legal',
+        'politica-de-cookies',
+    );
+}
+
+/** Identify these pages only in the mobile app-style Account context. */
+function cr2026_is_account_information_page() {
+    return function_exists( 'is_page' )
+        && is_page( cr2026_account_information_page_slugs() )
+        && function_exists( 'wp_is_mobile' ) && wp_is_mobile();
+}
+
+/**
  * Semantic context for the mobile Account destination.
- * WooCommerce owns native account endpoints; Help is part of the same flow.
+ * WooCommerce owns native account endpoints; Help and Information share it.
  */
 function cr2026_is_account_context() {
     if ( function_exists( 'is_account_page' ) && is_account_page() ) {
@@ -291,6 +312,10 @@ function cr2026_is_account_context() {
     }
 
     if ( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'loyalty_reward' ) ) {
+        return true;
+    }
+
+    if ( cr2026_is_account_information_page() ) {
         return true;
     }
 
@@ -328,7 +353,8 @@ function cr2026_is_app_nav_shell() {
         || ( function_exists( 'is_checkout' ) && is_checkout() )
         || ( function_exists( 'is_account_page' ) && is_account_page() )
         || ( function_exists( 'is_page' ) && is_page( array( 'ayuda', 'preguntas-frecuentes', 'contacto' ) )
-            && function_exists( 'wp_is_mobile' ) && wp_is_mobile() );
+            && function_exists( 'wp_is_mobile' ) && wp_is_mobile() )
+        || cr2026_is_account_information_page();
 }
 function cr2026_app_nav_body_class( $classes ) {
     $classes[] = 'cr-global-app-header';

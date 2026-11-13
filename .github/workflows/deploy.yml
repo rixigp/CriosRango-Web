@@ -20,6 +20,7 @@ on:
       - "tests/cart-promotions-contract.test.cjs"
       - "tests/account-information-icons.test.cjs"
       - "tests/account-help-contract.test.cjs"
+      - "tests/account-information-pages-contract.test.cjs"
       - "tests/account-birthday-contract.test.php"
       - "tests/page-title-contract.test.cjs"
       - "tests/account-address-layout-contract.test.cjs"
@@ -406,6 +407,9 @@ jobs:
 
       - name: Run mobile Account Help contract tests
         run: node --test tests/account-help-contract.test.cjs
+
+      - name: Run mobile Account Information pages contract tests
+        run: node --test tests/account-information-pages-contract.test.cjs
 
       - name: Verify PHP runtime availability
         shell: bash
