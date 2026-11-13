@@ -166,7 +166,6 @@
     const catalogBrandId = String(filterSheet.dataset.catalogBrandId || '');
     if (brandContext && !/^[1-9][0-9]*$/.test(catalogBrandId)) throw new Error('Brand filter context has no valid product_brand term ID.');
     const apiUrl = filterSheet.dataset.apiUrl;
-    const debug = filterSheet.dataset.debug === '1';
     let termLabels = {};
     try { termLabels = JSON.parse(filterSheet.dataset.termLabels || '{}'); } catch (error) {}
     const dimensions = brandContext ? ['sizes', 'colors'] : ['sizes', 'colors', 'brands'];
@@ -195,19 +194,19 @@
     window.CR2026CatalogFacetContextChanged=()=>{if((outletScope||brandContext)&&!filterSheet.hidden)scheduleDependentRefresh(null);};
     const facetEndpoint = async (facet,state,signal) => {
       const key=cacheKey(facet,state), cached=memoryCache[key]||readStore(storageKey+'|'+key);
-      if(cached){memoryCache[key]=cached;if(debug)console.debug('[CR2026 facets] cache-hit',{facet,selectedState:state,responseTermIds:cached.rows.flatMap(row=>row.term_ids)});return cached.rows;}
+      if(cached){memoryCache[key]=cached;return cached.rows;}
       const params=new URLSearchParams({scope:filterSheet.dataset.scope||'catalog',facet,page:'1',per_page:'1'});
       if(outletScope){const context=outletContext();if(!context.categoryId)throw new Error('Outlet facet context has no active branch.');params.set('outlet_category_id',String(context.categoryId));if(context.originCategoryIds.length)params.set('origin_category_ids',context.originCategoryIds.join(','));}
       else if(brandContext)params.set('catalog_brand_id',catalogBrandId);
       else if(categoryId!=='root')params.set('catalog_category_id',categoryId);
       dimensions.forEach(d=>{if(d!==facet&&state[d].length)params.set(apiKeys[d],sortIds(state[d]).join(','));});
-      if(debug)console.debug('[CR2026 facets] request',{facet,selectedState:state,params:Object.fromEntries(params.entries())});
+      
       const response=await fetch(apiUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'},signal});
       if(!response.ok)throw new Error('Filter API HTTP '+response.status);
       const payload=await response.json(), facets=payload&&payload.facets||{};
       const raw=Array.isArray(facets[facet])?facets[facet]:(Array.isArray(facets[facet==='colors'?'colors':facet])?facets[facet]:[]);
       const rows=rowsFor(raw,facet);
-      if(debug)console.debug('[CR2026 facets] response',{facet,responseTermIds:rows.flatMap(row=>row.term_ids)});
+      
       writeStore(storageKey+'|'+key,{timestamp:Date.now(),rows});
       return rows;
     };
@@ -261,7 +260,7 @@
         chip.addEventListener('click',()=>{
           const before=draft[dimension].slice();
           draft[dimension]=toggleFacetSelection(draft[dimension],row.term_ids);
-          if(debug)console.debug('[CR2026 facets] selection',{facet:dimension,selectedBefore:before,termIds:row.term_ids,selectedAfter:draft[dimension].slice()});
+          
           render(dimension);publishLiveFilters();scheduleDependentRefresh(dimension);
         });
         optionsNode.appendChild(chip);
@@ -381,7 +380,6 @@
     const outletCategoryId = Number(productListing.dataset.outletCategoryId || 0);
     if (brandContext && outletCategoryId) throw new Error('Brand listing cannot use Outlet context.');
     const outletNode = productListing.querySelector('[data-cr-outlet-bubbles]');
-    const debug = productListing.dataset.debug === '1';
     const productsUrl = productListing.dataset.productsUrl;
     const pageSize = Number(productListing.dataset.pageSize || 0);
     if (!Number.isInteger(pageSize) || pageSize < 1) throw new Error('Invalid app catalog page size: '+productListing.dataset.pageSize);
@@ -435,9 +433,6 @@
     };
     const showEmpty = () => { grid.replaceChildren(); emptyState.hidden = false; };
     let cachedCatalogPages = [];
-    let coldRequestStartedAt = null;
-    let coldRestDurationMs = null;
-    let coldRenderDurationMs = null;
     const cacheState = () => {
       const query = Object.fromEntries(Array.from(currentUrl.searchParams.keys()).sort().map(key => {
         const values = currentUrl.searchParams.getAll(key);
@@ -532,7 +527,6 @@
       if (outletNode) renderOutletBubbleSelection();
       window.requestAnimationFrame(() => window.scrollTo(0, Math.max(0, Number(entry.scrollY) || 0)));
       revalidateCatalogCache(entry).catch(error => {
-        if (error && error.name !== 'AbortError' && debug) console.warn('[CR2026 catalog] Background revalidation failed; keeping session snapshot.', error);
       });
       return true;
     };
@@ -587,15 +581,12 @@
       const controller=new AbortController();
       activeRequest=controller;loading=true;
       try {
-        const requestStartedAt = window.performance && typeof window.performance.now === 'function' ? window.performance.now() : Date.now();
         let responseData = preloadedData;
         if (!responseData) {
           const response = await fetch(buildCatalogPageUrl(page),{credentials:'same-origin',headers:{Accept:'application/json'},signal:controller.signal});
           if (!response.ok) throw new Error('Catalog page HTTP '+response.status);
           responseData = await response.json();
         }
-        const responseReceivedAt = window.performance && typeof window.performance.now === 'function' ? window.performance.now() : Date.now();
-        if (!append && !background && coldRequestStartedAt !== null) coldRestDurationMs = Math.max(0, responseReceivedAt - coldRequestStartedAt);
         if(token!==requestGeneration)return;
         if (!responseData || Number(responseData.page) !== page) throw new Error('Catalog page mismatch: requested '+page+', received '+(responseData&&responseData.page));
         if(Number(responseData.per_page)!==pageSize)throw new Error('Catalog page size mismatch: app='+pageSize+', endpoint='+responseData.per_page);
@@ -622,7 +613,7 @@
           const normalized=String(text).replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:,|$))/g,'').replace(',','.');
           return Number(normalized);
         });
-        if(debug)console.debug('[CR2026 catalog] page',{category_id:categoryId,outlet_category_id:outletCategoryId,origin_category_ids:activeOutletOriginIds.slice(),selected_bubble_key:selectedOutletBubbleKey,sort:sortMap[orderby],page,per_page:pageSize,filters:getFilters(),source:responseData.source,api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds,prices,returned_total:responseData.total,total:responseData.total,has_more:responseData.has_more});
+        
         if(orderby==='price'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_ASC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
         if(orderby==='price'&&prices.some((price,index)=>index>0&&prices[index-1]>price))throw new Error('PRICE_ASC=FAIL within concatenated page sequence: '+JSON.stringify(prices));
         if(orderby==='price-desc'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_DESC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
@@ -634,7 +625,7 @@
           totalProducts = responseData.total === null || responseData.total === undefined ? null : Number(responseData.total);
           if (responseData.total !== null && responseData.total !== undefined && Number(responseData.total) !== completeIds.length) throw new Error('Catalog total mismatch: loaded='+completeIds.length+' total='+responseData.total);
           if (Number(responseData.total) === 0) { cachedCatalogPages = [responseData]; writeCatalogCache(); }
-          if(debug)console.debug('[CR2026 catalog] complete',{sort:sortMap[orderby],loaded_ids:completeIds,total:responseData.total,duplicates});
+          
           return;
         }
         if (append) grid.appendChild(template.content);
@@ -647,7 +638,7 @@
         totalProducts=responseData.total===null||responseData.total===undefined?null:Number(responseData.total);
         if(!hasMore&&totalProducts!==null&&totalProducts!==completeIds.length)throw new Error('Catalog total mismatch: loaded='+completeIds.length+' total='+totalProducts);
         writeCatalogCache();
-        if(debug&&!hasMore)console.debug('[CR2026 catalog] complete',{sort:sortMap[orderby],loaded_ids:completeIds,total:totalProducts,duplicates,missing:totalProducts===null?null:totalProducts-completeIds.length});
+        
       } catch (error) {
         if(token!==requestGeneration||(error&&error.name==='AbortError'))return;
         console.error('[Críos&Rango productos] No se pudo cargar la página del catálogo',error);
@@ -663,16 +654,7 @@
       if(activeRequest)activeRequest.abort();
       activeRequest=null;loading=false;currentPage=0;hasMore=false;totalProducts=null;cachedCatalogPages=[];updateLoadMoreButton(false);
       if (restoreCatalogCache()) return;
-      coldRequestStartedAt = window.performance && typeof window.performance.now === 'function' ? window.performance.now() : Date.now();
-      loadPage(1,false,requestGeneration).then(() => {
-        if (debug && coldRequestStartedAt !== null) {
-          window.requestAnimationFrame(() => {
-            const now = window.performance && typeof window.performance.now === 'function' ? window.performance.now() : Date.now();
-            coldRenderDurationMs = Math.max(0, now - (coldRequestStartedAt + (coldRestDurationMs || 0)));
-            window.CR2026CatalogColdMetrics = { restDurationMs:coldRestDurationMs, renderDurationMs:coldRenderDurationMs, cardsVisibleDurationMs:Math.max(0, now-coldRequestStartedAt) };
-          });
-        }
-      });
+      loadPage(1,false,requestGeneration);
     };
     const applyFilters = filters => {
       filterKeys.forEach(key=>{
@@ -691,7 +673,7 @@
     };
     window.CR2026CatalogListing={applyFilters,getFilters,renderActiveFilterChips,pageSize,getOutletContext};
     const renderOutletBubbleSelection=()=>{if(!outletNode)return;outletNode.querySelectorAll('[data-outlet-bubble-key]').forEach(button=>{const selected=button.dataset.outletBubbleKey===(selectedOutletBubbleKey||'');button.classList.toggle('is-selected',selected);button.setAttribute('aria-pressed',String(selected));});};
-    const failClosedOutletBubbles=error=>{if(outletNode){outletNode.replaceChildren();outletNode.hidden=true;}if(debug)console.warn('[Outlet bubbles] Availability unavailable; bubbles hidden.',error);};
+    const failClosedOutletBubbles=()=>{if(outletNode){outletNode.replaceChildren();outletNode.hidden=true;}};
     const initializeOutletBubbles=async()=>{
       if(!outletNode||!outletCategoryId)return;
       try{
@@ -734,8 +716,8 @@
         outletContextInitialized = true;
         outletNode.hidden=false;
         renderOutletBubbleSelection();
-        if(debug)console.debug('[Outlet bubbles] runtime',{branch:outletCategoryId,candidates,counts:branches[0].counts,visible:visible.map(item=>item.key)});
-      }catch(error){failClosedOutletBubbles(error);}
+        
+      }catch(error){failClosedOutletBubbles();}
     };
     renderActiveFilterChips();
     if(outletCategoryId)initializeOutletBubbles();

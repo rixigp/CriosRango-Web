@@ -461,13 +461,12 @@ function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
     $filter_scope = $outlet_category_id ? 'outlet' : 'catalog';
     $dimensions = $is_brand_context ? array( 'sizes' => 'Talla', 'colors' => 'Color' ) : array( 'sizes' => 'Talla', 'colors' => 'Color', 'brands' => 'Marca' );
     $labels = cr2026_category_filter_term_labels();
-    $debug = function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), array( 'staging', 'development', 'local' ), true );
     $selected = array(
         'sizes' => cr2026_category_filter_selected_values( 'size_ids' ),
         'colors' => cr2026_category_filter_selected_values( 'color_ids' ),
         'brands' => $is_brand_context ? array() : cr2026_category_filter_selected_values( 'brand_ids' ),
     );
-    echo '<div class="cr-category-filter-sheet" data-cr-filter-sheet data-context="' . esc_attr( $context ) . '" data-catalog-brand-id="' . esc_attr( $filter_brand_id ) . '" data-debug="' . ( $debug ? '1' : '0' ) . '" hidden data-category-id="' . esc_attr( $filter_category_id ) . '" data-scope="' . esc_attr( $filter_scope ) . '" data-outlet-category-id="' . esc_attr( $outlet_category_id ) . '" data-api-url="' . esc_url( rest_url( 'criosrango-filter/v1/query' ) ) . '" data-term-labels="' . esc_attr( wp_json_encode( $labels ) ) . '" data-initial-sizes="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-initial-colors="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-initial-brands="' . esc_attr( implode( ',', $selected['brands'] ) ) . '">';
+    echo '<div class="cr-category-filter-sheet" data-cr-filter-sheet data-context="' . esc_attr( $context ) . '" data-catalog-brand-id="' . esc_attr( $filter_brand_id ) . '" hidden data-category-id="' . esc_attr( $filter_category_id ) . '" data-scope="' . esc_attr( $filter_scope ) . '" data-outlet-category-id="' . esc_attr( $outlet_category_id ) . '" data-api-url="' . esc_url( rest_url( 'criosrango-filter/v1/query' ) ) . '" data-term-labels="' . esc_attr( wp_json_encode( $labels ) ) . '" data-initial-sizes="' . esc_attr( implode( ',', $selected['sizes'] ) ) . '" data-initial-colors="' . esc_attr( implode( ',', $selected['colors'] ) ) . '" data-initial-brands="' . esc_attr( implode( ',', $selected['brands'] ) ) . '">';
     echo '<div class="cr-category-filter-sheet__backdrop" data-cr-filter-close></div><section class="cr-category-filter-sheet__dialog" role="dialog" aria-modal="true" aria-labelledby="cr-category-filter-title" tabindex="-1">';
     echo '<div class="cr-category-filter-sheet__header"><h2 id="cr-category-filter-title">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</h2></div>';
     echo '<div class="cr-category-filter-sheet__tabs" role="tablist" aria-label="' . esc_attr__( 'Tipo de filtro', 'crios-rango-2026' ) . '">';

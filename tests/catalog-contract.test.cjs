@@ -185,14 +185,6 @@ test('price monotonicity validation includes previous pages plus the incoming pa
   assert.match(js, /PRICE_DESC=FAIL/);
 });
 
-test('catalog endpoint echoes page size and staging debug exposes all ID layers plus prices', () => {
-  assert.match(php, /'per_page' => \$per_page/);
-  assert.match(js, /api_product_ids:returnedIds/);
-  assert.match(js, /hydrated_product_ids:endpointIds/);
-  assert.match(js, /dom_product_ids:renderedIds/);
-  assert.match(js, /prices,returned_total:responseData\.total,total:responseData\.total/);
-});
-
 test('staging FULL deploy is limited to confirmed absence or confirmed divergence', () => {
   const deployStep = extractWorkflowStep(deploy, 'Deploy theme by FTP');
   const stagingStart = deployStep.indexOf('if [ "$IS_STAGING" = true ]; then\n            BASELINE_STATUS="UNAVAILABLE"');
@@ -295,20 +287,17 @@ test('price ASC and DESC fail on nonnumeric values and every adjacent pair acros
   assert.match(js, /concatenated page sequence/);
 });
 
-test('catalog debug diagnostics are enabled only on staging /prueba or non-production WP environments', () => {
-  assert.match(archive, /REQUEST_URI[\s\S]*?\/prueba\//);
-  assert.match(archive, /data-debug=.*\$listing_debug/s);
+test('catalog endpoint retains page size and ordered product IDs without diagnostic output', () => {
+  assert.match(php, /'per_page' => \$per_page/);
+  assert.match(php, /'product_ids' => \$product_ids/);
+  assert.match(php, /'rendered_product_ids' => array_map/);
+  assert.match(php, /'filter_api_product_ids' => \$filter_api_product_ids/);
+  assert.doesNotMatch([js, php, archive, helpers].join('\n'), /cr_meta_debug|cr_img_debug|cr_order_debug|Diagnóstico técnico|data-debug|console\.debug|cr2026_catalog_timer_now|Server-Timing/);
 });
 
 test('price monotonicity reads the current sale amount rather than the struck regular amount', () => {
   assert.match(js, /const saleAmount=priceContainer\?\.querySelector\('ins \.amount, ins bdi'\)/);
   assert.match(js, /const amountNode=saleAmount\|\|priceContainer\?\.querySelector\('\.amount, bdi'\)/);
-});
-
-test('staging page diagnostics run only after the concatenated prices array is computed', () => {
-  const pricesIndex = js.indexOf('const prices=priceNodes.map');
-  const diagnosticsIndex = js.indexOf("if(debug)console.debug('[CR2026 catalog] page'");
-  assert.ok(pricesIndex >= 0 && diagnosticsIndex > pricesIndex);
 });
 
 
@@ -353,12 +342,6 @@ test('facet refresh keeps existing availability in-flight and removes visible up
   assert.ok(js.includes("Keep existing availability/options rendered until a current response is accepted"));
   assert.ok(js.includes("activeControllers.forEach(controller=>controller.abort())"));
   assert.ok(js.includes("generation++;const token=generation"));
-});
-
-test('staging sort diagnostics record category, exact sort/page size, filters, totals and all ID layers', () => {
-  assert.ok(js.includes("category_id:categoryId,outlet_category_id:outletCategoryId,origin_category_ids:activeOutletOriginIds.slice(),selected_bubble_key:selectedOutletBubbleKey,sort:sortMap[orderby],page,per_page:pageSize,filters:getFilters()"));
-  assert.ok(js.includes("api_product_ids:returnedIds,filter_api_product_ids:filterApiIds,hydrated_product_ids:endpointIds,dom_product_ids:renderedIds"));
-  assert.ok(js.includes("returned_total:responseData.total"));
 });
 
 test('Outlet candidates copy APP mapping IDs, keys and branch order',()=>{
@@ -871,20 +854,6 @@ test('subcategory query order is NAME_ASC and top-level Home editorial order rem
   assert.deepEqual(ids, [560, 292, 294, 420, 504, 509, 70, 71, 68, 310, 67, 445]);
 });
 
-test('catalog-page exposes monotonic Server-Timing diagnostics without changing its JSON payload', () => {
-  assert.match(php, /function cr2026_catalog_timer_now\(\)[\s\S]*?hrtime\( true \)/);
-  assert.match(php, /function cr2026_catalog_timing_headers\([\s\S]*?rest_post_dispatch/);
-  assert.match(php, /catalog-total;dur=/);
-  for (const stage of ['filter','products','render','cache','other']) assert.match(php, new RegExp(stage + ';dur='));
-  assert.ok(php.includes("$response->header( 'X-CriosRango-Catalog-Cache', isset( $GLOBALS['cr2026_catalog_cache_status'] )"));
-  assert.match(php, /X-CriosRango-Persistent-Object-Cache/);
-  assert.match(php, /cr2026_catalog_timing_add\( 'filter'/);
-  assert.match(php, /cr2026_catalog_timing_add\( 'products'/);
-  assert.match(php, /cr2026_catalog_timing_add\( 'render'/);
-  assert.match(php, /'html' => \$rendered_html/);
-  assert.doesNotMatch(php, /'server_timing'\s*=>|'catalog_timing'\s*=>/);
-});
-
 test('staging benchmark captures three initial and three repeated requests with transport data before JSON parsing', () => {
   for (const marker of [
     'Benchmark staging catalog endpoint (3 cold + 3 warm requests)',
@@ -892,7 +861,7 @@ test('staging benchmark captures three initial and three repeated requests with 
     'SAMPLE="COLD"', 'SAMPLE="WARM"',
     '--dump-header "$HEADERS"', '--output "$BODY"',
     "--write-out '%{http_code}|%{time_total}|%{size_download}'",
-    'Server-Timing', 'catalog_category_id=560',
+    'catalog_category_id=560',
     'CATEGORY_PLAIN', 'NOVEDADES', 'BRAND', 'OUTLET_OR_FILTERED'
   ]) assert.ok(deploy.includes(marker), 'missing benchmark contract: ' + marker);
   assert.ok(deploy.indexOf('--dump-header') < deploy.indexOf('node - "$BODY" "$HEADERS"'));

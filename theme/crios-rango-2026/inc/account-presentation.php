@@ -265,7 +265,8 @@ function cr2026_account_help_content( $content ) {
         <div class="cr-account-help__grid">
             <a class="cr-account-help__card cr-account-help__card--whatsapp" href="<?php echo esc_url( 'https://wa.me/' . $whatsapp['number'] ); ?>">
                 <span class="cr-account-help__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4A8 8 0 1 1 20 11.5Z"/><path d="M8.8 8.4c.3-.5.6-.5.9-.5h.5l.8 1.9-.8.9c.6 1.2 1.5 2.1 2.7 2.7l.9-.8 1.9.8v.5c0 .3 0 .6-.5.9-.5.3-1.1.4-1.7.2-2.8-.8-5.1-3.1-5.9-5.9-.2-.6-.1-1.2.2-1.7Z"/></svg>
+                    <!-- App equivalent: Icons.AutoMirrored.Outlined.Chat -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/><path d="M7 9h10M7 13h7"/></svg>
                 </span>
                 <span class="cr-account-help__copy"><strong><?php echo esc_html( $whatsapp['label'] ); ?></strong><small><?php echo esc_html( $whatsapp['display'] ); ?></small></span>
                 <span class="cr-account-help__chevron" aria-hidden="true">›</span>
@@ -285,8 +286,8 @@ function cr2026_account_help_content( $content ) {
                 <span class="cr-account-help__chevron" aria-hidden="true">›</span>
             </a>
         </div>
-        <section class="cr-account-help__hours" aria-labelledby="cr-account-help-hours-title">
-            <h2 id="cr-account-help-hours-title"><?php esc_html_e( 'Horario de atención', 'crios-rango-2026' ); ?></h2>
+        <h2 class="cr-account-help__heading cr-account-help__hours-heading"><?php esc_html_e( 'Horario de atención', 'crios-rango-2026' ); ?></h2>
+        <section class="cr-account-help__hours" aria-label="<?php esc_attr_e( 'Horario de atención', 'crios-rango-2026' ); ?>">
             <div class="cr-account-help__hours-table">
                 <?php foreach ( $config['hours'] as $row ) : ?>
                     <div class="cr-account-help__hours-row"><span><?php echo esc_html( $row['day'] ); ?></span><span><?php echo esc_html( $row['time'] ); ?></span></div>

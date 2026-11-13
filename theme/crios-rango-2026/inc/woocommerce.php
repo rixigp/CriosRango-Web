@@ -156,14 +156,11 @@ function cr2026_product_list_rest_response( WP_REST_Request $request ) {
         $has_more = count( $products ) > $per_page;
         $products = array_slice( $products, 0, $per_page );
     }
-
-    $render_started_at = cr2026_catalog_timer_now();
     ob_start();
     foreach ( $products as $index => $product ) {
         cr2026_render_product_card( $product, $index + ( $page > 1 ? 4 : 0 ) );
     }
     $rendered_html = ob_get_clean();
-    cr2026_catalog_timing_add( 'render', $render_started_at );
     return rest_ensure_response( array(
         'html' => $rendered_html,
         'has_more' => $has_more,
@@ -203,21 +200,6 @@ function cr2026_catalog_price_sort_post_clauses( $clauses, $query ) {
 }
 add_filter( 'posts_clauses', 'cr2026_catalog_price_sort_post_clauses', 20, 2 );
 
-
-
-/**
- * Monotonic timing for the public catalogue REST endpoint. Durations are
- * attached as HTTP diagnostics only; the public JSON payload is unchanged.
- */
-function cr2026_catalog_timer_now() {
-    return function_exists( 'hrtime' ) ? hrtime( true ) : (int) round( microtime( true ) * 1000000000 );
-}
-
-function cr2026_catalog_timing_add( $stage, $started_at ) {
-    if ( isset( $GLOBALS['cr2026_catalog_timing'] ) && isset( $GLOBALS['cr2026_catalog_timing'][ $stage ] ) ) {
-        $GLOBALS['cr2026_catalog_timing'][ $stage ] += max( 0, cr2026_catalog_timer_now() - $started_at );
-    }
-}
 
 
 /** Public catalogue response cache; session-dependent prices bypass sharing. */
@@ -317,11 +299,8 @@ function cr2026_catalog_cache_payload_valid( $payload ) {
     return ! $payload['product_ids'] || '' !== trim( $payload['html'] );
 }
 function cr2026_catalog_cache_lookup( $cache_key ) {
-    $started_at = cr2026_catalog_timer_now();
     $fresh = get_transient( $cache_key );
     if ( cr2026_catalog_cache_payload_valid( $fresh ) ) {
-        cr2026_catalog_timing_add( 'cache', $started_at );
-        $GLOBALS['cr2026_catalog_cache_status'] = 'HIT';
         return array( 'state' => 'hit', 'payload' => $fresh );
     }
     if ( false !== $fresh ) { delete_transient( $cache_key ); }
@@ -344,16 +323,11 @@ function cr2026_catalog_cache_lookup( $cache_key ) {
         add_option( '_transient_timeout_' . $lock_key, time() + 30, '', false );
         register_shutdown_function( static function () use ( $lock_key ) { delete_transient( $lock_key ); } );
         $GLOBALS['cr2026_catalog_cache_lock'] = $lock_key;
-        $GLOBALS['cr2026_catalog_cache_status'] = 'MISS';
-        cr2026_catalog_timing_add( 'cache', $started_at );
         return array( 'state' => 'miss', 'payload' => false );
     }
-    cr2026_catalog_timing_add( 'cache', $started_at );
     if ( false !== $stale ) {
-        $GLOBALS['cr2026_catalog_cache_status'] = 'STALE';
         return array( 'state' => 'stale', 'payload' => $stale );
     }
-    $GLOBALS['cr2026_catalog_cache_status'] = 'MISS';
     return array( 'state' => 'locked', 'payload' => false );
 }
 function cr2026_catalog_cache_store( $cache_key, $payload ) {
@@ -363,52 +337,7 @@ function cr2026_catalog_cache_store( $cache_key, $payload ) {
     return true;
 }
 
-/** Add Server-Timing headers immediately before the REST response is served. */
-function cr2026_catalog_timing_headers( $response, $server, $request ) {
-    if ( ! $request instanceof WP_REST_Request || '/cr2026/v1/catalog-page' !== $request->get_route() ) {
-        return $response;
-    }
-
-    $timing = isset( $GLOBALS['cr2026_catalog_timing'] ) && is_array( $GLOBALS['cr2026_catalog_timing'] )
-        ? $GLOBALS['cr2026_catalog_timing']
-        : array();
-    $now = cr2026_catalog_timer_now();
-    $total_ns = isset( $timing['started_at'] ) ? max( 0, $now - $timing['started_at'] ) : 0;
-    $filter_ns = isset( $timing['filter'] ) ? (int) $timing['filter'] : 0;
-    $products_ns = isset( $timing['products'] ) ? (int) $timing['products'] : 0;
-    $render_ns = isset( $timing['render'] ) ? (int) $timing['render'] : 0;
-    $cache_ns = isset( $timing['cache'] ) ? (int) $timing['cache'] : 0;
-    $other_ns = max( 0, $total_ns - $filter_ns - $products_ns - $render_ns - $cache_ns );
-    $to_ms = static function ( $nanoseconds ) {
-        return number_format( $nanoseconds / 1000000, 3, '.', '' );
-    };
-    $server_timing = implode( ', ', array(
-        'catalog-total;dur=' . $to_ms( $total_ns ),
-        'filter;dur=' . $to_ms( $filter_ns ),
-        'products;dur=' . $to_ms( $products_ns ),
-        'render;dur=' . $to_ms( $render_ns ),
-        'cache;dur=' . $to_ms( $cache_ns ),
-        'other;dur=' . $to_ms( $other_ns ),
-    ) );
-
-    if ( $response instanceof WP_REST_Response ) {
-        $response->header( 'Server-Timing', $server_timing );
-        $response->header( 'X-CriosRango-Catalog-Cache', isset( $GLOBALS['cr2026_catalog_cache_status'] ) ? $GLOBALS['cr2026_catalog_cache_status'] : 'BYPASS' );
-        $response->header( 'X-CriosRango-Persistent-Object-Cache', function_exists( 'wp_using_ext_object_cache' ) && wp_using_ext_object_cache() ? 'YES' : 'NO' );
-    }
-
-    return $response;
-}
-add_filter( 'rest_post_dispatch', 'cr2026_catalog_timing_headers', 10, 3 );
-
 function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
-    $GLOBALS['cr2026_catalog_timing'] = array(
-        'started_at' => cr2026_catalog_timer_now(),
-        'filter' => 0,
-        'products' => 0,
-        'render' => 0,
-        'cache' => 0,
-    );
     $page = max( 1, absint( $request->get_param( 'page' ) ) );
     $per_page = CR2026_CATALOG_PAGE_SIZE;
     $category_id = absint( $request->get_param( 'catalog_category_id' ) );
@@ -463,7 +392,6 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
 
     $cache_bypass = cr2026_catalog_cache_session_sensitive();
     if ( $cache_bypass ) {
-        $GLOBALS['cr2026_catalog_cache_status'] = 'BYPASS';
     } else {
         $generation = cr2026_catalog_cache_generation();
         $cache_filters = array();
@@ -509,9 +437,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
             }
         }
         $filter_request->set_query_params( $filter_params );
-        $filter_started_at = cr2026_catalog_timer_now();
         $filter_response = rest_do_request( $filter_request );
-        cr2026_catalog_timing_add( 'filter', $filter_started_at );
         if ( is_wp_error( $filter_response ) ) {
             return $filter_response;
         }
@@ -533,7 +459,6 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         $product_ids = array_slice( $normalized_product_ids, 0, $per_page );
         $filter_api_product_ids = $product_ids;
         if ( $product_ids ) {
-            $products_started_at = cr2026_catalog_timer_now();
             $products = wc_get_products( array(
                 'status' => 'publish',
                 'visibility' => 'visible',
@@ -542,7 +467,6 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
                 'return' => 'objects',
                 'orderby' => 'include',
             ) );
-            cr2026_catalog_timing_add( 'products', $products_started_at );
             // Preserve the exact Filter API ID order; do not sort the page locally.
             $products_by_id = array();
             foreach ( $products as $product ) {
@@ -588,23 +512,18 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         // Reuse the category query; root Novedades omits only product_cat.
         // No purchasable/price predicate: intentionally priceless products remain.
         if ( $term instanceof WP_Term ) { $products_query['category'] = array( $term->slug ); }
-        $products_started_at = cr2026_catalog_timer_now();
         $catalog_result = wc_get_products( $products_query );
-        cr2026_catalog_timing_add( 'products', $products_started_at );
         $products = isset( $catalog_result->products ) && is_array( $catalog_result->products ) ? $catalog_result->products : array();
         $total = isset( $catalog_result->total ) ? absint( $catalog_result->total ) : null;
         $max_num_pages = isset( $catalog_result->max_num_pages ) ? absint( $catalog_result->max_num_pages ) : 0;
         $has_more = $page < $max_num_pages;
         $product_ids = array_map( static function ( $product ) { return $product->get_id(); }, $products );
     }
-
-    $render_started_at = cr2026_catalog_timer_now();
     ob_start();
     foreach ( $products as $index => $product ) {
         cr2026_render_product_card( $product, $index + ( $page > 1 ? 4 : 0 ) );
     }
     $rendered_html = ob_get_clean();
-    cr2026_catalog_timing_add( 'render', $render_started_at );
     $payload = array(
         'html' => $rendered_html,
         'source' => $has_filters ? 'filter_api' : 'woocommerce',

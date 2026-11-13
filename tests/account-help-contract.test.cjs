@@ -36,8 +36,9 @@ test('HELP_CONTACTS_USE_ONE_CENTRAL_CONFIGURATION_AND_REAL_ACTIONS', () => {
 test('HELP_CONTACT_ICONS_ARE_OWNED_OUTLINE_SVGS_NOT_TEXT_GLYPHS', () => {
   const svgs = [...presentation.matchAll(/<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1\.7" stroke-linecap="round" stroke-linejoin="round">([\s\S]*?)<\/svg>/g)];
   assert.equal(svgs.length, 3);
-  assert.match(svgs[0][1], /<path d="M20 11\.5/);
-  assert.match(svgs[0][1], /<path d="M8\.8 8\.4/);
+  assert.match(svgs[0][1], /<path d="M20 4H4a2 2 0 0 0-2 2v14l4-4h14/);
+  assert.match(svgs[0][1], /<path d="M7 9h10M7 13h7"\/>/);
+  assert.match(presentation, /Icons\.AutoMirrored\.Outlined\.Chat/);
   assert.match(svgs[1][1], /<path d="M7 3h3/);
   assert.match(svgs[2][1], /<rect x="3" y="5" width="18" height="14"/);
   assert.doesNotMatch(presentation, /cr-account-help__icon[^<]*>WA|cr-account-help__icon[^<]*>☎|cr-account-help__icon[^<]*>@/);
@@ -51,8 +52,10 @@ test('HELP_HAS_SEVEN_EXACT_WEEKLY_HOURS_AND_REQUIRED_HEADINGS', () => {
   assert.match(presentation, /'time' => '10:00–13:30'/);
   assert.match(presentation, /'time' => __\( 'Cerrado'/);
   assert.match(presentation, /Contacta con nosotros/);
-  assert.match(presentation, /Horario de atención/);
+  assert.match(presentation, /<h2 class="cr-account-help__heading cr-account-help__hours-heading">[\s\S]*?Horario de atención[\s\S]*?<\/h2>\s*<section class="cr-account-help__hours"/);
+  assert.doesNotMatch(presentation, /<section class="cr-account-help__hours"[^>]*>[\s\S]*?<h2/);
   assert.doesNotMatch(presentation, /Horario de tienda/);
+  assert.match(css, /\.cr-account-help__hours-heading \{ margin: 24px 0 10px; \}/);
 });
 
 test('HELP_NAV_AND_FOOTER_ARE_MOBILE_SCOPED', () => {
