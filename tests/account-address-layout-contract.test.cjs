@@ -195,7 +195,10 @@ test('ADDRESS_SCREEN_USES_ONLY_THE_GLOBAL_BOTTOM_NAV_RESERVED_SPACE', () => {
   const addressBlock = accountCss.slice(addressStart, addressEnd);
   assert.match(addressBlock, /\.woocommerce-address-fields \{[\s\S]*?padding:\s*0 0 16px !important/);
   assert.doesNotMatch(addressBlock, /padding[^;]*calc\(\s*88px\s*\+\s*env\(safe-area-inset-bottom\)\)/);
-  assert.match(mainCss, /@media \(max-width:\s*767px\)[\s\S]*?body \{ padding-bottom: calc\(var\(--cr-bottom-nav\) \+ env\(safe-area-inset-bottom\)\); \}/);
+  const globalShellStart = mainCss.indexOf('/* GLOBAL MOBILE APP SHELL — CANONICAL CONTRACT');
+  const globalShell = mainCss.slice(globalShellStart);
+  assert.ok(globalShellStart >= 0, 'canonical global mobile shell exists');
+  assert.match(globalShell, /@media \(max-width:\s*767px\)[\s\S]*?body\s*\{(?=[^}]*padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\);)[^}]*\}/);
   assert.match(mainCss, /--cr-bottom-nav:\s*72px/);
 });
 
