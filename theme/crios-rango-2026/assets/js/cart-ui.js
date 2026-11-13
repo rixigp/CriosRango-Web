@@ -332,16 +332,17 @@
     const availableRewards = rewards.filter((reward) => reward.code && !hasCoupon(currentCart, reward.code));
     if (availableRewards.length) {
       const rewardSection = node('div', 'cr-cart-wallet__rewards');
-      rewardSection.appendChild(node('h4', 'cr-cart-promotions__subheading', 'Saldo listo para usar'));
-      const rewardsCard = node('div', 'cr-cart-wallet__rewards-card');
-      availableRewards.forEach((reward) => {
-        const row = node('div', 'cr-cart-reward');
-        const label = node('div', 'cr-cart-reward__label');
-        label.appendChild(cartIcon('wallet', 'cr-cart-reward__icon'));
+      rewardSection.appendChild(node('h4', 'cr-cart-promotions__subheading cr-account-loyalty__section-title', 'Saldo listo para usar'));
+      const rewardsCard = node('div', 'cr-cart-wallet__rewards-card cr-account-loyalty__rewards-card');
+      availableRewards.forEach((reward, index) => {
+        const row = node('div', 'cr-cart-reward cr-account-loyalty__reward-row');
+        if (index < availableRewards.length - 1) row.classList.add('has-divider');
+        const label = node('div', 'cr-cart-reward__label cr-account-loyalty__reward-label');
+        label.appendChild(cartIcon('wallet', 'cr-cart-reward__icon cr-account-loyalty__reward-icon'));
         label.appendChild(node('strong', '', 'Saldo disponible · ' + formatWalletAmount(reward.amount, wallet.currency)));
         if (reward.expires_at) label.appendChild(node('small', '', 'Caduca: ' + reward.expires_at));
         row.appendChild(label);
-        row.appendChild(createButton('Aplicar','cr-cart-apply-button',(event)=>applyCoupon(reward.code,'Crédito',event.currentTarget)));
+        row.appendChild(createButton('Aplicar','cr-cart-apply-button cr-account-loyalty__apply',(event)=>applyCoupon(reward.code,'Crédito',event.currentTarget)));
         rewardsCard.appendChild(row);
       });
       rewardSection.appendChild(rewardsCard);

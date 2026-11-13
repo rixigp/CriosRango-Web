@@ -15,8 +15,9 @@ const renderEnd = cartUi.indexOf('\n  // Mirrors the commonMain', renderStart);
 assert.ok(renderStart >= 0 && renderEnd > renderStart, 'promotion renderer must remain present');
 const renderPromotions = cartUi.slice(renderStart, renderEnd);
 
-test('cart promotions main title remains in the native theme template', () => {
-  assert.ok(cartTemplate.includes("Promociones y descuentos"));
+test('cart promotions title is removed from the native theme template', () => {
+  assert.equal(cartTemplate.includes("Promociones y descuentos"), false);
+  assert.equal(cartTemplate.includes('cr-cart-promotions__skeleton-bar--title'), false);
   assert.ok(cartTemplate.includes('data-cr-cart-promotions-list'));
 });
 
@@ -70,6 +71,18 @@ test('wallet rendering and coupon entry/action remain intact', () => {
   assert.ok(cartTemplate.includes('class="cr-cart-manual-coupon"'));
   assert.ok(cartTemplate.includes('Tengo otro código de descuento'));
   assert.ok(cartTemplate.includes('data-cr-cart-manual-form'));
+});
+
+test('cart wallet rewards use the Coupons & Promotions shared component contract', () => {
+  assert.ok(cartUi.includes('cr-account-loyalty__rewards-card'));
+  assert.ok(cartUi.includes('cr-account-loyalty__reward-row'));
+  assert.ok(cartUi.includes('cr-account-loyalty__reward-icon'));
+  assert.ok(cartUi.includes('cr-account-loyalty__reward-label'));
+  assert.ok(cartUi.includes('cr-account-loyalty__apply'));
+  assert.match(cartCss, /background:\s*#FFFFFF/);
+  assert.match(cartCss, /border-radius:\s*18px/);
+  assert.doesNotMatch(cartCss, /rgba\(132,\s*104,\s*190,\s*\.09\)/);
+  assert.match(cartCss, /background:\s*#EAF3FF/);
 });
 
 test('all promotion presentation changes remain cart-scoped', () => {
