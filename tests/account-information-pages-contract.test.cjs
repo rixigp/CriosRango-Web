@@ -35,8 +35,8 @@ test('ALL_FIVE_PAGES_USE_ONE_WORDPRESS_CONTENT_RENDERER_AND_CANONICAL_TOOLBAR', 
   assert.match(page, /the_content\(\)/);
   assert.match(presentation, /function cr2026_account_information_page_content\( \$content \)/);
   assert.match(presentation, /get_the_title\( \$page \)/);
-  assert.match(presentation, /cr2026_render_category_toolbar\( \$title, \$back_url, 'parent', false \)/);
-  assert.match(presentation, /wc_get_page_permalink\( 'myaccount' \)/);
+  assert.match(page, /cr2026_render_category_toolbar\( get_the_title\(\), \$account_back_url, 'parent', false \)/);
+  assert.match(page, /wc_get_page_permalink\( 'myaccount' \)/);
   assert.match(presentation, /add_filter\( 'the_content', 'cr2026_account_information_page_content', 30 \)/);
   for (const className of ['cr-parent-category__toolbar','cr-parent-category__back','cr-parent-category__title']) {
     assert.ok(mainCss.includes('.' + className), 'canonical toolbar class ' + className);
@@ -45,7 +45,7 @@ test('ALL_FIVE_PAGES_USE_ONE_WORDPRESS_CONTENT_RENDERER_AND_CANONICAL_TOOLBAR', 
 
 test('WORDPRESS_CONTENT_IS_PRESERVED_AND_LEGAL_COPY_IS_NOT_HARDCODED', () => {
   assert.match(page, /the_content\(\)/);
-  assert.match(presentation, /return \$toolbar \. '<section class="cr-account-information"/);
+  assert.match(presentation, /return '<section class="cr-account-information"/);
   assert.match(presentation, /<div class="cr-account-information__content">' \. \$content/);
   assert.match(presentation, /get_the_title\( \$page \)/);
   assert.doesNotMatch(presentation, /De conformidad con|Responsable del tratamiento|Condiciones generales de venta/);
@@ -63,14 +63,18 @@ test('UNREGISTERED_WPBAKERY_SHORTCODES_ARE_SAFELY_UNWRAPPED_NOT_PRINTED', () => 
 
 test('COMMON_EDITORIAL_RAIL_NORMALIZES_CONTENT_WITHOUT_TOUCHING_GLOBAL_NAV_CLEARANCE', () => {
   assert.match(presentation, /cr-account-information-page/);
+  assert.match(helpers, /cr-account-content-page/);
+  assert.match(page, /cr2026_is_account_information_page\(\)/);
+  assert.match(footer, /! \$is_mobile_account_context/);
   assert.match(helpers, /cr2026_is_account_information_page\(\)/);
   assert.match(accountCss, /\.cr-account-information \{[\s\S]*?width: min\(calc\(100% - 40px\), 720px\)/);
+  assert.match(accountCss, /body\.cr-account-content-page \.cr-parent-category__toolbar \{ margin-bottom: 16px; \}/);
   for (const selector of ['h2','h3','p','ul','ol','li','a','table','th','td']) {
     assert.ok(accountCss.includes('.cr-account-information__content ' + selector), 'editorial style ' + selector);
   }
   assert.match(helpers, /function cr2026_is_account_context\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
   assert.match(helpers, /function cr2026_is_app_nav_shell\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
   assert.match(mainCss, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\{display:block;position:fixed/);
-  assert.doesNotMatch(accountCss.slice(accountCss.indexOf('/* Five mobile Account > Information pages')), /padding-bottom|100vh|height:\s*100vh/);
+  assert.doesNotMatch(accountCss.slice(accountCss.indexOf('/* WordPress Account content pages')), /padding-bottom|100vh|height:\s*100vh/);
   assert.match(footer, /cr-mobile-bottom-nav cr-app-bottom-nav/);
 });

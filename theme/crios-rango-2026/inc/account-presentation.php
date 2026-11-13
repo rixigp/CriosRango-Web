@@ -324,16 +324,8 @@ function cr2026_account_information_page_content( $content ) {
     }
 
     $title = get_the_title( $page );
-    $back_url = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : '';
-    if ( ! $back_url ) {
-        $back_url = home_url( '/mi-cuenta/' );
-    }
 
-    ob_start();
-    cr2026_render_category_toolbar( $title, $back_url, 'parent', false );
-    $toolbar = ob_get_clean();
-
-    return $toolbar . '<section class="cr-account-information" aria-label="' . esc_attr( $title ) . '">'
+    return '<section class="cr-account-information" aria-label="' . esc_attr( $title ) . '">'
         . '<div class="cr-account-information__content">' . $content . '</div></section>';
 }
 add_filter( 'the_content', 'cr2026_account_information_page_content', 30 );
