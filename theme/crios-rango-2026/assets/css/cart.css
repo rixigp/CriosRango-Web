@@ -1,12 +1,6 @@
-/* One cart-only gutter shared by product rows and secondary card surfaces. */
-body.woocommerce-cart { --cr-cart-card-inline-gutter:16px; }
-@media(max-width:767px){body.woocommerce-cart{--cr-cart-card-inline-gutter:11px}}
-@media(max-width:360px){body.woocommerce-cart{--cr-cart-card-inline-gutter:9px}}
 
-/* Cart app convergence — scoped to the WooCommerce cart only. */
-body.woocommerce-cart { background: var(--cr-app-canvas); }
-body.woocommerce-cart .cr-main--woocommerce { background: transparent; }
-body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; max-width:1360px; margin-inline:auto; padding-top:0; padding-bottom:100px; box-sizing:border-box; }
+@media(max-width:767px){}
+@media(max-width:360px){}
 .cr-cart-page { color: var(--cr-ink, #183B35); }
 /* Cart heading reuses the canonical listing toolbar from main.css. */
 .cr-cart-empty-form { margin:0; }
@@ -99,7 +93,6 @@ body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; max-width:
 .cr-cart-page .woocommerce-message,.cr-cart-page .woocommerce-error,.cr-cart-page .woocommerce-info { margin:0 0 14px!important; }
 .cr-cart-promotions.is-busy { opacity:.72; pointer-events:none; }
 @media (min-width:768px) {
-  body.woocommerce-cart .cr-main--woocommerce > .cr-shell { padding-top:0; }
   .cr-cart-table tr.cr-cart-item { grid-template-columns:116px minmax(0,1fr); gap:0 18px; padding-inline:var(--cr-card-inline-inset); }
   
   .cr-cart-item__name { font-size:16px; }
@@ -107,7 +100,6 @@ body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; max-width:
   .cr-cart-summary { position:sticky; top:calc(var(--cr-app-topbar-height,88px) + 16px); }
 }
 @media (max-width:767px) {
-  body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; padding-top:0; padding-bottom:calc(92px + env(safe-area-inset-bottom)); }
   .cr-cart-empty-form button { font-size:11px; }
   .cr-cart-table tr.cr-cart-item { grid-template-columns:84px minmax(0,1fr); gap:0 11px; padding-inline:var(--cr-card-inline-inset); border-radius:15px; }
   
@@ -125,23 +117,7 @@ body.woocommerce-cart .cr-main--woocommerce > .cr-shell { width:100%; max-width:
   .cr-cart-remove { font-size:11px; }
 }
 
-@media (max-width:767px) { body.woocommerce-cart .cr-footer { display:none!important; } }
-
-/* Full-cart corrections: neutralize legacy table.cart rules within the app card. */
-body.woocommerce-cart .cr-main--woocommerce,
-body.woocommerce-cart .cr-main--woocommerce > .cr-shell,
-body.woocommerce-cart .cr-cart-form,
-body.woocommerce-cart .cr-cart-page,
-body.woocommerce-cart .cr-cart-layout,
-body.woocommerce-cart .cr-cart-summary,
-body.woocommerce-cart .cr-cart-item__card,
-body.woocommerce-cart .cr-cart-item__main,
-body.woocommerce-cart .cr-cart-item__content,
-body.woocommerce-cart .cr-cart-item__name,
-body.woocommerce-cart .cr-cart-item__variations,
-body.woocommerce-cart .cr-cart-item__actions,
-body.woocommerce-cart .cr-cart-item__media,
-body.woocommerce-cart .cr-cart-remove { min-width:0; max-width:100%; }
+@media (max-width:767px) { }
 body.woocommerce-cart table.cart .cr-cart-item__media {
   width:104px; height:128px; min-width:104px; max-width:104px;
   flex:0 0 104px; overflow:hidden; border-radius:12px;
@@ -226,20 +202,6 @@ body.woocommerce-cart .cr-cart-shipping-calculator { margin-top:6px; }
 body.woocommerce-cart .cr-cart-shipping-calculator > summary {
   color:#315B52; font-size:11px; cursor:pointer;
 }
-
-
-/* Cart app canvas and visual convergence — presentation only. */
-body.woocommerce-cart .cr-main--woocommerce,
-body.woocommerce-cart .cr-main--woocommerce > .cr-shell,
-body.woocommerce-cart .cr-cart-page,
-body.woocommerce-cart .cr-cart-layout,
-body.woocommerce-cart .cr-cart-summary,
-body.woocommerce-cart .cr-cart-form,
-body.woocommerce-cart .cr-cart-promotions {
-  background: transparent;
-}
-body.woocommerce-cart { background: var(--cr-app-canvas) !important; }
-body.woocommerce-cart .cr-main--woocommerce { background: transparent !important; }
 
 /* Product rows remain component surfaces, softly tinted from the existing brand token. */
 body.woocommerce-cart .cr-cart-item__card {
@@ -725,16 +687,12 @@ body.woocommerce-cart .cr-cart-item__subtotal { margin:0 0 2px; }
     font-weight: 500;
   }
 }
-
-/* The listing toolbar begins exactly below the fixed global app header. */
-body.woocommerce-cart{--cr-app-topbar-height:64px}
 /* Global app header already reserves its vertical space; avoid duplicate cart offset. */
-@media(min-width:768px) and (max-width:1279px){body.woocommerce-cart{--cr-app-topbar-height:82px}}
-@media(min-width:1280px){body.woocommerce-cart{--cr-app-topbar-height:88px}}
+@media(min-width:768px) and (max-width:1279px){}
+@media(min-width:1280px){}
 
 /* One shared content rail for product cards, promotions, summary and checkout. */
-body.woocommerce-cart .cr-cart-content{width:100%;max-width:1280px;min-width:0;margin-inline:auto;box-sizing:border-box}
-body.woocommerce-cart .cr-cart-header-shell{width:min(100%,1360px);margin-inline:auto;box-sizing:border-box}
+body.woocommerce-cart .cr-cart-content{width:100%;min-width:0;box-sizing:border-box}
 body.woocommerce-cart .cr-cart-content>.cr-cart-layout,
 body.woocommerce-cart .cr-cart-content .cr-cart-form,
 body.woocommerce-cart .cr-cart-content .cr-cart-promotions,
@@ -870,42 +828,7 @@ body.woocommerce-cart .cr-cart-content .cr-cart-table tbody{
   display:grid!important;
   row-gap:8px!important;
 }
-/* Preserve the approved horizontal toolbar rail; only its parent block spacing is normalized below. */
-body.woocommerce-cart .cr-cart-header-shell{
-  width:min(calc(100% + 40px),1360px);
-  max-width:1360px;
-  margin-inline:-20px;
-  box-sizing:border-box;
-}
 @media(max-width:767px){
-  body.woocommerce-cart .cr-cart-header-shell{
-    width:min(calc(100% + 24px),1360px);
-    margin-inline:-12px;
-  }
-}
-body.woocommerce-cart .cr-main--woocommerce{padding-top:0!important}
-body.woocommerce-cart .cr-main > .cr-shell.cr-page-shell,
-body.woocommerce-cart .cr-main--woocommerce > .cr-shell{padding-block-start:0!important}
-/* Outlet's canvas starts after the shared body topbar reservation with no
-   additional parent block-start spacing. Mirror that zero-spacing chain here. */
-body.woocommerce-cart .cr-main > .cr-shell.cr-page-shell,
-body.woocommerce-cart .cr-page,
-body.woocommerce-cart .cr-prose,
-body.woocommerce-cart .woocommerce,
-body.woocommerce-cart .cr-cart-page,
-body.woocommerce-cart .cr-cart-header-shell{
-  margin-block-start:0!important;
-  padding-block-start:0!important;
-}
-body.woocommerce-cart .cr-cart-header-shell > .cr-parent-category__toolbar{
-  margin-block-start:0!important;
-  min-height:64px;
-}
-
-
-/* Cart toolbar to first product: one reduced block-spacing owner; horizontal toolbar geometry remains shared. */
-body.woocommerce-cart .cr-cart-header-shell > .cr-parent-category__toolbar{
-  margin-block-end:8px!important;
 }
 
 /* Secondary card surfaces use the same inline gutter as product rows.

@@ -34,11 +34,8 @@ test('ALL_FIVE_PAGES_USE_ONE_WORDPRESS_CONTENT_RENDERER_AND_CANONICAL_TOOLBAR', 
   assert.match(page, /cr2026_is_account_information_page\(\)/);
   assert.match(page, /cr-information-toolbar-shell/);
   assert.match(helpers, /cr-account-information-page/);
-  assert.ok(accountCss.includes('body.cr-account-information-page .cr-main > .cr-shell.cr-page-shell')); 
-  assert.ok(accountCss.includes('width: 100%; max-width: 1360px; margin-inline: auto;'));
-  assert.ok(accountCss.includes('body.cr-account-information-page .cr-information-toolbar-shell')); 
-  assert.ok(accountCss.includes('width: min(100%, 1360px); margin-inline: auto; box-sizing: border-box;'));
-  assert.match(accountCss, /body\.cr-account-information-page \{ background: var\(--cr-app-canvas\); \}/);
+  assert.equal(accountCss.includes('body.cr-account-information-page .cr-main'),false);
+  assert.equal(accountCss.includes('body.cr-account-information-page .cr-parent-category__toolbar'),false);
   assert.match(page, /the_content\(\)/);
   assert.match(presentation, /function cr2026_account_information_page_content\( \$content \)/);
   assert.match(presentation, /get_the_title\( \$page \)/);
@@ -72,10 +69,10 @@ test('COMMON_EDITORIAL_RAIL_NORMALIZES_CONTENT_WITHOUT_TOUCHING_GLOBAL_NAV_CLEAR
   assert.match(presentation, /cr-account-information-page/);
   assert.match(helpers, /cr-account-content-page/);
   assert.match(page, /cr2026_is_account_information_page\(\)/);
-  assert.match(footer, /! \$is_mobile_account_context/);
+  assert.match(footer, /if \( ! \( function_exists\( 'wp_is_mobile' \) && wp_is_mobile\(\) \) \) :/);
   assert.match(helpers, /cr2026_is_account_information_page\(\)/);
   assert.match(accountCss, /\.cr-account-information \{[\s\S]*?width: min\(calc\(100% - 40px\), 720px\)/);
-  assert.match(accountCss, /body\.cr-account-content-page \.cr-parent-category__toolbar \{ margin-bottom: 16px; \}/);
+  assert.doesNotMatch(accountCss, /body\.cr-account-content-page[^{}]*\.cr-parent-category__toolbar/);
   for (const selector of ['h1','h2','h3','h4','h5','h6','p','ul','ol','li','strong','a','blockquote','table','th','td']) {
     assert.ok(accountCss.includes('.cr-account-information__content ' + selector), 'editorial style ' + selector);
   }
@@ -87,7 +84,7 @@ test('COMMON_EDITORIAL_RAIL_NORMALIZES_CONTENT_WITHOUT_TOUCHING_GLOBAL_NAV_CLEAR
   assert.ok(accountCss.includes('font: 300 13px/21px "Roboto", Arial, sans-serif !important;'));
   assert.match(helpers, /function cr2026_is_account_context\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
   assert.match(helpers, /function cr2026_is_app_nav_shell\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
-  assert.match(mainCss, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\{display:block;position:fixed/);
+  assert.match(mainCss, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav \{ display: block; \}/);
   assert.doesNotMatch(accountCss.slice(accountCss.indexOf('/* WordPress Account content pages')), /padding-bottom|100vh|height:\s*100vh/);
   assert.match(footer, /cr-mobile-bottom-nav cr-app-bottom-nav/);
 });

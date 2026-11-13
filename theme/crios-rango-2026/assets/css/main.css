@@ -637,9 +637,6 @@ body.home {
   }
 
 @media (max-width: 767px) {
-  body.home {
-    padding-bottom: calc(86px + env(safe-area-inset-bottom));
-  }
 
   .cr-home-topbar {
     width: 100%;
@@ -724,13 +721,6 @@ body.home {
     top: 4px;
     right: calc(50% - 25px);
   }
-}
-
-
-
-/* Home continuation: sections mirror the shared Compose Home rhythm. */
-body.home {
-  background: #fbfaf6;
 }
 body.home .cr-app-categories {
   padding-bottom: 0;
@@ -1205,7 +1195,6 @@ body.home .cr-app-header {
 
 
 @media (min-width: 768px) and (max-width: 1099px) {
-  body.home { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
 }
 @media (max-width: 767px) {
   body.home .cr-home-mark { background: rgba(252, 250, 247, .86); }
@@ -1318,7 +1307,6 @@ body.home .cr-app-header {
     gap: 12px;
   }
   body.home .cr-home-brand { height: 64px; }
-  body.home { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
   body.home .cr-desktop-rail, body.cr-parent-category-view .cr-desktop-rail { display: none !important; }
 }
 @media (min-width: 1280px) {
@@ -1749,19 +1737,6 @@ body.home .cr-desktop-rail__destination.is-active, body.cr-parent-category-view 
     font-weight: 300;
   }
 }
-
-
-/* App-like parent category landing; scoped away from Home and leaf archives. */
-body.cr-parent-category-view {
-  min-height: 100dvh;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  overflow-x: clip;
-  background: var(--cr-app-canvas);
-  color: #183B35;
-  font-family: "Roboto", Arial, sans-serif;
-}
 body.cr-parent-category-view .cr-app-header {
   position: sticky;
   inset: auto;
@@ -1908,7 +1883,7 @@ body.cr-parent-category-view .cr-parent-category__label,
 }
 
 @media (max-width: 767px) {
-  body.cr-parent-category-view .cr-parent-category__canvas { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  
   body.cr-parent-category-view .cr-home-topbar { min-height: 64px; padding-inline: 12px; }
   body.cr-parent-category-view .cr-parent-category__grid,
   .cr-category-hub__grid {
@@ -1919,7 +1894,7 @@ body.cr-parent-category-view .cr-parent-category__label,
   }
 }
 @media (min-width: 768px) and (max-width: 1279px) {
-  body.cr-parent-category-view .cr-parent-category__canvas { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  
   body.cr-parent-category-view .cr-home-topbar { min-height: 82px; }
   body.cr-parent-category-view .cr-parent-category__canvas { max-width: 1040px; }
   body.cr-parent-category-view .cr-parent-category__grid {
@@ -1933,7 +1908,6 @@ body.cr-parent-category-view .cr-parent-category__label,
   body.cr-parent-category-view .cr-desktop-rail { display: none !important; }
 }
 @media (min-width: 1280px) {
-  body.cr-parent-category-view { padding-left: 96px; }
   body.cr-parent-category-view .cr-app-header .cr-home-topbar {
     min-height: 88px;
     width: min(100%, 1360px);
@@ -2053,14 +2027,12 @@ body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub 
  body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-desktop-rail__destination .cr-icon{width:24px;height:24px}
  body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-desktop-rail__destination.is-active{min-height:64px;background:#E3EFEB;color:#183B35;font-weight:400}
  body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-desktop-rail__destination .cr-cart-count{top:5px;right:12px}
- body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-main--woocommerce{width:calc(100% - 96px);margin-left:96px;box-sizing:border-box}
 }
 @media(min-width:1600px){
  body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-desktop-rail{width:104px}
  body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-desktop-rail__brand{width:82px}
  body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-desktop-rail__destinations{width:84px}
  body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-desktop-rail__destination{width:82px}
- body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-main--woocommerce{width:calc(100% - 104px);margin-left:104px}
 }
 body.cr-parent-category-view .cr-category-filter-sheet__trigger{min-height:38px;padding:0 16px;border:1px solid #d8d9d5;border-radius:999px;background:transparent;color:#777b77;font:300 14px/20px "Roboto",Arial,sans-serif;opacity:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
 body.cr-parent-category-view .cr-category-filter-sheet__trigger::-webkit-details-marker{display:none}
@@ -2068,8 +2040,6 @@ body.cr-parent-category-view .cr-category-filter-sheet__trigger::marker{content:
 
 /* App-like topbar positioning contract: preserve approved dimensions, use one fixed layer. */
 :root { --cr-app-topbar-z-index: 1150; }
-body.home { --cr-app-topbar-height: 96px; }
-body.cr-parent-category-view { --cr-app-topbar-height: 72px; }
 body.home .cr-app-header {
   position: fixed; top: 0; left: 0; right: 0; width: auto;
   background: transparent; border: 0; outline: 0; box-shadow: none;
@@ -2100,14 +2070,10 @@ body.cr-parent-category-view .cr-parent-category__canvas {
   padding-top: var(--cr-app-topbar-height); box-sizing: border-box;
 }
 @media (max-width: 767px) {
-  body.home { --cr-app-topbar-height: 64px; }
-  body.cr-parent-category-view { --cr-app-topbar-height: 64px; }
     }
 @media (min-width: 768px) and (max-width: 1279px) {
-  body.cr-parent-category-view { --cr-app-topbar-height: 82px; }
     }
 @media (min-width: 1280px) {
-  body.cr-parent-category-view { --cr-app-topbar-height: 88px; }
   body.cr-parent-category-view .cr-app-header { left: 96px; }
   body.home .cr-app-header { left: 96px; }
 }
@@ -2281,7 +2247,6 @@ body.cr-global-app-header:not(.home) {
 }
 body.cr-parent-category-view .cr-parent-category__canvas,
 body.cr-app-nav-shell .cr-category-hub {
-  padding-top: 0 !important;
 }
 @media (max-width: 782px) {
   }
@@ -2460,10 +2425,6 @@ body.admin-bar.home .cr-app-header {
   .cr-app-header .cr-header-search-panel .cr-search-form { gap:6px; }
   .cr-app-header .cr-header-search-panel .cr-search-form button[type="submit"] { min-height:40px; padding-inline:9px; }
 }
-body.search { background:#FCFAF7; scroll-padding-top:var(--cr-app-topbar-height,64px); }
-body.search.cr-global-app-header:not(.home) { --cr-app-topbar-height:64px; padding-top:0!important; }
-@media(min-width:768px){body.search.cr-global-app-header:not(.home){--cr-app-topbar-height:82px}}
-@media(min-width:1280px){body.search.cr-global-app-header:not(.home){--cr-app-topbar-height:88px}}
 body.search .cr-search-form {
   display:flex; align-items:center; gap:10px; width:calc(100% - 40px); max-width:760px;
   min-height:56px; margin:0 auto 18px; padding:5px 9px 5px 17px;
@@ -2585,11 +2546,11 @@ body.cr-product-listing-view .cr-brand-archive .cr-product-grid { margin-top:0; 
 
 /* Shared app bottom navigation: continue the storefront canvas with no divider or shadow. */
 .cr-mobile-bottom-nav {
-  background: var(--cr-app-canvas) !important;
-  border-top: 0 !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  background: var(--cr-app-canvas) ;
+  border-top: 0 ;
+  box-shadow: none ;
+  backdrop-filter: none ;
+  -webkit-backdrop-filter: none ;
 }
 .cr-mobile-bottom-nav::before,
 .cr-mobile-bottom-nav::after {
@@ -2597,9 +2558,9 @@ body.cr-product-listing-view .cr-brand-archive .cr-product-grid { margin-top:0; 
   content: none !important;
 }
 .cr-mobile-bottom-nav__inner {
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
+  background: transparent ;
+  border: 0 ;
+  box-shadow: none ;
 }
 
 
@@ -2688,10 +2649,6 @@ body.woocommerce-order-received .cr-order-success-modal__action:focus-visible {
   box-shadow: none !important;
   border-color: #fff !important;
 }
-
-
-/* 404 page: retain the canonical app shell and normalize only its editorial block. */
-body.error404 { background: var(--cr-app-canvas); }
 body.error404 .cr-404-page { color: #183B35; }
 body.error404 .cr-404-page h1 { margin: 0 0 12px; color: #183B35; font: 400 24px/32px "Roboto", Arial, sans-serif; }
 body.error404 .cr-404-page__message { margin: 0 0 20px; color: #555B56; font: 300 14px/22px "Roboto", Arial, sans-serif; }
@@ -2704,8 +2661,7 @@ body.error404 .cr-404-page__cta { display: inline-flex; align-items: center; jus
 }
 
 /* GLOBAL MOBILE APP SHELL — CANONICAL CONTRACT
- * The only mobile authority for canvas, page flow, toolbar, footer and nav clearance.
- * Page styles below this layer are component/content styles, never shell geometry.
+ * Single mobile authority for canvas, shell flow, toolbar, footer and nav clearance.
  */
 @media (max-width: 767px) {
   body {

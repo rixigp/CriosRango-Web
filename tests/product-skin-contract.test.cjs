@@ -68,7 +68,7 @@ test('legacy breadcrumb, product meta, related and upsell presentations are remo
   assert.match(skin, /remove_action\( 'woocommerce_after_single_product_summary', 'woocommerce_output_related_products', 20 \)/);
   assert.match(skinCss, /\.additional_information_tab/);
   assert.match(skinCss, /#tab-additional_information/);
-  assert.match(skinCss, /\.cr-footer \{\s*display: none !important/s);
+  assert.doesNotMatch(skinCss, /body\.cr-product-detail-app \.cr-footer/);
 });
 
 test('sale badge, price, notices and native controls receive presentation-only CSS', () => {
@@ -981,7 +981,7 @@ test('Product Detail makes the complete brand logo or text fallback a safe same-
 
 test('Product Detail uses the shared canvas and content-sized compact variation cards', () => {
   assert.match(skinCss, /--cr-product-cream:\s*var\(--cr-app-canvas\)/);
-  assert.match(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce div\.product \{[^}]*background:\s*var\(--cr-app-canvas\)/s);
+  assert.doesNotMatch(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce\s*\{/);
   assert.match(skinCss, /\.cr-product-description__icon\s*\{[^}]*background:\s*var\(--cr-app-canvas\)/s);
   assert.match(skinCss, /\.cr-product-variation-card\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*0;[^}]*padding:\s*14px 15px 12px;/s);
   assert.match(skinCss, /\.cr-product-variation-card__title\s*\{[^}]*margin-bottom:\s*12px;/s);
@@ -994,9 +994,9 @@ test('Product Detail uses the shared canvas and content-sized compact variation 
 
 test('Product Detail matches the global Category canvas and uses transparent compact description and variation surfaces', () => {
   const globalCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
-  assert.match(globalCss, /body\.cr-parent-category-view \{[^}]*background:\s*var\(--cr-app-canvas\);/s);
-  assert.match(skinCss, /body\.cr-product-detail-app \{[^}]*background:\s*var\(--cr-app-canvas\);/s);
-  assert.match(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce div\.product,\s*body\.cr-product-detail-app \.cr-main--woocommerce div\.product div\.summary \{[^}]*background:\s*transparent;/s);
+  assert.doesNotMatch(globalCss, /body\.cr-parent-category-view\s*\{[^}]*background:/s);
+  assert.doesNotMatch(skinCss, /body\.cr-product-detail-app\s*\{[^}]*background:/s);
+  assert.doesNotMatch(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce\s*\{/);
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-description,\s*body\.cr-product-detail-app \.cr-product-description__toggle,\s*body\.cr-product-detail-app \.cr-product-description__panel,\s*body\.cr-product-detail-app \.cr-product-description__icon,\s*body\.cr-product-detail-app \.cr-product-variation-card \{[^}]*background:\s*transparent !important;/s);
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-description__toggle \{[^}]*min-height:\s*52px;[^}]*padding:\s*8px 15px;/s);
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-variation-card \{[^}]*height:\s*auto;[^}]*min-height:\s*0;[^}]*padding:\s*11px 15px;/s);
@@ -1019,10 +1019,12 @@ test('Product Detail final controls stay compact and quantity label is visually 
 
 test('Shared bottom navigation uses the exact storefront canvas with no visible top cut', () => {
   const globalCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
-  assert.ok(globalCss.includes('.cr-mobile-bottom-nav {\n  background: var(--cr-app-canvas) !important;'), 'BOTTOM_NAV_MATCHES_PAGE_BACKGROUND=PASS');
-  assert.ok(globalCss.includes('border-top: 0 !important;') && globalCss.includes('box-shadow: none !important;') && globalCss.includes('backdrop-filter: none !important;'), 'BOTTOM_NAV_BORDER_OR_SHADOW_REMOVED=PASS');
+  assert.ok(globalCss.includes('background: var(--cr-app-canvas);'), 'GLOBAL_CANVAS_TOKEN_PRESENT=PASS');
+  assert.ok(globalCss.includes('border-top: 0 ;'));
+  assert.ok(globalCss.includes('box-shadow: none ;'));
+  assert.ok(globalCss.includes('backdrop-filter: none ;'));
   assert.ok(globalCss.includes('.cr-mobile-bottom-nav::before,\n.cr-mobile-bottom-nav::after {\n  display: none !important;\n  content: none !important;'), 'BOTTOM_NAV_PSEUDO_SEPARATORS_REMOVED=PASS');
-  assert.ok(globalCss.includes('.cr-mobile-bottom-nav__inner {\n  background: transparent !important;'), 'BOTTOM_NAV_INNER_TRANSPARENT=PASS');
+  assert.ok(globalCss.includes('.cr-mobile-bottom-nav__inner {\n  background: transparent;'), 'BOTTOM_NAV_INNER_TRANSPARENT=PASS');
 });
 
  
@@ -1145,9 +1147,9 @@ test('cart page canvas is the global app token with transparent wrappers and no 
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
   assert.match(mainCss, /--cr-app-canvas:\s*#FCFAF7/i);
-  assert.match(cartCss, /body\.woocommerce-cart\s*\{\s*background:\s*var\(--cr-app-canvas\)\s*!important;/);
+  assert.doesNotMatch(cartCss, /body\.woocommerce-cart\s*\{[^}]*background:/);
   assert.doesNotMatch(cartCss, /var\(--cr-app-canvas,\s*#FCFAF7\)/i);
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-main--woocommerce\s*\{\s*background:\s*transparent\s*!important;/);
+  assert.doesNotMatch(cartCss, /body\.woocommerce-cart \.cr-main--woocommerce\s*\{[^}]*background:/);
   assert.doesNotMatch(cartCss, /--cart-page-background|--cr-page-canvas/);
 });
 
@@ -1366,7 +1368,8 @@ test('cart summary uses custom full-width two-column rows rather than a WooComme
 test('CART_SUMMARY_USES_PRODUCT_CARD_GUTTER=PASS; summary and CTA use the cart card rail',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8'),p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
  assert.ok(p.includes('<div class="cr-cart-content">') && p.indexOf('<div class="cr-cart-content">') < p.indexOf('class="cr-cart-item__card"'));
- assert.ok(c.includes('body.woocommerce-cart .cr-cart-content{width:100%;max-width:1280px;min-width:0;margin-inline:auto;box-sizing:border-box}'));
+ assert.ok(c.includes('body.woocommerce-cart .cr-cart-content{width:100%;min-width:0;box-sizing:border-box}'));
+ assert.equal(c.includes('max-width:1280px'),false);
  assert.ok(c.includes('body.woocommerce-cart .cr-cart-content .cr-cart-item__card{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box}'));
  assert.ok(c.includes('body.woocommerce-cart .cr-cart-content .cr-cart-promotions'));
  assert.ok(c.includes('body.woocommerce-cart .cr-cart-content .cr-cart-summary'));
@@ -1464,21 +1467,17 @@ test('CART_PROMOTIONS_SUMMARY_CTA_USE_SECONDARY_RAIL=PASS',()=>{
  assert.match(c,/body\.woocommerce-cart \.cr-cart-summary \.wc-proceed-to-checkout\{[\s\S]*?width:100%!important/);
  assert.match(c,/body\.woocommerce-cart \.cr-cart-summary \.checkout-button\{[\s\S]*?width:100%!important/);
 });
-test('CART_HEADER_VERTICAL_PARENT_CHAIN_MATCHES_OUTLET_CANVAS=PASS',()=>{
- const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
- const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
- const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
- assert.match(m,/body\.cr-global-app-header:not\(\.home\)\s*\{[\s\S]*?padding-top:\s*var\(--cr-app-topbar-height\)/);
- assert.match(m,/body\.cr-parent-category-view \.cr-parent-category__canvas,\s*body\.cr-app-nav-shell \.cr-category-hub\s*\{\s*padding-top:\s*0 !important/);
- assert.match(m,/\.cr-parent-category__canvas\s*\{[\s\S]*?flex:\s*1 0 auto;[\s\S]*?padding:\s*0;/);
- assert.match(p,/class="cr-cart-header-shell"[\s\S]*?cr2026_render_category_toolbar\( __\( 'Tu carrito'/);
- assert.match(c,/body\.woocommerce-cart \.cr-main > \.cr-shell\.cr-page-shell,\s*body\.woocommerce-cart \.cr-page,\s*body\.woocommerce-cart \.cr-prose,\s*body\.woocommerce-cart \.woocommerce,\s*body\.woocommerce-cart \.cr-cart-page,\s*body\.woocommerce-cart \.cr-cart-header-shell\{\s*margin-block-start:0!important;\s*padding-block-start:0!important;\s*\}/);
- assert.match(c,/body\.woocommerce-cart \.cr-main > \.cr-shell\.cr-page-shell,\s*body\.woocommerce-cart \.cr-main--woocommerce > \.cr-shell\{padding-block-start:0!important\}/);
- assert.doesNotMatch(c,/translateY|cr-cart-header-shell[^}]*top:\s*-|cr-cart-header-shell[^}]*margin-block-start:\s*-/);
+test('CART_HEADER_VERTICAL_FLOW_INHERITS_GLOBAL_HEADER_AND_SHELL',()=>{
+ const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8'),m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8'),p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
+ assert.ok(m.includes('body.cr-global-app-header:not(.home)'));
+ assert.ok(m.includes('padding-top: var(--cr-app-topbar-height)'));
+ assert.ok(p.includes('class="cr-cart-header-shell"'));
+ assert.equal(c.includes('cr-parent-category__toolbar'),false);
+ assert.equal(c.includes('padding-block-start:0!important'),false);
 });
 test('CART_HEADER_HORIZONTAL_GEOMETRY_UNCHANGED=PASS',()=>{
  const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
- assert.match(m,/\.cr-parent-category__toolbar \{[\s\S]*?min-height: 64px;[\s\S]*?margin: 0 20px 16px;[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;[\s\S]*?column-gap: 10px;/);
+ assert.match(m,/\.cr-parent-category__toolbar[\s\S]*?min-height: 64px;[\s\S]*?margin: 0 20px 14px;[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;[\s\S]*?column-gap: 10px;/);
  assert.match(m,/\.cr-parent-category__back \{[\s\S]*?width: 48px;[\s\S]*?height: 48px;/);
  assert.match(m,/\.cr-parent-category__title \{[\s\S]*?font: 300 21px\/28px "Roboto", Arial, sans-serif;/);
 });
@@ -1492,17 +1491,7 @@ test('CART_HEADER_AND_PRODUCT_CARD_HORIZONTAL_GEOMETRY_NOT_CHANGED=PASS',()=>{
 });
 
 
-test('CART_HEADER_TO_FIRST_PRODUCT_SINGLE_SPACING_OWNER=PASS; CART_HEADER_TO_FIRST_PRODUCT_GAP_REDUCED=PASS',()=>{
- const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8'),m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
- assert.match(m,/\.cr-parent-category__toolbar \{\s*min-height: 64px;\s*margin: 0 20px 16px;/);
- assert.match(m,/@media \(max-width: 767px\)[\s\S]*?\.cr-parent-category__toolbar \{ margin: 0 20px 14px; \}/);
- assert.match(m,/@media \(min-width: 1280px\)[\s\S]*?\.cr-parent-category__toolbar \{ margin: 0 32px 24px; \}/);
- const rules=c.match(/body\.woocommerce-cart \.cr-cart-header-shell > \.cr-parent-category__toolbar\s*\{[^}]*\}/g)||[];
- const blockEndOwners=rules.filter(rule=>/margin-block-end\s*:/i.test(rule));
- assert.strictEqual(blockEndOwners.length,1);
- assert.match(blockEndOwners[0],/margin-block-end:8px!important/);
- assert.doesNotMatch(blockEndOwners[0],/margin-inline|margin-left|margin-right|width|grid-template-columns|column-gap/);
-});
+test('CART_HEADER_SPACING_COMES_ONLY_FROM_GLOBAL_TOOLBAR',()=>{const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');assert.match(m,/margin: 0 20px 14px/);assert.doesNotMatch(c,/cr-cart-header-shell[^}]*margin-block-end|cr-parent-category__toolbar/);});
 test('CART_PRODUCT_ROW_VERTICAL_PADDING_ZERO=PASS; CART_PRODUCT_LIST_GAP_REMAINS_8PX=PASS; CART_EFFECTIVE_CARD_TO_CARD_SPACING_8PX=PASS; CART_PRODUCT_CARD_INTERNAL_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_CARD_HORIZONTAL_GEOMETRY_UNCHANGED=PASS',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
  const rowRules=c.match(/\.cr-cart-table tr\.cr-cart-item\s*\{[^}]*\}/g)||[];

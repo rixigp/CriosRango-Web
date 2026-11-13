@@ -61,29 +61,16 @@ test('HELP_HAS_SEVEN_EXACT_WEEKLY_HOURS_AND_REQUIRED_HEADINGS', () => {
 test('HELP_NAV_AND_FOOTER_ARE_MOBILE_SCOPED', () => {
   assert.match(helpers, /is_page\( array\( 'ayuda', 'preguntas-frecuentes', 'contacto' \) \)\s*&& function_exists\( 'wp_is_mobile' \) && wp_is_mobile\(\)/);
   assert.match(footer, /cr-mobile-bottom-nav cr-app-bottom-nav/);
-  assert.match(css, /body\.cr-account-help-page \.cr-footer \{ display: none !important; \}/);
-  assert.match(css, /body\.cr-account-help-page \.cr-parent-category__toolbar/);
+  assert.doesNotMatch(css, /body\.cr-account-help-page \.cr-footer|body\.cr-account-help-page \.cr-main|body\.cr-account-help-page \.cr-parent-category__toolbar/);
+  assert.match(fs.readFileSync(path.join(root, 'assets/css/main.css'), 'utf8'), /GLOBAL MOBILE APP SHELL/);
   assert.doesNotMatch(css, /\.cr-account-endpoint-toolbar|\.cr-account-home__toolbar/);
-  const helpShell = css.match(/body\.cr-account-help-page \.cr-main > \.cr-shell\.cr-page-shell \{([\s\S]*?)\n  \}/);
-  assert.ok(helpShell, 'Help page shell CSS exists');
-  assert.match(helpShell[1], /padding-block-end:\s*0;/);
-  assert.doesNotMatch(helpShell[1], /calc\(88px|safe-area-inset-bottom/);
   assert.match(css, /\.cr-account-help__card--whatsapp/);
   assert.match(css, /\.cr-account-help__card--phone/);
   assert.match(css, /\.cr-account-help__card--email/);
   assert.match(css, /\.cr-account-help__hours-row/);
 });
 
-test('MOBILE_ACCOUNT_AND_HELP_SHELLS_SHARE_OUTLET_TOP_SPACING', () => {
-  const accountShell = css.match(/body\.woocommerce-account \.cr-main > \.cr-shell\.cr-page-shell \{([\s\S]*?)\n  \}/);
-  const helpShell = css.match(/body\.cr-account-help-page \.cr-main > \.cr-shell\.cr-page-shell \{([\s\S]*?)\n  \}/);
-  assert.ok(accountShell, 'Shared Account shell CSS exists');
-  assert.ok(helpShell, 'Help shell CSS exists');
-  assert.match(accountShell[1], /padding-block-start:\s*0;/);
-  assert.match(helpShell[1], /padding-block-start:\s*0;/);
-});
-
-
+test('ACCOUNT_AND_HELP_INHERIT_GLOBAL_SHELL_WITHOUT_PAGE_GEOMETRY',()=>{assert.equal(css.includes('body.woocommerce-account .cr-main'),false);assert.equal(css.includes('body.cr-account-help-page .cr-main'),false);assert.equal(css.includes('body.cr-account-help-page .cr-parent-category__toolbar'),false);});
 test('MOBILE_ACCOUNT_BOTTOM_NAV_USES_ONE_SEMANTIC_ACCOUNT_CONTEXT', () => {
   const accountContext = helpers.match(/function cr2026_is_account_context\(\) \{([\s\S]*?)\n\}/);
   assert.ok(accountContext, 'Account context helper exists');

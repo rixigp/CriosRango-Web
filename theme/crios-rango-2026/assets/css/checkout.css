@@ -1,23 +1,4 @@
-/* Checkout Phase 1: outer shell only. Native checkout internals remain untouched. */
-body.woocommerce-checkout:not(.woocommerce-order-received) {
-  --cr-app-topbar-height: 64px;
-  background: var(--cr-app-canvas);
-}
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main {
-  width: 100%;
-  min-height: 60vh;
-  margin: 0;
-  padding: 0;
-  background: var(--cr-app-canvas);
-}
-
-body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell {
-  margin-inline: auto;
-  padding-block-start: 0;
-  padding-block-end: 0;
-  background: var(--cr-app-canvas);
-}
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose {
@@ -26,76 +7,16 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose {
   margin: 0;
 }
 
-body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell {
-  width: 100%;
-  max-width: 1360px;
-  margin-inline: auto;
-  box-sizing: border-box;
-}
-
-body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell > .cr-parent-category__toolbar {
-  min-height: 64px;
-  margin: 0 20px 16px;
-}
-
-body.woocommerce-checkout:not(.woocommerce-order-received) .cr-footer {
-  display: none !important;
-}
-
 @media (max-width: 767px) {
-  body.woocommerce-checkout:not(.woocommerce-order-received) {
-    --cr-app-topbar-height: 64px;
-  }
-
-  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell {
-    padding-block-end: 0;
-  }
-
-  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell {
-    width: 100%;
-    margin-inline: auto;
-  }
-
-  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell > .cr-parent-category__toolbar {
-    margin: 0 20px 14px;
-  }
 }
 
 @media (min-width: 768px) and (max-width: 1279px) {
-  body.woocommerce-checkout:not(.woocommerce-order-received) {
-    --cr-app-topbar-height: 82px;
-  }
 }
 
 @media (min-width: 1280px) {
-  body.woocommerce-checkout:not(.woocommerce-order-received) {
-    --cr-app-topbar-height: 88px;
-  }
-
-  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main {
-    width: calc(100% - 96px);
-    margin-left: 96px;
-  }
-
-  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell > .cr-parent-category__toolbar {
-    margin: 0 32px 24px;
-  }
 }
 
 @media (min-width: 1600px) {
-  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main {
-    width: calc(100% - 104px);
-    margin-left: 104px;
-  }
-}
-
-/* Checkout Phase 2.2: native WooCommerce fields styled to match the app delivery form. */
-body.woocommerce-checkout:not(.woocommerce-order-received) {
-  --cr-checkout-field-height: 58px;
-  --cr-checkout-field-radius: 9px;
-  --cr-checkout-field-label-size: .72rem;
-  --cr-checkout-field-row-gap: 16px;
-  --cr-checkout-field-border: rgba(32, 36, 31, .22);
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields > h3 {
@@ -523,30 +444,10 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .wooc
   margin: 0;
 }
 
-
-/* Checkout rail: full-width structure; each visual surface owns its own Cart gutter. */
-body.woocommerce-checkout:not(.woocommerce-order-received) {
-  --cr-cart-card-inline-gutter: 16px;
-}
-
 @media (max-width: 767px) {
-  body.woocommerce-checkout:not(.woocommerce-order-received) {
-    --cr-cart-card-inline-gutter: 11px;
-  }
 }
 
 @media (max-width: 360px) {
-  body.woocommerce-checkout:not(.woocommerce-order-received) {
-    --cr-cart-card-inline-gutter: 9px;
-  }
-}
-
-/* Outer shell mirrors Cart: full width, system cap, no card gutter. */
-body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell {
-  max-width: 1360px;
-  margin-inline: auto;
-  padding-inline: 0;
-  box-sizing: border-box;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,
@@ -584,14 +485,6 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   width: auto;
   min-width: 0;
   margin-inline: var(--cr-cart-card-inline-gutter);
-  box-sizing: border-box;
-}
-
-/* Header stays in the full-width shell; toolbar's own inset is unchanged. */
-body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell {
-  width: 100%;
-  max-width: 1360px;
-  margin-inline: auto;
   box-sizing: border-box;
 }
 

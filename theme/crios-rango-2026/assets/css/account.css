@@ -57,11 +57,9 @@
   .cr-account-home__information-icon { align-items: center; justify-content: center; }
 }
 @media (max-width: 767px) {
-  body.woocommerce-account .cr-footer { display: none !important; }
   body.woocommerce-account .woocommerce-MyAccount-navigation { display: none !important; }
   body.woocommerce-account .woocommerce-MyAccount-content { float: none !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; }
   body.woocommerce-account .woocommerce { display: block; }
-  body.woocommerce-account .cr-account-home { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 }
 @media (min-width: 768px) {
   .cr-account-home { width: min(100% - 48px, 900px); padding-block: 30px 50px; }
@@ -71,9 +69,6 @@
 
 /* Account app shell: reuse the canonical app canvas and shared mobile rail. */
 @media (max-width: 767px) {
-  body.woocommerce-account {
-    background: var(--cr-app-canvas);
-  }
 
   body.woocommerce-account .cr-page,
   body.woocommerce-account .cr-page .cr-prose {
@@ -389,13 +384,10 @@
 
 /* Mobile Help screen: match the app contact cards and weekly hours. */
 @media (max-width: 767px) {
-  body.cr-account-help-page { background: var(--cr-app-canvas); }
   body.cr-account-help-page .cr-page,
   body.cr-account-help-page .cr-page .cr-prose {
     width: 100%; max-width: none; margin: 0; background: transparent;
   }
-  body.cr-account-help-page .cr-page__header,
-  body.cr-account-help-page .cr-footer { display: none !important; }
   .cr-account-help { width: min(calc(100% - 40px), 720px); margin: 0 auto 18px; }
   .cr-account-help__heading {
     margin: 0 0 14px; color: #183b35;
@@ -509,10 +501,6 @@
  body.woocommerce-account.cr-account-profile-view-password .cr-page .cr-prose {
    width: 100%; max-width: none; margin: 0; background: transparent;
  }
- body.woocommerce-account.cr-account-profile-view-personal .cr-page__header,
- body.woocommerce-account.cr-account-profile-view-password .cr-page__header,
- body.woocommerce-account.cr-account-profile-view-personal .cr-footer,
- body.woocommerce-account.cr-account-profile-view-password .cr-footer { display: none !important; }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-MyAccount-content,
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-MyAccount-content {
    box-sizing: border-box; width: 100% !important; max-width: none; margin: 0 !important; padding: 0;
@@ -566,8 +554,6 @@
  body.woocommerce-account.woocommerce-edit-address .cr-page .cr-prose {
    width: 100%; max-width: none; margin: 0; background: transparent;
  }
- body.woocommerce-account.woocommerce-edit-address .cr-page__header,
- body.woocommerce-account.woocommerce-edit-address .cr-footer { display: none !important; }
  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content {
    box-sizing: border-box; width: 100% !important; max-width: none; margin: 0 !important; padding: 0;
  }
@@ -1575,19 +1561,15 @@
 
 /* Shared mobile Account content-page shell: Help and all five Information pages. */
 @media (max-width: 767px) {
-  body.cr-account-content-page { background: var(--cr-app-canvas); }
   body.cr-account-content-page .cr-page,
   body.cr-account-content-page .cr-page .cr-prose {
     width: 100%; max-width: none; margin: 0; background: transparent;
   }
-  body.cr-account-content-page .cr-page__header,
-  body.cr-account-content-page .cr-footer { display: none !important; }
 }
 
 /* Information pages mirror the Cart shell chain: full-width outer rail,
    transparent intermediates, and the same canonical toolbar inset. */
 @media (max-width: 767px) {
-  body.cr-account-information-page { background: var(--cr-app-canvas); }
   body.cr-account-information-page .cr-page,
   body.cr-account-information-page .cr-page .cr-prose {
     width: 100%; max-width: none; margin: 0; background: transparent;

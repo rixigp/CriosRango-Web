@@ -5,11 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $active_nav_item = cr2026_app_nav_active_item();
 $is_app_home = 'home' === $active_nav_item;
-$is_app_category_view = ! empty( $GLOBALS['cr2026_parent_category_view'] );
-$is_app_categories_hub = function_exists( 'is_shop' ) && is_shop();
 $is_app_nav_shell = cr2026_is_app_nav_shell();
-$is_checkout_form = function_exists( 'is_checkout' ) && is_checkout()
-    && ( ! function_exists( 'is_order_received_page' ) || ! is_order_received_page() );
 $cart_count = cr2026_cart_count();
 $nav_urls = cr2026_app_nav_urls();
 $is_outlet_active = 'outlet' === $active_nav_item;
@@ -17,8 +13,6 @@ $is_categories_active = 'categories' === $active_nav_item;
 $is_cart_active = 'cart' === $active_nav_item;
 $is_account_active = 'account' === $active_nav_item;
 $is_mobile_account_active = cr2026_is_account_context();
-$is_mobile_account_context = function_exists( 'wp_is_mobile' ) && wp_is_mobile() && $is_mobile_account_active;
-$is_mobile_app_shell_context = function_exists( 'wp_is_mobile' ) && wp_is_mobile() && $is_app_nav_shell;
 ?>
 <?php if ( ! ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) ) : ?>
 <footer class="cr-footer">

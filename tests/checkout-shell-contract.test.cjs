@@ -28,35 +28,27 @@ test('native WordPress page H1 is omitted only on the checkout form page', () =>
   assert.match(page, /the_content\(\)/);
 });
 
-test('informational footer is excluded on checkout form while shared navigation remains rendered', () => {
-  assert.match(footer, /\$is_checkout_form = function_exists\( 'is_checkout' \) && is_checkout\(\)/);
-  assert.match(footer, /&& ! \$is_checkout_form/);
-  assert.match(footer, /class="cr-mobile-bottom-nav cr-app-bottom-nav"/);
-  assert.match(footer, /if \( \$is_app_nav_shell \)/);
+test('mobile footer policy is global and desktop footer remains in the shared template',()=>{
+ assert.ok(footer.includes("if ( ! ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) ) :"));
+ assert.ok(footer.includes('class="cr-mobile-bottom-nav cr-app-bottom-nav"'));
 });
-
 test('checkout stylesheet is enqueued only on checkout form, excluding order received', () => {
   assert.match(assets, /\$uses_checkout_shell = function_exists\( 'is_checkout' \) && is_checkout\(\)[\s\S]*?is_order_received_page\(\)/);
   assert.match(assets, /if \( \$uses_checkout_shell \) \{[\s\S]*?cr2026-checkout[\s\S]*?assets\/css\/checkout\.css/);
 });
 
-test('checkout shell uses the shared canvas token and existing toolbar geometry', () => {
-  assert.match(checkoutCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\)\s*\{[^}]*background:\s*var\(--cr-app-canvas\)/s);
-  assert.match(checkoutCss, /\.cr-checkout-header-shell > \.cr-parent-category__toolbar/);
-  assert.match(mainCss, /\.cr-parent-category__toolbar\s*\{\s*min-height:\s*64px;\s*margin:\s*0 20px 16px;/s);
-  assert.match(checkoutCss, /margin: 0 20px 16px/);
-  assert.match(checkoutCss, /margin: 0 20px 14px/);
-  assert.match(checkoutCss, /margin: 0 32px 24px/);
-  assert.match(checkoutCss, /--cr-app-topbar-height: 82px/);
-  assert.match(checkoutCss, /--cr-app-topbar-height: 88px/);
+test('checkout inherits global canvas and toolbar without page shell overrides',()=>{
+ assert.ok(mainCss.includes('GLOBAL MOBILE APP SHELL'));
+ assert.equal(checkoutCss.includes('cr-parent-category__toolbar'),false);
+ assert.equal(checkoutCss.includes('cr-checkout-header-shell'),false);
+ assert.equal(checkoutCss.includes('.cr-main > .cr-shell.cr-page-shell'),false);
 });
-
 test('checkout Phase 1 shell does not style or replace native transactional controls', () => {
   const phase1Css = checkoutCss.split('/* Checkout Phase 2.2:')[0];
   for (const forbidden of ['#payment', '#order_review', 'payment_method_', 'place_order', 'checkout_coupon', 'woocommerce-checkout-review-order-table']) {
     assert.equal(phase1Css.includes(forbidden), false, forbidden + ' must remain outside Phase 1 CSS');
   }
-  assert.match(checkoutCss, /\.cr-footer\s*\{\s*display:\s*none !important;/);
+  assert.doesNotMatch(checkoutCss, /\.cr-footer/);
   assert.doesNotMatch(checkoutCss, /\.cr-mobile-bottom-nav|\.cr-app-bottom-nav/);
   assert.doesNotMatch(checkoutCss, /body\.woocommerce-cart/);
 });
@@ -82,46 +74,15 @@ function cssLastRuleBody(css, selector) {
   return css.slice(bodyStart, bodyEnd);
 }
 
-test('checkout toolbar uses only the global header top reservation', () => {
-  const globalHeader = cssRuleBody(mainCss, 'body.cr-global-app-header:not(.home)');
-  assert.match(globalHeader, /padding-top:\s*var\(--cr-app-topbar-height\)/);
-
-  const outletSelector = 'body.cr-parent-category-view .cr-parent-category__canvas,';
-  const outletStart = mainCss.indexOf(outletSelector);
-  assert.notEqual(outletStart, -1, 'Outlet/category reservation reset must remain present');
-  const outletOpen = mainCss.indexOf('{', outletStart);
-  const outletClose = mainCss.indexOf('}', outletOpen);
-  assert.ok(outletOpen > outletStart && outletClose > outletOpen);
-  assert.match(mainCss.slice(outletOpen + 1, outletClose), /padding-top:\s*0\s*!important/);
-
-  const checkoutShell = cssRuleBody(
-    checkoutCss,
-    'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell'
-  );
-  assert.match(checkoutShell, /padding-block-start:\s*0\s*;/);
-  assert.doesNotMatch(checkoutShell, /padding-block-start:\s*var\(--cr-app-topbar-height\)/);
-
-  const checkoutTopReservations = [...checkoutCss.matchAll(/padding-block-start\s*:\s*([^;]+);/g)]
-    .map(match => match[1].trim());
-  assert.deepEqual(checkoutTopReservations, ['0'], 'Checkout must not add a second header-height reservation');
+test('checkout adds no page-specific header-to-toolbar or shell reservation',()=>{
+ const globalHeader=cssRuleBody(mainCss,'body.cr-global-app-header:not(.home)');
+ assert.ok(globalHeader.includes('padding-top: var(--cr-app-topbar-height)'));
+ assert.equal(checkoutCss.includes('padding-block-start'),false);
+ assert.equal(checkoutCss.includes('margin-block-start'),false);
+ assert.equal(checkoutCss.includes('.cr-main > .cr-shell.cr-page-shell'),false);
+ assert.equal(checkoutCss.includes('.cr-checkout-header-shell > .cr-parent-category__toolbar'),false);
 });
-
-test('checkout toolbar horizontal geometry remains delegated to the shared toolbar styles', () => {
-  const toolbarRule = cssRuleBody(
-    checkoutCss,
-    'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-header-shell > .cr-parent-category__toolbar'
-  );
-  assert.match(toolbarRule, /min-height:\s*64px/);
-  assert.match(toolbarRule, /margin:\s*0 20px 16px/);
-  assert.match(checkoutCss, /margin: 0 20px 14px/);
-  assert.match(checkoutCss, /margin: 0 32px 24px/);
-});
-
-const woocommercePhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
-const templatePhp = fs.readFileSync(path.join(theme, 'woocommerce/checkout/review-order.php'), 'utf8');
-const cartPhp = fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8');
-const helpersPhp = fs.readFileSync(path.join(theme, 'inc/helpers.php'), 'utf8');
-
+test('checkout toolbar geometry is exclusively global',()=>{assert.doesNotMatch(checkoutCss,/cr-checkout-header-shell|cr-parent-category__toolbar/);assert.match(mainCss,/\.cr-parent-category__toolbar/);});
 test('billing-field filter runs after locale defaults and before WooCommerce priority sorting', () => {
   assert.match(woocommercePhp, /function cr2026_checkout_delivery_fields\( \$fields, \$country = '' \)/);
   const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
@@ -727,13 +688,7 @@ test('checkout assigns the shared Cart gutter only to inner visual surfaces', ()
   assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 11px;'));
   assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 9px;'));
 
-  const shell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell');
-  assert.doesNotMatch(shell, /(^|\s)width\s*:/, 'Checkout shell must inherit width from the global .cr-shell rule');
-  assert.ok(shell.includes('max-width: 1360px;'));
-  assert.ok(shell.includes('margin-inline: auto;'));
-  assert.ok(shell.includes('padding-inline: 0;'));
-  assert.ok(shell.includes('box-sizing: border-box;'));
-  assert.equal(shell.includes('cr-cart-card-inline-gutter'), false);
+  assert.equal(checkoutCss.includes('.cr-main > .cr-shell.cr-page-shell'),false);
 
   const form = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocommerce-checkout');
   assert.ok(form.includes('width: 100%;'));
@@ -759,10 +714,10 @@ test('checkout assigns the shared Cart gutter only to inner visual surfaces', ()
 });
 
 test('checkout has exactly one gutter layer and no structural gutter owners', () => {
-  const shell = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell');
+  assert.equal(checkoutCss.includes('.cr-main > .cr-shell.cr-page-shell'),false);
   const form = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocommerce-checkout');
   const root = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .woocommerce-checkout-review-order-table');
-  assert.equal(shell.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
+  assert.equal(form.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
   assert.equal(form.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
   assert.equal(root.includes('margin-inline: var(--cr-cart-card-inline-gutter)'), false);
   assert.ok(root.includes('width: 100%;'));
@@ -924,22 +879,13 @@ test('checkout app cards consume the global surface contract without changing th
 
 
 
-test('Checkout shell inherits the global responsive shell width instead of forcing width: 100%', () => {
-  const selector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-main > .cr-shell.cr-page-shell';
-  const checkoutShell = cssLastRuleBody(checkoutCss, selector);
-  assert.doesNotMatch(checkoutShell, /(^|\s)width\s*:/, 'Checkout must not override the global shell width');
-
-  const globalShell = cssRuleBody(mainCss, '.cr-shell');
-  assert.match(globalShell, /width:\s*min\(calc\(100%\s*-\s*40px\),\s*var\(--cr-shell\)\)/,
-    'The global shell rule remains the canonical width source');
-  const mobileShellRule = mainCss.match(/@media\s*\(max-width:\s*767px\)[\s\S]*?\.cr-shell\s*\{([^}]*)\}/);
-  assert.ok(mobileShellRule, 'The existing responsive global shell rule must remain present');
-  assert.match(mobileShellRule[1], /width:\s*min\(calc\(100%\s*-\s*24px\),\s*var\(--cr-shell\)\)/);
+test('Checkout does not redefine the global responsive shell rail',()=>{
+ assert.equal(checkoutCss.includes('.cr-main > .cr-shell.cr-page-shell'),false);
+ const globalShell=cssRuleBody(mainCss,'.cr-shell');
+ assert.ok(globalShell.includes('width: min(calc(100% - 40px), var(--cr-shell))'));
+ const mobileBlock=mainCss.slice(mainCss.lastIndexOf('GLOBAL MOBILE APP SHELL'));
+ assert.equal(mobileBlock.includes('.cr-shell {'),false);
 });
-
-
-const checkoutPaymentJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-payment.js'), 'utf8');
-
 test('Checkout payment methods use the native WooCommerce list as one shared white card', () => {
   const listSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) #payment > ul.wc_payment_methods';
   const list = cssLastRuleBody(checkoutCss, listSelector);

@@ -6,8 +6,6 @@ body.cr-product-detail-app {
   --cr-product-muted: #777277;
   --cr-product-border: #D8D9D5;
   --cr-product-coral: #E58B78;
-  padding-bottom: calc(var(--cr-bottom-nav, 72px) + env(safe-area-inset-bottom)) !important;
-  background: var(--cr-app-canvas);
 }
 /* Product Detail's in-flow sticky header replaces the shared fixed-header reservation. */
 body.cr-product-detail-app.cr-global-app-header {
@@ -282,8 +280,7 @@ body.cr-product-detail-app .woocommerce-notices-wrapper .button.wc-forward {
 }
 body.cr-product-detail-app .cr-main--woocommerce div.product .product_meta,
 body.cr-product-detail-app .cr-main--woocommerce div.product .related,
-body.cr-product-detail-app .cr-main--woocommerce div.product .upsells,
-body.cr-product-detail-app .cr-footer {
+body.cr-product-detail-app .cr-main--woocommerce div.product .upsells {
   display: none !important;
 }
 /* WPLoyalty promotional points output only; loyalty functionality remains active. */
@@ -1684,7 +1681,6 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
 /* Product Detail storefront parity: share the exact Category/Home canvas token.
    The product information and variation surfaces remain transparent. */
 body.cr-product-detail-app {
-  background: var(--cr-app-canvas);
 }
 body.cr-product-detail-app .cr-product-detail-toolbar {
   background: var(--cr-app-canvas);

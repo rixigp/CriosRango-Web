@@ -1,72 +1,17 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const assert = require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');const {test}=require('node:test');
+const root=path.join(__dirname,'..','theme','crios-rango-2026','assets','css');
+const files=['main.css','account.css','cart.css','checkout.css','product-detail-skin.css','login.css','outlet-bubbles.css'];
+const css=Object.fromEntries(files.map(f=>[f,fs.readFileSync(path.join(root,f),'utf8')]));
+function rules(src){const out=[],re=/([^{}]+)\{([^{}]*)\}/g;let m;while((m=re.exec(src))!==null){const selector=m[1].replace(/\/\*[\s\S]*?\*\//g,'').trim().replace(/\s+/g,' ');const declarations=m[2].split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf(':');return i<0?null:{property:x.slice(0,i).trim().toLowerCase(),value:x.slice(i+1).trim()};}).filter(Boolean);out.push({selector,declarations});}return out;}
+const context=/body\.(?:woocommerce-cart|woocommerce-checkout|woocommerce-account|cr-account-[\w-]+|cr-order-[\w-]+|cr-information-[\w-]+|cr-product-detail-app|cr-parent-category-view|cr-product-listing-view|search|error404|home)/;
+const shell=/\.cr-(?:main(?:--woocommerce)?|page-shell|shell|parent-category__toolbar|parent-category__back|parent-category__title)/;
+const props=new Set(['--cr-app-topbar-height','--cr-app-topbar-height','--cr-bottom-nav','background','background-color','width','max-width','min-width','margin','margin-inline','margin-left','margin-right','margin-top','padding','padding-inline','padding-left','padding-right','padding-top','padding-block','padding-block-start','padding-block-end','height','min-height','gap','column-gap','row-gap','font-size','font-weight','line-height','position','top','left','right','bottom','transform']);
+const offenders=[];for(const [file,src] of Object.entries(css))for(const r of rules(src)){if(!context.test(r.selector))continue;for(const d of r.declarations){if(!props.has(d.property))continue;const productContent=/\.cr-main--woocommerce\s+div\.product/.test(r.selector);if(shell.test(r.selector)&&!productContent)offenders.push({file,selector:r.selector,property:d.property,value:d.value});if(/^body\.(?:woocommerce-cart|woocommerce-checkout|woocommerce-account|cr-account-[\w-]+|cr-product-detail-app|search|error404)$/.test(r.selector)&&['background','background-color'].includes(d.property))offenders.push({file,selector:r.selector,property:d.property,value:d.value});if(['padding','padding-bottom','padding-block-end'].includes(d.property)&&/calc\(\s*(?:var\(--cr-bottom-nav|(?:72|88|92|96|100)px)|(?:72|88|92|96|100|108)px/.test(d.value))offenders.push({file,selector:r.selector,property:d.property,value:d.value});}}
+test('PAGE_SPECIFIC_BODY_BACKGROUND=0',()=>assert.deepEqual(offenders.filter(x=>['background','background-color'].includes(x.property)&&/^body\./.test(x.selector)),[]));
+test('PAGE_SPECIFIC_PAGE_SHELL_TOP_PADDING=0',()=>assert.deepEqual(offenders.filter(x=>/page-shell|cr-main/.test(x.selector)&&/padding|margin-top/.test(x.property)),[]));
+test('PAGE_SPECIFIC_TOOLBAR_GEOMETRY=0',()=>assert.deepEqual(offenders.filter(x=>/parent-category__toolbar|parent-category__back|parent-category__title/.test(x.selector)),[]));
+test('PAGE_SPECIFIC_BOTTOM_NAV_CLEARANCE=0',()=>assert.deepEqual(offenders.filter(x=>/calc\(\s*(?:72|88|92|96|100)px|(?:72|88|92|96|100|108)px/.test(x.value)),[]));
 
-const cssRoot = path.join(__dirname, '..', 'theme', 'crios-rango-2026', 'assets', 'css');
-const files = ['main.css', 'account.css', 'cart.css', 'checkout.css', 'product-detail-skin.css', 'login.css'];
-const cssByFile = Object.fromEntries(files.map(file => [file, fs.readFileSync(path.join(cssRoot, file), 'utf8')]));
-const shellProperties = new Set([
-  'background', 'background-color', 'width', 'max-width', 'min-width',
-  'margin', 'margin-inline', 'margin-left', 'margin-right', 'margin-top',
-  'padding', 'padding-inline', 'padding-left', 'padding-right',
-  'padding-top', 'padding-block', 'padding-block-start', 'padding-block-end',
-  'height', 'min-height', 'gap', 'column-gap', 'row-gap',
-  'font-size', 'font-weight', 'line-height', 'position', 'top', 'left',
-  'right', 'bottom', 'transform'
-]);
+test('PAGE_SPECIFIC_HEADER_RESERVATION_AND_FOOTER_POLICY=0',()=>{const violations=[];for(const [file,source] of Object.entries(css))for(const r of rules(source)){if(!context.test(r.selector))continue;for(const d of r.declarations){if(['--cr-app-topbar-height','--cr-bottom-nav'].includes(d.property))violations.push({file,selector:r.selector,property:d.property});if((r.selector.includes('.cr-footer')||r.selector.includes('.cr-mobile-bottom-nav'))&&['display','visibility','position'].includes(d.property))violations.push({file,selector:r.selector,property:d.property});}}assert.deepEqual(violations,[]);});
 
-function rules(css) {
-  const found = [];
-  const pattern = /([^{}]+)\\{([^{}]*)\\}/g;
-  let match;
-  while ((match = pattern.exec(css)) !== null) {
-    const selector = match[1].replace(/\\/\\*[\\s\\S]*?\\*\\//g, '').trim().replace(/\\s+/g, ' ');
-    const declarations = match[2].split(';').map(item => item.trim()).filter(Boolean).map(item => {
-      const colon = item.indexOf(':');
-      return colon < 0 ? null : { property: item.slice(0, colon).trim().toLowerCase(), value: item.slice(colon + 1).trim() };
-    }).filter(Boolean);
-    found.push({ selector, declarations });
-  }
-  return found;
-}
-
-const contextual = /(?:^|[,\\s])body\\.(?:woocommerce-cart|woocommerce-checkout|woocommerce-account|cr-account-[\\w-]+|cr-order-[\\w-]+|cr-information-[\\w-]+|cr-product-detail-app|search|error404)/;
-const shellSelector = /\\.cr-(?:main(?:--woocommerce)?|page-shell|shell|parent-category__toolbar|parent-category__back|parent-category__title)/;
-const prohibited = [];
-for (const [file, css] of Object.entries(cssByFile)) {
-  for (const rule of rules(css)) {
-    if (!contextual.test(rule.selector)) continue;
-    for (const declaration of rule.declarations) {
-      if (!shellProperties.has(declaration.property)) continue;
-      const selectorIsProductContent = /\\.cr-main--woocommerce\\s+div\\.product/.test(rule.selector);
-      if (shellSelector.test(rule.selector) && !selectorIsProductContent) {
-        prohibited.push({ file, selector: rule.selector, property: declaration.property, value: declaration.value });
-      }
-      if (/^body\\.(?:woocommerce-cart|woocommerce-checkout|woocommerce-account|cr-account-[\\w-]+|cr-product-detail-app|search|error404)(?:\\s|,|$)/.test(rule.selector) && ['background','background-color'].includes(declaration.property)) {
-        prohibited.push({ file, selector: rule.selector, property: declaration.property, value: declaration.value });
-      }
-      if (declaration.property === 'padding-bottom' || declaration.property === 'padding') {
-        if (/calc\\(\\s*(?:72|88|92|96|100)px|(?:72|88|92|96|100|108)px/.test(declaration.value) &&
-            /(?:cr-account-home|cr-account-profile-home|woocommerce-EditAccountForm|wpfda-delete-account-container|cr-order)/.test(rule.selector)) {
-          prohibited.push({ file, selector: rule.selector, property: declaration.property, value: declaration.value });
-        }
-      }
-    }
-  }
-}
-test('PAGE_SPECIFIC_BODY_BACKGROUND=0', () => {
-  const hits = prohibited.filter(item => ['background','background-color'].includes(item.property) && /^body\\./.test(item.selector));
-  assert.deepEqual(hits, []);
-});
-test('PAGE_SPECIFIC_PAGE_SHELL_TOP_PADDING=0', () => {
-  const hits = prohibited.filter(item => /page-shell|cr-main/.test(item.selector) && /padding|margin-top/.test(item.property));
-  assert.deepEqual(hits, []);
-});
-test('PAGE_SPECIFIC_TOOLBAR_GEOMETRY=0', () => {
-  const hits = prohibited.filter(item => /parent-category__toolbar|parent-category__back|parent-category__title/.test(item.selector));
-  assert.deepEqual(hits, []);
-});
-test('PAGE_SPECIFIC_BOTTOM_NAV_CLEARANCE=0', () => {
-  const hits = prohibited.filter(item => /calc\\(\\s*(?:72|88|92|96|100)px|(?:72|88|92|96|100|108)px/.test(item.value));
-  assert.deepEqual(hits, []);
-});
+test('PAGE_SPECIFIC_FOOTER_VISIBILITY=0',()=>{const hits=[];for(const [file,source] of Object.entries(css))for(const r of rules(source)){if(!context.test(r.selector))continue;if(!r.selector.includes('.cr-footer')&&!r.selector.includes('.cr-mobile-bottom-nav'))continue;for(const d of r.declarations)if(['display','visibility','position'].includes(d.property))hits.push({file,selector:r.selector,property:d.property});}assert.deepEqual(hits,[]);});
