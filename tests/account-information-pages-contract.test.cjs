@@ -34,8 +34,10 @@ test('ALL_FIVE_PAGES_USE_ONE_WORDPRESS_CONTENT_RENDERER_AND_CANONICAL_TOOLBAR', 
   assert.match(page, /cr2026_is_account_information_page\(\)/);
   assert.match(page, /cr-information-toolbar-shell/);
   assert.match(helpers, /cr-account-information-page/);
-  assert.match(accountCss, /body\.cr-account-information-page \.cr-main > \.cr-shell\.cr-page-shell[\\s\\S]*?max-width: 1360px/);
-  assert.match(accountCss, /body\.cr-account-information-page \.cr-information-toolbar-shell[\\s\\S]*?margin-inline: auto/);
+  assert.ok(accountCss.includes('body.cr-account-information-page .cr-main > .cr-shell.cr-page-shell')); 
+  assert.ok(accountCss.includes('width: 100%; max-width: 1360px; margin-inline: auto;'));
+  assert.ok(accountCss.includes('body.cr-account-information-page .cr-information-toolbar-shell')); 
+  assert.ok(accountCss.includes('width: min(100%, 1360px); margin-inline: auto; box-sizing: border-box;'));
   assert.match(accountCss, /body\.cr-account-information-page \{ background: var\(--cr-app-canvas\); \}/);
   assert.match(page, /the_content\(\)/);
   assert.match(presentation, /function cr2026_account_information_page_content\( \$content \)/);
