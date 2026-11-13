@@ -11,6 +11,7 @@ const footer = fs.readFileSync(path.join(theme, 'footer.php'), 'utf8');
 const assets = fs.readFileSync(path.join(theme, 'inc/assets.php'), 'utf8');
 const checkoutCss = fs.readFileSync(path.join(theme, 'assets/css/checkout.css'), 'utf8');
 const checkoutPaymentJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-payment.js'), 'utf8');
+const checkoutWooCommercePhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
 const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
 const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
 
@@ -93,14 +94,14 @@ test('checkout adds no page-specific header-to-toolbar or shell reservation',()=
 });
 test('checkout toolbar geometry is exclusively global',()=>{assert.doesNotMatch(checkoutCss,/cr-checkout-header-shell|cr-parent-category__toolbar/);assert.match(mainCss,/\.cr-parent-category__toolbar/);});
 test('billing-field filter runs after locale defaults and before WooCommerce priority sorting', () => {
-  assert.match(woocommercePhp, /function cr2026_checkout_delivery_fields\( \$fields, \$country = '' \)/);
-  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
-  const fn = woocommercePhp.slice(start, end);
+  assert.match(checkoutWooCommercePhp, /function cr2026_checkout_delivery_fields\( \$fields, \$country = '' \)/);
+  const start = checkoutWooCommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
+  const fn = checkoutWooCommercePhp.slice(start, end);
   assert.match(fn, /if \( ! is_array\( \$fields \) \)/);
-  assert.match(woocommercePhp, /add_filter\( 'woocommerce_billing_fields', 'cr2026_checkout_delivery_fields', 9999, 2 \)/);
-  assert.deepEqual([...woocommercePhp.matchAll(/add_filter\( 'woocommerce_checkout_fields', '([^']+)'/g)].map(match => match[1]), ['cr2026_checkout_stabilize_phone_field_order']);
-  assert.doesNotMatch(woocommercePhp, /add_filter\( 'woocommerce_default_address_fields'/);
+  assert.match(checkoutWooCommercePhp, /add_filter\( 'woocommerce_billing_fields', 'cr2026_checkout_delivery_fields', 9999, 2 \)/);
+  assert.deepEqual([...checkoutWooCommercePhp.matchAll(/add_filter\( 'woocommerce_checkout_fields', '([^']+)'/g)].map(match => match[1]), ['cr2026_checkout_stabilize_phone_field_order']);
+  assert.doesNotMatch(checkoutWooCommercePhp, /add_filter\( 'woocommerce_default_address_fields'/);
   const allowlist = [...fn.matchAll(/^\s*'(billing_[a-z0-9_]+)'\s*=>/gm)].map(match => match[1]);
   assert.deepEqual(allowlist, [
     'billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone',
@@ -109,11 +110,11 @@ test('billing-field filter runs after locale defaults and before WooCommerce pri
 });
 
 test('final checkout_fields filter reasserts phone position after later billing pipeline changes without altering field semantics', () => {
-  assert.match(woocommercePhp, /function cr2026_checkout_stabilize_phone_field_order\( \$fields \)/);
-  assert.match(woocommercePhp, /add_filter\( 'woocommerce_checkout_fields', 'cr2026_checkout_stabilize_phone_field_order', PHP_INT_MAX \)/);
-  const start = woocommercePhp.indexOf('function cr2026_checkout_stabilize_phone_field_order(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
-  const fn = woocommercePhp.slice(start, end);
+  assert.match(checkoutWooCommercePhp, /function cr2026_checkout_stabilize_phone_field_order\( \$fields \)/);
+  assert.match(checkoutWooCommercePhp, /add_filter\( 'woocommerce_checkout_fields', 'cr2026_checkout_stabilize_phone_field_order', PHP_INT_MAX \)/);
+  const start = checkoutWooCommercePhp.indexOf('function cr2026_checkout_stabilize_phone_field_order(');
+  const end = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_checkout_fields'", start);
+  const fn = checkoutWooCommercePhp.slice(start, end);
   const expectedOrder = [
     'billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone',
     'billing_address_1', 'billing_state', 'billing_city', 'billing_postcode', 'billing_country'
@@ -131,9 +132,9 @@ test('final checkout_fields filter reasserts phone position after later billing 
 });
 
 test('billing presentation filter changes only label, priority and wrapper classes', () => {
-  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
-  const fn = woocommercePhp.slice(start, end);
+  const start = checkoutWooCommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
+  const fn = checkoutWooCommercePhp.slice(start, end);
   for (const property of ['label', 'priority', 'class']) assert.ok(fn.includes("['" + property + "']"));
   for (const forbidden of ['required', 'validate', 'autocomplete', 'options', 'default', 'custom_attributes', "['type']", "['name']", "['id']"]) {
     assert.equal(fn.includes(forbidden), false, 'must not modify ' + forbidden);
@@ -142,9 +143,9 @@ test('billing presentation filter changes only label, priority and wrapper class
 });
 
 test('unknown billing fields remain untouched and address line 2 is not targeted', () => {
-  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
-  const fn = woocommercePhp.slice(start, end);
+  const start = checkoutWooCommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
+  const fn = checkoutWooCommercePhp.slice(start, end);
   assert.doesNotMatch(fn, /unset\s*\(/);
   assert.doesNotMatch(fn, /billing_address_2|shipping_/);
   assert.match(fn, /foreach \( \$delivery_fields as \$key => \$presentation \)/);
@@ -152,9 +153,9 @@ test('unknown billing fields remain untouched and address line 2 is not targeted
 });
 
 test('each known billing field has its exact deterministic priority and label', () => {
-  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
-  const fn = woocommercePhp.slice(start, end);
+  const start = checkoutWooCommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
+  const fn = checkoutWooCommercePhp.slice(start, end);
   const expected = [
     ['billing_first_name', 10, 'Nombre'],
     ['billing_last_name', 20, 'Apellidos'],
@@ -173,17 +174,17 @@ test('each known billing field has its exact deterministic priority and label', 
 });
 
 test('delivery section heading is appended through the native billing hook', () => {
-  assert.match(woocommercePhp, /function cr2026_checkout_render_delivery_heading\( \$checkout \)/);
-  assert.match(woocommercePhp, /woocommerce_before_checkout_billing_form', 'cr2026_checkout_render_delivery_heading', 5, 1/);
-  assert.match(woocommercePhp, /cr-checkout-delivery-heading__step/);
-  assert.match(woocommercePhp, /esc_html__\( 'Entrega'/);
+  assert.match(checkoutWooCommercePhp, /function cr2026_checkout_render_delivery_heading\( \$checkout \)/);
+  assert.match(checkoutWooCommercePhp, /woocommerce_before_checkout_billing_form', 'cr2026_checkout_render_delivery_heading', 5, 1/);
+  assert.match(checkoutWooCommercePhp, /cr-checkout-delivery-heading__step/);
+  assert.match(checkoutWooCommercePhp, /esc_html__\( 'Entrega'/);
   assert.match(checkoutCss, /\.woocommerce-billing-fields > h3\s*\{\s*display:\s*none;/);
 });
 
 test('delivery field semantics define five full-width fields and two half-width rows', () => {
-  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
-  const fn = woocommercePhp.slice(start, end);
+  const start = checkoutWooCommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
+  const fn = checkoutWooCommercePhp.slice(start, end);
   const full = ['billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone', 'billing_address_1'];
   const half = ['billing_state', 'billing_city', 'billing_postcode', 'billing_country'];
   for (const key of full) assert.match(fn, new RegExp("'" + key + "'\\s*=>[^\\n]*'layout' => 'full'"));
@@ -209,14 +210,14 @@ test('delivery controls and floating-label notch use the white card surface', ()
 });
 
 test('WooCommerce core full shipping labels lose only the appended price separator in Checkout', () => {
-  assert.match(woocommercePhp, /function cr2026_checkout_shipping_full_label_presentation\( \$label, \$method \)/);
-  assert.ok(woocommercePhp.includes("add_filter( 'woocommerce_cart_shipping_method_full_label', 'cr2026_checkout_shipping_full_label_presentation', 99, 2 );"));
-  assert.ok(woocommercePhp.includes("$method->get_label()"));
-  assert.ok(woocommercePhp.includes("$prefix = $method_label . ': ';"));
-  assert.ok(woocommercePhp.includes("0 !== strpos( $label, $prefix )"));
-  assert.ok(woocommercePhp.includes("substr( $label, strlen( $prefix ) )"));
-  assert.doesNotMatch(woocommercePhp, /woocommerce_shipping_rate_label|cr2026_checkout_shipping_rate_label_presentation/);
-  assert.match(woocommercePhp, /! is_checkout\(\)[\s\S]*?is_order_received_page\(\)/);
+  assert.match(checkoutWooCommercePhp, /function cr2026_checkout_shipping_full_label_presentation\( \$label, \$method \)/);
+  assert.ok(checkoutWooCommercePhp.includes("add_filter( 'woocommerce_cart_shipping_method_full_label', 'cr2026_checkout_shipping_full_label_presentation', 99, 2 );"));
+  assert.ok(checkoutWooCommercePhp.includes("$method->get_label()"));
+  assert.ok(checkoutWooCommercePhp.includes("$prefix = $method_label . ': ';"));
+  assert.ok(checkoutWooCommercePhp.includes("0 !== strpos( $label, $prefix )"));
+  assert.ok(checkoutWooCommercePhp.includes("substr( $label, strlen( $prefix ) )"));
+  assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_shipping_rate_label|cr2026_checkout_shipping_rate_label_presentation/);
+  assert.match(checkoutWooCommercePhp, /! is_checkout\(\)[\s\S]*?is_order_received_page\(\)/);
 
   const removeCoreSeparator = (label, methodLabel) => {
     const prefix = methodLabel + ': ';
@@ -236,33 +237,33 @@ test('delivery labels float over native controls and retain the real WooCommerce
   assert.ok(checkoutCss.includes("background: var(--cr-white);"));
   assert.ok(checkoutCss.includes("pointer-events: none;"));
   assert.ok(checkoutCss.includes(".form-row input.input-text"));
-  assert.ok(woocommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
+  assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
 });
 
 test('native delivery controls and Select2 remain presentation-only with no DOM replacement', () => {
-  assert.doesNotMatch(woocommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);
   assert.ok(checkoutCss.includes(".select2-selection--single"));
   assert.ok(checkoutCss.includes("height: var(--cr-checkout-field-height);"));
   const orderDeclarationPattern = new RegExp("^[ \\t]*order[ \\t]*:", "m");
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
-  assert.doesNotMatch(woocommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
 });
 
 test('country and state remain native WooCommerce selects with Select2 presentation only', () => {
-  assert.match(woocommercePhp, /billing_state/);
-  assert.match(woocommercePhp, /billing_country/);
+  assert.match(checkoutWooCommercePhp, /billing_state/);
+  assert.match(checkoutWooCommercePhp, /billing_country/);
   assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper \.select2-container/);
   assert.match(checkoutCss, /\.select2-selection--single/);
   assert.match(checkoutCss, /\.select2-container--open\s*\{\s*z-index:/);
-  assert.doesNotMatch(woocommercePhp, /select2|wp_dequeue_script|woocommerce_form_field/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /select2|wp_dequeue_script|woocommerce_form_field/);
 });
 
 test('ship to different address native control remains present and receives superficial styling only', () => {
   assert.match(checkoutCss, /\.woocommerce-shipping-fields/);
   assert.match(checkoutCss, /\.woocommerce-form__label-for-checkbox/);
-  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
-  assert.doesNotMatch(woocommercePhp.slice(start, end), /ship_to_different_address|shipping_/);
+  const start = checkoutWooCommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
+  assert.doesNotMatch(checkoutWooCommercePhp.slice(start, end), /ship_to_different_address|shipping_/);
 });
 
 test('delivery styling is scoped to checkout and excludes notes and transactional sections', () => {
@@ -280,18 +281,18 @@ test('delivery styling is scoped to checkout and excludes notes and transactiona
 
 
 test('WooCommerce default, base and ES address locales normalize only native field priorities', () => {
-  const localeFnStart = woocommercePhp.indexOf('function cr2026_checkout_normalize_address_locale_priorities(');
-  const localeFnEnd = woocommercePhp.indexOf("add_filter( 'woocommerce_get_country_locale_default'", localeFnStart);
-  const localeFn = woocommercePhp.slice(localeFnStart, localeFnEnd);
-  const countryLocaleStart = woocommercePhp.indexOf('function cr2026_checkout_country_address_locale(');
-  const countryLocaleEnd = woocommercePhp.indexOf("add_filter( 'woocommerce_get_country_locale'", countryLocaleStart);
-  const countryLocaleFn = woocommercePhp.slice(countryLocaleStart, countryLocaleEnd);
+  const localeFnStart = checkoutWooCommercePhp.indexOf('function cr2026_checkout_normalize_address_locale_priorities(');
+  const localeFnEnd = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_get_country_locale_default'", localeFnStart);
+  const localeFn = checkoutWooCommercePhp.slice(localeFnStart, localeFnEnd);
+  const countryLocaleStart = checkoutWooCommercePhp.indexOf('function cr2026_checkout_country_address_locale(');
+  const countryLocaleEnd = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_get_country_locale'", countryLocaleStart);
+  const countryLocaleFn = checkoutWooCommercePhp.slice(countryLocaleStart, countryLocaleEnd);
 
   assert.ok(localeFnStart >= 0 && localeFnEnd > localeFnStart);
   assert.ok(countryLocaleStart >= 0 && countryLocaleEnd > countryLocaleStart);
-  assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale_default', 'cr2026_checkout_normalize_address_locale_priorities', 9999 \)/);
-  assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale_base', 'cr2026_checkout_normalize_address_locale_priorities', 9999 \)/);
-  assert.match(woocommercePhp, /add_filter\( 'woocommerce_get_country_locale', 'cr2026_checkout_country_address_locale', 9999 \)/);
+  assert.match(checkoutWooCommercePhp, /add_filter\( 'woocommerce_get_country_locale_default', 'cr2026_checkout_normalize_address_locale_priorities', 9999 \)/);
+  assert.match(checkoutWooCommercePhp, /add_filter\( 'woocommerce_get_country_locale_base', 'cr2026_checkout_normalize_address_locale_priorities', 9999 \)/);
+  assert.match(checkoutWooCommercePhp, /add_filter\( 'woocommerce_get_country_locale', 'cr2026_checkout_country_address_locale', 9999 \)/);
 
   for (const [key, priority] of [
     ['phone', 40], ['address_1', 50], ['state', 60],
@@ -303,7 +304,7 @@ test('WooCommerce default, base and ES address locales normalize only native fie
   }
   assert.doesNotMatch(localeFn, /\['(?:label|required|hidden|type|validate|autocomplete|states|value)'\]\s*=/);
   assert.doesNotMatch(countryLocaleFn, /\['(?:label|required|hidden|type|validate|autocomplete|states|value)'\]\s*=/);
-  assert.deepEqual([...woocommercePhp.matchAll(/add_filter\( 'woocommerce_checkout_fields', '([^']+)'/g)].map(match => match[1]), ['cr2026_checkout_stabilize_phone_field_order']);
+  assert.deepEqual([...checkoutWooCommercePhp.matchAll(/add_filter\( 'woocommerce_checkout_fields', '([^']+)'/g)].map(match => match[1]), ['cr2026_checkout_stabilize_phone_field_order']);
 });
 test('runtime pipeline simulation preserves final billing DOM order after ES locale and native JS sorting', () => {
   const expected = [
@@ -392,29 +393,29 @@ test('runtime pipeline simulation preserves final billing DOM order after ES loc
   // The checkout CSS makes unknown rows full width by default; native company
   // and address_2 rows are not removed or rewritten by the theme callback.
   assert.ok(checkoutCss.includes('grid-column: 1 / -1;'));
-  const deliveryStart = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const deliveryEnd = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", deliveryStart);
-  const deliveryFn = woocommercePhp.slice(deliveryStart, deliveryEnd);
+  const deliveryStart = checkoutWooCommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const deliveryEnd = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", deliveryStart);
+  const deliveryFn = checkoutWooCommercePhp.slice(deliveryStart, deliveryEnd);
   assert.equal(deliveryFn.includes('billing_company'), false);
   assert.equal(deliveryFn.includes('billing_address_2'), false);
   assert.equal(deliveryFn.includes('unset('), false);
 });
 
 test('delivery layout keeps semantic full/half rows independent of WooCommerce legacy floats', () => {
-  const start = woocommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
-  const end = woocommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
-  const fn = woocommercePhp.slice(start, end);
+  const start = checkoutWooCommercePhp.indexOf('function cr2026_checkout_delivery_fields(');
+  const end = checkoutWooCommercePhp.indexOf("add_filter( 'woocommerce_billing_fields'", start);
+  const fn = checkoutWooCommercePhp.slice(start, end);
   assert.ok(fn.includes("'cr-delivery-field--' . $presentation['layout']"));
   assert.ok(checkoutCss.includes('grid-template-columns: repeat(2, minmax(0, 1fr));'));
   assert.ok(checkoutCss.includes('grid-column: 1 / -1;'));
   assert.ok(checkoutCss.includes('grid-column: auto;'));
   assert.doesNotMatch(checkoutCss, /^[ \t]*order[ \t]*:/m);
-  assert.doesNotMatch(woocommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
 });
 
 test('shipping and summary headings are shared, numbered, and the old heading callback is removed', () => {
-  assert.doesNotMatch(woocommercePhp, /function cr2026_checkout_render_shipping_heading/);
-  assert.doesNotMatch(woocommercePhp, /add_action\( 'woocommerce_review_order_before_shipping', 'cr2026_checkout_render_shipping_heading'/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /function cr2026_checkout_render_shipping_heading/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /add_action\( 'woocommerce_review_order_before_shipping', 'cr2026_checkout_render_shipping_heading'/);
   assert.match(templatePhp, /cr-checkout-delivery-heading cr-checkout-shipping-heading/);
   assert.match(templatePhp, /aria-hidden="true">2<\/span><h2><\?php esc_html_e\( 'Envío'/);
   assert.match(templatePhp, /cr-checkout-delivery-heading cr-checkout-summary-heading/);
@@ -510,46 +511,46 @@ test('classic checkout update_order_review regenerates the full single-root ship
   assert.match(templatePhp, /<table class="shop_table woocommerce-checkout-review-order-table">/);
   assert.match(templatePhp, /cr-checkout-shipping-section-row/);
   assert.match(templatePhp, /cr-checkout-summary-heading-row/);
-  assert.doesNotMatch(woocommercePhp, /appendChild|insertBefore|insertAdjacentElement|update_checkout|updated_checkout/);
-  assert.doesNotMatch(woocommercePhp, /wp_enqueue_script|wp_add_inline_script/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /appendChild|insertBefore|insertAdjacentElement|update_checkout|updated_checkout/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /wp_enqueue_script|wp_add_inline_script/);
 });
 
 test('shipping native hook remains core while only the former theme heading callback is removed', () => {
   assert.match(templatePhp, /do_action\( 'woocommerce_review_order_before_shipping' \)/);
   assert.match(templatePhp, /do_action\( 'woocommerce_review_order_after_shipping' \)/);
-  assert.doesNotMatch(woocommercePhp, /cr2026_checkout_render_shipping_heading/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /cr2026_checkout_render_shipping_heading/);
   assert.doesNotMatch(templatePhp, /woocommerce_package_rates|woocommerce_shipping_rate_cost|woocommerce_shipping_methods/);
 });
 
 test('Checkout benefits card keeps live shipping and obtains points through the WPLoyalty public API', () => {
-  assert.match(woocommercePhp, /WC_Shipping_Zones::get_zone_matching_package\(\s*\$package\s*\)/);
-  assert.match(woocommercePhp, /\$method->get_option\(\s*'requires'/);
-  assert.match(woocommercePhp, /\$method->get_option\(\s*'min_amount'/);
-  assert.match(woocommercePhp, /\$method->get_option\(\s*'ignore_discounts'/);
-  assert.match(woocommercePhp, /get_displayed_subtotal\(\)/);
-  assert.match(woocommercePhp, /add_filter\(\s*'wlr_is_checkout_earn_message_enabled',\s*'__return_false'\s*\)/);
-  assert.match(woocommercePhp, /add_filter\(\s*'wlr_is_checkout_redeem_message_enabled',\s*'__return_false'\s*\)/);
-  assert.match(woocommercePhp, /add_filter\(\s*'wlr_points_rewards_earn_points_message'/);
-  assert.match(woocommercePhp, /\$short_code_list\['\{wlr_cart_points\}'\]/);
-  assert.match(woocommercePhp, /class_exists/);
-  assert.match(woocommercePhp, /new \\Wlr\\App\\Controllers\\Site\\DisplayMessage\(\)/);
-  assert.match(woocommercePhp, /->getCartMessage\(\s*false\s*\)/);
-  assert.match(woocommercePhp, /woocommerce_update_order_review_fragments/);
-  assert.match(woocommercePhp, /\.cr-checkout-benefits/);
+  assert.match(checkoutWooCommercePhp, /WC_Shipping_Zones::get_zone_matching_package\(\s*\$package\s*\)/);
+  assert.match(checkoutWooCommercePhp, /\$method->get_option\(\s*'requires'/);
+  assert.match(checkoutWooCommercePhp, /\$method->get_option\(\s*'min_amount'/);
+  assert.match(checkoutWooCommercePhp, /\$method->get_option\(\s*'ignore_discounts'/);
+  assert.match(checkoutWooCommercePhp, /get_displayed_subtotal\(\)/);
+  assert.match(checkoutWooCommercePhp, /add_filter\(\s*'wlr_is_checkout_earn_message_enabled',\s*'__return_false'\s*\)/);
+  assert.match(checkoutWooCommercePhp, /add_filter\(\s*'wlr_is_checkout_redeem_message_enabled',\s*'__return_false'\s*\)/);
+  assert.match(checkoutWooCommercePhp, /add_filter\(\s*'wlr_points_rewards_earn_points_message'/);
+  assert.match(checkoutWooCommercePhp, /\$short_code_list\['\{wlr_cart_points\}'\]/);
+  assert.match(checkoutWooCommercePhp, /class_exists/);
+  assert.match(checkoutWooCommercePhp, /new \\Wlr\\App\\Controllers\\Site\\DisplayMessage\(\)/);
+  assert.match(checkoutWooCommercePhp, /->getCartMessage\(\s*false\s*\)/);
+  assert.match(checkoutWooCommercePhp, /woocommerce_update_order_review_fragments/);
+  assert.match(checkoutWooCommercePhp, /\.cr-checkout-benefits/);
   assert.match(checkoutCss, /\.cr-checkout-benefits__row/);
-  assert.doesNotMatch(woocommercePhp, /woocommerce_package_rates|woocommerce_shipping_rate_cost|woocommerce_shipping_methods/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_package_rates|woocommerce_shipping_rate_cost|woocommerce_shipping_methods/);
 });
 
 test('WPLoyalty native Checkout messages are disabled without Cart changes or legacy integration code', () => {
-  assert.match(woocommercePhp, /wlr_is_checkout_earn_message_enabled/);
-  assert.match(woocommercePhp, /wlr_is_checkout_redeem_message_enabled/);
-  assert.match(woocommercePhp, /return ''/);
-  assert.doesNotMatch(woocommercePhp, /wc_points_rewards_(?:earn|redeem)_points_message/);
-  assert.doesNotMatch(woocommercePhp, /cr2026_find_points_rewards_callback/);
-  assert.doesNotMatch(woocommercePhp, /render_(?:earn|redeem)_points_message/);
-  const pointsFn = woocommercePhp.slice(
-    woocommercePhp.indexOf('function cr2026_checkout_benefits_points_earned'),
-    woocommercePhp.indexOf('/** Render the single server-generated Checkout benefits card')
+  assert.match(checkoutWooCommercePhp, /wlr_is_checkout_earn_message_enabled/);
+  assert.match(checkoutWooCommercePhp, /wlr_is_checkout_redeem_message_enabled/);
+  assert.match(checkoutWooCommercePhp, /return ''/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /wc_points_rewards_(?:earn|redeem)_points_message/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /cr2026_find_points_rewards_callback/);
+  assert.doesNotMatch(checkoutWooCommercePhp, /render_(?:earn|redeem)_points_message/);
+  const pointsFn = checkoutWooCommercePhp.slice(
+    checkoutWooCommercePhp.indexOf('function cr2026_checkout_benefits_points_earned'),
+    checkoutWooCommercePhp.indexOf('/** Render the single server-generated Checkout benefits card')
   );
   assert.match(pointsFn, /class_exists/);
   assert.match(pointsFn, /new \\Wlr\\App\\Controllers\\Site\\DisplayMessage/);
@@ -557,19 +558,19 @@ test('WPLoyalty native Checkout messages are disabled without Cart changes or le
   assert.match(pointsFn, /wlr_points_rewards_earn_points_message/);
   assert.match(pointsFn, /remove_filter\(/);
   assert.doesNotMatch(pointsFn, /strip_tags|preg_match|get_points_earned_for_purchase|WP_Hook/);
-  assert.match(woocommercePhp, /cr2026_checkout_benefits_points_earned\(\)/);
-  assert.match(woocommercePhp, /woocommerce_update_order_review_fragments/);
+  assert.match(checkoutWooCommercePhp, /cr2026_checkout_benefits_points_earned\(\)/);
+  assert.match(checkoutWooCommercePhp, /woocommerce_update_order_review_fragments/);
 });
 
 test('Coupon prompt remains Checkout-only and the shipping implementation is unchanged by this points fix', () => {
-  assert.match(woocommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',\s*'woocommerce_checkout_coupon_form',\s*10\s*\)/);
-  const checkoutBenefits = woocommercePhp.slice(
-    woocommercePhp.indexOf('function cr2026_checkout_remove_legacy_benefit_prompts'),
-    woocommercePhp.indexOf('function cr2026_checkout_benefits_shipping_data')
+  assert.match(checkoutWooCommercePhp, /remove_action\(\s*'woocommerce_before_checkout_form',\s*'woocommerce_checkout_coupon_form',\s*10\s*\)/);
+  const checkoutBenefits = checkoutWooCommercePhp.slice(
+    checkoutWooCommercePhp.indexOf('function cr2026_checkout_remove_legacy_benefit_prompts'),
+    checkoutWooCommercePhp.indexOf('function cr2026_checkout_benefits_shipping_data')
   );
   assert.doesNotMatch(checkoutBenefits, /remove_action\([\s\S]*?render_(?:earn|redeem)_points_message/);
-  assert.match(woocommercePhp, /WC_Shipping_Zones::get_zone_matching_package\(\s*\$package\s*\)/);
-  assert.match(woocommercePhp, /get_displayed_subtotal\(\)/);
+  assert.match(checkoutWooCommercePhp, /WC_Shipping_Zones::get_zone_matching_package\(\s*\$package\s*\)/);
+  assert.match(checkoutWooCommercePhp, /get_displayed_subtotal\(\)/);
 });
 
 test('shipping checkout layout changes are isolated from cart shipping presentation', () => {
@@ -1008,7 +1009,6 @@ test('native radios, gateway values and payment rows remain intact and decoratio
 });
 
 
-const checkoutWooCommercePhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
 
 test('Checkout removes native privacy and terms acceptance through WooCommerce hooks without disabling submit processing', () => {
   assert.match(checkoutWooCommercePhp, /add_filter\(\s*'woocommerce_checkout_show_terms',\s*'cr2026_checkout_disable_terms_acceptance',\s*9999\s*\)/);
