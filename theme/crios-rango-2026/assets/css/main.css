@@ -28,7 +28,7 @@
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
-  background: var(--cr-cream);
+  background: var(--cr-app-canvas);
   color: var(--cr-ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -2995,4 +2995,28 @@ body.error404 .cr-404-page__cta { display: inline-flex; align-items: center; jus
   body.error404 .cr-404-page h1 { display: none !important; }
   body.error404 .cr-404-page__message { margin: 0 0 16px; font: 300 13px/21px "Roboto", Arial, sans-serif; }
   body.error404 .cr-404-page__cta { min-height: 44px; margin: 0; }
+}
+
+/* GLOBAL MOBILE APP SHELL — CANONICAL CONTRACT
+ * One authority for canvas, outer rail, page-shell spacing, toolbar geometry,
+ * header-to-toolbar flow, footer suppression and bottom-navigation clearance.
+ * Component/card internals retain their own spacing and sizing.
+ */
+@media (max-width: 767px) {
+  body { background: var(--cr-app-canvas) !important; padding-bottom: calc(var(--cr-bottom-nav) + env(safe-area-inset-bottom)) !important; }
+  .cr-main, main#primary, .cr-main--woocommerce { width: 100% !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: transparent !important; }
+  .cr-shell, .cr-main > .cr-shell, .cr-main > .cr-page-shell, .cr-main > .cr-shell.cr-page-shell, .cr-main--woocommerce > .cr-shell {
+    width: calc(100% - 40px) !important; max-width: 1360px !important; min-width: 0 !important; margin-inline: auto !important; box-sizing: border-box !important;
+  }
+  .cr-page-shell { padding-block: 0 !important; background: transparent !important; }
+  .cr-parent-category__toolbar, .cr-parent-category__toolbar--no-back {
+    min-height: 64px !important; margin: 0 20px 14px !important; display: grid !important;
+    grid-template-columns: 48px minmax(0,1fr) auto !important; align-items: center !important; column-gap: 10px !important;
+  }
+  .cr-parent-category__toolbar--no-back { grid-template-columns: minmax(0,1fr) auto !important; }
+  .cr-parent-category__back { position: static !important; grid-column: 1 !important; grid-row: 1 !important; width: 48px !important; height: 48px !important; margin: 0 !important; }
+  .cr-parent-category__title { grid-column: 2 !important; grid-row: 1 !important; min-width: 0 !important; margin: 0 !important; font: 300 21px/28px Roboto, Arial, sans-serif !important; color: #183B35 !important; }
+  .cr-parent-category__toolbar--no-back .cr-parent-category__title { grid-column: 1 !important; }
+  .cr-footer { display: none !important; }
+  .cr-mobile-bottom-nav.cr-app-bottom-nav { display: block; }
 }
