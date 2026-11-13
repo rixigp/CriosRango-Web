@@ -68,7 +68,7 @@ test('APPLY_ACTION_REUSES_WOOCOMMERCE_STORE_API_APPLY_COUPON_ROUTE', () => {
 });
 
 test('APP_STRUCTURE_AND_SHARED_RAIL_STYLES_ARE_MOBILE_ENDPOINT_SCOPED', () => {
-  assert.match(css, /body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*min\(calc\(100%\s*-\s*40px\),\s*720px\);[^}]*margin:\s*0 auto;/s);
+  assert.match(css, /\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*min\(calc\(100%\s*-\s*40px\),\s*720px\);[^}]*max-width:\s*720px;[^}]*margin-inline:\s*auto;/s);
   assert.match(css, /cr-account-loyalty__wallet-card/);
   assert.match(css, /cr-account-loyalty__progress/);
   assert.match(css, /cr-account-loyalty__rewards-card/);
