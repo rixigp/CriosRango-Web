@@ -1368,7 +1368,7 @@
     width: min(calc(100% - 40px), 720px);
     max-width: 720px;
     margin: 0 auto;
-    padding: 0 0 calc(88px + env(safe-area-inset-bottom));
+    padding: 0;
     display: grid;
     gap: 12px;
     color: #20241f;
