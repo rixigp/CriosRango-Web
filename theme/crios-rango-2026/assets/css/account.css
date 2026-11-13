@@ -1567,3 +1567,46 @@
     font: 400 13px/18px "Roboto", Arial, sans-serif;
   }
 }
+
+/* Loyalty rewards palette parity with the approved cart wallet — endpoint only. */
+@media (max-width: 767px) {
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-icon,
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-icon {
+    background: #D7E8E1;
+    color: #0F5C4D;
+  }
+
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__rewards-card {
+    border-color: #D7E8E1;
+    background: #E8F5EF;
+  }
+
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-row.has-divider {
+    border-bottom-color: #D7E8E1;
+  }
+
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-card {
+    background: rgba(90,145,220,.12);
+  }
+
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-icon {
+    background: #DCEEFF;
+    color: #183B35;
+  }
+
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-top::after {
+    content: "i";
+    box-sizing: border-box;
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    border: 1px solid #0F5C4D;
+    border-radius: 50%;
+    color: #0F5C4D;
+    font: 500 11px/1 "Roboto", Arial, sans-serif;
+  }
+}
