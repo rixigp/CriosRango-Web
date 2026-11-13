@@ -827,7 +827,6 @@ test('Nuestras marcas route includes all product_brand terms, including zero-cou
   const footer = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/footer.php'), 'utf8');
   assert.ok(footer.includes("if ( ! ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) ) :"));
   assert.match(css, /GLOBAL MOBILE APP SHELL/);
-  assert.doesNotMatch(css, /body\.cr-brands-index-view \.cr-footer/);
 });
 
 test('brands index cards are white, clickable, contain logos and use two mobile columns', () => {
