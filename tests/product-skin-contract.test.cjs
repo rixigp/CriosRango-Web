@@ -99,10 +99,11 @@ test('short description is sanitized and balanced only at the WooCommerce excerp
   assert.match(skinCss, /woocommerce-product-details__short-description/);
   assert.match(skinCss, /\.woocommerce-product-details__short-description u \{\s*text-decoration: none;\s*\}/s);
   assert.doesNotMatch(skinCss, /woocommerce-product-details__short-description a(?::visited|:hover|:focus)?\s*,?/);
-  assert.match(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce \{[^}]*padding: 0;/s);
+  assert.doesNotMatch(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce \{/);
   assert.doesNotMatch(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce \{[^}]*padding: 0 0 calc\(var\(--cr-bottom-nav/s);
   assert.match(skinCss, /woocommerce-Tabs-panel/);
-  assert.match(skinCss, /--cr-bottom-nav[\s\S]*?env\(safe-area-inset-bottom\)/);
+  const globalCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
+  assert.match(globalCss, /padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
 });
 
 test('long product description is a single accessible collapsed accordion after size help and before variations', () => {
@@ -1024,7 +1025,7 @@ test('Shared bottom navigation uses the exact storefront canvas with no visible 
   assert.ok(globalCss.includes('box-shadow: none ;'));
   assert.ok(globalCss.includes('backdrop-filter: none ;'));
   assert.ok(globalCss.includes('.cr-mobile-bottom-nav::before,\n.cr-mobile-bottom-nav::after {\n  display: none !important;\n  content: none !important;'), 'BOTTOM_NAV_PSEUDO_SEPARATORS_REMOVED=PASS');
-  assert.ok(globalCss.includes('.cr-mobile-bottom-nav__inner {\n  background: transparent;'), 'BOTTOM_NAV_INNER_TRANSPARENT=PASS');
+  assert.match(globalCss, /\.cr-mobile-bottom-nav__inner\s*\{[^}]*background:\s*transparent\s*;/s);
 });
 
  
