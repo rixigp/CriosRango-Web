@@ -44,7 +44,15 @@ test('checkout inherits global canvas and toolbar without page shell overrides',
  assert.equal(checkoutCss.includes('.cr-main > .cr-shell.cr-page-shell'),false);
 });
 test('checkout Phase 1 shell does not style or replace native transactional controls', () => {
-  const phase1Css = checkoutCss.split('/* Checkout Phase 2.2:')[0];
+  const phase1StartMarker = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,\\n' +
+    'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose {';
+  const phase1EndMarker = '/* Checkout Phase 3.2: shipping is rendered in its own native mini-table before the summary. */';
+  const phase1StartIndex = checkoutCss.indexOf(phase1StartMarker);
+  const phase1EndIndex = checkoutCss.indexOf(phase1EndMarker);
+  assert.notEqual(phase1StartIndex, -1, 'Phase 1 start marker must exist');
+  assert.notEqual(phase1EndIndex, -1, 'Phase 1 end marker must exist');
+  assert.ok(phase1EndIndex > phase1StartIndex, 'Phase 1 markers must be ordered');
+  const phase1Css = checkoutCss.slice(phase1StartIndex, phase1EndIndex);
   for (const forbidden of ['#payment', '#order_review', 'payment_method_', 'place_order', 'checkout_coupon', 'woocommerce-checkout-review-order-table']) {
     assert.equal(phase1Css.includes(forbidden), false, forbidden + ' must remain outside Phase 1 CSS');
   }
