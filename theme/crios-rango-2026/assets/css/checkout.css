@@ -1,5 +1,10 @@
 
 
+/* Checkout owns its own values for the shared inner-card gutter token. */
+body.woocommerce-checkout:not(.woocommerce-order-received) {
+  --cr-cart-card-inline-gutter: 16px;
+}
+
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose {
   width: 100%;
@@ -445,9 +450,15 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .wooc
 }
 
 @media (max-width: 767px) {
+  body.woocommerce-checkout:not(.woocommerce-order-received) {
+    --cr-cart-card-inline-gutter: 11px;
+  }
 }
 
 @media (max-width: 360px) {
+  body.woocommerce-checkout:not(.woocommerce-order-received) {
+    --cr-cart-card-inline-gutter: 9px;
+  }
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,
