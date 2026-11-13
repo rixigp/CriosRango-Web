@@ -824,7 +824,10 @@ test('Nuestras marcas route includes all product_brand terms, including zero-cou
   assert.match(brandTemplate, /if \( \$brand_logo \)[\s\S]*?<img[\s\S]*?<\?php else : \?>[\s\S]*?<span>/);
   assert.match(brandTemplate, /get_footer\( 'shop' \)/);
   assert.match(helpers, /cr2026_brands_index_view/);
-  assert.match(css, /body\.cr-brands-index-view \.cr-footer \{ display:none!important; \}/);
+  const footer = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/footer.php'), 'utf8');
+  assert.ok(footer.includes("if ( ! ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) ) :"));
+  assert.match(css, /GLOBAL MOBILE APP SHELL/);
+  assert.doesNotMatch(css, /body\.cr-brands-index-view \.cr-footer/);
 });
 
 test('brands index cards are white, clickable, contain logos and use two mobile columns', () => {
@@ -839,8 +842,9 @@ test('brands index cards are white, clickable, contain logos and use two mobile 
 
 test('product listing canvas uses the canonical global app background token', () => {
   assert.match(css, /--cr-app-canvas:\s*#FCFAF7/i);
-  assert.match(css, /body\.cr-product-listing-view\s*\{\s*background:var\(--cr-app-canvas\)/);
-  assert.match(css, /body\.cr-product-listing-view \.cr-product-listing\s*\{[^}]*background:var\(--cr-app-canvas\)/s);
+  assert.match(css, /body\s*\{[^}]*background:\s*var\(--cr-app-canvas\)/s);
+  assert.doesNotMatch(css, /body\.cr-product-listing-view\s*\{[^}]*background:/);
+  assert.doesNotMatch(css, /body\.cr-product-listing-view \.cr-product-listing\s*\{[^}]*background:/s);
 });
 
 test('subcategory query order is NAME_ASC and top-level Home editorial order remains untouched', () => {
