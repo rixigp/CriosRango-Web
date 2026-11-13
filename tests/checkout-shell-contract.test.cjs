@@ -10,6 +10,7 @@ const page = fs.readFileSync(path.join(theme, 'page.php'), 'utf8');
 const footer = fs.readFileSync(path.join(theme, 'footer.php'), 'utf8');
 const assets = fs.readFileSync(path.join(theme, 'inc/assets.php'), 'utf8');
 const checkoutCss = fs.readFileSync(path.join(theme, 'assets/css/checkout.css'), 'utf8');
+const checkoutPaymentJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-payment.js'), 'utf8');
 const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
 const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
 
@@ -44,7 +45,7 @@ test('checkout inherits global canvas and toolbar without page shell overrides',
  assert.equal(checkoutCss.includes('.cr-main > .cr-shell.cr-page-shell'),false);
 });
 test('checkout Phase 1 shell does not style or replace native transactional controls', () => {
-  const phase1StartMarker = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,\\n' +
+  const phase1StartMarker = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,\n' +
     'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose {';
   const phase1EndMarker = '/* Checkout Phase 3.2: shipping is rendered in its own native mini-table before the summary. */';
   const phase1StartIndex = checkoutCss.indexOf(phase1StartMarker);
