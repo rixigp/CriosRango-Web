@@ -80,7 +80,7 @@ function cr2026_account_render_profile_home() {
     $shipping_url = wc_get_endpoint_url( 'edit-address', 'shipping', wc_get_page_permalink( 'myaccount' ) );
     $delete_url = wc_get_account_endpoint_url( 'wpf-delete-account' );
     ?>
-    <section class="cr-account-profile-home" aria-label="<?php esc_attr_e( 'Perfil', 'crios-rango-2026' ); ?>">
+    <section class="cr-account-content cr-account-profile-home" aria-label="<?php esc_attr_e( 'Perfil', 'crios-rango-2026' ); ?>">
         <div class="cr-account-profile-home__main">
             <a href="<?php echo esc_url( $personal_url ); ?>" class="cr-account-profile-home__row">
                 <span class="cr-account-profile-home__icon" aria-hidden="true"><?php echo cr2026_icon( 'user' ); ?></span><span><?php esc_html_e( 'Datos personales', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
@@ -364,7 +364,7 @@ function cr2026_account_information_page_content( $content ) {
     $title = get_the_title( $page );
     $content = cr2026_account_information_remove_duplicate_title( $content, $title );
 
-    return '<section class="cr-account-information" aria-label="' . esc_attr( $title ) . '">'
+    return '<section class="cr-account-content cr-account-information" aria-label="' . esc_attr( $title ) . '">'
         . '<div class="cr-account-information__content">' . $content . '</div></section>';
 }
 add_filter( 'the_content', 'cr2026_account_information_page_content', 30 );
@@ -438,7 +438,7 @@ function cr2026_account_help_content( $content ) {
     ob_start();
     cr2026_account_render_endpoint_toolbar( __( 'Ayuda', 'crios-rango-2026' ) );
     ?>
-    <section class="cr-account-help" aria-label="<?php esc_attr_e( 'Contacto y ayuda', 'crios-rango-2026' ); ?>">
+    <section class="cr-account-content cr-account-help" aria-label="<?php esc_attr_e( 'Contacto y ayuda', 'crios-rango-2026' ); ?>">
         <h2 class="cr-account-help__heading"><?php esc_html_e( 'Contacta con nosotros', 'crios-rango-2026' ); ?></h2>
         <div class="cr-account-help__grid">
             <a class="cr-account-help__card cr-account-help__card--whatsapp" href="<?php echo esc_url( 'https://wa.me/' . $whatsapp['number'] ); ?>">

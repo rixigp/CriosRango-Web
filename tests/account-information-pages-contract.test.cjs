@@ -49,7 +49,7 @@ test('ALL_FIVE_PAGES_USE_ONE_WORDPRESS_CONTENT_RENDERER_AND_CANONICAL_TOOLBAR', 
 
 test('WORDPRESS_CONTENT_IS_PRESERVED_AND_LEGAL_COPY_IS_NOT_HARDCODED', () => {
   assert.match(page, /the_content\(\)/);
-  assert.match(presentation, /return '<section class="cr-account-information"/);
+  assert.match(presentation, /return '<section class="cr-account-content cr-account-information"/);
   assert.match(presentation, /<div class="cr-account-information__content">' \. \$content/);
   assert.match(presentation, /get_the_title\( \$page \)/);
   assert.doesNotMatch(presentation, /De conformidad con|Responsable del tratamiento|Condiciones generales de venta/);
@@ -71,7 +71,7 @@ test('COMMON_EDITORIAL_RAIL_NORMALIZES_CONTENT_WITHOUT_TOUCHING_GLOBAL_NAV_CLEAR
   assert.match(page, /cr2026_is_account_information_page\(\)/);
   assert.match(footer, /if \( ! \( function_exists\( 'wp_is_mobile' \) && wp_is_mobile\(\) \) \) :/);
   assert.match(helpers, /cr2026_is_account_information_page\(\)/);
-  assert.match(accountCss, /\.cr-account-information \{[\s\S]*?width: min\(calc\(100% - 40px\), 720px\)/);
+  assert.match(accountCss, /\.cr-account-content,[\s\S]*?width: min\(calc\(100% - 40px\), 720px\);[\s\S]*?margin-inline: auto;/);
   assert.doesNotMatch(accountCss, /body\.cr-account-content-page[^{}]*\.cr-parent-category__toolbar/);
   for (const selector of ['h1','h2','h3','h4','h5','h6','p','ul','ol','li','strong','a','blockquote','table','th','td']) {
     assert.ok(accountCss.includes('.cr-account-information__content ' + selector), 'editorial style ' + selector);
@@ -85,6 +85,17 @@ test('COMMON_EDITORIAL_RAIL_NORMALIZES_CONTENT_WITHOUT_TOUCHING_GLOBAL_NAV_CLEAR
   assert.match(helpers, /function cr2026_is_account_context\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
   assert.match(helpers, /function cr2026_is_app_nav_shell\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
   assert.match(mainCss, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav \{ display: block; \}/);
-  assert.doesNotMatch(accountCss.slice(accountCss.indexOf('/* WordPress Account content pages')), /padding-bottom|100vh|height:\s*100vh/);
+  assert.doesNotMatch(accountCss.slice(accountCss.indexOf('/* Canonical Account content rail shared by Help, Loyalty, Orders, Profile and Information. */')), /padding-bottom|100vh|height:\s*100vh/);
   assert.match(footer, /cr-mobile-bottom-nav cr-app-bottom-nav/);
+});
+
+test('ONE_CANONICAL_ACCOUNT_CONTENT_RAIL_IS_REUSED_BY_HELP_LOYALTY_ORDERS_PROFILE_AND_INFORMATION', () => {
+  assert.match(presentation, /<section class="cr-account-content cr-account-help"/);
+  assert.match(presentation, /<section class="cr-account-content cr-account-profile-home"/);
+  assert.match(presentation, /<section class="cr-account-content cr-account-information"/);
+  const orders = read('woocommerce/myaccount/orders.php');
+  assert.match(orders, /class="cr-account-orders__filters cr-account-content"/);
+  assert.match(orders, /class="cr-account-orders__list cr-account-content"/);
+  assert.match(accountCss, /\.cr-account-content,[\s\S]*?body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty[\s\S]*?width: min\(calc\(100% - 40px\), 720px\);/);
+  assert.equal((accountCss.match(/\.cr-account-content,/g) || []).length, 1, 'one canonical content rail rule');
 });

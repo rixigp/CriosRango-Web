@@ -78,7 +78,9 @@ test('ORDER_CARD_APP_VISUAL_CONTRACT_REMOVES_OUTLINED_DETAIL_BUTTON', () => {
 
 test('ORDERS_FILTERS_AND_CARDS_REUSE_EXACT_PROFILE_MOBILE_RAIL_WITHOUT_MOVING_TOOLBAR', () => {
   assert.match(css, /\.cr-account-home\s*\{[^}]*width:\s*min\(calc\(100%\s*-\s*40px\),\s*720px\);[^}]*margin-inline:\s*auto;/s);
-  assert.match(css, /body\.woocommerce-account \.cr-account-orders__filters,\s*body\.woocommerce-account \.cr-account-orders__list\s*\{[^}]*width:\s*min\(calc\(100%\s*-\s*40px\),\s*720px\);[^}]*max-width:\s*720px;[^}]*margin-inline:\s*auto;/s);
+  assert.match(php, /class="cr-account-orders__filters cr-account-content"/);
+  assert.match(php, /class="cr-account-orders__list cr-account-content"/);
+  assert.match(css, /\.cr-account-content,[\s\S]*?width:\s*min\(calc\(100%\s*-\s*40px\),\s*720px\);[^}]*max-width:\s*720px;[^}]*margin-inline:\s*auto;/s);
   assert.match(css, /body\.woocommerce-account \.cr-account-orders__filters\s*\{[^}]*padding-inline:\s*0;/s);
   assert.match(css, /\.cr-account-orders__filters\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*overflow-x:\s*auto;/s);
   assert.match(php, /cr2026_render_category_toolbar\(\s*__\(\s*'Pedidos'/);

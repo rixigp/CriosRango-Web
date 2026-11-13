@@ -388,7 +388,7 @@
   body.cr-account-help-page .cr-page .cr-prose {
     width: 100%; max-width: none; margin: 0; background: transparent;
   }
-  .cr-account-help { width: min(calc(100% - 40px), 720px); margin: 0 auto 18px; }
+  .cr-account-help { margin-bottom: 18px; }
   .cr-account-help__heading {
     margin: 0 0 14px; color: #183b35;
     font: 400 18px/25px "Roboto", Arial, sans-serif;
@@ -433,7 +433,7 @@
 
 
 /* Mobile Profile home: native endpoints remain the source of all account actions. */
-.cr-account-profile-home { width: min(calc(100% - 40px), var(--cr-shell)); margin: 0 auto; padding: 0; color: #20241f; font-family: "Roboto", Arial, sans-serif; }
+.cr-account-profile-home { padding: 0; color: #20241f; font-family: "Roboto", Arial, sans-serif; }
 .cr-account-profile-home__main { overflow: hidden; border: 1px solid rgba(24,59,53,.07); border-radius: 20px; background: #fff; }
 .cr-account-profile-home__row, .cr-account-profile-home__action { min-height: 62px; display: flex; align-items: center; gap: 13px; padding: 0 16px; color: #303630; text-decoration: none; font: 300 14px/20px "Roboto", Arial, sans-serif; }
 .cr-account-profile-home__row + .cr-account-profile-home__row { border-top: 1px solid rgba(32,36,31,.08); }
@@ -455,7 +455,7 @@
    max-width: none;
    margin: 0 !important;
  }
- body.woocommerce-account .cr-account-profile-home { width: min(calc(100% - 40px), var(--cr-shell)); }
+ 
  body.woocommerce-account:has(.cr-account-profile-home) .cr-page__header { display: none !important; }
 }
 
@@ -1259,15 +1259,7 @@
 
 /* Orders content rail reuses the exact mobile Profile rail; toolbar stays full-width/canonical. */
 @media (max-width: 767px) {
-  body.woocommerce-account .cr-account-orders__filters,
-  body.woocommerce-account .cr-account-orders__list {
-    box-sizing: border-box;
-    width: min(calc(100% - 40px), 720px);
-    max-width: 720px;
-    margin-inline: auto;
-  }
-
-  body.woocommerce-account .cr-account-orders__filters {
+   body.woocommerce-account .cr-account-orders__filters {
     margin-top: 0;
     margin-bottom: 16px;
     padding-inline: 0;
@@ -1310,10 +1302,7 @@
 /* Mobile Account: app presentation for the loyalty rewards endpoint only. */
 @media (max-width: 767px) {
   body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty {
-    box-sizing: border-box;
-    width: min(calc(100% - 40px), 720px);
-    max-width: 720px;
-    margin: 0 auto;
+    margin-block: 0;
     padding: 0;
     display: grid;
     gap: 12px;
@@ -1579,14 +1568,19 @@
   }
 }
 
-/* WordPress Account content pages share the same page shell as Help. */
+/* Canonical Account content rail shared by Help, Loyalty, Orders, Profile and Information. */
 @media (max-width: 767px) {
-  .cr-account-information {
+  .cr-account-content,
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty {
     box-sizing: border-box;
     width: min(calc(100% - 40px), 720px);
     max-width: 720px;
     min-width: 0;
-    margin: 0 auto 18px;
+    margin-inline: auto;
+  }
+
+  .cr-account-information {
+    margin-bottom: 18px;
     color: #303630;
     font: 300 13px/21px "Roboto", Arial, sans-serif;
     overflow-wrap: anywhere;

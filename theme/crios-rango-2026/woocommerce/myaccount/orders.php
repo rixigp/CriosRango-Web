@@ -25,7 +25,7 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
     <?php endif; ?>
 
     <?php if ( $has_orders ) : ?>
-        <div class="cr-account-orders__filters" role="group" aria-label="<?php esc_attr_e( 'Filtrar pedidos', 'crios-rango-2026' ); ?>">
+        <div class="cr-account-orders__filters cr-account-content" role="group" aria-label="<?php esc_attr_e( 'Filtrar pedidos', 'crios-rango-2026' ); ?>">
             <button type="button" class="is-active" data-cr-order-filter="all" aria-pressed="true"><?php esc_html_e( 'Todos', 'crios-rango-2026' ); ?></button>
             <button type="button" data-cr-order-filter="waiting" aria-pressed="false"><?php esc_html_e( 'En espera', 'crios-rango-2026' ); ?></button>
             <button type="button" data-cr-order-filter="processing" aria-pressed="false"><?php esc_html_e( 'Procesando', 'crios-rango-2026' ); ?></button>
@@ -34,7 +34,7 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
             <button type="button" data-cr-order-filter="cancelled" aria-pressed="false"><?php esc_html_e( 'Cancelado', 'crios-rango-2026' ); ?></button>
         </div>
 
-        <div class="cr-account-orders__list" data-cr-orders-list>
+        <div class="cr-account-orders__list cr-account-content" data-cr-orders-list>
             <?php foreach ( $customer_orders->orders as $customer_order ) :
                 $order = wc_get_order( $customer_order );
                 if ( ! $order instanceof WC_Order ) {
