@@ -2425,7 +2425,7 @@ body.admin-bar.home .cr-app-header {
   .cr-app-header .cr-header-search-panel .cr-search-form { gap:6px; }
   .cr-app-header .cr-header-search-panel .cr-search-form button[type="submit"] { min-height:40px; padding-inline:9px; }
 }
-body.search { scroll-padding-top: var(--cr-app-topbar-height, 64px); }
+body.search { scroll-padding-top:var(--cr-app-topbar-height,64px); }
 body.search .cr-search-form {
   display:flex; align-items:center; gap:10px; width:calc(100% - 40px); max-width:760px;
   min-height:56px; margin:0 auto 18px; padding:5px 9px 5px 17px;
