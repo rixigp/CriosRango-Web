@@ -391,7 +391,7 @@ jobs:
         run: node --test tests/catalog-contract.test.cjs
 
       - name: Run product skin contract tests
-        run: node --test tests/product-skin-contract.test.cjs
+        run: node --test tests/product-skin-contract.test.cjs tests/global-mobile-shell-contract.test.cjs tests/page-specific-shell-overrides-contract.test.cjs
 
       - name: Run checkout shell contract tests
         run: node --test tests/checkout-shell-contract.test.cjs

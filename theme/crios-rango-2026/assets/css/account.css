@@ -1,5 +1,5 @@
 /* Mobile account home: scoped to the WooCommerce account page only. */
-.cr-account-home { width: min(100% - 32px, 720px); margin: 0 auto; padding: 0 0 108px; color: #20241f; font-family: "Roboto", Arial, sans-serif; }
+.cr-account-home { width: min(100% - 32px, 720px); margin: 0 auto; padding: 0; color: #20241f; font-family: "Roboto", Arial, sans-serif; }
 .cr-account-home__user { min-height: 88px; display: flex; align-items: center; gap: 14px; padding: 16px; margin: 0 0 18px; border: 1px solid rgba(24,59,53,.07); border-radius: 20px; background: #fff; }
 .cr-account-home__avatar { width: 52px; height: 52px; flex: 0 0 52px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: #e5eee8; color: #244436; font: 400 17px/1 "Roboto", Arial, sans-serif; }
 .cr-account-home__identity { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
@@ -72,23 +72,6 @@
 /* Account app shell: reuse the canonical app canvas and shared mobile rail. */
 @media (max-width: 767px) {
   body.woocommerce-account {
-    background: var(--cr-app-canvas);
-  }
-
-  body.woocommerce-account .cr-main {
-    width: 100%;
-    min-height: 60vh;
-    margin: 0;
-    padding: 0;
-    background: var(--cr-app-canvas);
-  }
-
-  body.woocommerce-account .cr-main > .cr-shell.cr-page-shell {
-    width: 100%;
-    max-width: none;
-    margin-inline: auto;
-    padding-block-start: 0;
-    padding-block-end: 0;
     background: var(--cr-app-canvas);
   }
 
@@ -201,7 +184,6 @@
     max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: var(--cr-app-canvas) !important;
     color: #20241f;
     font-family: "Roboto", Arial, sans-serif;
   }
@@ -408,23 +390,12 @@
 /* Mobile Help screen: match the app contact cards and weekly hours. */
 @media (max-width: 767px) {
   body.cr-account-help-page { background: var(--cr-app-canvas); }
-  body.cr-account-help-page .cr-main {
-    width: 100%; min-height: 0; margin: 0; padding: 0;
-    background: var(--cr-app-canvas);
-  }
-  body.cr-account-help-page .cr-main > .cr-shell.cr-page-shell {
-    width: 100%; max-width: none; margin-inline: auto;
-    padding-block-start: 0;
-    padding-block-end: 0;
-    background: var(--cr-app-canvas);
-  }
   body.cr-account-help-page .cr-page,
   body.cr-account-help-page .cr-page .cr-prose {
     width: 100%; max-width: none; margin: 0; background: transparent;
   }
   body.cr-account-help-page .cr-page__header,
   body.cr-account-help-page .cr-footer { display: none !important; }
-  body.cr-account-help-page .cr-parent-category__toolbar { margin-bottom: 16px; }
   .cr-account-help { width: min(calc(100% - 40px), 720px); margin: 0 auto 18px; }
   .cr-account-help__heading {
     margin: 0 0 14px; color: #183b35;
@@ -470,7 +441,7 @@
 
 
 /* Mobile Profile home: native endpoints remain the source of all account actions. */
-.cr-account-profile-home { width: min(calc(100% - 40px), var(--cr-shell)); margin: 0 auto; padding: 0 0 calc(88px + env(safe-area-inset-bottom)); color: #20241f; font-family: "Roboto", Arial, sans-serif; }
+.cr-account-profile-home { width: min(calc(100% - 40px), var(--cr-shell)); margin: 0 auto; padding: 0; color: #20241f; font-family: "Roboto", Arial, sans-serif; }
 .cr-account-profile-home__main { overflow: hidden; border: 1px solid rgba(24,59,53,.07); border-radius: 20px; background: #fff; }
 .cr-account-profile-home__row, .cr-account-profile-home__action { min-height: 62px; display: flex; align-items: center; gap: 13px; padding: 0 16px; color: #303630; text-decoration: none; font: 300 14px/20px "Roboto", Arial, sans-serif; }
 .cr-account-profile-home__row + .cr-account-profile-home__row { border-top: 1px solid rgba(32,36,31,.08); }
@@ -532,10 +503,6 @@
 
 /* Personal data app subview: preserve the native edit-account form and POST. */
 @media (max-width: 767px) {
- body.woocommerce-account.cr-account-profile-view-personal .cr-main > .cr-shell.cr-page-shell,
- body.woocommerce-account.cr-account-profile-view-password .cr-main > .cr-shell.cr-page-shell {
-   width: 100%; max-width: none; margin-inline: auto; padding-block: 0;
- }
  body.woocommerce-account.cr-account-profile-view-personal .cr-page,
  body.woocommerce-account.cr-account-profile-view-personal .cr-page .cr-prose,
  body.woocommerce-account.cr-account-profile-view-password .cr-page,
@@ -552,8 +519,7 @@
  }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm,
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm {
-   box-sizing: border-box; width: min(calc(100% - 40px), var(--cr-shell)); margin: 0 auto;
-   padding: 0 0 calc(88px + env(safe-area-inset-bottom)) !important;
+   box-sizing: border-box; width: min(calc(100% - 40px), var(--cr-shell)); margin: 0 auto; padding: 0;
    border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
  }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p.form-row,
@@ -596,9 +562,6 @@
 
 /* Mobile native shipping address form: same canonical Profile rail and field system. */
 @media (max-width: 767px) {
- body.woocommerce-account.woocommerce-edit-address .cr-main > .cr-shell.cr-page-shell {
-   width: 100%; max-width: none; margin-inline: auto; padding-block: 0;
- }
  body.woocommerce-account.woocommerce-edit-address .cr-page,
  body.woocommerce-account.woocommerce-edit-address .cr-page .cr-prose {
    width: 100%; max-width: none; margin: 0; background: transparent;
@@ -1292,7 +1255,7 @@
 
 /* Mobile Delete Account endpoint: remove the plugin's legacy card skin while retaining its native form. */
 @media (max-width: 767px) {
- body.woocommerce-account .wpfda-delete-account-container {box-sizing:border-box!important;width:min(calc(100% - 40px),var(--cr-shell))!important;max-width:none!important;margin:0 auto!important;padding:0 0 calc(88px + env(safe-area-inset-bottom))!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#20241f!important;font:300 12px/17px "Roboto",Arial,sans-serif!important;}
+ body.woocommerce-account .wpfda-delete-account-container {box-sizing:border-box!important;width:min(calc(100% - 40px),var(--cr-shell))!important;max-width:none!important;margin:0 auto!important; padding: 0;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#20241f!important;font:300 12px/17px "Roboto",Arial,sans-serif!important;}
  body.woocommerce-account .wpfda-delete-account-container :is(form,fieldset) {box-sizing:border-box!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;}
  body.woocommerce-account .wpfda-delete-account-container :is(p,.form-row) {position:relative!important;float:none!important;box-sizing:border-box!important;width:100%!important;margin:0 0 16px!important;padding:0!important;}
  body.woocommerce-account .wpfda-delete-account-container label {display:block!important;margin:0 0 6px!important;color:#183b35!important;font:300 12px/17px "Roboto",Arial,sans-serif!important;}
@@ -1613,47 +1576,24 @@
 /* Shared mobile Account content-page shell: Help and all five Information pages. */
 @media (max-width: 767px) {
   body.cr-account-content-page { background: var(--cr-app-canvas); }
-  body.cr-account-content-page .cr-main {
-    width: 100%; min-height: 0; margin: 0; padding: 0;
-    background: var(--cr-app-canvas);
-  }
-  body.cr-account-content-page .cr-main > .cr-shell.cr-page-shell {
-    width: 100%; max-width: none; margin-inline: auto;
-    padding-block-start: 0; padding-block-end: 0;
-    background: var(--cr-app-canvas);
-  }
   body.cr-account-content-page .cr-page,
   body.cr-account-content-page .cr-page .cr-prose {
     width: 100%; max-width: none; margin: 0; background: transparent;
   }
   body.cr-account-content-page .cr-page__header,
   body.cr-account-content-page .cr-footer { display: none !important; }
-  body.cr-account-content-page .cr-parent-category__toolbar { margin-bottom: 16px; }
 }
 
 /* Information pages mirror the Cart shell chain: full-width outer rail,
    transparent intermediates, and the same canonical toolbar inset. */
 @media (max-width: 767px) {
   body.cr-account-information-page { background: var(--cr-app-canvas); }
-  body.cr-account-information-page .cr-main {
-    width: 100%; min-height: 0; margin: 0; padding: 0;
-    background: transparent;
-  }
-  body.cr-account-information-page .cr-main > .cr-shell.cr-page-shell {
-    width: 100%; max-width: 1360px; margin-inline: auto;
-    padding-block-start: 0; padding-block-end: 0;
-    background: transparent;
-  }
   body.cr-account-information-page .cr-page,
   body.cr-account-information-page .cr-page .cr-prose {
     width: 100%; max-width: none; margin: 0; background: transparent;
   }
   body.cr-account-information-page .cr-information-toolbar-shell {
     width: min(100%, 1360px); margin-inline: auto; box-sizing: border-box;
-  }
-  body.cr-account-information-page .cr-information-toolbar-shell > .cr-parent-category__toolbar {
-    margin-block-start: 0 !important; margin-block-end: 16px;
-    min-height: 64px;
   }
 }
 

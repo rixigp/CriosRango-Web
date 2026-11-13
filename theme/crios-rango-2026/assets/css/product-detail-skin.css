@@ -13,18 +13,6 @@ body.cr-product-detail-app {
 body.cr-product-detail-app.cr-global-app-header {
   padding-top: 0 !important;
 }
-body.cr-product-detail-app .cr-main--woocommerce {
-  width: 100%;
-  max-width: 1280px;
-  margin-inline: auto;
-  padding: 0;
-  background: var(--cr-product-cream);
-}
-body.cr-product-detail-app .cr-main--woocommerce > .cr-shell {
-  width: 100%;
-  max-width: 100%;
-  padding: 0;
-}
 body.cr-product-detail-app .cr-product-detail-toolbar {
   position: sticky;
   top: var(--cr-app-topbar-height, 64px);
@@ -37,15 +25,11 @@ body.cr-product-detail-app .cr-product-detail-toolbar {
   background: var(--cr-app-canvas);
   border-bottom: 1px solid rgba(24,59,53,.06);
 }
-body.cr-product-detail-app .cr-product-detail-toolbar .cr-parent-category__back {
-  width: 40px;
-  height: 40px;
-}
 body.cr-product-detail-app .cr-product-detail-toolbar .cr-parent-category__title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font: 300 18px/24px "Roboto",Arial,sans-serif;
+  
 }
 
 
@@ -312,16 +296,6 @@ body.cr-product-detail-app .cr-main--woocommerce div.product .wployalty-product-
 body.cr-product-detail-app .cr-main--woocommerce div.product .wployalty-product-message {
   display: none !important;
 }
-body.cr-product-detail-app .cr-mobile-bottom-nav {
-  display: block;
-  position: fixed;
-  z-index: 1200;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  min-height: calc(var(--cr-bottom-nav, 72px) + env(safe-area-inset-bottom));
-  padding-bottom: env(safe-area-inset-bottom);
-}
 @media (min-width: 768px) {
   body.cr-product-detail-app .cr-main--woocommerce div.product {
     width: min(100%, 1120px);
@@ -348,12 +322,6 @@ body.cr-product-detail-app .cr-mobile-bottom-nav {
   }
 }
 @media (min-width: 1280px) {
-  body.cr-product-detail-app .cr-mobile-bottom-nav {
-    display: none !important;
-  }
-  body.cr-product-detail-app .cr-main--woocommerce {
-    padding-bottom: 32px;
-  }
 }
 
 /* Additional Information stays in native tab markup/data but is not shown in the app shell. */
@@ -1659,14 +1627,6 @@ body.cr-product-detail-app .cr-product-choice-chips--color .cr-product-choice-ch
   opacity: .38;
   text-decoration: line-through;
 }
-
-
-/* Final mobile Product Detail density: cards size to their actual options. */
-body.cr-product-detail-app .cr-main--woocommerce,
-body.cr-product-detail-app .cr-main--woocommerce > .cr-shell,
-body.cr-product-detail-app .cr-main--woocommerce div.product {
-  background: var(--cr-app-canvas);
-}
 body.cr-product-detail-app .cr-product-size-help {
   margin-bottom: 12px !important;
 }
@@ -1725,12 +1685,6 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
    The product information and variation surfaces remain transparent. */
 body.cr-product-detail-app {
   background: var(--cr-app-canvas);
-}
-body.cr-product-detail-app .cr-main--woocommerce,
-body.cr-product-detail-app .cr-main--woocommerce > .cr-shell,
-body.cr-product-detail-app .cr-main--woocommerce div.product,
-body.cr-product-detail-app .cr-main--woocommerce div.product div.summary {
-  background: transparent;
 }
 body.cr-product-detail-app .cr-product-detail-toolbar {
   background: var(--cr-app-canvas);

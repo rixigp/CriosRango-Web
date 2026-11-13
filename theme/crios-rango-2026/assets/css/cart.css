@@ -229,9 +229,6 @@ body.woocommerce-cart .cr-cart-shipping-calculator > summary {
 
 
 /* Cart app canvas and visual convergence — presentation only. */
-body.woocommerce-cart,
-body.woocommerce-cart #page,
-body.woocommerce-cart .site,
 body.woocommerce-cart .cr-main--woocommerce,
 body.woocommerce-cart .cr-main--woocommerce > .cr-shell,
 body.woocommerce-cart .cr-cart-page,

@@ -558,9 +558,9 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose {
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose > .woocommerce {
   width: 100%;
-  max-width: 1280px;
+  
   min-width: 0;
-  margin-inline: auto;
+  
   box-sizing: border-box;
 }
 
