@@ -1359,3 +1359,211 @@
  body.woocommerce-account .cr-order-detail__row--total {color:#183b35;font:400 14px/20px "Roboto",Arial,sans-serif;}
  body.woocommerce-account .cr-order-detail__row--total span:last-child {color:#183b35;font-weight:400;}
 }
+
+
+/* Mobile Account: app presentation for the loyalty rewards endpoint only. */
+@media (max-width: 767px) {
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty {
+    box-sizing: border-box;
+    width: min(calc(100% - 40px), 720px);
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 0 calc(88px + env(safe-area-inset-bottom));
+    display: grid;
+    gap: 12px;
+    color: #20241f;
+    font-family: "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__loading,
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__empty {
+    margin: 0;
+    padding: 20px 14px;
+    color: #687773;
+    font: 300 13px/19px "Roboto", Arial, sans-serif;
+    text-align: center;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-card {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 14px;
+    border: 1px solid rgba(15,92,77,.06);
+    border-radius: 16px;
+    background: #EAF6F0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-icon,
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-icon,
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #F0ECFA;
+    color: #0F5C4D;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-icon svg,
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-icon svg,
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-icon svg {
+    width: 21px;
+    height: 21px;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-title {
+    margin: 0;
+    color: #183B35;
+    font: 500 14px/19px "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-value {
+    margin: 0;
+    color: #0F5C4D;
+    font: 400 19px/25px "Roboto", Arial, sans-serif;
+    overflow-wrap: anywhere;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__progress {
+    width: 100%;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: #D7E8E1;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__progress-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #0F5C4D;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__remaining {
+    margin: 0;
+    color: #40514D;
+    font: 300 12px/17px "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__section {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__section-title {
+    margin: 0;
+    color: #183B35;
+    font: 500 15px/21px "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__rewards-card {
+    overflow: hidden;
+    border: 1px solid #E9E7ED;
+    border-radius: 18px;
+    background: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(24,59,53,.035);
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-row {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 10px;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-row.has-divider {
+    border-bottom: 1px solid #E9E7ED;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-icon {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: #183B35;
+    font: 500 12px/17px "Roboto", Arial, sans-serif;
+    overflow-wrap: anywhere;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__apply {
+    min-width: 62px;
+    min-height: 36px;
+    flex: 0 0 auto;
+    padding: 0 11px;
+    border: 0;
+    border-radius: 18px;
+    background: #0F5C4D;
+    color: #FFFFFF;
+    font: 400 12px/16px "Roboto", Arial, sans-serif;
+    cursor: pointer;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__apply:disabled {
+    background: #E8F5EF;
+    color: #0F5C4D;
+    cursor: default;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-card {
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 10px;
+    border: 1px solid rgba(24,59,53,.07);
+    border-radius: 15px;
+    background: #FFFFFF;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-icon {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+    background: #DCEEFF;
+    color: #183B35;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-title {
+    margin: 0;
+    color: #183B35;
+    font: 500 13px/18px "Roboto", Arial, sans-serif;
+    overflow-wrap: anywhere;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-description,
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-expiry {
+    margin: 0;
+    color: #40514D;
+    font: 300 12px/17px "Roboto", Arial, sans-serif;
+    overflow-wrap: anywhere;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__status {
+    margin: 0;
+    color: #0F5C4D;
+    font: 400 12px/18px "Roboto", Arial, sans-serif;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__status.is-error {
+    color: #9B554C;
+  }
+  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__retry {
+    justify-self: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 20px;
+    background: #0F5C4D;
+    color: #FFFFFF;
+    font: 400 13px/18px "Roboto", Arial, sans-serif;
+  }
+}

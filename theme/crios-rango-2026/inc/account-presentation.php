@@ -534,3 +534,80 @@ function cr2026_account_filter_legacy_save_success( $message ) {
     return '';
 }
 add_filter( 'woocommerce_add_success', 'cr2026_account_filter_legacy_save_success', 99, 1 );
+
+
+/** Scope the app-style wallet presentation to the mobile WPLoyalty account endpoint. */
+function cr2026_account_loyalty_reward_body_class( $classes ) {
+    if ( function_exists( 'is_account_page' ) && is_account_page()
+        && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'loyalty_reward' )
+        && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
+        $classes[] = 'cr-account-loyalty-reward';
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'cr2026_account_loyalty_reward_body_class' );
+
+/** Replace only WPLoyalty's mobile endpoint output; plugin balances and rules remain untouched. */
+function cr2026_account_route_mobile_loyalty_reward() {
+    if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
+        || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'loyalty_reward' )
+        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
+        return;
+    }
+
+    $hook_name = 'woocommerce_account_loyalty_reward_endpoint';
+    global $wp_filter;
+    if ( isset( $wp_filter[ $hook_name ] ) && $wp_filter[ $hook_name ] instanceof WP_Hook ) {
+        foreach ( $wp_filter[ $hook_name ]->callbacks as $priority => $callbacks ) {
+            foreach ( $callbacks as $callback_data ) {
+                if ( empty( $callback_data['function'] ) ) {
+                    continue;
+                }
+                $callback = $callback_data['function'];
+                $callback_name = '';
+                $callback_file = '';
+                if ( is_string( $callback ) ) {
+                    $callback_name = $callback;
+                    try {
+                        $reflection = new ReflectionFunction( $callback );
+                        $callback_file = (string) $reflection->getFileName();
+                    } catch ( Throwable $error ) {}
+                } elseif ( is_array( $callback ) && 2 === count( $callback ) ) {
+                    $owner = is_object( $callback[0] ) ? get_class( $callback[0] ) : (string) $callback[0];
+                    $callback_name = $owner . '::' . (string) $callback[1];
+                    try {
+                        $reflection = new ReflectionMethod( $callback[0], $callback[1] );
+                        $callback_file = (string) $reflection->getFileName();
+                    } catch ( Throwable $error ) {}
+                } elseif ( is_object( $callback ) ) {
+                    $callback_name = get_class( $callback );
+                    try {
+                        $reflection = new ReflectionMethod( $callback, '__invoke' );
+                        $callback_file = (string) $reflection->getFileName();
+                    } catch ( Throwable $error ) {}
+                }
+                $source_identity = strtolower( $callback_name . ' ' . $callback_file );
+                if ( preg_match( '/wlr|wployalty|wp[-_]loyalty[-_]rules/', $source_identity ) ) {
+                    remove_action( $hook_name, $callback, (int) $priority );
+                }
+            }
+        }
+    }
+
+    add_action( $hook_name, 'cr2026_account_render_mobile_loyalty_reward', 10 );
+}
+add_action( 'wp', 'cr2026_account_route_mobile_loyalty_reward', 20 );
+
+/** Theme-owned mobile shell; data and actions are read from the existing loyalty/Woo APIs. */
+function cr2026_account_render_mobile_loyalty_reward() {
+    if ( ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
+        || ! function_exists( 'is_account_page' ) || ! is_account_page()
+        || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'loyalty_reward' ) ) {
+        return;
+    }
+    ?>
+    <section class="cr-account-loyalty" data-cr-account-loyalty aria-label="<?php esc_attr_e( 'Cupones y promociones', 'crios-rango-2026' ); ?>">
+        <p class="cr-account-loyalty__loading" role="status" aria-live="polite"><?php esc_html_e( 'Cargando monedero y promociones…', 'crios-rango-2026' ); ?></p>
+    </section>
+    <?php
+}

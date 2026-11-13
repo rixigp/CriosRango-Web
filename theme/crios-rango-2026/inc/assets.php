@@ -107,6 +107,28 @@ function cr2026_enqueue_assets() {
         );
     }
 
+    if ( function_exists( 'is_account_page' ) && is_account_page()
+        && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'loyalty_reward' )
+        && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
+        wp_enqueue_script(
+            'cr2026-account-loyalty',
+            CR2026_URI . '/assets/js/account-loyalty.js',
+            array(),
+            cr2026_asset_version( 'assets/js/account-loyalty.js' ),
+            true
+        );
+        wp_localize_script( 'cr2026-account-loyalty', 'CR2026AccountLoyalty', array(
+            'loyaltyUrl' => rest_url( 'criosrango/v1/loyalty' ),
+            'promotionsUrl' => rest_url( 'criosrango/v1/promotions' ),
+            'storeCartUrl' => rest_url( 'wc/store/v1/cart' ),
+            'applyCouponUrl' => rest_url( 'wc/store/v1/cart/apply-coupon' ),
+            'wpRestNonce' => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
+            'storeNonce' => wp_create_nonce( 'wc_store_api' ),
+            'currency' => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'EUR',
+            'authenticated' => is_user_logged_in(),
+        ) );
+    }
+
     if ( $uses_checkout_shell ) {
         wp_enqueue_style(
             'cr2026-checkout',
