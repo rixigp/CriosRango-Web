@@ -174,6 +174,7 @@ if ( ! WC()->cart->is_empty() ) {
                 <section class="cr-cart-promotions" data-cr-cart-promotions>
                     <div class="cr-cart-promotions__loading" data-cr-cart-loading role="status" aria-live="polite" aria-label="<?php esc_attr_e( 'Cargando promociones', 'crios-rango-2026' ); ?>">
                         <span class="cr-cart-promotions__skeleton-bar cr-cart-promotions__skeleton-bar--copy" aria-hidden="true"></span>
+                        <span class="cr-cart-promotions__skeleton-bar cr-cart-promotions__skeleton-bar--copy" aria-hidden="true"></span>
                     </div>
                     <div class="cr-cart-wallet" data-cr-cart-wallet hidden></div>
                     <div class="cr-cart-promotions__available" data-cr-cart-promotions-list></div>
