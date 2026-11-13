@@ -79,7 +79,8 @@ test('cart wallet rewards use the Coupons & Promotions shared component contract
   assert.ok(cartUi.includes('cr-account-loyalty__reward-icon'));
   assert.ok(cartUi.includes('cr-account-loyalty__reward-label'));
   assert.ok(cartUi.includes('cr-account-loyalty__apply'));
-  assert.match(cartCss, /background:\s*#FFFFFF/);
+  assert.match(cartCss, /background:\s*#E8F5EF/);
+  assert.match(cartCss, /background:\s*#D7E8E1/);
   assert.match(cartCss, /border-radius:\s*18px/);
   assert.doesNotMatch(cartCss, /rgba\(132,\s*104,\s*190,\s*\.09\)/);
   assert.match(cartCss, /background:\s*#EAF3FF/);
