@@ -30,7 +30,7 @@ test('GLOBAL_PAGE_SHELL=YES and GLOBAL_TOOLBAR_GEOMETRY=YES: canonical zero top 
 });
 
 test('GLOBAL_MOBILE_FOOTER_POLICY=YES and GLOBAL_BOTTOM_CLEARANCE=YES: mobile output suppresses desktop footer and reserves nav space globally', () => {
-  assert.match(footer, /if \( ! \( function_exists\( 'wp_is_mobile' \) && wp_is_mobile\(\) \) \) :/);
+  assert.match(footer, /if \\( ! \\( function_exists\\( 'wp_is_mobile' \\) && wp_is_mobile\\(\\) \\) && ! \\$is_app_home/);
   const policy = canonicalMobileShell();
   assert.match(policy, /body\s*\{[^}]*padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)\s*!important/s);
   assert.match(policy, /\.cr-footer\s*\{\s*display:\s*none\s*!important/s);
