@@ -1130,3 +1130,27 @@ body.woocommerce-cart .woocommerce > .cr-cart-empty-state__icon ~ p.return-to-sh
   position: static !important;
   white-space: nowrap;
 }
+
+
+/* Wallet ready-to-use rewards: section title outside the white reward surface. */
+body.woocommerce-cart .cr-cart-wallet__rewards > .cr-cart-promotions__subheading {
+  margin:0 0 8px;
+}
+body.woocommerce-cart .cr-cart-wallet__rewards-card {
+  padding:4px 12px;
+  border:1px solid var(--cr-border,#D8D9D5);
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 1px 3px rgba(24,59,53,.04);
+}
+body.woocommerce-cart .cr-cart-wallet__rewards-card .cr-cart-reward {
+  padding:10px 0;
+  border-top:0;
+}
+body.woocommerce-cart .cr-cart-wallet__rewards-card .cr-cart-reward + .cr-cart-reward {
+  border-top:1px solid #EEF0EC;
+}
+/* Welcome offer uses the light-blue app promotion surface; icon/copy/Apply stay intact. */
+body.woocommerce-cart .cr-cart-promo-card--welcome {
+  background:#EAF3FF;
+}
