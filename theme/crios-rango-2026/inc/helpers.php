@@ -363,6 +363,7 @@ function cr2026_app_nav_body_class( $classes ) {
         && ( cr2026_is_account_information_page()
             || ( function_exists( 'is_page' ) && is_page( array( 'ayuda', 'preguntas-frecuentes', 'contacto' ) ) ) );
     if ( $is_mobile_account_content_page ) { $classes[] = 'cr-account-content-page'; }
+    if ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() && cr2026_is_account_information_page() ) { $classes[] = 'cr-account-information-page'; }
     if ( ! empty( $GLOBALS['cr2026_parent_category_view'] ) ) { $classes[] = 'cr-parent-category-view'; }
     if ( ! empty( $GLOBALS['cr2026_product_listing_view'] ) ) { $classes[] = 'cr-product-listing-view'; }
     if ( ! empty( $GLOBALS['cr2026_brands_index_view'] ) ) { $classes[] = 'cr-brands-index-view'; }
