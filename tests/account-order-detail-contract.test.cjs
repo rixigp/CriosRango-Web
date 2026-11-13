@@ -61,6 +61,11 @@ test('products show the base product name and formatted variation metadata witho
   assert.match(productsCard, /\$variation_summary/);
   assert.match(productsCard, /Cantidad:/);
   assert.doesNotMatch(productsCard, /get_formatted_line_subtotal|cr-order-detail__price/);
+  assert.match(template, /\$permalink_product = \$parent_product instanceof WC_Product \? \$parent_product : \$product/);
+  assert.match(template, /\$permalink_product->get_permalink\(\)/);
+  assert.match(template, /<a href="<\?php echo esc_url\( \$product_permalink \); \?>" aria-label="<\?php echo esc_attr\( sprintf\( __\( 'Ver %s'/);
+  assert.match(template, /<img src="<\?php echo esc_url\( \$image_url \); \?>" alt="" loading="lazy" decoding="async"><\/a>/);
+  assert.doesNotMatch(template, /cr_img_debug|image_debug|Diagnóstico técnico de imagen/);
   assert.match(template, /\$candidate->get_image_id\(\)/);
   assert.match(template, /wp_attachment_is_image\( \$attachment_id \)/);
   assert.match(template, /wp_get_attachment_image_url\( \$attachment_id, 'woocommerce_thumbnail' \)/);

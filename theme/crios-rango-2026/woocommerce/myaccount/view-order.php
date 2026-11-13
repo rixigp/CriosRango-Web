@@ -101,6 +101,9 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
                 $parent_name = trim( (string) $parent_product->get_name() );
                 if ( '' !== $parent_name ) { $product_name = $parent_name; }
             }
+            /* Variations link to the public parent product detail. */
+            $permalink_product = $parent_product instanceof WC_Product ? $parent_product : $product;
+            $product_permalink = $permalink_product instanceof WC_Product ? $permalink_product->get_permalink() : '';
             /*
              * Resolve supported variation keys from the order item's stored metadata.
              * Prefer WooCommerce taxonomy term names, with a readable value fallback.
@@ -171,9 +174,9 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
             $qty = (int) $item->get_quantity();
             ?>
             <div class="cr-order-detail__product">
-                <div class="cr-order-detail__image" aria-hidden="true">
-                    <span class="cr-order-detail__image-placeholder"><?php echo cr2026_icon( 'bag' ); ?></span>
-                    <?php if ( $image_url ) : ?><img src="<?php echo esc_url( $image_url ); ?>" alt="" loading="lazy" decoding="async"><?php endif; ?>
+                <div class="cr-order-detail__image">
+                    <span class="cr-order-detail__image-placeholder" aria-hidden="true"><?php echo cr2026_icon( 'bag' ); ?></span>
+                    <?php if ( $image_url && $product_permalink ) : ?><a href="<?php echo esc_url( $product_permalink ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Ver %s', 'crios-rango-2026' ), $product_name ) ); ?>"><img src="<?php echo esc_url( $image_url ); ?>" alt="" loading="lazy" decoding="async"></a><?php elseif ( $image_url ) : ?><img src="<?php echo esc_url( $image_url ); ?>" alt="" loading="lazy" decoding="async"><?php endif; ?>
                 </div>
                 <div class="cr-order-detail__product-info">
                     <strong class="cr-order-detail__product-name"><?php echo esc_html( $product_name ); ?></strong>
