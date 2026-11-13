@@ -12,6 +12,7 @@ const assets = fs.readFileSync(path.join(theme, 'inc/assets.php'), 'utf8');
 const checkoutCss = fs.readFileSync(path.join(theme, 'assets/css/checkout.css'), 'utf8');
 const checkoutPaymentJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-payment.js'), 'utf8');
 const checkoutWooCommercePhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
+const templatePhp = fs.readFileSync(path.join(theme, 'woocommerce/checkout/review-order.php'), 'utf8');
 const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
 const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
 
@@ -1056,22 +1057,21 @@ test('Checkout terms acceptance stays disabled and native place_order remains si
   assert.doesNotMatch(checkoutWooCommercePhp, /add_action\(\s*'woocommerce_checkout_terms_and_conditions'[\s\S]*?wc_terms_and_conditions_checkbox/);
 });
 
-const checkoutSuccessPhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
 const checkoutSuccessJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-success-modal.js'), 'utf8');
 
 test('offline checkout success payload is emitted only after successful gateway result and uses Woo order number', () => {
-  assert.match(checkoutSuccessPhp, /add_filter\( 'woocommerce_payment_successful_result', 'cr2026_checkout_offline_success_modal_result', 9999, 2 \)/);
-  assert.match(checkoutSuccessPhp, /sanitize_key\( wp_unslash\( \$_GET\['wc-ajax'\] \) \)/);
-  assert.match(checkoutSuccessPhp, /'checkout' !== sanitize_key/);
-  assert.match(checkoutSuccessPhp, /! isset\( \$_GET\['wc-ajax'\] \)/);
-  assert.match(checkoutSuccessPhp, /'success' !== \$result\['result'\]/);
-  assert.match(checkoutSuccessPhp, /\$order->get_payment_method\(\)/);
-  assert.match(checkoutSuccessPhp, /in_array\( \$gateway, array\( 'cheque', 'cod' \), true \)/);
-  assert.match(checkoutSuccessPhp, /\$number = \(string\) \$order->get_order_number\(\)/);
-  assert.match(checkoutSuccessPhp, /'order_id' => \(int\) \$order->get_id\(\)/);
-  assert.match(checkoutSuccessPhp, /'enabled' => true/);
-  assert.match(checkoutSuccessPhp, /\$result\['redirect'\] = '#cr-order-success'/);
-  assert.match(checkoutSuccessPhp, /in_array\( \$gateway, array\( 'cheque', 'cod' \), true \)/);
+  assert.match(checkoutWooCommercePhp, /add_filter\( 'woocommerce_payment_successful_result', 'cr2026_checkout_offline_success_modal_result', 9999, 2 \)/);
+  assert.match(checkoutWooCommercePhp, /sanitize_key\( wp_unslash\( \$_GET\['wc-ajax'\] \) \)/);
+  assert.match(checkoutWooCommercePhp, /'checkout' !== sanitize_key/);
+  assert.match(checkoutWooCommercePhp, /! isset\( \$_GET\['wc-ajax'\] \)/);
+  assert.match(checkoutWooCommercePhp, /'success' !== \$result\['result'\]/);
+  assert.match(checkoutWooCommercePhp, /\$order->get_payment_method\(\)/);
+  assert.match(checkoutWooCommercePhp, /in_array\( \$gateway, array\( 'cheque', 'cod' \), true \)/);
+  assert.match(checkoutWooCommercePhp, /\$number = \(string\) \$order->get_order_number\(\)/);
+  assert.match(checkoutWooCommercePhp, /'order_id' => \(int\) \$order->get_id\(\)/);
+  assert.match(checkoutWooCommercePhp, /'enabled' => true/);
+  assert.match(checkoutWooCommercePhp, /\$result\['redirect'\] = '#cr-order-success'/);
+  assert.match(checkoutWooCommercePhp, /in_array\( \$gateway, array\( 'cheque', 'cod' \), true \)/);
 });
 
 test('shared success modal is idempotent, accessible, and binds only the WooCommerce success event', () => {
@@ -1104,42 +1104,42 @@ test('all four payment result variants carry exact copy and dynamic WooCommerce 
     'Puedes volver a intentarlo desde tu carrito.',
     'Seguir comprando',
     'Cerrar'
-  ]) assert.ok(checkoutSuccessPhp.includes(copy), 'missing modal copy: ' + copy);
-  assert.ok(checkoutSuccessPhp.includes("'Tu pedido #' . $number"));
-  assert.match(checkoutSuccessPhp, /\$order->get_order_number\(\)/);
+  ]) assert.ok(checkoutWooCommercePhp.includes(copy), 'missing modal copy: ' + copy);
+  assert.ok(checkoutWooCommercePhp.includes("'Tu pedido #' . $number"));
+  assert.match(checkoutWooCommercePhp, /\$order->get_order_number\(\)/);
   assert.match(assets, /'shopUrl' => function_exists\( 'wc_get_page_permalink' \) \? wc_get_page_permalink\( 'shop' \) : cr2026_shop_url\(\)/);
   assert.match(assets, /assets\/js\/checkout-success-modal\.js/);
   assert.match(checkoutSuccessJs, /'bizum_success', 'store_success', 'card_success', 'card_failure'/);
   assert.match(checkoutSuccessJs, /payload.action === 'close'/);
 });
 test('failure responses and non-target gateways keep WooCommerce standard result handling', () => {
-  assert.match(checkoutSuccessPhp, /'success' !== \$result\['result'\][\s\S]*?return \$result;/);
-  assert.match(checkoutSuccessPhp, /in_array\( \$gateway, array\( 'cheque', 'cod' \), true \)/);
+  assert.match(checkoutWooCommercePhp, /'success' !== \$result\['result'\][\s\S]*?return \$result;/);
+  assert.match(checkoutWooCommercePhp, /in_array\( \$gateway, array\( 'cheque', 'cod' \), true \)/);
   assert.match(checkoutSuccessJs, /if \(!payload \|\| payload\.enabled !== true/);
   assert.match(checkoutSuccessJs, /return true;/);
 });
 
 
 test('Cecabank success and failure require a matching WooCommerce order, gateway and final state', () => {
-  assert.match(checkoutSuccessPhp, /is_order_received_page\(\)/);
-  assert.match(checkoutSuccessPhp, /'cecabank_gateway' === \$order->get_payment_method\(\)/);
-  assert.match(checkoutSuccessPhp, /\$order->is_paid\(\)/);
-  assert.match(checkoutSuccessPhp, /\$_GET\['key'\]/);
-  assert.match(checkoutSuccessPhp, /add_action\( 'woocommerce_cancelled_order', 'cr2026_checkout_capture_cecabank_cancelled_order', 10, 1 \)/);
-  assert.match(checkoutSuccessPhp, /cr2026_cecabank_cancelled_order_id/);
-  assert.match(checkoutSuccessPhp, /\$woocommerce->session->get\( 'cr2026_cecabank_cancelled_order_id' \)/);
-  assert.match(checkoutSuccessPhp, /\$woocommerce->session->set\( 'cr2026_cecabank_cancelled_order_id', 0 \)/);
-  assert.match(checkoutSuccessPhp, /in_array\( \$order->get_status\(\), array\( 'cancelled', 'failed' \), true \)/);
-  assert.match(checkoutSuccessPhp, /Tu pedido se ha cancelado\./);
+  assert.match(checkoutWooCommercePhp, /is_order_received_page\(\)/);
+  assert.match(checkoutWooCommercePhp, /'cecabank_gateway' === \$order->get_payment_method\(\)/);
+  assert.match(checkoutWooCommercePhp, /\$order->is_paid\(\)/);
+  assert.match(checkoutWooCommercePhp, /\$_GET\['key'\]/);
+  assert.match(checkoutWooCommercePhp, /add_action\( 'woocommerce_cancelled_order', 'cr2026_checkout_capture_cecabank_cancelled_order', 10, 1 \)/);
+  assert.match(checkoutWooCommercePhp, /cr2026_cecabank_cancelled_order_id/);
+  assert.match(checkoutWooCommercePhp, /\$woocommerce->session->get\( 'cr2026_cecabank_cancelled_order_id' \)/);
+  assert.match(checkoutWooCommercePhp, /\$woocommerce->session->set\( 'cr2026_cecabank_cancelled_order_id', 0 \)/);
+  assert.match(checkoutWooCommercePhp, /in_array\( \$order->get_status\(\), array\( 'cancelled', 'failed' \), true \)/);
+  assert.match(checkoutWooCommercePhp, /Tu pedido se ha cancelado\./);
   assert.match(checkoutSuccessJs, /config\.result/);
   assert.match(checkoutSuccessJs, /closeModal\(overlay\)/);
   assert.match(checkoutSuccessJs, /window\.location\.assign\(shopUrl\)/);
 });
 
 test('only the verified Cecabank cancellation notice is removed and Cart is supported', () => {
-  assert.match(checkoutSuccessPhp, /cr2026_checkout_hide_cecabank_cancel_notice/);
-  assert.match(checkoutSuccessPhp, /hash_equals\( \(string\) \$order->get_order_key\(\), \(string\) \$order_key \)/);
-  assert.match(checkoutSuccessPhp, /return 'Tu pedido se ha cancelado\.' !== trim\( \$message \);/);
+  assert.match(checkoutWooCommercePhp, /cr2026_checkout_hide_cecabank_cancel_notice/);
+  assert.match(checkoutWooCommercePhp, /hash_equals\( \(string\) \$order->get_order_key\(\), \(string\) \$order_key \)/);
+  assert.match(checkoutWooCommercePhp, /return 'Tu pedido se ha cancelado\.' !== trim\( \$message \);/);
   assert.match(assets, /is_cart\(\)/);
   assert.match(assets, /is_order_received_page\(\)/);
 });
