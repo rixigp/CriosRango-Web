@@ -69,9 +69,14 @@ test('COMMON_EDITORIAL_RAIL_NORMALIZES_CONTENT_WITHOUT_TOUCHING_GLOBAL_NAV_CLEAR
   assert.match(helpers, /cr2026_is_account_information_page\(\)/);
   assert.match(accountCss, /\.cr-account-information \{[\s\S]*?width: min\(calc\(100% - 40px\), 720px\)/);
   assert.match(accountCss, /body\.cr-account-content-page \.cr-parent-category__toolbar \{ margin-bottom: 16px; \}/);
-  for (const selector of ['h2','h3','p','ul','ol','li','a','table','th','td']) {
+  for (const selector of ['h1','h2','h3','h4','h5','h6','p','ul','ol','li','strong','a','blockquote','table','th','td']) {
     assert.ok(accountCss.includes('.cr-account-information__content ' + selector), 'editorial style ' + selector);
   }
+  assert.match(presentation, /function cr2026_account_information_remove_duplicate_title\( \$content, \$page_title \)/);
+  assert.match(presentation, /cr2026_account_information_remove_duplicate_title\( \$content, \$title \)/);
+  assert.match(presentation, /preg_match\( '\/<\(h\[1-6\]\|p\|strong\)/);
+  assert.match(accountCss, /\.cr-account-information__content h1,[\\s\\S]*?font: 400 18px\\/25px/);
+  assert.match(accountCss, /\.cr-account-information__content p \\{[^}]*font: 300 13px\\/21px/);
   assert.match(helpers, /function cr2026_is_account_context\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
   assert.match(helpers, /function cr2026_is_app_nav_shell\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
   assert.match(mainCss, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\{display:block;position:fixed/);

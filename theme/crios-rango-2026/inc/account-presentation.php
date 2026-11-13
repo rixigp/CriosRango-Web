@@ -312,6 +312,44 @@ function cr2026_account_information_vc_fallback( $content ) {
 }
 add_filter( 'the_content', 'cr2026_account_information_vc_fallback', 12 );
 
+/**
+ * Remove only the first editorial block when it repeats the canonical toolbar title.
+ * WordPress content remains unchanged in storage; this is a render-time presentation
+ * adjustment scoped to the five Information pages.
+ */
+function cr2026_account_information_remove_duplicate_title( $content, $page_title ) {
+    if ( ! is_string( $content ) || '' === trim( $content ) || '' === trim( (string) $page_title ) ) {
+        return $content;
+    }
+
+    $normalize = static function( $text ) {
+        $text = html_entity_decode( wp_strip_all_tags( (string) $text ), ENT_QUOTES, get_bloginfo( 'charset' ) ?: 'UTF-8' );
+        $text = preg_replace( '/\\s+/u', ' ', trim( $text ) );
+        $text = preg_replace( '/[.\\s]+$/u', '', $text );
+        return function_exists( 'mb_strtolower' ) ? mb_strtolower( $text, 'UTF-8' ) : strtolower( $text );
+    };
+
+    $normalized_title = $normalize( $page_title );
+    if ( '' === $normalized_title ) {
+        return $content;
+    }
+
+    // Match the earliest editorial block only: semantic heading, paragraph,
+    // or a standalone strong block. A later internal heading is never removed.
+    if ( ! preg_match( '/<(h[1-6]|p|strong)\\b[^>]*>.*?<\\/\\1\\s*>/is', $content, $matches, PREG_OFFSET_CAPTURE ) ) {
+        return $content;
+    }
+
+    $first_block = $matches[0][0];
+    $first_block_text = $normalize( $first_block );
+    if ( $first_block_text !== $normalized_title ) {
+        return $content;
+    }
+
+    $offset = $matches[0][1];
+    return substr_replace( $content, '', $offset, strlen( $first_block ) );
+}
+
 /** One mobile renderer for all five WordPress Information pages. */
 function cr2026_account_information_page_content( $content ) {
     if ( is_admin() || ! is_main_query() || ! in_the_loop() || ! cr2026_is_account_information_page() ) {
@@ -324,6 +362,7 @@ function cr2026_account_information_page_content( $content ) {
     }
 
     $title = get_the_title( $page );
+    $content = cr2026_account_information_remove_duplicate_title( $content, $title );
 
     return '<section class="cr-account-information" aria-label="' . esc_attr( $title ) . '">'
         . '<div class="cr-account-information__content">' . $content . '</div></section>';

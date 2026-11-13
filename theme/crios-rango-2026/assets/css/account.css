@@ -1649,16 +1649,21 @@
     min-width: 0;
     max-width: 100%;
   }
-  .cr-account-information__content > *:first-child { margin-top: 0; }
-  .cr-account-information__content p { margin: 0 0 13px; color: #303630; font: 300 13px/21px "Roboto", Arial, sans-serif; }
+  .cr-account-information__content > *:first-child { margin-top: 0 !important; }
+  .cr-account-information__content h1,
   .cr-account-information__content h2 { margin: 22px 0 10px; color: #183b35; font: 400 18px/25px "Roboto", Arial, sans-serif; }
   .cr-account-information__content h3 { margin: 18px 0 8px; color: #183b35; font: 400 15px/22px "Roboto", Arial, sans-serif; }
   .cr-account-information__content h4,
   .cr-account-information__content h5,
   .cr-account-information__content h6 { margin: 15px 0 7px; color: #244436; font: 400 14px/20px "Roboto", Arial, sans-serif; }
+  .cr-account-information__content p { margin: 0 0 13px !important; color: #303630; font: 300 13px/21px "Roboto", Arial, sans-serif !important; }
   .cr-account-information__content ul,
-  .cr-account-information__content ol { margin: 0 0 14px; padding-inline-start: 22px; }
-  .cr-account-information__content li { margin: 0 0 5px; padding-inline-start: 2px; color: #303630; font: 300 13px/21px "Roboto", Arial, sans-serif; }
+  .cr-account-information__content ol { margin: 0 0 14px !important; padding-inline-start: 22px !important; }
+  .cr-account-information__content li { margin: 0 0 5px !important; padding-inline-start: 2px; color: #303630; font: 300 13px/21px "Roboto", Arial, sans-serif !important; }
+  .cr-account-information__content strong,
+  .cr-account-information__content b { font: 500 13px/21px "Roboto", Arial, sans-serif; }
+  .cr-account-information__content blockquote { margin: 14px 0 !important; padding: 2px 0 2px 14px; border-left: 2px solid rgba(24,59,53,.22); color: #303630; font: 300 13px/21px "Roboto", Arial, sans-serif; }
+  .cr-account-information__content table { margin: 0 0 16px !important; font: 300 12px/18px "Roboto", Arial, sans-serif; }
   .cr-account-information__content a { color: #244436; text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; word-break: break-word; }
   .cr-account-information__content strong,
   .cr-account-information__content b { color: #263b32; font-weight: 500; }
