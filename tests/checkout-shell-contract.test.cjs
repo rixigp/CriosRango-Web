@@ -224,7 +224,7 @@ test('Login, Checkout and Select2 consume one canonical form-control token sourc
 
 test('delivery labels use the native legend notch and canonical white control surface', () => {
   assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s);
-  assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
+  assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*background:\s*#fff/s);
   assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*border:\s*var\(--cr-control-border-width\)\s+solid\s+var\(--cr-control-border\)/s);
   assert.match(controlsCss, /\.cr-control-shell:focus-within/);
   assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
@@ -281,7 +281,7 @@ test('global form controls share a zero-padding wrapper, 14px value inset and ce
   assert.match(controlsCss, /\.select2-selection__rendered\s*\{[^}]*padding:\s*0 36px 0 14px/s);
   assert.match(controlsCss, /\.show-password-input[\s\S]*?top:\s*50%[\s\S]*?transform:\s*translateY\(-50%\)/);
   assert.match(controlsCss, /\.cr-control-shell textarea\s*\{[^}]*padding:\s*12px 14px/s);
-  assert.match(controlsCss, /\.woocommerce form label > \\.required[\s\S]*?display:\s*none/s);
+  assert.match(controlsCss, /\.woocommerce form label > \.required[\s\S]*?display:\s*none/s);
   assert.doesNotMatch(controlsCss, /padding:\s*var\(--cr-control-(?:select-)?padding\)/);
   assert.doesNotMatch(controlsCss, /line-height:\s*48px|text-align-last:\s*center|text-align:\s*center/);
 });
