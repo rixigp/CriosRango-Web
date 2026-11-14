@@ -20,7 +20,7 @@
       if (row.dataset.crControlShell === 'true') return;
       const label = Array.from(row.children).find((child) => child.tagName === 'LABEL' && isFloatingLabel(child));
       if (!label) return;
-      const wrapper = Array.from(row.children).find((child) => child.classList.contains('woocommerce-input-wrapper'));
+      const wrapper = Array.from(row.children).find((child) => child.matches('.woocommerce-input-wrapper,.password-input'));
       if (!wrapper) return;
       makeShell(row, label, wrapper);
     });
