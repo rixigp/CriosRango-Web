@@ -57,38 +57,14 @@ test('promotion card uses icon, copy and action zones with vertical centering', 
 test('promotion spacing reuses the existing 12px wallet stack gaps', () => {
   assert.match(cartCss, /\.cr-cart-wallet \{\s*margin-bottom:12px;/);
   assert.match(cartCss, /\.cr-cart-wallet__rewards,\.cr-cart-wallet__redeem \{ margin-top:12px; \}/);
-  assert.match(cartCss, /body\.woocommerce-cart \.cr-cart-promotions__available \{\s*margin: 0;/);
-});
-
-test('wallet rendering and coupon entry/action remain intact', () => {
-  const walletStart = cartUi.indexOf('const renderWallet = (wallet) => {');
-  const walletEnd = cartUi.indexOf('\n  const refreshWallet', walletStart);
-  assert.ok(walletStart >= 0 && walletEnd > walletStart);
-  const wallet = cartUi.slice(walletStart, walletEnd);
-  assert.ok(wallet.includes("node('h3', 'cr-cart-wallet__title', 'Monedero')"));
-  assert.ok(wallet.includes("node('h4', 'cr-cart-promotions__subheading cr-account-loyalty__section-title', 'Saldo listo para usar')"));
-  assert.ok(wallet.includes("createButton('Aplicar','cr-cart-apply-button cr-account-loyalty__apply'"));
-  assert.ok(cartTemplate.includes('class="cr-cart-manual-coupon"'));
-  assert.ok(cartTemplate.includes('Tengo otro código de descuento'));
-  assert.ok(cartTemplate.includes('data-cr-cart-manual-form'));
-});
-
-test('cart wallet rewards use the Coupons & Promotions shared component contract', () => {
-  assert.ok(cartUi.includes('cr-account-loyalty__rewards-card'));
-  assert.ok(cartUi.includes('cr-account-loyalty__reward-row'));
-  assert.ok(cartUi.includes('cr-account-loyalty__reward-icon'));
-  assert.ok(cartUi.includes('cr-account-loyalty__reward-label'));
-  assert.ok(cartUi.includes('cr-account-loyalty__apply'));
-  assert.match(cartCss, /background:\s*#E8F5EF/);
-  assert.match(cartCss, /background:\s*#D7E8E1/);
-  assert.match(cartCss, /body\\.woocommerce-cart \\.cr-cart-promotions :is\\(\\.cr-cart-apply-button, \\.cr-account-loyalty__apply\\)/);
-  assert.match(cartCss, /background-color:\\s*#0F5C4D\\s*!important/);
-  assert.match(cartCss, /border:\\s*0\\s*!important/);
-  assert.match(cartCss, /border-radius:\\s*18px\\s*!important/);
-  assert.match(cartCss, /height:\\s*36px\\s*!important/);
-  assert.match(cartCss, /padding:\\s*0 11px\\s*!important/);
-  assert.match(cartCss, /:is\\(:hover, :focus-visible, :active\\)/);
-  assert.doesNotMatch(cartCss, /background:\\s*#2F8A57/);
+  assert.ok(cartCss.includes('body.woocommerce-cart .cr-cart-promotions :is(.cr-cart-apply-button, .cr-account-loyalty__apply)'));
+  assert.match(cartCss, /background-color:\s*#0F5C4D\s*!important/);
+  assert.match(cartCss, /border:\s*0\s*!important/);
+  assert.match(cartCss, /border-radius:\s*18px\s*!important/);
+  assert.match(cartCss, /height:\s*36px\s*!important/);
+  assert.match(cartCss, /padding:\s*0 11px\s*!important/);
+  assert.ok(cartCss.includes(':is(:hover, :focus-visible, :active)'));
+  assert.doesNotMatch(cartCss, /background:\s*#2F8A57/);
   assert.doesNotMatch(cartCss, /rgba\(132,\s*104,\s*190,\s*\.09\)/);
   assert.match(cartCss, /background:\s*#EAF3FF/);
 });

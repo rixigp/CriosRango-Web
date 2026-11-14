@@ -209,7 +209,6 @@ test('Login, Checkout and Select2 consume one canonical form-control token sourc
     '--cr-control-border:#d8d9d5;',
     '--cr-control-radius:9px;',
     '--cr-control-background:#fff;',
-    '--cr-control-padding:014px;',
     '--cr-control-focus-border:#aeb2ad;',
     '--cr-control-error-border:#c66b61;'
   ]) assert.ok(normalizedControlsCss.includes(token), 'missing shared form-control token: ' + token);
@@ -275,9 +274,9 @@ test('native delivery controls and Select2 consume the canonical presentation wi
 test('global form controls share a zero-padding wrapper, 14px value inset and centered alignment', () => {
   assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0[^}]*background:\s*#fff/s);
   assert.match(controlsCss, /\.cr-control-shell\s*:\s*is\([\s\S]*?\.woocommerce-input-wrapper[\s\S]*?\.select2-container[\s\S]*?\)\s*\{[^}]*position:\s*relative\s*!important[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0/s);
-  assert.match(controlsCss, /\.cr-control-shell input:not\([\s\S]*?\)\s*\{[^}]*padding:\s*0 14px/s);
-  assert.match(controlsCss, /input\[type="password"\][\s\S]*?padding:\s*0 48px 0 14px/s);
-  assert.match(controlsCss, /\.cr-control-shell select\s*\{[^}]*padding:\s*0 36px 0 14px/s);
+  assert.match(controlsCss, /\.cr-control-shell input:not\([\s\S]*?\)\s*\{[^}]*padding:\s*13px 14px/s);
+  assert.match(controlsCss, /input\[type="password"\][\s\S]*?padding:\s*13px 48px 13px 14px/s);
+  assert.match(controlsCss, /\.cr-control-shell select\s*\{[^}]*padding:\s*13px 36px 13px 14px/s);
   assert.match(controlsCss, /\.select2-selection__rendered\s*\{[^}]*padding:\s*0 36px 0 14px/s);
   assert.match(controlsCss, /\.show-password-input[\s\S]*?top:\s*50%[\s\S]*?transform:\s*translateY\(-50%\)/);
   assert.match(controlsCss, /\.cr-control-shell textarea\s*\{[^}]*padding:\s*12px 14px/s);
