@@ -128,7 +128,8 @@ test('one mobile PAGE TITLE is emitted per route and Product Detail remains excl
   assert.doesNotMatch(orders, /cr-account-orders__toolbar/);
   assert.match(page, /! cr2026_account_is_help_page\(\)/);
   assert.match(account, /woocommerce_account_view-order_endpoint/);
-  assert.match(productSkin, /cr-parent-category__title/);
+  assert.match(productSkin, /cr2026_render_category_toolbar\([\s\S]*?'cr-product-detail-toolbar'/);
+  assert.match(helpers, /echo '<h1 class="cr-parent-category__title"'/);
   assert.match(productSkin, /product_title entry-title/);
 });
 
