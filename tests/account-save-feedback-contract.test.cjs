@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '..');
 const php = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/account-presentation.php'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/account.css'), 'utf8');
+const controlsCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/controls.css'), 'utf8');
 const js = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/js/account-save-feedback.js'), 'utf8');
 const assets = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/assets.php'), 'utf8');
 
@@ -327,7 +328,7 @@ test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_WHITE_WITHOUT_GEOMETRY_OVERRIDES', ()
   assert.match(php, /'Current password \(leave blank to leave unchanged\)'\s*=>\s*'Contraseña actual'/);
   assert.match(php, /'New password \(leave blank to leave unchanged\)'\s*=>\s*'Nueva contraseña'/);
   assert.match(php, /'Confirm new password'\s*=>\s*'Confirmar nueva contraseña'/);
-  assert.match(css, /\.cr-control-shell\s*\{[^}]*background:var\(--cr-control-background\)/);assert.match(css, /\.cr-control-shell :is\(input\[type="password"\],\.password-input input\)\s*\{[^}]*padding-right:46px !important/);
+  assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*background:var\(--cr-control-background\)/);assert.match(controlsCss, /\.cr-control-shell :is\(input\[type="password"\],\.password-input input\)\s*\{[^}]*padding-right:46px !important/);
   assert.match(css, /\.cr-account-submit__spinner/);
   assert.match(js, /cr-account-submit--loading/);
 });
