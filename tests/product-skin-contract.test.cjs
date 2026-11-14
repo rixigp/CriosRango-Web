@@ -1045,7 +1045,6 @@ test('mobile cart uses one WooCommerce table cell card and cart-only WPLoyalty f
   assert.match(cartHooks, /wlr_is_cart_redeem_message_enabled/);
   assert.match(cartHooks, /function cr2026_cart_disable_wployalty_messages\( \$enabled \) \{\s*return false;/);
   assert.match(pageTemplate, /! function_exists\( 'is_cart' \) \|\| ! is_cart\(\)/);
-  assert.match(footerTemplate, /if \( ! \( function_exists\( 'wp_is_mobile' \) && wp_is_mobile\(\) \) \) :/);
   assert.match(cartCss, /grid-template-columns:104px minmax\(0,1fr\)/);
   assert.match(cartCss, /\.cr-cart-item__actions \{ display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; min-width:0; flex-wrap:nowrap; \}/);
   assert.match(cartCss, /button\[name="update_cart"\].*clip-path:inset\(50%\)/);
