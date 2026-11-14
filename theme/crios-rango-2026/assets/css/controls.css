@@ -142,3 +142,113 @@ body.login #loginform .forgetmenot { padding-top: 0; }
   body.woocommerce-account:not(.logged-in) .woocommerce h2:has(+ form.woocommerce-form-login),
   body.woocommerce-account:not(.logged-in) .woocommerce h2:has(~ form.woocommerce-form-login) { display: none !important; }
 }
+
+
+/* Global value alignment: wrappers are geometry-only; the real control owns its inset. */
+.cr-control-shell .woocommerce-input-wrapper,
+.cr-control-shell .password-input,
+.cr-control-shell .wp-pwd,
+.cr-control-shell .select2-container {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.cr-control-shell input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+  line-height: 20px !important;
+}
+
+.cr-control-shell select {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 36px 0 14px !important;
+  border: 0 !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+  line-height: 20px !important;
+  text-align: left !important;
+  text-align-last: left !important;
+}
+
+.cr-control-shell .select2-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.cr-control-shell .select2-selection--single {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.cr-control-shell .select2-selection__rendered {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 36px 0 14px !important;
+  font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+  line-height: 20px !important;
+  text-align: left !important;
+}
+
+.cr-control-shell .select2-selection__arrow {
+  top: 0 !important;
+  right: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+}
+
+.cr-control-shell input[type="password"] {
+  padding: 0 48px 0 14px !important;
+}
+
+.cr-control-shell .show-password-input {
+  position: absolute !important;
+  top: 50% !important;
+  right: 14px !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translateY(-50%) !important;
+}
+
+/* Required semantics remain intact; only the visible marker is suppressed. */
+.cr-control-shell > legend .required,
+.cr-control-shell > legend abbr.required,
+.cr-control-shell > legend abbr[title="required"],
+.cr-control-shell > legend > label .required,
+.cr-control-shell > legend > label abbr.required,
+.woocommerce form .form-row > label .required,
+.woocommerce form .form-row > label abbr.required,
+.woocommerce form .form-row > label abbr[title="required"] {
+  display: none !important;
+}
