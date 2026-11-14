@@ -66,8 +66,11 @@ body.cr-product-detail-app .woocommerce-product-gallery__image a {
 body.cr-product-detail-app .woocommerce-product-gallery__image img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 5;
   height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  aspect-ratio: 4 / 5;
   object-fit: cover;
   object-position: center;
   background: #fff;
