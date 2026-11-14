@@ -98,9 +98,9 @@
 
   body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields, .woocommerce-Addresses) {
     box-sizing: border-box;
-    width: min(calc(100% - 40px), 720px);
-    max-width: 720px;
-    margin-inline: auto;
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
   }
 
   body.woocommerce-account:has(.cr-account-home) .woocommerce-MyAccount-content {
@@ -110,8 +110,9 @@
   }
 
   body.woocommerce-account .cr-account-home {
-    width: min(calc(100% - 40px), 720px);
-    margin-inline: auto;
+    width: 100%;
+    max-width: 720px;
+    margin-inline: 0;
     padding-top: 0;
     padding-bottom: 0;
   }
@@ -507,7 +508,7 @@
  }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm,
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm {
-   box-sizing: border-box; width: min(calc(100% - 40px), var(--cr-shell)); margin: 0 auto; padding: 0;
+   box-sizing: border-box; width: 100%; max-width: none; margin: 0; padding: 0;
    border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
  }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p.form-row,
@@ -561,7 +562,7 @@
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields > h2,
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields > h3 { display: none !important; }
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields {
-   box-sizing: border-box; width: min(calc(100% - 40px), var(--cr-shell)); margin: 0 auto;
+   box-sizing: border-box; width: 100%; max-width: none; margin: 0;
    padding: 0 0 16px !important;
    border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
  }
@@ -1241,7 +1242,7 @@
 
 /* Mobile Delete Account endpoint: remove the plugin's legacy card skin while retaining its native form. */
 @media (max-width: 767px) {
- body.woocommerce-account .wpfda-delete-account-container {box-sizing:border-box!important;width:min(calc(100% - 40px),var(--cr-shell))!important;max-width:none!important;margin:0 auto!important; padding: 0;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#20241f!important;font:300 12px/17px "Roboto",Arial,sans-serif!important;}
+ body.woocommerce-account .wpfda-delete-account-container {box-sizing:border-box!important;width:100%!important;max-width:none!important;margin:0!important; padding: 0;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#20241f!important;font:300 12px/17px "Roboto",Arial,sans-serif!important;}
  body.woocommerce-account .wpfda-delete-account-container :is(form,fieldset) {box-sizing:border-box!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;}
  body.woocommerce-account .wpfda-delete-account-container :is(p,.form-row) {position:relative!important;float:none!important;box-sizing:border-box!important;width:100%!important;margin:0 0 16px!important;padding:0!important;}
  body.woocommerce-account .wpfda-delete-account-container label {display:block!important;margin:0 0 6px!important;color:#183b35!important;font:300 12px/17px "Roboto",Arial,sans-serif!important;}
@@ -1270,7 +1271,7 @@
 /* App-style mobile order detail; uses the same shell rail as account pages. */
 @media (max-width: 767px) {
  body.woocommerce-account .cr-order-detail { box-sizing:border-box; width:100%; max-width:none; margin:0; padding:0; display:grid; gap:12px; color:#20241f; font:300 12px/17px "Roboto",Arial,sans-serif; }
- body.woocommerce-account .cr-order-detail__card { box-sizing:border-box; width:min(calc(100% - 40px),720px); max-width:720px; min-width:0; margin-inline:auto; padding:16px; border:1px solid rgba(24,59,53,.09); border-radius:16px; background:#fff; box-shadow:0 2px 8px rgba(24,59,53,.045); }
+ body.woocommerce-account .cr-order-detail__card { box-sizing:border-box; width:100%; max-width:none; min-width:0; margin-inline:0; padding:16px; border:1px solid rgba(24,59,53,.09); border-radius:16px; background:#fff; box-shadow:0 2px 8px rgba(24,59,53,.045); }
  body.woocommerce-account .cr-order-detail__heading { margin:0 0 12px; display:flex; align-items:center; gap:9px; color:#183b35; font:400 15px/21px "Roboto",Arial,sans-serif; }
  body.woocommerce-account .cr-order-detail__heading svg { width:20px;height:20px;flex:0 0 20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round; }
  body.woocommerce-account .cr-order-detail__number { margin:0 0 8px; color:#263b32; font:400 15px/21px "Roboto",Arial,sans-serif; }
