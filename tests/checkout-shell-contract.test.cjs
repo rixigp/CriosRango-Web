@@ -253,13 +253,12 @@ test('WooCommerce core full shipping labels lose only the appended price separat
   assert.equal(removeCoreSeparator('Envío gratuito: <small>Gratis</small>', 'Envío gratuito'), 'Envío gratuito <small>Gratis</small>');
 });
 
-test('delivery labels use transparent canonical notched labels and retain native WooCommerce label elements', () => {
-  assert.ok(controlsCss.includes('.woocommerce form .form-row > label'));
-  assert.ok(controlsCss.includes('position:absolute !important'));
-  assert.ok(controlsCss.includes('.cr-control-shell > legend'));
+test('delivery labels use transparent canonical fieldset/legend shells and retain native WooCommerce label elements', () => {
+  assert.ok(controlsCss.includes('.cr-control-shell > legend > label'));
+  assert.ok(controlsCss.includes('border:0 !important'));
+  assert.ok(controlsCss.includes('background:var(--cr-control-background)'));
   assert.ok(controlsCss.includes('.cr-control-shell:focus-within'));
   assert.ok(!controlsCss.includes('cr-control-label-notch'));
-  assert.ok(controlsCss.includes('background-color:var(--cr-control-background) !important'));
   assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
   assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
 });
