@@ -174,12 +174,10 @@ test('SHIPPING_ADDRESS_2_HAS_ONE_OPTIONAL_LABEL_AND_NO_PLACEHOLDER_COPY', () => 
   assert.match(birthdayContract, /'' === \$shipping_fields\['shipping_address_2'\]\['placeholder'\]/);
 });
 
-test('SHIPPING_SELECT_PADDING_OVERRIDE_IS_LAST_AND_PRESERVES_SELECT2_ARROW', () => {
-  const marker = '/* Final shipping-select content-axis override: preserve native controls and Select2 chevron. */';
-  const start = accountCss.lastIndexOf(marker);
-  const block = accountCss.slice(start);
-  assert.ok(start > 0, 'final shipping-select override exists');
-  assert.match(block, /\.woocommerce-address-fields select \{[\s\S]*?padding-inline-start:\s*13px !important;[\s\S]*?text-indent:\s*0 !important;/);
-  assert.match(block, /\.woocommerce-address-fields \.select2-selection__rendered \{[\s\S]*?padding:\s*0 36px 0 13px !important;[\s\S]*?text-indent:\s*0 !important;/);
-  assert.doesNotMatch(block, /appearance\s*:/i);
+test('SHIPPING_SELECT_PADDING_USES_SHARED_CONTROL_TOKENS_AND_PRESERVES_SELECT2_ARROW', () => {
+  assert.match(controlsCss, /--cr-control-padding:\s*12px 13px 9px/);
+  assert.match(controlsCss, /--cr-control-select-padding:\s*12px 36px 9px 13px/);
+  assert.match(controlsCss, /\.woocommerce form \.form-row \.select2-selection__arrow[^}]*height:var\(--cr-control-height\) !important/);
+  assert.doesNotMatch(accountCss, /padding-inline-start:\s*13px !important/);
+  assert.doesNotMatch(accountCss, /Final shipping-select content-axis override/);
 });
