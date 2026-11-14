@@ -184,8 +184,8 @@ test('product card image source and crop match app responsive source selection a
   assert.match(helpers, /'sizes'\s*=>/);
   assert.match(helpers, /data-product-id=/);
   const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
-  assert.match(css, /cr-product-card__media \{[^}]*aspect-ratio:\.78;[^}]*border-radius:14px;[^}]*background:#FFFFFF/s);
-  assert.match(css, /cr-product-card__image \{ display:block; width:100%; height:100%; object-fit:cover; object-position:center; \}/);
+  assert.match(css, /cr-product-card__media \{[^}]*aspect-ratio:\.78;[^}]*overflow:hidden;[^}]*border-radius:14px;[^}]*background:transparent;[^}]*padding:0;[^}]*border:0;/s);
+  assert.match(css, /cr-product-card__image \{ display:block; width:100%; height:100%; padding:0; border:0; background:transparent; object-fit:cover; object-position:center; \}/);
   assert.match(css, /cr-category-filter-sheet__option:disabled \{ opacity:\.42!important; cursor:not-allowed!important; \}/);
 });
 
