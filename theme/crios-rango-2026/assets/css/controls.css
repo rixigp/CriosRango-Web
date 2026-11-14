@@ -141,18 +141,15 @@
 .cr-control:focus-within .cr-control__box { border-color:var(--cr-control-focus-border); }
 .cr-control:has(:is(input,textarea,select):disabled) .cr-control__box,.cr-control:has(.select2-selection--single[aria-disabled="true"]) .cr-control__box { opacity:.65; }
 .cr-control__box:has(:is(input,textarea,select):-webkit-autofill) { background:#fff; }
-.cr-control__box .select2-container { height:100% !important; }
-.cr-control__box .select2-selection--single { display:flex !important; align-items:center !important; width:100% !important; height:100% !important; min-height:var(--cr-control-height) !important; padding:0 !important; background:transparent !important; }
-.cr-control__box .select2-selection__rendered { min-width:0; padding:var(--cr-control-select-padding) !important; color:var(--cr-ink) !important; font:400 16px/22px "Roboto",Arial,sans-serif !important; }
-.cr-control__box .select2-selection__arrow { top:0 !important; right:8px !important; height:var(--cr-control-height) !important; }
-.cr-control__box :is(input[type="password"],.password-input input) { padding-right:46px !important; }
-.cr-control__box .show-password-input { position:absolute !important; top:50% !important; right:16px !important; margin:0 !important; padding:0 !important; transform:translateY(-50%) !important; }
 .woocommerce form .form-row.woocommerce-invalid .cr-control__box { border-color:var(--cr-control-error-border); }
 .woocommerce form .form-row .select2-container--open { z-index:100000; }
 .woocommerce form .form-row .select2-container--focus { outline:none; }
 .woocommerce form .form-row :is(input,textarea,select):-webkit-autofill,.woocommerce form .form-row :is(input,textarea,select):-webkit-autofill:hover,.woocommerce form .form-row :is(input,textarea,select):-webkit-autofill:focus { -webkit-box-shadow:0 0 0 1000px #fff inset !important; -webkit-text-fill-color:var(--cr-ink) !important; caret-color:var(--cr-ink); }
 body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date { position:relative; margin-bottom:18px; }
-body.woocommerce-account .woocommerce-EditAccountForm .cr-control__value { display:block; box-sizing:border-box; width:100%; min-height:var(--cr-control-height); padding:15px 16px 8px; color:var(--cr-ink); font:400 16px/22px "Roboto",Arial,sans-serif; }
+body.woocommerce-account .woocommerce-EditAccountForm .cr-control__value {
+  display: block; box-sizing: border-box; width: 100%; min-height: var(--cr-control-height);
+  padding: var(--cr-control-padding); color: var(--cr-ink); font: 400 15px/20px "Roboto", Arial, sans-serif;
+}
 body.login #loginform > p:not(.forgetmenot),body.login #loginform > .user-pass-wrap,body.login #lostpasswordform > p,body.login #resetpassform > p { position:relative; margin:0 0 18px; padding:0; }
 body.login .cr-control__box,body.login .cr-control__box .input { min-height:var(--cr-control-height); }
 body.login .cr-control__box .input {
