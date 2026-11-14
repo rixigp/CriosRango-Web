@@ -2284,8 +2284,8 @@ body.cr-product-listing-view .cr-product-card__price bdi { display:inline-flex; 
 .cr-product-card { min-width:0; margin:0; padding:0; border:0; background:transparent; box-shadow:none; }
 .cr-product-card__link { display:flex; min-width:0; flex-direction:column; gap:9px; color:#183B35; text-decoration:none; }
 .cr-product-card__link:focus-visible { outline:2px solid #315D50; outline-offset:4px; border-radius:8px; }
-.cr-product-card__media { position:relative; display:block; width:100%; aspect-ratio:.78; overflow:hidden; border-radius:14px; background:#FFFFFF; }
-.cr-product-card__image { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }
+.cr-product-card__media { position:relative; display:block; width:100%; aspect-ratio:.78; overflow:hidden; border-radius:14px; background:transparent; padding:0; border:0; }
+.cr-product-card__image { display:block; width:100%; height:100%; padding:0; border:0; background:transparent; object-fit:cover; object-position:center; }
 .cr-product-card__stock { position:absolute; left:8px; bottom:8px; padding:4px 8px; border-radius:999px; background:rgba(252,250,247,.94); color:#777b77; font:400 10px/14px "Roboto",Arial,sans-serif; }
 .cr-product-card__details { display:flex; flex-direction:column; gap:4px; min-width:0; }
 .cr-product-card__name { display:-webkit-box; min-height:36px; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; color:#343936; font:300 13px/18px "Roboto",Arial,sans-serif; }

@@ -87,23 +87,21 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row > label {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  left: 12px;
-  display: inline-block;
-  width: auto;
-  max-width: calc(100% - 24px);
-  margin: 0;
-  padding: 0 6px;
-  transform: translateY(-50%);
-  background: var(--cr-white);
+  position: static;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 7px;
+  padding: 0;
+  transform: none;
+  background: transparent;
   color: var(--cr-muted);
   font: inherit;
   font-size: var(--cr-checkout-field-label-size);
   font-weight: 400;
-  line-height: 1.2;
-  pointer-events: none;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row .woocommerce-input-wrapper {
@@ -1391,3 +1389,44 @@ body.cr-cecabank-redirect-page .cr-cecabank-redirect__message {
     animation-duration: 1.8s;
   }
 }
+
+
+/* Presentation hotfix: keep delivery labels in normal flow and unify controls with the clean login-field geometry. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row { margin-bottom: 16px; }
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row input.input-text,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row textarea,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row select {
+  min-height: 48px;
+  padding: 10px 13px;
+  border-width: 1px;
+  border-radius: 13px;
+  background-color: #fff;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection--single {
+  height: 48px;
+  min-height: 48px;
+  border-width: 1px;
+  border-radius: 13px;
+  background-color: #fff;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection__rendered {
+  padding: 10px 36px 10px 13px;
+  line-height: 1.35;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection__arrow { height: 48px; }
+/* Remove only the native WooCommerce login-toggle notice skin; preserve its notice/link and native toggle behavior. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-login-toggle,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-login-toggle .woocommerce-info {
+  width: auto;
+  max-width: none;
+  margin: 0 var(--cr-cart-card-inline-gutter) 16px;
+  padding: 0;
+  border: 0;
+  border-top: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--cr-ink);
+  box-shadow: none;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-login-toggle .woocommerce-info::before { display: none; }
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-login-toggle a { color: var(--cr-green); text-decoration: underline; text-underline-offset: 2px; }

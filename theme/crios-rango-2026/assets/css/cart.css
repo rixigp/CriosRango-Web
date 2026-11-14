@@ -1141,3 +1141,16 @@ body.woocommerce-cart .cr-cart-promo-card--welcome > .cr-cart-promo-card__icon s
     padding-inline:0!important;
   }
 }
+
+
+/* Cart coupon accordion: the closed disclosure is text-only on the app canvas. The expanded form controls retain their white field surface. */
+body.woocommerce-cart .cr-cart-manual-coupon:not([open]) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+body.woocommerce-cart .cr-cart-manual-coupon:not([open]) > summary {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
