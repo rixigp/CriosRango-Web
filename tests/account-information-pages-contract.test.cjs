@@ -110,7 +110,8 @@ test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_
   assert.match(guestHome,/cr-account-home__user--guest/);
   assert.match(guestHome,/Inicia sesión o regístrate/);
   assert.match(guestHome,/Accede a tu cuenta/);
-  assert.equal((guestHome.match(/cr-account-home__tile cr-account-home__tile--(?:orders|promotions|profile|help)/g)||[]).length,4);
+  assert.deepEqual([...new Set([...guestHome.matchAll(/cr-account-home__tile--(orders|promotions|profile|help)/g)].map(match=>match[1]))].sort(),['help','orders','profile','promotions']);
+  assert.equal((guestHome.match(/<a class="cr-account-home__tile cr-account-home__tile--/g)||[]).length,4);
   assert.match(presentation,/add_query_arg\( 'redirect_to'/);
   assert.match(guestHome,/Cambios y devoluciones/);
   assert.match(guestHome,/Condiciones de contratación/);
