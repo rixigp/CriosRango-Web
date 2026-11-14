@@ -34,3 +34,16 @@ test('GLOBAL_FORM_GEOMETRY_AND_REQUIRED_MARKERS_USE_ONE_CANONICAL_SOURCE',()=>{
   assert.doesNotMatch(wpLogin,/removeAttribute\(['"]required['"]\)|removeAttribute\(['"]aria-required['"]\)/);
   assert.doesNotMatch(wpLogin,/setAttribute\(['"]required['"]|setAttribute\(['"]aria-required['"]/);
 });
+
+
+test('GLOBAL_CONTROL_VALUE_ALIGNMENT_HAS_SINGLE_CONTROL_PADDING_SOURCE',()=>{
+  assert.match(controls,/\.cr-control-shell \.woocommerce-input-wrapper,[\s\S]*?\.cr-control-shell \.password-input,[\s\S]*?\.cr-control-shell \.select2-container\s*\{[^}]*padding:\s*0\s*!important/s);
+  assert.match(controls,/\.cr-control-shell input:not\(\[type="checkbox"\]\)[\s\S]*?padding:\s*0 14px\s*!important/s);
+  assert.match(controls,/\.cr-control-shell select\s*\{[^}]*padding:\s*0 36px 0 14px\s*!important/s);
+  assert.match(controls,/\.cr-control-shell \.select2-selection--single\s*\{[^}]*display:\s*flex\s*!important[^}]*align-items:\s*center\s*!important/s);
+  assert.match(controls,/\.cr-control-shell \.select2-selection__rendered\s*\{[^}]*padding:\s*0 36px 0 14px\s*!important/s);
+  assert.match(controls,/\.cr-control-shell \.select2-selection__arrow\s*\{[^}]*top:\s*0\s*!important[^}]*right:\s*8px\s*!important[^}]*height:\s*100%\s*!important/s);
+  assert.match(controls,/\.cr-control-shell input\[type="password"\]\s*\{[^}]*padding:\s*0 48px 0 14px\s*!important/s);
+  assert.match(controls,/\.cr-control-shell \.show-password-input\s*\{[^}]*top:\s*50%\s*!important[^}]*right:\s*14px\s*!important[^}]*transform:\s*translateY\(-50%\)\s*!important/s);
+  assert.match(controls,/\.woocommerce form \.form-row > label abbr\.required\s*\{[^}]*display:\s*none\s*!important/s);
+});
