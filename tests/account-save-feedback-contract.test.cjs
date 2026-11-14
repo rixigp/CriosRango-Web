@@ -324,19 +324,20 @@ echo json_encode(compact('empty','real','invalid','partial'));
   assert.equal(result.partial, null, 'missing native password field creates no success marker');
 });
 
-test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_WHITE_WITHOUT_GEOMETRY_OVERRIDES', () => {
+test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_TRANSPARENT_WITHOUT_GEOMETRY_OVERRIDES', () => {
   assert.match(php, /'Current password \(leave blank to leave unchanged\)'\s*=>\s*'Contraseña actual'/);
   assert.match(php, /'New password \(leave blank to leave unchanged\)'\s*=>\s*'Nueva contraseña'/);
   assert.match(php, /'Confirm new password'\s*=>\s*'Confirmar nueva contraseña'/);
   const controlBox = controlsCss.match(/\.cr-control__box\s*\{([^}]*)\}/);
   assert.ok(controlBox, 'canonical control box rule exists');
-  assert.match(controlBox[1], /background\s*:\s*#fff/i, 'control box background is white');
-  assert.match(controlsCss, /\.cr-control__label\s*\{[^}]*background:\s*var\(--cr-app-canvas\)/s, 'label uses the page canvas to cut the border');
+  assert.match(controlBox[1], /background\s*:\s*var\(--cr-control-background\)/i, 'control box consumes the canonical background token');
+  assert.match(controlsCss, /:root\s*\{[^}]*--cr-control-background:\s*#fff/s, 'canonical control background token resolves to white');
+  assert.match(controlsCss, /\.cr-control__label\s*\{[^}]*background:\s*var\(--cr-app-canvas(?:,\s*#FCFAF7)?\)/s, 'label uses the page canvas to cut the border');
   const passwordFieldRules = [...css.matchAll(/([^{}]*?(?:#password_current|#password_1|#password_2)[^{}]*)\{([^}]*)\}/g)];
   assert.ok(passwordFieldRules.length > 0, 'password field-specific rules exist');
   for (const rule of passwordFieldRules) {
     assert.doesNotMatch(rule[2], /(?:^|;)\s*(?:height|min-height|max-height|border(?:-width|-style|-color|-radius)?)\s*:/i, 'Password fields must not introduce their own height or border geometry');
-    assert.match(rule[2], /background(?:-color)?\s*:\s*#ffffff/i, 'password fields retain the approved white background');
+    assert.match(rule[2], /background(?:-color)?\s*:\s*transparent/i, 'password inputs retain a transparent surface inside the white canonical control box');
   }
   assert.match(css, /\.cr-account-submit__spinner/);
   assert.match(js, /cr-account-submit--loading/);
@@ -399,13 +400,13 @@ test('PASSWORD_ERRORS_USE_ONE_FLEX_ALERT_LAYOUT_WITH_ICON_IN_FLOW', () => {
   assert.ok(wooIcon.includes('position: static !important'));
 });
 
-test('PASSWORD_FIELDS_WHITE_HINT_NEUTRAL_AND_STRENGTH_METER_LOGIC_UNCHANGED', () => {
+test('PASSWORD_FIELDS_TRANSPARENT_HINT_NEUTRAL_AND_STRENGTH_METER_LOGIC_UNCHANGED', () => {
   const whiteFields = css.slice(css.indexOf('#password_current,'), css.indexOf('/* Unified password notices'));
   for (const id of ['#password_current', '#password_1', '#password_2']) {
     assert.ok(whiteFields.includes(id), id + ' has a dedicated white background rule');
   }
-  assert.ok(whiteFields.includes('background: #FFFFFF !important'));
-  assert.ok(whiteFields.includes('background-color: #FFFFFF !important'));
+  assert.ok(whiteFields.includes('background: transparent !important'));
+  assert.ok(whiteFields.includes('background-color: transparent !important'));
   assert.ok(whiteFields.includes('background-image: none !important'));
   assert.ok(js.includes('Usa una contraseña segura combinando letras, números y símbolos.'));
   assert.ok(js.includes('.woocommerce-password-hint'));
