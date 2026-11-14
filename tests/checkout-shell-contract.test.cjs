@@ -203,15 +203,16 @@ test('delivery field semantics define five full-width fields and two half-width 
 });
 
 test('Login, Checkout and Select2 consume one canonical form-control token source', () => {
+  const normalizedControlsCss = controlsCss.replace(/\s+/g, '');
   for (const token of [
-    '--cr-control-height: 58px;',
-    '--cr-control-border: #d8d9d5;',
-    '--cr-control-radius: 14px;',
-    '--cr-control-background: #fff;',
-    '--cr-control-padding: 15px 16px 8px;',
-    '--cr-control-focus-border: #aeb2ad;',
-    '--cr-control-error-border: #c66b61;'
-  ]) assert.ok(controlsCss.includes(token), 'missing shared form-control token: ' + token);
+    '--cr-control-height:48px;',
+    '--cr-control-border:#d8d9d5;',
+    '--cr-control-radius:9px;',
+    '--cr-control-background:#fff;',
+    '--cr-control-padding:8px14px0;',
+    '--cr-control-focus-border:#aeb2ad;',
+    '--cr-control-error-border:#c66b61;'
+  ]) assert.ok(normalizedControlsCss.includes(token), 'missing shared form-control token: ' + token);
   assert.ok(assets.includes("CR2026_URI . '/assets/css/controls.css'"));
   assert.ok(assets.includes("array( 'cr2026-main', 'cr2026-controls', 'cr2026-roboto' )"));
   assert.ok(loginPhp.includes("array( 'cr2026-controls' )"));
@@ -221,7 +222,14 @@ test('Login, Checkout and Select2 consume one canonical form-control token sourc
   assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
 });
 
-test('delivery labels use the canonical floating-label border cut and white control surface',()=>{assert.match(controlsCss,/\.cr-control__label\s*\{[^}]*background:var\(--cr-app-canvas\)/s);assert.match(controlsCss,/\.cr-control__box\s*\{[^}]*background:#fff/);assert.match(controlsCss,/\.cr-control__box\s*\{[^}]*border:1px solid #d8d9d5/);assert.match(controlsCss,/\.cr-control:focus-within \.cr-control__box/);assert.doesNotMatch(controlsCss,/cr-control-shell|createElement\('fieldset'\)|createElement\('legend'\)/);assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);});
+test('delivery labels use the canonical floating-label border cut and white control surface', () => {
+  assert.match(controlsCss, /\.cr-control__label\s*\{[^}]*background:\s*var\(--cr-app-canvas(?:,\s*#FCFAF7)?\)/s);
+  assert.match(controlsCss, /\.cr-control__box\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
+  assert.match(controlsCss, /\.cr-control__box\s*\{[^}]*border:\s*var\(--cr-control-border-width\)\s+solid\s+var\(--cr-control-border\)/s);
+  assert.match(controlsCss, /\.cr-control:focus-within \.cr-control__box/);
+  assert.doesNotMatch(controlsCss, /cr-control-shell|createElement\('fieldset'\)|createElement\('legend'\)/);
+  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
+});
 
 test('WooCommerce core full shipping labels lose only the appended price separator in Checkout', () => {
   assert.match(checkoutWooCommercePhp, /function cr2026_checkout_shipping_full_label_presentation\( \$label, \$method \)/);
@@ -244,12 +252,21 @@ test('WooCommerce core full shipping labels lose only the appended price separat
   assert.equal(removeCoreSeparator('Envío gratuito: <small>Gratis</small>', 'Envío gratuito'), 'Envío gratuito <small>Gratis</small>');
 });
 
-test('checkout consumes the shared floating-label control without replacing native WooCommerce labels',()=>{assert.ok(controlsCss.includes('.cr-control__label'));assert.ok(controlsCss.includes('.cr-control__box'));assert.ok(controlsCss.includes('background:#fff'));assert.ok(controlsCss.includes('background:var(--cr-app-canvas)'));assert.doesNotMatch(controlsCss,/cr-control-shell|fieldset.*legend/);assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));});
+test('checkout consumes the shared floating-label control without replacing native WooCommerce labels', () => {
+  assert.ok(controlsCss.includes('.cr-control__label'));
+  assert.ok(controlsCss.includes('.cr-control__box'));
+  assert.ok(controlsCss.includes('background: var(--cr-control-background)'));
+  assert.match(controlsCss, /background:\s*var\(--cr-app-canvas(?:,\s*#FCFAF7)?\)/);
+  assert.doesNotMatch(controlsCss, /cr-control-shell|fieldset.*legend/);
+  assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
+});
 
 test('native delivery controls and Select2 consume the canonical presentation without DOM replacement', () => {
   assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);
   assert.ok(controlsCss.includes('.select2-selection--single'));
-  assert.ok(controlsCss.includes('height:100% !important') && controlsCss.includes('min-height:58px !important'));
+  const normalizedControlsCss = controlsCss.replace(/\s+/g, '');
+  assert.ok(normalizedControlsCss.includes('height:100%!important'));
+  assert.ok(normalizedControlsCss.includes('min-height:var(--cr-control-height)!important'));
   const orderDeclarationPattern = new RegExp("^[ \\t]*order[ \\t]*:", "m");
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
   assert.doesNotMatch(checkoutWooCommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
