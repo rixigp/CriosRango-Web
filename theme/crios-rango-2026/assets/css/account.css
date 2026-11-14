@@ -1350,7 +1350,7 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
   box-sizing: border-box;
   color: #20241f;
   text-decoration: none;
-  background: #f0f1ef;
+  background: #fff;
 }
 .cr-account-home__user--guest:focus-visible,
 .cr-account-home__tile:focus-visible,
