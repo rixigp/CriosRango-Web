@@ -1,5 +1,5 @@
 /* Mobile account home: scoped to the WooCommerce account page only. */
-.cr-account-home { width: min(100% - 32px, 720px); margin: 0 auto; padding: 0; color: #20241f; font-family: "Roboto", Arial, sans-serif; }
+.cr-account-home { width: 100%; max-width: 720px; margin: 0; padding: 0; color: #20241f; font-family: "Roboto", Arial, sans-serif; }
 .cr-account-home__user { min-height: 88px; display: flex; align-items: center; gap: 14px; padding: 16px; margin: 0 0 18px; border: 1px solid rgba(24,59,53,.07); border-radius: 20px; background: #fff; }
 .cr-account-home__avatar { width: 52px; height: 52px; flex: 0 0 52px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: #e5eee8; color: #244436; font: 400 17px/1 "Roboto", Arial, sans-serif; }
 .cr-account-home__identity { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
@@ -1573,10 +1573,10 @@
   .cr-account-content,
   body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty {
     box-sizing: border-box;
-    width: min(calc(100% - 40px), 720px);
-    max-width: 720px;
+    width: 100%;
+    max-width: none;
     min-width: 0;
-    margin-inline: auto;
+    margin-inline: 0;
   }
 
   .cr-account-information {

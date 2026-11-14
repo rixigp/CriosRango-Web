@@ -34,29 +34,14 @@ get_header( 'shop' );
     data-brand-term-name="<?php echo esc_attr( $brand_term->name ); ?>"
     data-brand-term-slug="<?php echo esc_attr( $brand_term->slug ); ?>"
     data-brand-term-count="<?php echo esc_attr( (int) $brand_term->count ); ?>">
-    <div class="cr-product-listing__shell cr-brand-archive__shell">
-        <?php if ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) : ?>
-            <?php
-            $brand_filter_action = '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
-            cr2026_render_category_toolbar( $brand_term->name, $brands_index_url, 'parent', false, $brand_filter_action );
-            ?>
+    <div class="cr-product-listing__shell cr-brand-archive__shell cr-shell">
+        <?php
+        $brand_filter_action = '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
+        cr2026_render_category_toolbar( $brand_term->name, $brands_index_url, 'parent', false, $brand_filter_action );
+        ?>
+        <?php if ( $brand_logo_url ) : ?>
+            <div class="cr-brand-archive__brand-logo"><img src="<?php echo esc_url( $brand_logo_url ); ?>" alt="<?php echo esc_attr( $brand_term->name ); ?>" loading="eager" decoding="async"></div>
         <?php endif; ?>
-        <div class="cr-brand-archive__back-row">
-            <a class="cr-parent-category__back" href="<?php echo esc_url( $brands_index_url ); ?>"
-                data-fallback-url="<?php echo esc_url( $brands_index_url ); ?>"
-                data-site-path="<?php echo esc_attr( wp_parse_url( home_url( '/' ), PHP_URL_PATH ) ); ?>"
-                aria-label="<?php esc_attr_e( 'Volver a marcas', 'crios-rango-2026' ); ?>">
-                <?php echo cr2026_icon( 'arrow' ); ?>
-            </a>
-            <header class="cr-brand-archive__heading">
-                <?php if ( $brand_logo_url ) : ?>
-                    <img src="<?php echo esc_url( $brand_logo_url ); ?>" alt="<?php echo esc_attr( $brand_term->name ); ?>" loading="eager" decoding="async">
-                <?php else : ?>
-                    <h1><?php echo esc_html( $brand_term->name ); ?></h1>
-                <?php endif; ?>
-            </header>
-            <button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog"><?php esc_html_e( 'Filtros', 'crios-rango-2026' ); ?></button>
-        </div>
         <?php
         $brand_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
         if ( ! in_array( $brand_orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $brand_orderby = 'date'; }

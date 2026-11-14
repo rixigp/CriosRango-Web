@@ -6,7 +6,7 @@ if ( function_exists( 'is_shop' ) && is_shop() && ! get_query_var( 'cr2026_novel
     $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets/images/categories/';
     ?>
     <main id="primary" class="cr-main cr-main--woocommerce cr-category-hub">
-      <div class="cr-category-hub__shell">
+      <div class="cr-category-hub__shell cr-shell">
         <?php cr2026_render_category_toolbar( __( 'Categorías', 'crios-rango-2026' ), cr2026_category_back_url(), 'root', true ); ?>
         <?php cr2026_render_category_filter_sheet( null, 'root' ); ?>
         <div class="cr-app-category-grid cr-category-hub__grid">
@@ -48,7 +48,7 @@ get_header( 'shop' );
     data-page-size="<?php echo esc_attr( CR2026_CATALOG_PAGE_SIZE ); ?>"
     data-filter-api-url="<?php echo esc_url( rest_url( 'criosrango-filter/v1/query' ) ); ?>"
     data-products-url="<?php echo esc_url( rest_url( 'cr2026/v1/catalog-page' ) ); ?>">
-    <div class="cr-product-listing__shell">
+    <div class="cr-product-listing__shell cr-shell">
         <?php cr2026_render_category_toolbar( $listing_title, $listing_back_url, $listing_context, true ); ?>
         <?php if ( $listing_outlet_category_id ) { cr2026_render_outlet_bubbles( $listing_outlet_category_id ); } ?>
         <div class="cr-product-listing__active-filters" data-cr-active-filter-chips hidden aria-live="polite"></div>

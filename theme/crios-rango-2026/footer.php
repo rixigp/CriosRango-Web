@@ -14,7 +14,6 @@ $is_cart_active = 'cart' === $active_nav_item;
 $is_account_active = 'account' === $active_nav_item;
 $is_mobile_account_active = cr2026_is_account_context();
 ?>
-<?php if ( ! ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) ) : ?>
 <footer class="cr-footer">
     <div class="cr-shell cr-footer__grid">
         <div>
@@ -39,7 +38,6 @@ $is_mobile_account_active = cr2026_is_account_context();
     </div>
     <div class="cr-shell cr-footer__bottom">© <?php echo esc_html( gmdate( 'Y' ) ); ?> Críos &amp; Rango</div>
 </footer>
-<?php endif; ?>
 
 <?php if ( $is_app_nav_shell ) : ?>
 <nav class="cr-desktop-rail" aria-label="<?php esc_attr_e( 'Navegación principal', 'crios-rango-2026' ); ?>">

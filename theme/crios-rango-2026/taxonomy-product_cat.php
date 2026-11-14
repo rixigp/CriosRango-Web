@@ -30,7 +30,7 @@ $back_url = cr2026_category_back_url( $current_term );
 get_header();
 ?>
 
-<main id="primary" class="cr-parent-category__canvas">
+<main id="primary" class="cr-parent-category__canvas cr-shell">
     <?php cr2026_render_category_toolbar( $display_title, $back_url, 'parent', true ); ?>
 
     <?php cr2026_render_category_filter_sheet( $current_term, 'parent' ); ?>
