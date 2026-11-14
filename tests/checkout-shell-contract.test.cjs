@@ -266,7 +266,7 @@ test('delivery labels use transparent canonical fieldset/legend shells and retai
 test('native delivery controls and Select2 consume the canonical presentation without DOM replacement', () => {
   assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);
   assert.ok(controlsCss.includes('.select2-selection--single'));
-  assert.ok(controlsCss.includes('height:var(--cr-control-height) !important'));
+  assert.ok(controlsCss.includes('height:100% !important') && controlsCss.includes('height:var(--cr-control-height); min-height:0'));
   const orderDeclarationPattern = new RegExp("^[ \\t]*order[ \\t]*:", "m");
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
   assert.doesNotMatch(checkoutWooCommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
