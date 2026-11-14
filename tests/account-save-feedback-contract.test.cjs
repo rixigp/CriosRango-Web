@@ -328,7 +328,17 @@ test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_WHITE_WITHOUT_GEOMETRY_OVERRIDES', ()
   assert.match(php, /'Current password \(leave blank to leave unchanged\)'\s*=>\s*'Contraseña actual'/);
   assert.match(php, /'New password \(leave blank to leave unchanged\)'\s*=>\s*'Nueva contraseña'/);
   assert.match(php, /'Confirm new password'\s*=>\s*'Confirmar nueva contraseña'/);
-  assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*background:var\(--cr-control-background\)/);assert.match(controlsCss, /\.cr-control-shell :is\(input\[type="password"\],\.password-input input\)\s*\{[^}]*padding-right:46px !important/);
+  const controlShell = controlsCss.match(/\.cr-control-shell\\s*\\{([^}]*)\\}/);
+  assert.ok(controlShell, 'canonical control shell rule exists');
+  assert.match(controlShell[1], /background\\s*:\\s*var\\(\\s*--cr-control-background\\s*\\)/, 'control shell uses the canonical background token');
+  assert.match(controlsCss, /--cr-control-background\\s*:\\s*#fff\\s*;/i, 'canonical control background token resolves to white');
+  const passwordGeometry = /(?:^|[;{])\\s*(?:height|min-height|max-height|border(?:-width|-style|-color|-radius)?|border-radius)\\s*:/i;
+  const passwordRules = [...css.matchAll(/body\\.woocommerce-account\\.cr-account-profile-view-password[^{}]*\\{([^}]*)\\}/g)];
+  assert.ok(passwordRules.length > 0, 'password endpoint CSS rules exist');
+  for (const rule of passwordRules) {
+    assert.doesNotMatch(rule[1], passwordGeometry, 'Password must not introduce field height, border, or radius geometry');
+  }
+  assert.match(controlsCss, /\\.cr-control-shell :is\\(input\\[type="password"\\],\\.password-input input\\)\\s*\\{[^}]*padding-right\\s*:\\s*46px\\s*!important/);
   assert.match(css, /\.cr-account-submit__spinner/);
   assert.match(js, /cr-account-submit--loading/);
 });
