@@ -19,7 +19,7 @@ test('GLOBAL_TOOLBAR_GEOMETRY_SOURCE_COUNT=1',()=>{
   const escaped=selector.split('.').join('\\.');
   assert.equal((main.match(new RegExp(escaped+'\\s*\\{','g'))||[]).length,1,selector);
  }
- assert.doesNotMatch(main,/cr-brands-index__toolbar|cr-brand-archive__back-row/);
+ assert.doesNotMatch(Object.values(css).join('\n'),/\.cr-brands-index__toolbar\b|\.cr-brand-archive__back-row\b/);
 });
 test('GLOBAL_MOBILE_FOOTER_POLICY_COUNT=1 and safe-area clearance is global',()=>{
  const footer=fs.readFileSync(path.join(root,'footer.php'),'utf8');
@@ -46,7 +46,11 @@ test('PRODUCT_DETAIL_EXTRA_OUTER_GUTTERS=0',()=>{
 test('SEARCH_EXTRA_OUTER_GUTTERS=0; scroll-padding remains functional',()=>{
  assert.match(fs.readFileSync(path.join(root,'search.php'),'utf8'),/cr-shell cr-page-shell/);
  assert.match(main,/body\.search\s*\{\s*scroll-padding-top:\s*var\(--cr-app-topbar-height,64px\)/);
- assert.doesNotMatch(main,/body\.search[^\{]*\{[^}]*width:\s*calc\(100%\s*-\s*(32|40)px\)/s);
+ const searchForm=main.match(/body\.search \.cr-search-form\s*\{([^}]*)\}/);
+ assert.ok(searchForm);
+ assert.match(searchForm[1],/width:\s*100%/);
+ assert.doesNotMatch(searchForm[1],/width:\s*calc\(100%\s*-/);
+ assert.match(main,/body\.search\s*\{\s*scroll-padding-top:\s*var\(--cr-app-topbar-height,64px\)/);
 });
 test('CART_EXTRA_OUTER_GUTTERS=0',()=>{
  assert.match(fs.readFileSync(path.join(root,'page.php'),'utf8'),/cr-shell cr-page-shell/);

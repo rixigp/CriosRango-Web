@@ -1794,7 +1794,6 @@ body.cr-parent-category-view .cr-parent-category__canvas { flex: 1 0 auto; paddi
 
 @media (max-width: 767px) {
   .cr-page__header { display: none !important; }
-  .cr-brand-archive__back-row { display: none !important; }
   .cr-empty-state > h1 { display: none !important; }
 }
 
@@ -2268,7 +2267,6 @@ body.cr-app-nav-shell .cr-category-hub {
 @media (min-width:768px) {
  .cr-brands-index { width:calc(100% - 96px); margin-left:96px; }
  .cr-brands-index__grid { grid-template-columns:repeat(4,minmax(0,1fr)); width:100%; gap:18px; }
- .cr-brands-index__toolbar { margin-inline:32px; }
 }
 
 /* App-like product listing: shared toolbar, compact cards and native navigation. */
@@ -2416,8 +2414,8 @@ body.admin-bar.home .cr-app-header {
 }
 body.search { scroll-padding-top:var(--cr-app-topbar-height,64px); }
 body.search .cr-search-form {
-  display:flex; align-items:center; gap:10px; width:calc(100% - 40px); max-width:760px;
-  min-height:56px; margin:0 auto 18px; padding:5px 9px 5px 17px;
+  display:flex; align-items:center; gap:10px; width:100%; max-width:760px;
+  min-height:56px; margin:0 0 18px; padding:5px 9px 5px 17px;
   border:1.5px solid #183B35; border-radius:18px; background:#FCFAF7;
 }
 body.search .cr-search-form > .cr-icon { flex:0 0 22px; width:22px; height:22px; color:#183B35; }
