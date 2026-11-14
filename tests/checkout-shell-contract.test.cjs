@@ -209,7 +209,7 @@ test('Login, Checkout and Select2 consume one canonical form-control token sourc
     '--cr-control-border:#d8d9d5;',
     '--cr-control-radius:9px;',
     '--cr-control-background:#fff;',
-    '--cr-control-padding:8px14px0;',
+    '--cr-control-padding:014px;',
     '--cr-control-focus-border:#aeb2ad;',
     '--cr-control-error-border:#c66b61;'
   ]) assert.ok(normalizedControlsCss.includes(token), 'missing shared form-control token: ' + token);

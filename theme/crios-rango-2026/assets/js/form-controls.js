@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const isFloatingLabel = (label) => label && !label.matches('.woocommerce-form__label-for-checkbox,.woocommerce-form-login__rememberme,[for="terms"]');
+  const isFloatingLabel = (label) => label && !label.matches('.woocommerce-form__label-for-checkbox,.woocommerce-form-login__rememberme,[for="terms"],[for="shipping_method"]');
   const makeControl = (row, label, content) => {
     if (!row || row.dataset.crControl === 'true' || !label || !content) return;
     const shell = document.createElement('fieldset');
@@ -27,12 +27,11 @@
   };
   const enhanceWoo = (root) => {
     root.querySelectorAll(
-      '.woocommerce form .form-row,' +
-      'form.woocommerce-EditAccountForm .form-row,' +
+      'form .form-row,' +
+      'form .form-group,' +
+      'form .form-field,' +
       '.woocommerce-address-fields .form-row,' +
-      'form.checkout .form-row,' +
-      'form.woocommerce-form-login .form-row,' +
-      'form.woocommerce-ResetPassword .form-row'
+      '.wpfda-delete-account-container .form-row'
     ).forEach((row) => {
       if (row.dataset.crControl === 'true') return;
       const label = Array.from(row.children).find((child) => child.tagName === 'LABEL' && isFloatingLabel(child));

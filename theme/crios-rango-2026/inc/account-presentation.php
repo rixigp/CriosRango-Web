@@ -480,19 +480,6 @@ add_filter( 'the_content', 'cr2026_account_help_content', 20 );
 
 
 
-/** Preserve the existing mobile Account/Address required-marker presentation. */
-function cr2026_account_mobile_field_marker_styles() {
-    if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
-        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
-        return;
-    }
-    echo '<style id="cr2026-account-mobile-field-markers">'
-        . '.woocommerce-EditAccountForm label .required{display:none!important;}'
-        . 'body.woocommerce-account .woocommerce-address-fields label :is(abbr.required,span.required){display:none!important;}'
-        . '</style>';
-}
-add_action( 'wp_head', 'cr2026_account_mobile_field_marker_styles', 99 );
-
 /** Display the canonical app-owned WordPress birth date as read-only text. */
 function cr2026_account_render_birth_date_field() {
     if ( ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()

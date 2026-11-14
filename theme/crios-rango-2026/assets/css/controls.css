@@ -4,8 +4,8 @@
   --cr-control-border: #d8d9d5;
   --cr-control-radius: 9px;
   --cr-control-background: #fff;
-  --cr-control-padding: 8px 14px 0;
-  --cr-control-select-padding: 8px 36px 0 14px;
+  --cr-control-padding: 0 14px;
+  --cr-control-select-padding: 0 36px 0 14px;
   --cr-control-focus-border: #aeb2ad;
   --cr-control-focus-outline: none;
   --cr-control-error-border: #c66b61;
@@ -28,7 +28,7 @@
 .woocommerce form .form-row { position:relative; box-sizing:border-box; }
 .cr-control-shell {
   position: relative; display: block; box-sizing: border-box; width: 100%; min-width: 0; min-inline-size: 0;
-  height: var(--cr-control-height); min-height: 0; margin: 0; padding: 0; overflow: visible;
+  height: var(--cr-control-height); min-height: 0; margin: 0; padding: 0; overflow: hidden;
   border: var(--cr-control-border-width) solid var(--cr-control-border);
   border-radius: var(--cr-control-radius); background: var(--cr-control-background);
 }
@@ -52,13 +52,13 @@
   input[type="password"], textarea, select, .select2-selection--single
 ) {
   display: block; box-sizing: border-box !important; width: 100% !important; height: 100% !important;
-  min-width: 0; min-height: 0 !important; margin: 0 !important; padding: var(--cr-control-padding) !important;
+  min-width: 0; min-height: 0 !important; margin: 0 !important; padding: 0 14px !important;
   border: 0 !important; border-radius: 0 !important; background: transparent !important;
   color: var(--cr-ink, #20241f) !important; box-shadow: none !important; outline: none !important;
   font: 400 15px/20px "Roboto", Arial, sans-serif !important;
 }
 .cr-control-shell:has(textarea) { height: auto; min-height: var(--cr-control-height); }
-.cr-control-shell textarea { height: 100% !important; min-height: var(--cr-control-height) !important; resize: none; }
+.cr-control-shell textarea { height: 100% !important; min-height: var(--cr-control-height) !important; margin: 0 !important; padding: 12px 14px !important; resize: vertical; }
 .cr-control-shell .select2-container { height: 100% !important; }
 .cr-control-shell .select2-selection--single {
   display: flex !important; align-items: center !important; width: 100% !important; height: 100% !important;
@@ -66,17 +66,17 @@
 }
 .cr-control-shell .select2-selection__rendered {
   display: flex !important; align-items: center !important; min-width: 0; height: 100% !important;
-  padding: var(--cr-control-select-padding) !important; color: var(--cr-ink) !important;
+  padding: 0 36px 0 14px !important; color: var(--cr-ink) !important;
   font: 400 15px/20px "Roboto", Arial, sans-serif !important; line-height: 20px !important; text-align: left !important;
 }
-.cr-control-shell .select2-selection__arrow { top: 0 !important; right: 8px !important; height: var(--cr-control-height) !important; }
+.cr-control-shell .select2-selection__arrow { top: 50% !important; right: 8px !important; height: 24px !important; transform: translateY(-50%) !important; }
 .cr-control-shell select {
   padding: var(--cr-control-select-padding) !important; text-align: left !important; text-align-last: left !important;
   font: 400 15px/20px "Roboto", Arial, sans-serif !important;
 }
-.cr-control-shell :is(input[type="password"], .password-input input) { padding-right: 46px !important; }
+.cr-control-shell input[type="password"] { padding-right: 48px !important; }
 .cr-control-shell .show-password-input {
-  position: absolute !important; top: 50% !important; right: 12px !important;
+  position: absolute !important; top: 50% !important; right: 14px !important; bottom: auto !important;
   margin: 0 !important; padding: 0 !important; transform: translateY(-50%) !important;
 }
 .cr-control-shell:focus-within { border-color: var(--cr-control-focus-border); }
@@ -89,9 +89,31 @@
 .woocommerce form .form-row :is(input,textarea,select):-webkit-autofill,
 .woocommerce form .form-row :is(input,textarea,select):-webkit-autofill:hover,
 .woocommerce form .form-row :is(input,textarea,select):-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+  background-color: transparent !important; -webkit-box-shadow: none !important;
   -webkit-text-fill-color: var(--cr-ink) !important; caret-color: var(--cr-ink);
 }
+
+/* Canonical one-line alignment, Select2 geometry and marker policy shared by every form. */
+.cr-control-shell :is(.woocommerce-input-wrapper,.password-input,.wp-pwd,.select2-container) { border:0!important; background:transparent!important; box-shadow:none!important; }
+.cr-control-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),select,textarea,.select2-selection--single) { border:0!important; background:transparent!important; box-shadow:none!important; outline:none!important; }
+.cr-control-shell > legend > label { display:inline!important; width:auto!important; margin:0!important; padding:0 5px!important; background:transparent!important; }
+.cr-control-shell .select2-selection--single { border:0!important; background:transparent!important; box-shadow:none!important; }
+.cr-control-shell .select2-selection__rendered { padding:0 36px 0 14px!important; }
+body.login .cr-control-shell .input { padding:0 14px!important; }
+body.login .cr-control-shell .wp-pwd .wp-hide-pw { top:50%!important; bottom:auto!important; transform:translateY(-50%)!important; }
+
+/* No-JavaScript WooCommerce fallback keeps value alignment without changing row layout. */
+.woocommerce form .form-row:not([data-cr-control="true"]) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),select,textarea) { box-sizing:border-box!important; min-height:var(--cr-control-height)!important; padding-top:0!important; padding-bottom:0!important; font:400 15px/20px "Roboto",Arial,sans-serif!important; }
+.woocommerce form .form-row:not([data-cr-control="true"]) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"])) { padding-left:14px!important; padding-right:14px!important; }
+.woocommerce form .form-row:not([data-cr-control="true"]) select { padding-left:14px!important; padding-right:36px!important; text-align:left!important; text-align-last:left!important; }
+.woocommerce form .form-row:not([data-cr-control="true"]) textarea { padding:12px 14px!important; }
+.woocommerce form .form-row:not([data-cr-control="true"]) .select2-container { box-sizing:border-box!important; width:100%!important; height:var(--cr-control-height)!important; }
+.woocommerce form .form-row:not([data-cr-control="true"]) .select2-selection--single { display:flex!important; align-items:center!important; height:100%!important; min-height:0!important; padding:0!important; }
+.woocommerce form .form-row:not([data-cr-control="true"]) .select2-selection__rendered { display:flex!important; align-items:center!important; height:100%!important; margin:0!important; padding:0 36px 0 14px!important; line-height:20px!important; }
+form label :is(.required,span.required,abbr.required,abbr[title="required"]) { display:none!important; }
+.woocommerce-LostPassword a { font-family:"Roboto",Arial,sans-serif; font-size:15px; line-height:20px; font-weight:400; color:var(--cr-brand-green); text-decoration:none; }
+.woocommerce-LostPassword a:hover, .woocommerce-LostPassword a:focus-visible { text-decoration:underline; text-underline-offset:3px; }
+
 body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date { position: relative; margin-bottom: 18px; }
 body.woocommerce-account .woocommerce-EditAccountForm .cr-control-shell__value {
   display: block; box-sizing: border-box; width: 100%; height: 100%; min-height: 0;

@@ -267,7 +267,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .woocommerce div.product div.images img { border-radius: var(--cr-radius-m); }
 .woocommerce div.product div.summary { padding: clamp(4px, 2vw, 24px); }
 .woocommerce div.product p.price, .woocommerce div.product span.price { color: var(--cr-green); font-size: 1.3rem; font-weight: 800; }
-.woocommerce div.product form.cart .variations select, .woocommerce .quantity .qty, .woocommerce form .form-row input.input-text, .woocommerce form .form-row textarea, .woocommerce form .form-row select {
+.woocommerce div.product form.cart .variations select, .woocommerce .quantity .qty {
   min-height: 48px;
   border: 1px solid var(--cr-border);
   border-radius: 14px;
