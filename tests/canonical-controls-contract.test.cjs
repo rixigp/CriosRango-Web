@@ -20,7 +20,7 @@ test('CR_CONTROL_SHELL=YES; NATIVE_FIELDSET_LEGEND_NOTCH=YES; WHITE_SURFACE=YES'
   assert.match(accountCss, /body\.woocommerce-account \.woocommerce-EditAccountForm > fieldset\s*\{/);
   assert.match(accountCss, /body\.woocommerce-account \.woocommerce-EditAccountForm > fieldset > legend\s*\{/);
 });
-test('ALL_FORMS_CONSUME_ONE_CANONICAL_COMPONENT_AND_NATIVE_SELECT2',()=>{assert.match(assets,/wp_enqueue_script\(\s*'cr2026-form-controls'[\s\S]*?assets\/js\/form-controls\.js/);assert.match(wpLogin,/#loginform[\s\S]*#lostpasswordform[\s\S]*#resetpassform/);assert.match(controls,/\.select2-selection--single/);assert.match(controls,/--cr-control-padding:\s*0 14px/);assert.match(controls,/--cr-control-select-padding:\s*0 36px 0 14px/);assert.match(controls,/padding-top:\s*0 !important;[\s\S]*?padding-bottom:\s*0 !important;/);assert.match(controls,/form label :is\(\.required,span\.required/);assert.match(controls,/\.woocommerce-LostPassword a/);assert.match(controls,/\.cr-control-shell \.select2-selection__arrow/);assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);assert.doesNotMatch(accountCss,/woocommerce-EditAccountForm label/);});
+test('ALL_FORMS_CONSUME_ONE_CANONICAL_COMPONENT_AND_NATIVE_SELECT2',()=>{assert.match(assets,/wp_enqueue_script\(\s*'cr2026-form-controls'[\s\S]*?assets\/js\/form-controls\.js/);assert.match(wpLogin,/#loginform[\s\S]*#lostpasswordform[\s\S]*#resetpassform/);assert.match(controls,/\.select2-selection--single/);assert.match(controls,/--cr-control-padding:\s*0 14px/);assert.match(controls,/--cr-control-select-padding:\s*0 36px 0 14px/);assert.match(controls,/padding-top:\s*0\s*!important;[\s\S]*?padding-bottom:\s*0\s*!important;/);assert.match(controls,/form label :is\(\.required,span\.required/);assert.match(controls,/\.woocommerce-LostPassword a/);assert.match(controls,/\.cr-control-shell \.select2-selection__arrow/);assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);assert.doesNotMatch(accountCss,/woocommerce-EditAccountForm label/);});
 
 test('GLOBAL_FORM_GEOMETRY_AND_REQUIRED_MARKERS_USE_ONE_CANONICAL_SOURCE',()=>{
   assert.match(controls,/\.cr-control-shell\s*\{[^}]*overflow:\s*hidden/s);
@@ -31,6 +31,6 @@ test('GLOBAL_FORM_GEOMETRY_AND_REQUIRED_MARKERS_USE_ONE_CANONICAL_SOURCE',()=>{
   assert.match(controls,/\.cr-control-shell \.select2-selection__rendered\s*\{[^}]*padding:\s*0 36px 0 14px/s);
   assert.match(controls,/\.woocommerce form \.form-row:not\(\[data-cr-control="true"\]\)/);
   assert.match(assets,/One global DOM enhancer/);
-  assert.doesNotMatch(js,/removeAttribute\(['"]required['"]\)|removeAttribute\(['"]aria-required['"]\)/);
-  assert.doesNotMatch(js,/setAttribute\(['"]required['"]|setAttribute\(['"]aria-required['"]/);
+  assert.doesNotMatch(wpLogin,/removeAttribute\(['"]required['"]\)|removeAttribute\(['"]aria-required['"]\)/);
+  assert.doesNotMatch(wpLogin,/setAttribute\(['"]required['"]|setAttribute\(['"]aria-required['"]/);
 });

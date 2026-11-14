@@ -30,6 +30,7 @@
       'form .form-row,' +
       'form .form-group,' +
       'form .form-field,' +
+      '.wpfda-delete-account-container p,' +
       '.woocommerce-address-fields .form-row,' +
       '.wpfda-delete-account-container .form-row'
     ).forEach((row) => {
