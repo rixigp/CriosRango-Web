@@ -1476,9 +1476,9 @@ test('CART_HEADER_VERTICAL_FLOW_INHERITS_GLOBAL_HEADER_AND_SHELL',()=>{
  assert.equal(c.includes('cr-parent-category__toolbar'),false);
  assert.equal(c.includes('padding-block-start:0!important'),false);
 });
-test('CART_HEADER_HORIZONTAL_GEOMETRY_UNCHANGED=PASS',()=>{
+test('CART_HEADER_USES_CANONICAL_SHELL_GEOMETRY',()=>{
  const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
- assert.match(m,/\.cr-parent-category__toolbar[\s\S]*?min-height: 64px;[\s\S]*?margin: 0 20px 14px;[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;[\s\S]*?column-gap: 10px;/);
+ assert.match(m,/\.cr-parent-category__toolbar[\s\S]*?min-height: 64px;[\s\S]*?margin: 0 0 14px;[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;[\s\S]*?column-gap: 10px;/);
  assert.match(m,/\.cr-parent-category__back \{[\s\S]*?width: 48px;[\s\S]*?height: 48px;/);
  assert.match(m,/\.cr-parent-category__title \{[\s\S]*?font: 300 21px\/28px "Roboto", Arial, sans-serif;/);
 });
@@ -1492,7 +1492,7 @@ test('CART_HEADER_AND_PRODUCT_CARD_HORIZONTAL_GEOMETRY_NOT_CHANGED=PASS',()=>{
 });
 
 
-test('CART_HEADER_SPACING_COMES_ONLY_FROM_GLOBAL_TOOLBAR',()=>{const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');assert.match(m,/margin: 0 20px 14px/);assert.doesNotMatch(c,/cr-cart-header-shell[^}]*margin-block-end|cr-parent-category__toolbar/);});
+test('CART_HEADER_SPACING_USES_CANONICAL_SHELL_GUTTER',()=>{const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');assert.match(m,/\.cr-parent-category__toolbar\s*\{[^}]*margin: 0 0 14px;/);assert.doesNotMatch(c,/cr-cart-header-shell[^}]*margin-block-end|cr-parent-category__toolbar/);});
 test('CART_PRODUCT_ROW_VERTICAL_PADDING_ZERO=PASS; CART_PRODUCT_LIST_GAP_REMAINS_8PX=PASS; CART_EFFECTIVE_CARD_TO_CARD_SPACING_8PX=PASS; CART_PRODUCT_CARD_INTERNAL_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_CARD_HORIZONTAL_GEOMETRY_UNCHANGED=PASS',()=>{
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
  const rowRules=c.match(/\.cr-cart-table tr\.cr-cart-item\s*\{[^}]*\}/g)||[];
