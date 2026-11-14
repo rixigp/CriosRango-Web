@@ -131,8 +131,8 @@ function cssPaddingLeft(rule) {
 }
 
 test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
-  assert.match(controlsCss, /--cr-control-padding:\s*15px 16px 8px/);
-  assert.match(controlsCss, /--cr-control-select-padding:\s*15px 36px 8px 16px/);
+  assert.match(controlsCss, /--cr-control-padding:\s*8px 14px 0/);
+  assert.match(controlsCss, /--cr-control-select-padding:\s*8px 36px 0 14px/);
   assert.match(controlsCss, /\.cr-control__box/);
   assert.match(controlsCss, /\.cr-control__box \.select2-selection__arrow/);
   assert.doesNotMatch(accountCss, /padding-inline-start:\s*13px !important/);
@@ -140,10 +140,10 @@ test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
 });
 
 test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
-  assert.match(controlsCss, /\.cr-control__box \.select2-selection--single\s*\{[^}]*padding:0 !important/);
-  assert.match(controlsCss, /\.cr-control__box \.select2-selection__rendered\s*\{[^}]*padding:var\(--cr-control-select-padding\)/);
-  assert.match(controlsCss, /--cr-control-padding:\s*15px 16px 8px/);
-  assert.match(controlsCss, /--cr-control-select-padding:\s*15px 36px 8px 16px/);
+  assert.match(controlsCss, /\.cr-control__box \.select2-selection--single\s*\{[^}]*padding:\s*0\s*!important/);
+  assert.match(controlsCss, /\.cr-control__box \.select2-selection__rendered\s*\{[^}]*padding:\s*var\(--cr-control-select-padding\)/);
+  assert.match(controlsCss, /--cr-control-padding:\s*8px 14px 0/);
+  assert.match(controlsCss, /--cr-control-select-padding:\s*8px 36px 0 14px/);
 });
 
 test('ADDRESS_SCREEN_USES_ONLY_THE_GLOBAL_BOTTOM_NAV_RESERVED_SPACE', () => {
@@ -175,9 +175,10 @@ test('SHIPPING_ADDRESS_2_HAS_ONE_OPTIONAL_LABEL_AND_NO_PLACEHOLDER_COPY', () => 
 });
 
 test('SHIPPING_SELECT_PADDING_USES_SHARED_CONTROL_TOKENS_AND_PRESERVES_SELECT2_ARROW', () => {
-  assert.match(controlsCss, /--cr-control-padding:\s*15px 16px 8px/);
-  assert.match(controlsCss, /--cr-control-select-padding:\s*15px 36px 8px 16px/);
-  assert.match(controlsCss, /\.cr-control__box \.select2-selection__arrow[^}]*height:58px !important/);
+  assert.match(controlsCss, /--cr-control-padding:\s*8px 14px 0/);
+  assert.match(controlsCss, /--cr-control-select-padding:\s*8px 36px 0 14px/);
+  assert.match(controlsCss, /\.cr-control__box \.select2-selection__arrow[^}]*height:\s*var\(--cr-control-height\)\s*!important/);
+  assert.match(controlsCss, /--cr-control-height:\s*48px/);
   assert.doesNotMatch(accountCss, /padding-inline-start:\s*13px !important/);
   assert.doesNotMatch(accountCss, /Final shipping-select content-axis override/);
 });
