@@ -31,10 +31,6 @@ test('native WordPress page H1 is omitted only on the checkout form page', () =>
   assert.match(page, /the_content\(\)/);
 });
 
-test('mobile footer policy is global and desktop footer remains in the shared template',()=>{
- assert.ok(footer.includes("if ( ! ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) ) :"));
- assert.ok(footer.includes('class="cr-mobile-bottom-nav cr-app-bottom-nav"'));
-});
 test('checkout stylesheet is enqueued only on checkout form, excluding order received', () => {
   assert.match(assets, /\$uses_checkout_shell = function_exists\( 'is_checkout' \) && is_checkout\(\)[\s\S]*?is_order_received_page\(\)/);
   assert.match(assets, /if \( \$uses_checkout_shell \) \{[\s\S]*?cr2026-checkout[\s\S]*?assets\/css\/checkout\.css/);

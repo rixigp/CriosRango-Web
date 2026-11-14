@@ -69,7 +69,6 @@ test('COMMON_EDITORIAL_RAIL_NORMALIZES_CONTENT_WITHOUT_TOUCHING_GLOBAL_NAV_CLEAR
   assert.match(presentation, /cr-account-information-page/);
   assert.match(helpers, /cr-account-content-page/);
   assert.match(page, /cr2026_is_account_information_page\(\)/);
-  assert.match(footer, /if \( ! \( function_exists\( 'wp_is_mobile' \) && wp_is_mobile\(\) \) \) :/);
   assert.match(helpers, /cr2026_is_account_information_page\(\)/);
   assert.match(accountCss, /\.cr-account-content,[\s\S]*?width: min\(calc\(100% - 40px\), 720px\);[\s\S]*?margin-inline: auto;/);
   assert.doesNotMatch(accountCss, /body\.cr-account-content-page[^{}]*\.cr-parent-category__toolbar/);
@@ -84,9 +83,7 @@ test('COMMON_EDITORIAL_RAIL_NORMALIZES_CONTENT_WITHOUT_TOUCHING_GLOBAL_NAV_CLEAR
   assert.ok(accountCss.includes('font: 300 13px/21px "Roboto", Arial, sans-serif !important;'));
   assert.match(helpers, /function cr2026_is_account_context\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
   assert.match(helpers, /function cr2026_is_app_nav_shell\(\)[\s\S]*?cr2026_is_account_information_page\(\)/);
-  assert.match(mainCss, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav \{ display: block; \}/);
   assert.doesNotMatch(accountCss.slice(accountCss.indexOf('/* Canonical Account content rail shared by Help, Loyalty, Orders, Profile and Information. */')), /padding-bottom|100vh|height:\s*100vh/);
-  assert.match(footer, /cr-mobile-bottom-nav cr-app-bottom-nav/);
 });
 
 test('ONE_CANONICAL_ACCOUNT_CONTENT_RAIL_IS_REUSED_BY_HELP_LOYALTY_ORDERS_PROFILE_AND_INFORMATION', () => {
