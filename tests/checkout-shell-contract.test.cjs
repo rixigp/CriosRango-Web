@@ -9,6 +9,9 @@ const helpers = fs.readFileSync(path.join(theme, 'inc/helpers.php'), 'utf8');
 const page = fs.readFileSync(path.join(theme, 'page.php'), 'utf8');
 const footer = fs.readFileSync(path.join(theme, 'footer.php'), 'utf8');
 const assets = fs.readFileSync(path.join(theme, 'inc/assets.php'), 'utf8');
+const controlsCss = fs.readFileSync(path.join(theme, 'assets/css/controls.css'), 'utf8');
+const loginCss = fs.readFileSync(path.join(theme, 'assets/css/login.css'), 'utf8');
+const loginPhp = fs.readFileSync(path.join(theme, 'inc/login.php'), 'utf8');
 const checkoutCss = fs.readFileSync(path.join(theme, 'assets/css/checkout.css'), 'utf8');
 const checkoutPaymentJs = fs.readFileSync(path.join(theme, 'assets/js/checkout-payment.js'), 'utf8');
 const checkoutWooCommercePhp = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
@@ -199,10 +202,30 @@ test('delivery field semantics define five full-width fields and two half-width 
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
 });
 
+test('Login, Checkout and Select2 consume one canonical form-control token source', () => {
+  for (const token of [
+    '--cr-control-height: 48px;',
+    '--cr-control-border: #d8d9d5;',
+    '--cr-control-radius: 9px;',
+    '--cr-control-background: #fff;',
+    '--cr-control-padding: 12px 13px 9px;',
+    '--cr-control-focus-border: #aeb2ad;',
+    '--cr-control-error-border: #c66b61;'
+  ]) assert.ok(controlsCss.includes(token), 'missing shared form-control token: ' + token);
+  assert.ok(assets.includes("CR2026_URI . '/assets/css/controls.css'"));
+  assert.ok(assets.includes("array( 'cr2026-main', 'cr2026-controls', 'cr2026-roboto' )"));
+  assert.ok(loginPhp.includes("array( 'cr2026-controls' )"));
+  assert.ok(loginCss.includes('var(--cr-control-height)'));
+  assert.ok(loginCss.includes('var(--cr-control-radius)'));
+  assert.ok(checkoutCss.includes('var(--cr-control-height)'));
+  assert.ok(checkoutCss.includes('var(--cr-control-select-padding)'));
+  assert.ok(checkoutCss.includes('var(--cr-control-error-border)'));
+});
+
 test('delivery labels remain in normal flow and native controls use the white field surface', () => {
   assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*position:\s*static;[^}]*display:\s*block;[^}]*background:\s*transparent/s);
-  assert.match(checkoutCss, /\.form-row input\.input-text,[\s\S]*?\.form-row select\s*\{[^}]*background:\s*var\(--cr-white\)/s);
-  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper \.select2-selection--single\s*\{[^}]*background:\s*var\(--cr-white\)/s);
+  assert.match(checkoutCss, /\.form-row input\.input-text,[\s\S]*?\.form-row select\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
+  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper \.select2-selection--single\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
   assert.doesNotMatch(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*position:\s*absolute;[^}]*transform:\s*translateY\(-50%\)/s);
 });
 
@@ -239,7 +262,7 @@ test('delivery labels use normal flow while retaining the real WooCommerce label
 test('native delivery controls and Select2 remain presentation-only with no DOM replacement', () => {
   assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);
   assert.ok(checkoutCss.includes(".select2-selection--single"));
-  assert.ok(checkoutCss.includes("height: var(--cr-checkout-field-height);"));
+  assert.ok(checkoutCss.includes("height: var(--cr-control-height);"));
   const orderDeclarationPattern = new RegExp("^[ \\t]*order[ \\t]*:", "m");
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
   assert.doesNotMatch(checkoutWooCommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
@@ -844,7 +867,7 @@ test('Cart and Checkout cards consume one global responsive rail and delivery fi
     'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods'
   ]) {
     const rule = cssLastRuleBody(checkoutCss, selector);
-    assert.match(rule, /margin-inline:\s*var\(--cr-card-inline-inset\)/, selector);
+    assert.match(rule, /margin-inline:\s*0/, selector);
   }
   const deliveryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-delivery-heading');
   const deliveryFields = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper');
