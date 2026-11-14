@@ -18,6 +18,16 @@ function cr2026_account_render_endpoint_toolbar( $title, $back_url = '' ) {
 }
 
 
+/** Canonical mobile toolbar for the logged-out WooCommerce Account route. */
+function cr2026_account_logged_out_toolbar() {
+    if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
+        || is_user_logged_in() || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
+        return;
+    }
+    cr2026_render_category_toolbar( __( 'Acceder', 'crios-rango-2026' ), home_url( '/' ), 'parent', false );
+}
+add_action( 'woocommerce_before_customer_login_form', 'cr2026_account_logged_out_toolbar', 1 );
+
 /** Mobile page title for the native WooCommerce order-detail endpoint. */
 function cr2026_account_view_order_endpoint_toolbar( $order_id = 0 ) {
     if ( ! function_exists( 'is_account_page' ) || ! is_account_page()

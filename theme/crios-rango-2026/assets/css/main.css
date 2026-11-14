@@ -2661,3 +2661,39 @@ body.error404 .cr-404-page__cta { display: inline-flex; align-items: center; jus
   .cr-footer { display: none; }
   .cr-mobile-bottom-nav.cr-app-bottom-nav { display: block; }
 }
+
+
+/* Public Search header is in-flow/sticky; don't reserve a second topbar band above it. */
+body.search.cr-global-app-header {padding-top:0!important;}
+
+/* Explicitly neutralize the browser-native search cancel affordance inside the CR Search overlay. */
+.cr-app-header .cr-header-search-panel .cr-search-form input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  display:none!important;
+  width:0!important;
+  height:0!important;
+}
+
+/* Search submit feedback: a single spinner, visible even where the idle submit is compacted. */
+body.search .cr-search-form__submit.is-loading,
+.cr-app-header .cr-header-search-panel .cr-search-form button[type="submit"].is-loading {
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  cursor:wait;
+}
+body.search .cr-search-form__submit.is-loading::before,
+.cr-app-header .cr-header-search-panel .cr-search-form button[type="submit"].is-loading::before {
+  content:"";
+  display:inline-block;
+  width:15px;
+  height:15px;
+  box-sizing:border-box;
+  border:2px solid rgba(252,250,247,.28);
+  border-top-color:#FCFAF7;
+  border-radius:50%;
+  animation:cr-shell-action-spin .7s linear infinite;
+}
+@keyframes cr-shell-action-spin {to {transform:rotate(360deg);}}

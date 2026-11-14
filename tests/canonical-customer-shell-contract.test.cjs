@@ -76,3 +76,19 @@ test('INFORMATION_EXTRA_OUTER_GUTTERS=0 and generic fallbacks use shell',()=>{
  assert.match(account,/\.cr-account-content,[\s\S]*?width:\s*100%/);
 });
 test('FUNCTIONAL_FULL_BLEED exception is documented',()=>assert.match(main,/FUNCTIONAL_FULL_BLEED: Home hero carousel/));
+
+test('CART_EXTRA_OUTER_GUTTERS=0; PRODUCT_DETAIL_EXTRA_OUTER_GUTTERS=0; SEARCH_VISIBLE_X_TOTAL=2; SEARCH_HEADER_Y_MATCHES_GLOBAL=YES; SEARCH_SPECIAL_HEADER_OFFSET=0; SEARCH_SUBMIT_LOADING_STATE=YES; SEARCH_DOUBLE_SUBMIT_PROTECTED=YES',()=>{
+  const cart=css['cart.css'],product=css['product-detail-skin.css'];
+  assert.match(cart,/@media\(max-width:767px\)\{\s*body\.woocommerce-cart \.cr-cart-content \.cr-cart-table tr\.cr-cart-item\s*\{[^}]*padding-inline:\s*0!important;/s,'Cart product-row wrapper no longer adds an outer inset');
+  assert.match(product,/@media \(max-width: 767px\)\s*\{[\s\S]*?body\.cr-product-detail-app \.cr-main--woocommerce div\.product\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin-inline:\s*0;[^}]*padding-inline:\s*0;/s,'Product Detail Woo wrapper inherits the shell width while preserving block padding');
+  assert.match(main,/body\.search\.cr-global-app-header\s*\{\s*padding-top:\s*0!important;/,'Search header has no reserved duplicate topbar offset');
+  assert.match(main,/body\.search\s*\{\s*scroll-padding-top:\s*var\(--cr-app-topbar-height,64px\)/,'scroll-padding remains preserved');
+  assert.match(main,/\.cr-header-search-panel \.cr-search-form input\[type="search"\]::-webkit-search-cancel-button\s*\{[^}]*-webkit-appearance:none!important;[^}]*appearance:none!important;/s,'native Search cancel affordance is neutralized in the component');
+  const searchForm=fs.readFileSync(path.join(root,'searchform.php'),'utf8'),helpers=fs.readFileSync(path.join(root,'inc/helpers.php'),'utf8');
+  assert.equal((searchForm.match(/data-cr-search-clear/g)||[]).length,1,'one custom clear action');
+  assert.equal((helpers.match(/data-cr-header-search-close/g)||[]).length,1,'one overlay close action');
+  const mainJs=fs.readFileSync(path.join(root,'assets/js/main.js'),'utf8');
+  assert.match(mainJs,/form\.dataset\.crSearchSubmitting === 'true'[\s\S]*?event\.preventDefault\(\)/,'second search submit is blocked');
+  assert.match(mainJs,/button\.classList\.add\('is-loading'\)[\s\S]*?button\.setAttribute\('aria-busy', 'true'\)[\s\S]*?button\.textContent = 'Buscando…'/,'Search loading feedback includes spinner class, aria-busy and copy');
+  assert.match(mainJs,/window\.addEventListener\('pageshow', resetSearchSubmitStates\)/,'Search loading is reset after BFCache restore');
+});

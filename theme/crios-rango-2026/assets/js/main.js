@@ -94,6 +94,76 @@
     });
   });
 
+
+
+  // Search submits keep native navigation but expose immediate, duplicate-submit-safe feedback.
+  const searchSubmitForms = Array.from(document.querySelectorAll('body.search form.cr-search-form'));
+  const resetSearchSubmitStates = () => {
+    searchSubmitForms.forEach((form) => {
+      const button = form.querySelector('button[type="submit"]');
+      if (!button) return;
+      button.textContent = button.dataset.crOriginalSubmitLabel || 'Buscar';
+      button.disabled = false;
+      button.classList.remove('is-loading');
+      button.setAttribute('aria-busy', 'false');
+      form.setAttribute('aria-busy', 'false');
+      delete form.dataset.crSearchSubmitting;
+    });
+  };
+  searchSubmitForms.forEach((form) => {
+    const button = form.querySelector('button[type="submit"]');
+    if (!button) return;
+    button.dataset.crOriginalSubmitLabel = button.textContent.trim() || 'Buscar';
+    form.addEventListener('submit', (event) => {
+      if (event.defaultPrevented) return;
+      if (form.dataset.crSearchSubmitting === 'true') {
+        event.preventDefault();
+        return;
+      }
+      form.dataset.crSearchSubmitting = 'true';
+      form.setAttribute('aria-busy', 'true');
+      button.disabled = true;
+      button.classList.add('is-loading');
+      button.setAttribute('aria-busy', 'true');
+      button.textContent = 'Buscando…';
+    });
+  });
+  window.addEventListener('pageshow', resetSearchSubmitStates);
+
+  // Native WooCommerce logout URL/nonce remains the navigation target; only its immediate presentation changes.
+  const logoutLinks = Array.from(document.querySelectorAll('.cr-account-profile-home__action--logout'));
+  const resetLogoutStates = () => {
+    logoutLinks.forEach((link) => {
+      const icon = link.querySelector('.cr-account-profile-home__action-icon');
+      const label = link.querySelector(':scope > span:nth-child(2)');
+      if (icon && typeof link.dataset.crOriginalLogoutIcon === 'string') icon.innerHTML = link.dataset.crOriginalLogoutIcon;
+      if (label && link.dataset.crOriginalLogoutLabel) label.textContent = link.dataset.crOriginalLogoutLabel;
+      link.classList.remove('is-loading');
+      link.setAttribute('aria-busy', 'false');
+      link.removeAttribute('aria-disabled');
+      delete link.dataset.crLogoutLoading;
+    });
+  };
+  logoutLinks.forEach((link) => {
+    const icon = link.querySelector('.cr-account-profile-home__action-icon');
+    const label = link.querySelector(':scope > span:nth-child(2)');
+    if (icon) link.dataset.crOriginalLogoutIcon = icon.innerHTML;
+    if (label) link.dataset.crOriginalLogoutLabel = label.textContent.trim();
+    link.addEventListener('click', (event) => {
+      if (link.dataset.crLogoutLoading === 'true') {
+        event.preventDefault();
+        return;
+      }
+      link.dataset.crLogoutLoading = 'true';
+      link.classList.add('is-loading');
+      link.setAttribute('aria-busy', 'true');
+      link.setAttribute('aria-disabled', 'true');
+      if (label) label.textContent = 'Cerrando sesión…';
+      if (icon) icon.innerHTML = '<span class="cr-account-logout-spinner" aria-hidden="true"></span>';
+    });
+  });
+  window.addEventListener('pageshow', resetLogoutStates);
+
   const slides = Array.from(document.querySelectorAll('[data-cr-hero-slide]'));
   if (slides.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     let index = 0;

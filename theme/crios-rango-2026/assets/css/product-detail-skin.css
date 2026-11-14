@@ -1846,3 +1846,15 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
     background-color: transparent !important;
   }
 }
+
+
+/* Mobile Product Detail's Woo wrapper must not add another shell gutter. */
+@media (max-width: 767px) {
+  body.cr-product-detail-app .cr-main--woocommerce div.product {
+    width:100%;
+    max-width:none;
+    margin-inline:0;
+    padding-inline:0;
+    box-sizing:border-box;
+  }
+}

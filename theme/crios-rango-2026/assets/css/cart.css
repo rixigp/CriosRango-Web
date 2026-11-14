@@ -1133,3 +1133,11 @@ body.woocommerce-cart .cr-cart-promo-card--welcome > .cr-cart-promo-card__icon s
   width:21px;
   height:21px;
 }
+
+
+/* Cart product-card row is the first inner surface: inherit only the canonical shell rail. */
+@media(max-width:767px){
+  body.woocommerce-cart .cr-cart-content .cr-cart-table tr.cr-cart-item{
+    padding-inline:0!important;
+  }
+}

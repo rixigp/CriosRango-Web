@@ -1625,3 +1625,95 @@
   .cr-account-information__content .vc_column_container { width: 100%; }
   .cr-account-information__content .wpb_content_element { margin-bottom: 14px; }
 }
+
+
+/* Logged-out /mi-cuenta/: use the canonical Account shell without Woo's legacy login card. */
+body.woocommerce-account:not(.logged-in) .cr-page,
+body.woocommerce-account:not(.logged-in) .cr-page .cr-prose,
+body.woocommerce-account:not(.logged-in) .woocommerce,
+body.woocommerce-account:not(.logged-in) .woocommerce-MyAccount-content,
+body.woocommerce-account:not(.logged-in) .u-columns,
+body.woocommerce-account:not(.logged-in) .u-column1 {
+  box-sizing:border-box;
+  width:100%!important;
+  max-width:none!important;
+  margin-inline:0!important;
+  padding-inline:0!important;
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login {
+  box-sizing:border-box;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+@media(max-width:767px){
+  body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login > h2 {display:none!important;}
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login .form-row {
+  box-sizing:border-box;
+  float:none;
+  width:100%;
+  margin:0 0 16px;
+  padding:0;
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login input.input-text {
+  box-sizing:border-box;
+  display:block;
+  width:100%;
+  min-width:0;
+  min-height:48px;
+  border:1px solid #d8d9d5;
+  border-radius:9px;
+  background:var(--cr-app-canvas);
+  color:var(--cr-ink);
+  padding:12px 13px 9px;
+  box-shadow:none;
+  font:400 14px/20px "Roboto",Arial,sans-serif;
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login .woocommerce-form-login__rememberme {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin:0;
+  color:var(--cr-ink);
+  font:300 13px/18px "Roboto",Arial,sans-serif;
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login .woocommerce-form-login__submit {
+  display:block!important;
+  float:none!important;
+  width:100%!important;
+  min-height:48px;
+  margin:0!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:#183b35!important;
+  color:#fff!important;
+  font:400 14px/20px "Roboto",Arial,sans-serif!important;
+  box-shadow:none!important;
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login .lost_password a {color:#183b35;}
+
+/* Logout feedback reuses the existing Account submit spinner animation. */
+body.woocommerce-account .cr-account-profile-home__action--logout.is-loading {
+  pointer-events:none;
+  cursor:wait;
+}
+body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr-account-profile-home__action-icon {
+  color:#925757;
+}
+body.woocommerce-account .cr-account-logout-spinner {
+  display:inline-block;
+  width:16px;
+  height:16px;
+  box-sizing:border-box;
+  border:2px solid rgba(146,87,87,.24);
+  border-top-color:#925757;
+  border-radius:50%;
+  animation:cr-shell-action-spin .7s linear infinite;
+}
+body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr-account-profile-home__chevron {display:none;}

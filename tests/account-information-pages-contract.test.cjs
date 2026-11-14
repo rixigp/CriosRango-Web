@@ -11,6 +11,7 @@ const page = read('page.php');
 const dashboard = read('woocommerce/myaccount/dashboard.php');
 const accountCss = read('assets/css/account.css');
 const mainCss = read('assets/css/main.css');
+const mainJs = read('assets/js/main.js');
 const footer = read('footer.php');
 
 const slugs = [
@@ -95,4 +96,25 @@ test('ONE_CANONICAL_ACCOUNT_CONTENT_RAIL_IS_REUSED_BY_HELP_LOYALTY_ORDERS_PROFIL
   assert.match(orders, /class="cr-account-orders__list cr-account-content"/);
   assert.match(accountCss, /\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin-inline:\s*0;/s);
   assert.equal((accountCss.match(/\.cr-account-content,/g) || []).length, 1, 'one canonical content rail rule');
+});
+
+test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_WOO_VISUAL_CARD=0',()=>{
+  assert.match(presentation,/function cr2026_account_logged_out_toolbar\(\)[\s\S]*?is_account_page\(\)[\s\S]*?is_user_logged_in\(\)[\s\S]*?cr2026_render_category_toolbar\( __\( 'Acceder'/,'only logged-out Account receives canonical title toolbar');
+  assert.match(presentation,/add_action\( 'woocommerce_before_customer_login_form', 'cr2026_account_logged_out_toolbar', 1 \)/,'toolbar is attached before native Woo login form');
+  assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.cr-page,[\s\S]*?body\.woocommerce-account:not\(\.logged-in\) \.u-column1\s*\{[^}]*width:100%!important;[^}]*max-width:none!important;[^}]*margin-inline:0!important;[^}]*padding-inline:0!important;/s,'logged-out outer wrappers inherit the shell without an additional rail');
+  assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.woocommerce-form-login\.login\s*\{[^}]*padding:0!important;[^}]*border:0!important;[^}]*border-radius:0!important;[^}]*background:transparent!important;[^}]*box-shadow:none!important;/s,'legacy login visual card is removed');
+  assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.woocommerce-form-login\.login \.woocommerce-form-login__submit\s*\{[^}]*width:100%!important;[^}]*border-radius:999px!important;[^}]*background:#183b35!important;/s,'canonical full-width green pill CTA is reused');
+  assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.woocommerce-form-login\.login input\.input-text\s*\{[^}]*width:100%;[^}]*border:1px solid #d8d9d5;[^}]*border-radius:9px;/s,'login fields use Account field contract styles');
+  assert.match(accountCss,/woocommerce-form-login__rememberme/,'Remember me remains styled but functional');
+  assert.match(accountCss,/lost_password a/,'lost password destination remains styled and functional');
+});
+
+test('LOGOUT_LOADING_STATE=YES; LOGOUT_DOUBLE_CLICK_PROTECTED=YES; LOGOUT_NATIVE_URL_PRESERVED=YES',()=>{
+  assert.match(dashboard,/class="cr-account-profile-home__action cr-account-profile-home__action--logout" href="<\?php echo esc_url\( wc_logout_url\(\) \); \?>"/,'native Woo logout URL remains the link destination');
+  assert.match(mainJs,/\.cr-account-profile-home__action--logout/,'logout loading behavior is restricted to the native Account logout link');
+  assert.match(mainJs,/link\.dataset\.crLogoutLoading === 'true'[\s\S]*?event\.preventDefault\(\)/,'second logout click is prevented');
+  assert.match(mainJs,/label\.textContent = 'Cerrando sesión…'/,'logout loading copy is shown');
+  assert.match(mainJs,/link\.setAttribute\('aria-busy', 'true'\)[\s\S]*?link\.setAttribute\('aria-disabled', 'true'\)/,'logout announces and locks its loading state');
+  assert.match(mainJs,/window\.addEventListener\('pageshow', resetLogoutStates\)/,'logout state resets after BFCache restore');
+  assert.match(accountCss,/\.cr-account-profile-home__action--logout\.is-loading[\s\S]*?\.cr-account-logout-spinner[\s\S]*?animation:cr-shell-action-spin/s,'logout uses existing Account spinner animation utility');
 });
