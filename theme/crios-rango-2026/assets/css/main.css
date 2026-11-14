@@ -134,6 +134,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .cr-mobile-menu__list { padding-block: 10px 18px; }
 .cr-mobile-menu__list a { display: block; padding: 14px 0; text-decoration: none; font-weight: 700; border-bottom: 1px solid var(--cr-border); }
 
+/* FUNCTIONAL_FULL_BLEED: Home hero carousel spans the viewport so its media reaches both screen edges. */
 .cr-hero { position: relative; }
 .cr-hero__slides { position: relative; min-height: min(72vh, 720px); overflow: hidden; background: var(--cr-sand); }
 .cr-hero__slide { position: absolute; inset: 0; opacity: 0; transition: opacity .7s ease; }

@@ -28,6 +28,8 @@ on:
       - "tests/account-orders-contract.test.cjs"
       - "tests/account-order-detail-contract.test.cjs"
       - "tests/account-coupons-promotions-contract.test.cjs"
+      - "tests/global-mobile-shell-contract.test.cjs"
+      - "tests/canonical-customer-shell-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
 
@@ -389,6 +391,8 @@ jobs:
 
       - name: Run catalog contract tests
         run: node --test tests/catalog-contract.test.cjs
+      - name: Run canonical customer shell architecture contracts
+        run: node --test tests/global-mobile-shell-contract.test.cjs tests/canonical-customer-shell-contract.test.cjs
 
       - name: Run product skin contract tests
         run: node --test tests/product-skin-contract.test.cjs tests/global-mobile-shell-contract.test.cjs tests/page-specific-shell-overrides-contract.test.cjs

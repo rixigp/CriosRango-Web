@@ -576,19 +576,16 @@ test('brand archive uses the shared contextual back control and shows either log
   const productSkin = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/product-skin.php'), 'utf8');
   const styles = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
   assert.match(brandArchive, /function_exists\( 'cr2026_home_brands_url' \) \? cr2026_home_brands_url\(\)/);
-  assert.match(brandArchive, /class="cr-brand-archive__back-row"/);
-  assert.match(brandArchive, /class="cr-parent-category__back"/);
-  assert.match(brandArchive, /cr2026_icon\( 'arrow' \)/);
-  assert.match(brandArchive, /data-fallback-url=/);
-  assert.match(brandArchive, /data-site-path=/);
-  assert.match(brandArchive, /if \( \$brand_logo_url \)[\s\S]*?<img[\s\S]*?<\?php else : \?>[\s\S]*?<h1>/);
-  assert.doesNotMatch(brandArchive, /<h1>[\s\S]*?<img/);
+  assert.match(brandArchive, /cr2026_render_category_toolbar\( \$brand_term->name, \$brands_index_url, 'parent', false, \$brand_filter_action \)/);
+  assert.match(brandArchive, /class="cr-parent-category__filters" data-cr-filter-open/);
+  assert.match(brandArchive, /if \( \$brand_logo_url \)[\s\S]*?cr-brand-archive__brand-logo[\s\S]*?<img/);
+  assert.doesNotMatch(brandArchive, /cr-brand-archive__back-row|cr-brand-archive__heading/);
   assert.match(productSkin, /if \( ! is_product\(\) && ! is_tax\( 'product_brand' \) \) \{ return; \}/);
   assert.match(productSkin, /document\.querySelector\('\.cr-parent-category__back\[data-fallback-url\]'\)/);
   assert.match(productSkin, /previous\.origin === current\.origin/);
   assert.match(productSkin, /insideSite && isDifferentPage/);
-  assert.match(styles, /\.cr-brand-archive__back-row \.cr-parent-category__back/);
-  assert.match(styles, /object-fit:contain/);
+  assert.match(styles, /\.cr-brand-archive \.cr-parent-category__filters \{ opacity:1; cursor:pointer; \}/);
+  assert.match(styles, /\.cr-brand-archive__brand-logo img \{[^}]*object-fit:contain/);
   assert.match(brandArchive, /data-cr-product-grid/);
   assert.match(php, /cr2026_render_product_card\( \$product, \$index \+/);
 });
@@ -616,18 +613,14 @@ test('sale badge is centralized and rendered by every theme product-card path', 
   assert.match(helpers, /\$price_html = \$product->get_price_html\(\)/);
 });
 
-test('brand back and brand identity share one centered grid row without responsive changes', () => {
+test('brand archive reuses the canonical toolbar and keeps its logo as content', () => {
   const brandArchive = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
   const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
-  const rowStart = brandArchive.indexOf('<div class="cr-brand-archive__back-row">');
-  const rowEnd = brandArchive.indexOf('</div>', rowStart);
-  const row = brandArchive.slice(rowStart, rowEnd);
-  assert.ok(row.includes('cr-parent-category__back'));
-  assert.ok(row.includes('cr-brand-archive__heading'));
-  assert.ok(row.includes('data-cr-filter-open'));
-  assert.match(css, /\.cr-brand-archive__back-row \{[^}]*display:grid; grid-template-columns:48px minmax\(0,1fr\) 48px; align-items:center;/);
-  assert.match(css, /\.cr-brand-archive__heading \{[^}]*grid-column:2; grid-row:1;[^}]*margin:0; padding:0;/);
-  assert.match(css, /\.cr-brand-archive__heading img \{[^}]*object-fit:contain/);
+  assert.match(brandArchive, /cr2026_render_category_toolbar\( \$brand_term->name, \$brands_index_url/);
+  assert.match(brandArchive, /cr-brand-archive__brand-logo/);
+  assert.doesNotMatch(brandArchive, /cr-brand-archive__back-row|cr-brand-archive__heading/);
+  assert.match(css, /\.cr-parent-category__toolbar \{/);
+  assert.match(css, /\.cr-brand-archive__brand-logo img \{[^}]*object-fit:contain/);
 });
 
 test('brand archive uses the shared catalog-page endpoint and filter-API pagination; Search keeps HTML pagination', () => {
@@ -715,7 +708,7 @@ test('brand filter sheet accepts only product_brand terms and exposes fixed cata
   assert.match(brandArchive, /\$brand_term->term_id/);
   assert.match(brandArchive, /data-cr-filter-open/);
   assert.match(brandArchive, /cr2026_render_category_filter_sheet\( \$brand_term, 'brand' \)/);
-  assert.match(fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8'), /cr-brand-archive__back-row \.cr-parent-category__filters[^}]*opacity:1;[^}]*cursor:pointer;/);
+  assert.match(fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8'), /\.cr-brand-archive \.cr-parent-category__filters \{ opacity:1; cursor:pointer; \}/);
 });
 
 test('brand requests always carry catalog scope and catalog_brand_id, never fake category or legacy brand context', () => {
@@ -825,7 +818,8 @@ test('Nuestras marcas route includes all product_brand terms, including zero-cou
   assert.match(brandTemplate, /get_footer\( 'shop' \)/);
   assert.match(helpers, /cr2026_brands_index_view/);
   const footer = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/footer.php'), 'utf8');
-  assert.ok(footer.includes("if ( ! ( function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) ) :"));
+  assert.doesNotMatch(footer, /wp_is_mobile/);
+  assert.match(css, /\.cr-footer\s*\{\s*display:\s*none;/);
   assert.match(css, /GLOBAL MOBILE APP SHELL/);
 });
 
