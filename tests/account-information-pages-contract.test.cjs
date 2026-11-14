@@ -70,7 +70,7 @@ test('COMMON_EDITORIAL_RAIL_NORMALIZES_CONTENT_WITHOUT_TOUCHING_GLOBAL_NAV_CLEAR
   assert.match(helpers, /cr-account-content-page/);
   assert.match(page, /cr2026_is_account_information_page\(\)/);
   assert.match(helpers, /cr2026_is_account_information_page\(\)/);
-  assert.match(accountCss, /\.cr-account-content,[\s\S]*?width: min\(calc\(100% - 40px\), 720px\);[\s\S]*?margin-inline: auto;/);
+  assert.match(accountCss, /\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin-inline:\s*0;/s);
   assert.doesNotMatch(accountCss, /body\.cr-account-content-page[^{}]*\.cr-parent-category__toolbar/);
   for (const selector of ['h1','h2','h3','h4','h5','h6','p','ul','ol','li','strong','a','blockquote','table','th','td']) {
     assert.ok(accountCss.includes('.cr-account-information__content ' + selector), 'editorial style ' + selector);
@@ -93,6 +93,6 @@ test('ONE_CANONICAL_ACCOUNT_CONTENT_RAIL_IS_REUSED_BY_HELP_LOYALTY_ORDERS_PROFIL
   const orders = read('woocommerce/myaccount/orders.php');
   assert.match(orders, /class="cr-account-orders__filters cr-account-content"/);
   assert.match(orders, /class="cr-account-orders__list cr-account-content"/);
-  assert.match(accountCss, /\.cr-account-content,[\s\S]*?body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty[\s\S]*?width: min\(calc\(100% - 40px\), 720px\);/);
+  assert.match(accountCss, /\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin-inline:\s*0;/s);
   assert.equal((accountCss.match(/\.cr-account-content,/g) || []).length, 1, 'one canonical content rail rule');
 });

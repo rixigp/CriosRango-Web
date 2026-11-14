@@ -27,10 +27,17 @@ test('GLOBAL_MOBILE_FOOTER_POLICY_COUNT=1 and safe-area clearance is global',()=
  assert.equal((main.match(/\.cr-footer\s*\{\s*display:\s*none;/g)||[]).length,1);
  assert.match(main,/padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
 });
-test('ACCOUNT_EXTRA_OUTER_GUTTERS=0',()=>{
+test('ACCOUNT_OUTER_GUTTER_SOURCE=.cr-shell; ACCOUNT_CONTENT_WIDTH=100%; ACCOUNT_CONTENT_MAX_WIDTH=none; ACCOUNT_CONTENT_MARGIN_INLINE=0; ACCOUNT_EXTRA_OUTER_GUTTERS=0',()=>{
+ const shell=main.match(/\.cr-shell\s*\{([^}]*)\}/);
+ assert.ok(shell,'canonical shell owns the outer gutter');
+ assert.match(shell[1],/width:\s*min\(calc\(100%\s*-\s*40px\),\s*var\(--cr-shell\)\)/);
+ const rail=account.match(/\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{([^}]*)\}/);
+ assert.ok(rail,'Account and Loyalty share one rail rule');
+ assert.match(rail[1],/width:\s*100%/);
+ assert.match(rail[1],/max-width:\s*none/);
+ assert.match(rail[1],/margin-inline:\s*0/);
  assert.doesNotMatch(account,/width:\s*min\(calc\(100%\s*-\s*40px\)/);
  assert.doesNotMatch(account,/width:min\(calc\(100%\s*-\s*40px\)/);
- assert.match(account,/\.cr-account-content,[\s\S]*?width:\s*100%/);
 });
 test('CATALOG_EXTRA_OUTER_GUTTERS=0',()=>{
  const archive=fs.readFileSync(path.join(root,'archive-product.php'),'utf8'),cat=fs.readFileSync(path.join(root,'taxonomy-product_cat.php'),'utf8'),brand=fs.readFileSync(path.join(root,'taxonomy-product_brand.php'),'utf8'),brands=fs.readFileSync(path.join(root,'page-marcas.php'),'utf8');

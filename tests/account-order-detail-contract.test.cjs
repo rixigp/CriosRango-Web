@@ -17,7 +17,7 @@ test('mobile order detail uses canonical toolbar title and rail', () => {
   assert.match(presentation, /cr2026_account_render_endpoint_toolbar\( \$title, wc_get_account_endpoint_url\( 'orders' \) \)/);
   assert.match(template, /class="cr-order-detail"/);
   assert.match(css, /\.cr-order-detail\s*\{[^}]*width:100%; max-width:none; margin:0;/);
-  assert.match(css, /\.cr-order-detail__card\s*\{[^}]*width:min\(calc\(100% - 40px\),720px\)[^}]*margin-inline:auto/);
+  assert.match(css, /\.cr-order-detail__card\s*\{[^}]*width:100%; max-width:none; min-width:0; margin-inline:0; padding:16px;/);
   assert.doesNotMatch(css, /\.cr-order-detail\s*\{[^}]*max-width:\s*720px/);
 });
 
