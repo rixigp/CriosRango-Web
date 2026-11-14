@@ -26,16 +26,16 @@ const inventory = [
   ['Categorías','archive-product.php','cr2026_render_category_toolbar()',true],
   ['Subcategorías','archive-product.php','cr2026_render_category_toolbar()',true],
   ['Outlet','archive-product.php','cr2026_render_category_toolbar()',true],
-  ['Marcas','page-marcas.php','mobile: cr2026_render_category_toolbar(); desktop: legacy toolbar',true],
-  ['Archivo de marca','taxonomy-product_brand.php','mobile: cr2026_render_category_toolbar(); desktop: legacy row',true],
-  ['Búsqueda general','search.php','mobile: cr2026_render_category_toolbar(); desktop: legacy header',true],
-  ['Búsqueda de productos','search.php','mobile: cr2026_render_category_toolbar()',true],
+  ['Marcas','page-marcas.php','cr2026_render_category_toolbar() with the brands index back link',true],
+  ['Archivo de marca','taxonomy-product_brand.php','cr2026_render_category_toolbar() with the brands index back link',true],
+  ['Búsqueda general','search.php','cr2026_render_category_toolbar() with the shop back link',true],
+  ['Búsqueda de productos','search.php','cr2026_render_category_toolbar() with the shop back link',true],
   ['Carrito con productos','woocommerce/cart/cart.php','cr2026_render_category_toolbar()',true],
   ['Carrito vacío','woocommerce/cart/cart.php + cart-empty.php','toolbar canónica + h2 de estado',true],
   ['Checkout','inc/helpers.php','cr2026_render_category_toolbar()',true],
   ['Cuenta','woocommerce/myaccount/dashboard.php','cr2026_render_category_toolbar()',true],
-  ['Pedidos','woocommerce/myaccount/orders.php','mobile: cr2026_render_category_toolbar()',true],
-  ['Detalle de pedido','inc/account-presentation.php','mobile: view-order endpoint toolbar',true],
+  ['Pedidos','woocommerce/myaccount/orders.php','cr2026_render_category_toolbar() with the account back link',true],
+  ['Detalle de pedido','inc/account-presentation.php','view-order endpoint toolbar',true],
   ['Cupones y promociones','inc/account-presentation.php','cr2026_render_category_toolbar()',true],
   ['Perfil','inc/account-presentation.php','cr2026_render_category_toolbar()',true],
   ['Datos personales','inc/account-presentation.php','cr2026_render_category_toolbar()',true],
@@ -43,13 +43,13 @@ const inventory = [
   ['Cambiar contraseña','inc/account-presentation.php','cr2026_render_category_toolbar()',true],
   ['Ayuda','inc/account-presentation.php','cr2026_render_category_toolbar()',true],
   ['Eliminar cuenta','inc/account-presentation.php','cr2026_render_category_toolbar()',true],
-  ['Cambios y devoluciones','page.php','mobile: cr2026_render_category_toolbar() sin back',true],
-  ['Condiciones de contratación','page.php','mobile: cr2026_render_category_toolbar() sin back',true],
-  ['Política de privacidad','page.php','mobile: cr2026_render_category_toolbar() sin back',true],
-  ['Aviso legal','page.php','mobile: cr2026_render_category_toolbar() sin back',true],
-  ['Política de cookies','page.php','mobile: cr2026_render_category_toolbar() sin back',true],
+  ['Cambios y devoluciones','page.php','cr2026_render_category_toolbar() without a back link',true],
+  ['Condiciones de contratación','page.php','cr2026_render_category_toolbar() without a back link',true],
+  ['Política de privacidad','page.php','cr2026_render_category_toolbar() without a back link',true],
+  ['Aviso legal','page.php','cr2026_render_category_toolbar() without a back link',true],
+  ['Política de cookies','page.php','cr2026_render_category_toolbar() without a back link',true],
   ['Login','inc/login.php','WordPress wp-login screen; outside storefront mobile page shell',false],
-  ['404','404.php','mobile: cr2026_render_category_toolbar() sin back',true],
+  ['404','404.php','cr2026_render_category_toolbar() without a back link',true],
   ['Pago seguro (redirección Cecabank)','inc/woocommerce.php','transaction-status heading inside gateway card; not global page title',false],
 ];
 
@@ -62,6 +62,8 @@ test('complete inventory covers every known mobile page-title screen and documen
 
 test('the existing canonical renderer and class contract remain the single source of truth', () => {
   assert.match(helpers, /function\s+cr2026_render_category_toolbar\s*\(/);
+  assert.ok(helpers.includes("if ( '' !== $back_url )"), 'back link is conditional on an actual destination');
+  assert.ok(helpers.includes("echo '<h1 class=\"cr-parent-category__title\"'"), 'renderer owns the canonical title element');
   for (const className of ['cr-parent-category__toolbar','cr-parent-category__back','cr-parent-category__title']) {
     assert.ok(helpers.includes(className), 'missing canonical class ' + className);
   }
@@ -69,14 +71,18 @@ test('the existing canonical renderer and class contract remain the single sourc
   assert.match(helpers, /cr-parent-category__toolbar--no-back/);
   assert.match(mainCss, /\.cr-parent-category__title\s*\{[^}]*font:\s*300\s+21px\/28px\s+"Roboto",\s*Arial,\s*sans-serif/s);
   assert.match(mainCss, /\.cr-parent-category__back\s*\{[^}]*width:\s*48px/s);
+  assert.match(mainCss, /\.cr-parent-category__toolbar\s*\{/);
   assert.match(mainCss, /\.cr-parent-category__toolbar--no-back\s*\{/);
 });
 
 test('catalog, cart, checkout and account canonical routes remain intact', () => {
   assert.equal((archiveProduct.match(/cr2026_render_category_toolbar\s*\(/g) || []).length, 2);
   assert.match(cart, /cr2026_render_category_toolbar\s*\(\s*__\( 'Tu carrito'/);
+  assert.ok(cart.includes("wc_get_page_permalink( 'shop' )"), 'Cart back link returns to the shop');
   assert.match(emptyCart, /Tu carrito está vacío/);
   assert.match(helpers, /function\s+cr2026_checkout_render_toolbar/);
+  assert.ok(helpers.includes("cr2026_render_category_toolbar( __( 'Finalizar compra'"));
+  assert.ok(helpers.includes('wc_get_cart_url()'), 'Checkout back link returns to Cart');
   assert.match(dashboard, /cr2026_render_category_toolbar\s*\(\s*__\( 'Cuenta'/);
   assert.match(account, /cr2026_account_render_endpoint_toolbar/);
 });
@@ -87,8 +93,9 @@ test('shipping address uses exactly one canonical delivery title', () => {
   assert.match(account, /function cr2026_account_edit_address_title[\s\S]*?return '';/);
 });
 
-test('Orders and order detail use the canonical title component on mobile', () => {
-  assert.match(orders, /wp_is_mobile\(\)[\s\S]*?cr2026_render_category_toolbar\( __\( 'Pedidos'/);
+test('Orders and order detail use the canonical title renderer', () => {
+  assert.match(orders, /cr2026_render_category_toolbar\(\s*__\( 'Pedidos'/);
+  assert.ok(orders.includes('$account_url'), 'Orders toolbar receives the account back destination');
   assert.doesNotMatch(orders, /cr-account-orders__toolbar/);
   assert.match(account, /woocommerce_account_view-order_endpoint/);
   assert.match(account, /cr2026_account_view_order_endpoint_toolbar/);
@@ -96,28 +103,23 @@ test('Orders and order detail use the canonical title component on mobile', () =
 });
 
 test('legal pages, both search modes, brands and 404 use the canonical mobile title', () => {
-  assert.match(page, /wp_is_mobile\(\)[\s\S]*?cr2026_render_category_toolbar\( get_the_title\(\), ''/);
+  assert.match(page, /cr2026_render_category_toolbar\(\s*get_the_title\(\),\s*''/);
+  assert.match(page, /cr2026_render_category_toolbar\(\s*get_the_title\(\),\s*\$account_back_url/);
   assert.match(page, /cr2026_account_is_help_page/);
-  assert.match(search, /wp_is_mobile\(\)[\s\S]*?cr2026_render_category_toolbar\( sprintf/);
-  assert.match(brandsIndex, /wp_is_mobile\(\)[\s\S]*?cr2026_render_category_toolbar/);
-  assert.match(brandArchive, /wp_is_mobile\(\)[\s\S]*?cr2026_render_category_toolbar\( \$brand_term->name/);
-  assert.match(notFound, /wp_is_mobile\(\)[\s\S]*?cr2026_render_category_toolbar/);
+  assert.match(search, /cr2026_render_category_toolbar\(\s*sprintf\([\s\S]*?cr2026_shop_url\(\)/);
+  assert.match(brandsIndex, /cr2026_render_category_toolbar\(\s*__\( 'Nuestras marcas'[\s\S]*?home_url\( '\/' \)/);
+  assert.match(brandArchive, /cr2026_render_category_toolbar\(\s*\$brand_term->name,\s*\$brands_index_url/);
+  assert.match(notFound, /cr2026_render_category_toolbar\(\s*__\( 'Página no encontrada'[\s\S]*?''/);
 });
 
 test('legacy page headings are hidden on mobile while their desktop presentation remains available', () => {
   assert.match(mainCss, /@media \(max-width: 767px\)[\s\S]*?\.cr-page__header \{ display: none/);
-  assert.match(mainCss, /\.cr-brands-index__toolbar \{ display: none/);
-  assert.match(mainCss, /\.cr-brand-archive__back-row \{ display: none/);
-  assert.match(mainCss, /\.cr-empty-state > h1 \{ display: none/);
+    assert.match(mainCss, /\.cr-empty-state > h1 \{ display: none/);
   assert.match(orders, /else\s*:\s*\?>[\s\S]*?cr-account-orders__desktop-toolbar/);
   assert.match(page, /<header class="cr-page__header">/);
-  assert.match(brandsIndex, /<header class="cr-brands-index__toolbar">/);
-  assert.match(brandArchive, /<div class="cr-brand-archive__back-row">/);
-});
+  });
 
 test('Account page template does not emit its generic page title on mobile Account endpoints', () => {
-  assert.match(page, /\$is_mobile_account\s*=\s*function_exists\( 'wp_is_mobile' \)[\s\S]*?is_account_page\(\)/);
-  assert.match(page, /if \( ! \$is_mobile_account && function_exists\( 'wp_is_mobile' \)/);
   assert.match(page, /if \( ! \$is_mobile_account \) : \?>[\s\S]*?<header class="cr-page__header">/);
   assert.match(account, /cr2026_account_render_endpoint_toolbar\( \$title/);
 });
