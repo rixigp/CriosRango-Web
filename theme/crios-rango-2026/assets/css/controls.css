@@ -65,7 +65,7 @@
   min-height: 0 !important; padding: 0 !important; background: transparent !important;
 }
 .cr-control-shell .select2-selection__rendered {
-  display: flex !important; align-items: center !important; min-width: 0; height: 100% !important;
+  display: flex !important; align-items: center !important; box-sizing: border-box !important; width: 100% !important; min-width: 0; height: 100% !important; margin: 0 !important;
   padding: var(--cr-control-select-padding) !important; color: var(--cr-ink) !important;
   font: 400 15px/20px "Roboto", Arial, sans-serif !important; line-height: 20px !important; text-align: left !important;
 }
@@ -111,7 +111,7 @@ body.login .cr-control-shell .wp-pwd .wp-hide-pw { top:50%!important; bottom:aut
 .woocommerce form .form-row:not([data-cr-control="true"]) .select2-selection--single { display:flex!important; align-items:center!important; height:100%!important; min-height:0!important; padding:0!important; }
 .woocommerce form .form-row:not([data-cr-control="true"]) .select2-selection__rendered { display:flex!important; align-items:center!important; height:100%!important; margin:0!important; padding:0 36px 0 14px!important; line-height:20px!important; }
 form label :is(.required,span.required,abbr.required,abbr[title="required"]) { display:none!important; }
-.woocommerce-LostPassword a { font-family:"Roboto",Arial,sans-serif; font-size:15px; line-height:20px; font-weight:400; color:var(--cr-brand-green); text-decoration:none; }
+.woocommerce-LostPassword a { font-family:"Roboto",Arial,sans-serif; font-size:15px; line-height:20px; font-weight:400; color:var(--cr-brand-green, var(--cr-green-dark)); text-decoration:none; }
 .woocommerce-LostPassword a:hover, .woocommerce-LostPassword a:focus-visible { text-decoration:underline; text-underline-offset:3px; }
 
 body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date { position: relative; margin-bottom: 18px; }

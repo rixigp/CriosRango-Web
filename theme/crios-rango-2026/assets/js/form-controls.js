@@ -57,7 +57,7 @@
     });
   };
   const enhanceWordPressLogin = () => {
-    document.querySelectorAll('#loginform, #lostpasswordform, #resetpassform').forEach((form) => {
+    document.querySelectorAll('#loginform, #lostpasswordform, #resetpassform, #registerform').forEach((form) => {
       form.querySelectorAll(':scope > p, :scope > .user-pass-wrap, :scope > .user-pass1-wrap, :scope > .user-pass2-wrap').forEach((row) => {
         if (row.querySelector(':scope > .cr-control-shell')) return;
         const oldLabel = row.querySelector(':scope > label, label');
