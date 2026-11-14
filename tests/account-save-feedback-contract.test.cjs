@@ -465,7 +465,7 @@ test('DELETE_ACCOUNT_NATIVE_REACT_FORM_IS_DISCOVERED_AFTER_DOM_READY_AND_ADAPTED
   assert.match(css, /\.wpfda-delete-account-container\s*\{[^}]*background:\s*transparent!important/i);
   assert.match(css, /\.wpfda-delete-account-container\s*\{[^}]*border:\s*0!important/i);
   assert.match(css, /\.wpfda-delete-account-container\s*\{[^}]*box-shadow:\s*none!important/i);
-  assert.match(css, /\.wpfda-delete-account-container :is\(form,fieldset\)\s*\{[^}]*background:\s*transparent!important/i);
+  assert.match(css, /\.wpfda-delete-account-container > :is\(form,fieldset\)\s*\{[^}]*background:\s*transparent!important/i);
   assert.doesNotMatch(php, /function\s+cr2026_account_render_delete_account_form\s*\(/);
   assert.ok(js.includes('form.requestSubmit(button)'), 'native submit continues through original plugin handler');
 });
