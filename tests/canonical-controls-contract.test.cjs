@@ -21,7 +21,7 @@ test('ALL_FORMS_CONSUME_ONE_CANONICAL_COMPONENT_AND_NATIVE_SELECT2',()=>{assert.
 
 test('GLOBAL_FORM_GEOMETRY_AND_REQUIRED_MARKERS_USE_ONE_CANONICAL_SOURCE',()=>{
   assert.match(controls,/\.cr-control-shell\s*\{[^}]*overflow:\s*hidden/s);
-  assert.match(controls,/\.cr-control-shell input\[type="password"\][\s\S]*?padding:\s*0 48px 0 14px/s);
+  assert.match(controls,/\.cr-control-shell input\[type="password"\][\s\S]*?padding:\s*13px 48px 13px 14px/s);
   assert.match(controls,/\.cr-control-shell \.show-password-input,[\s\S]*?top:\s*50%[\s\S]*?right:\s*14px[\s\S]*?bottom:\s*auto[\s\S]*?transform:\s*translateY\(-50%\)/s);
   assert.match(controls,/\.cr-control-shell textarea\s*\{[^}]*padding:\s*12px 14px/s);
   assert.match(controls,/\.cr-control-shell \.select2-selection--single\s*\{[^}]*align-items:\s*center/s);
