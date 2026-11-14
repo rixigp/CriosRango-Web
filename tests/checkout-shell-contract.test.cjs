@@ -221,16 +221,7 @@ test('Login, Checkout and Select2 consume one canonical form-control token sourc
   assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
 });
 
-test('delivery labels use the canonical fieldset/legend border notch and white interior', () => {
-  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend/);
-  assert.match(controlsCss, /\.cr-control-shell\s*\{/);
-  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend/);
-  assert.match(controlsCss, /\.cr-control-shell:focus-within/);
-  assert.match(controlsCss, /background:var\(--cr-control-background\)/);
-  assert.doesNotMatch(controlsCss, /cr-control-label-notch|background:\s*var\(--cr-app-canvas\)/);
-  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
-  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
-});
+test('delivery labels use the canonical floating-label border cut and white control surface',()=>{assert.match(controlsCss,/\.cr-control__label\s*\{[^}]*background:var\(--cr-app-canvas\)/s);assert.match(controlsCss,/\.cr-control__box\s*\{[^}]*background:#fff/);assert.match(controlsCss,/\.cr-control__box\s*\{[^}]*border:1px solid #d8d9d5/);assert.match(controlsCss,/\.cr-control:focus-within \.cr-control__box/);assert.doesNotMatch(controlsCss,/cr-control-shell|createElement\('fieldset'\)|createElement\('legend'\)/);assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);});
 
 test('WooCommerce core full shipping labels lose only the appended price separator in Checkout', () => {
   assert.match(checkoutWooCommercePhp, /function cr2026_checkout_shipping_full_label_presentation\( \$label, \$method \)/);
@@ -253,15 +244,7 @@ test('WooCommerce core full shipping labels lose only the appended price separat
   assert.equal(removeCoreSeparator('Envío gratuito: <small>Gratis</small>', 'Envío gratuito'), 'Envío gratuito <small>Gratis</small>');
 });
 
-test('delivery labels use transparent canonical fieldset/legend shells and retain native WooCommerce label elements', () => {
-  assert.ok(controlsCss.includes('.cr-control-shell > legend > label'));
-  assert.ok(controlsCss.includes('border:0 !important'));
-  assert.ok(controlsCss.includes('background:var(--cr-control-background)'));
-  assert.ok(controlsCss.includes('.cr-control-shell:focus-within'));
-  assert.ok(!controlsCss.includes('cr-control-label-notch'));
-  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
-  assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
-});
+test('checkout consumes the shared floating-label control without replacing native WooCommerce labels',()=>{assert.ok(controlsCss.includes('.cr-control__label'));assert.ok(controlsCss.includes('.cr-control__box'));assert.ok(controlsCss.includes('background:#fff'));assert.ok(controlsCss.includes('background:var(--cr-app-canvas)'));assert.doesNotMatch(controlsCss,/cr-control-shell|fieldset.*legend/);assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));});
 
 test('native delivery controls and Select2 consume the canonical presentation without DOM replacement', () => {
   assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);

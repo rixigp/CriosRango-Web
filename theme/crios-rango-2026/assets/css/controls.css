@@ -1,11 +1,11 @@
 :root {
-  --cr-control-height: 48px;
+  --cr-control-height: 58px;
   --cr-control-border-width: 1px;
   --cr-control-border: #d8d9d5;
-  --cr-control-radius: 9px;
+  --cr-control-radius: 14px;
   --cr-control-background: #fff;
-  --cr-control-padding: 12px 13px 9px;
-  --cr-control-select-padding: 12px 36px 9px 13px;
+  --cr-control-padding: 15px 16px 8px;
+  --cr-control-select-padding: 15px 36px 8px 16px;
   --cr-control-focus-border: #aeb2ad;
   --cr-control-focus-outline: none;
   --cr-control-error-border: #c66b61;
@@ -24,128 +24,36 @@
 }
 .cr-wallet-icon-badge svg { display:block !important; width:21px !important; height:21px !important; flex:0 0 21px !important; }
 
-/* Canonical fieldset/legend control shell: the legend creates a real gap in the top border. */
+/* Canonical floating-label control shared by WooCommerce and WordPress authentication forms. */
 .woocommerce form .form-row { position:relative; box-sizing:border-box; }
-.cr-control-shell {
-  position: relative;
-  display: block;
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
-  min-inline-size: 0;
-
-  height: var(--cr-control-height);
-  min-height: 0;
-
-  margin: 0;
-  padding: 0;
-  overflow: visible;
-
-  border: var(--cr-control-border-width) solid var(--cr-control-border);
-  border-radius: var(--cr-control-radius);
-  background: var(--cr-control-background);
-}
-
-.cr-control-shell > legend {
-  position: relative;
-  z-index: 1;
-
-  top: auto;
-  left: auto;
-
-  float: none;
-  width: auto;
-  max-width: calc(100% - 28px);
-
-  margin: 0 0 0 11px;
-  padding: 0 5px;
-
-  color: var(--cr-control-label-color);
-  background: transparent;
-
-  font: 300 11px/16px "Roboto", Arial, sans-serif;
-  line-height: 16px;
-  white-space: nowrap;
-}
-
-.cr-control-shell > :is(
-  .woocommerce-input-wrapper,
-  .password-input,
-  .wp-pwd,
-  .cr-control-shell__value,
-  input,
-  textarea,
-  select
-) {
-  position: absolute;
-  inset: 0;
-
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-}
-.cr-control-shell > legend > label,
-.cr-control-shell > legend > .cr-form-control__label {
-  display:inline; margin:0; padding:0; color:inherit; background:transparent;
-  font:inherit; line-height:inherit; white-space:nowrap;
-}
-.cr-control-shell :is(.woocommerce-input-wrapper,.password-input,.select2-container,.wp-pwd) {
-  display:block; box-sizing:border-box; width:100%; height:100%; min-width:0;
-}
-.cr-control-shell :is(input,input.input-text,input[type="email"],input[type="tel"],input[type="text"],input[type="password"],textarea,select,.select2-selection--single) {
-  display:block; box-sizing:border-box !important; width:100% !important; height:100% !important; min-width:0;
-  min-height:0 !important; margin:0 !important; padding:var(--cr-control-padding) !important;
-  border:0 !important; border-radius:0 !important; background:transparent !important;
-  color:var(--cr-ink,#20241f) !important; box-shadow:none !important; outline:none !important;
-  font:400 14px/20px "Roboto",Arial,sans-serif !important;
-}
-.cr-control-shell:has(textarea) { height:auto; min-height:76px; }
-.cr-control-shell textarea { height:auto !important; min-height:76px !important; resize:vertical; }
-.cr-control-shell:focus-within { border-color:var(--cr-control-focus-border); }
-.cr-control-shell:has(:is(input,textarea,select):disabled),
-.cr-control-shell:has(.select2-selection--single[aria-disabled="true"]) { opacity:.65; background:#f4f4f1; }
-.cr-control-shell:has(:is(input,textarea,select):-webkit-autofill) { background:var(--cr-control-background); }
-.cr-control-shell .select2-container { height:100% !important; }
-.cr-control-shell .select2-selection--single {
-  display:flex !important; align-items:center !important; width:100% !important;
-  height:100% !important; min-height:0 !important; padding:0 !important; background:transparent !important;
-}
-.cr-control-shell .select2-selection__rendered {
-  min-width:0; padding:var(--cr-control-select-padding) !important; color:var(--cr-ink) !important;
-  font:400 14px/20px "Roboto",Arial,sans-serif !important;
-}
-.cr-control-shell .select2-selection__arrow { top:0 !important; right:8px !important; height:var(--cr-control-height) !important; }
-.cr-control-shell :is(input[type="password"],.password-input input) { padding-right:46px !important; }
-.cr-control-shell .show-password-input { top:50% !important; right:12px !important; margin:0 !important; padding:0 !important; transform:translateY(-50%) !important; }
-.woocommerce form .form-row.woocommerce-invalid .cr-control-shell { border-color:var(--cr-control-error-border); }
+.cr-control { position:relative; width:100%; min-width:0; }
+.cr-control__box { position:relative; display:block; box-sizing:border-box; width:100%; min-width:0; min-height:58px; border:1px solid #d8d9d5; border-radius:14px; background:#fff; }
+.cr-control__label { position:absolute; z-index:2; top:0; left:16px; transform:translateY(-50%); display:inline-block; max-width:calc(100% - 32px); margin:0; padding:0 6px; background:var(--cr-app-canvas); color:#777b77; font:300 14px/20px "Roboto",Arial,sans-serif; white-space:nowrap; }
+.cr-control__box > :is(.woocommerce-input-wrapper,.password-input,.wp-pwd,.cr-control__value,input,textarea,select,.select2-container) { position:absolute; inset:0; box-sizing:border-box; display:block; width:100%; height:100%; min-width:0; }
+.cr-control__box :is(.woocommerce-input-wrapper,.password-input,.wp-pwd,.select2-container) { display:block; box-sizing:border-box; width:100%; height:100%; min-width:0; }
+.cr-control__box :is(input,input.input-text,input[type="email"],input[type="tel"],input[type="text"],input[type="password"],textarea,select,.select2-selection--single) { display:block; box-sizing:border-box !important; width:100% !important; height:100% !important; min-width:0; min-height:58px !important; margin:0 !important; padding:15px 16px 8px !important; border:0 !important; border-radius:inherit !important; background:transparent !important; color:var(--cr-ink,#20241f) !important; box-shadow:none !important; outline:none !important; font:400 16px/22px "Roboto",Arial,sans-serif !important; }
+.cr-control__box:has(textarea) { min-height:76px; }
+.cr-control__box textarea { height:auto !important; min-height:76px !important; resize:vertical; }
+.cr-control:focus-within .cr-control__box { border-color:var(--cr-control-focus-border); }
+.cr-control:has(:is(input,textarea,select):disabled) .cr-control__box,.cr-control:has(.select2-selection--single[aria-disabled="true"]) .cr-control__box { opacity:.65; }
+.cr-control__box:has(:is(input,textarea,select):-webkit-autofill) { background:#fff; }
+.cr-control__box .select2-container { height:100% !important; }
+.cr-control__box .select2-selection--single { display:flex !important; align-items:center !important; width:100% !important; height:100% !important; min-height:58px !important; padding:0 !important; background:transparent !important; }
+.cr-control__box .select2-selection__rendered { min-width:0; padding:15px 36px 8px 16px !important; color:var(--cr-ink) !important; font:400 16px/22px "Roboto",Arial,sans-serif !important; }
+.cr-control__box .select2-selection__arrow { top:0 !important; right:8px !important; height:58px !important; }
+.cr-control__box :is(input[type="password"],.password-input input) { padding-right:46px !important; }
+.cr-control__box .show-password-input { position:absolute !important; top:50% !important; right:16px !important; margin:0 !important; padding:0 !important; transform:translateY(-50%) !important; }
+.woocommerce form .form-row.woocommerce-invalid .cr-control__box { border-color:var(--cr-control-error-border); }
 .woocommerce form .form-row .select2-container--open { z-index:100000; }
 .woocommerce form .form-row .select2-container--focus { outline:none; }
-.woocommerce form .form-row :is(input,textarea,select):-webkit-autofill,
-.woocommerce form .form-row :is(input,textarea,select):-webkit-autofill:hover,
-.woocommerce form .form-row :is(input,textarea,select):-webkit-autofill:focus {
-  -webkit-box-shadow:0 0 0 1000px var(--cr-control-background) inset !important;
-  -webkit-text-fill-color:var(--cr-ink) !important; caret-color:var(--cr-ink);
-}
+.woocommerce form .form-row :is(input,textarea,select):-webkit-autofill,.woocommerce form .form-row :is(input,textarea,select):-webkit-autofill:hover,.woocommerce form .form-row :is(input,textarea,select):-webkit-autofill:focus { -webkit-box-shadow:0 0 0 1000px #fff inset !important; -webkit-text-fill-color:var(--cr-ink) !important; caret-color:var(--cr-ink); }
 body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date { position:relative; margin-bottom:18px; }
-body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date .cr-control-shell__value {
-  display:block; box-sizing:border-box; width:100%; height:100%; min-height:0; padding:var(--cr-control-padding);
-  color:var(--cr-ink); font:400 14px/20px "Roboto",Arial,sans-serif;
-}
-
-/* Native WordPress Login, Lost Password and Reset Password share the same fieldset shell. */
-body.login #loginform > p:not(.forgetmenot), body.login #loginform > .user-pass-wrap, body.login #lostpasswordform > p, body.login #resetpassform > p {
-  position:relative; margin:0 0 18px; padding:0;
-}
-body.login .cr-control-shell { height:var(--cr-control-height); min-height:0; }
-body.login .cr-control-shell > legend { margin-left:11px; }
-body.login .cr-control-shell .input {
-  box-sizing:border-box; width:100%; height:100%; min-height:0; margin:0; padding:var(--cr-control-padding);
-  border:0; border-radius:0; background:transparent; color:var(--cr-ink,#20241f); box-shadow:none;
-  font:400 14px/20px "Roboto",Arial,sans-serif;
-}
-body.login .cr-control-shell:focus-within { border-color:var(--cr-control-focus-border); }
-body.login #loginform .wp-pwd .wp-hide-pw { top:0; height:var(--cr-control-height); }
+body.woocommerce-account .woocommerce-EditAccountForm .cr-control__value { display:block; box-sizing:border-box; width:100%; min-height:58px; padding:15px 16px 8px; color:var(--cr-ink); font:400 16px/22px "Roboto",Arial,sans-serif; }
+body.login #loginform > p:not(.forgetmenot),body.login #loginform > .user-pass-wrap,body.login #lostpasswordform > p,body.login #resetpassform > p { position:relative; margin:0 0 18px; padding:0; }
+body.login .cr-control__box,body.login .cr-control__box .input { min-height:58px; }
+body.login .cr-control__box .input { box-sizing:border-box; width:100%; height:100%; margin:0; padding:15px 16px 8px; border:0; border-radius:inherit; background:transparent; color:var(--cr-ink,#20241f); box-shadow:none; font:400 16px/22px "Roboto",Arial,sans-serif; }
+body.login .cr-control:focus-within .cr-control__box { border-color:var(--cr-control-focus-border); }
+body.login #loginform .wp-pwd .wp-hide-pw { top:0; height:58px; }
 body.login #loginform .forgetmenot { padding-top:0; }
 
 @media (max-width:767px) {

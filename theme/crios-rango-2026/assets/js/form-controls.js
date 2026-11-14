@@ -1,48 +1,51 @@
 (() => {
   'use strict';
   const isFloatingLabel = (label) => label && !label.matches('.woocommerce-form__label-for-checkbox,.woocommerce-form-login__rememberme,[for="terms"]');
-  const makeShell = (row, label, content) => {
-    if (!row || row.dataset.crControlShell === 'true' || !label || !content) return;
-    const shell = document.createElement('fieldset');
-    shell.className = 'cr-control-shell';
-    const legend = document.createElement('legend');
-    legend.appendChild(label);
-    shell.appendChild(legend);
-    row.insertBefore(shell, row.firstChild);
-    shell.appendChild(content);
+  const makeControl = (row, label, content) => {
+    if (!row || row.dataset.crControl === 'true' || !label || !content) return;
+    const control = document.createElement('div');
+    control.className = 'cr-control';
+    const box = document.createElement('div');
+    box.className = 'cr-control__box';
+    label.classList.add('cr-control__label');
+    row.insertBefore(control, row.firstChild);
+    control.append(label, box);
+    box.appendChild(content);
     Array.from(row.childNodes).forEach((node) => {
-      if (node !== shell && node.nodeType === Node.ELEMENT_NODE && node.matches('.description,.woocommerce-input-wrapper,.select2-container')) shell.appendChild(node);
+      if (node !== control && node.nodeType === Node.ELEMENT_NODE && node.matches('.description,.select2-container')) box.appendChild(node);
     });
-    row.dataset.crControlShell = 'true';
+    row.dataset.crControl = 'true';
   };
   const enhanceWoo = (root) => {
     root.querySelectorAll('.woocommerce form .form-row').forEach((row) => {
-      if (row.dataset.crControlShell === 'true') return;
+      if (row.dataset.crControl === 'true') return;
       const label = Array.from(row.children).find((child) => child.tagName === 'LABEL' && isFloatingLabel(child));
       if (!label) return;
       const wrapper = Array.from(row.children).find((child) => child.matches('.woocommerce-input-wrapper,.password-input'));
       if (!wrapper) return;
-      makeShell(row, label, wrapper);
+      makeControl(row, label, wrapper);
     });
     root.querySelectorAll('.cr-account-birth-date').forEach((row) => {
-      if (row.dataset.crControlShell === 'true') return;
+      if (row.dataset.crControl === 'true') return;
       const label = row.querySelector(':scope > label');
       const value = row.querySelector(':scope > .cr-account-birth-date__value');
       if (!label || !value) return;
-      const shell = document.createElement('fieldset');
-      shell.className = 'cr-control-shell';
-      const legend = document.createElement('legend');
-      legend.appendChild(label);
-      shell.append(legend, value);
-      value.classList.add('cr-control-shell__value');
-      row.appendChild(shell);
-      row.dataset.crControlShell = 'true';
+      const control = document.createElement('div');
+      control.className = 'cr-control';
+      const box = document.createElement('div');
+      box.className = 'cr-control__box';
+      label.classList.add('cr-control__label');
+      value.classList.add('cr-control__value');
+      control.append(label, box);
+      box.appendChild(value);
+      row.appendChild(control);
+      row.dataset.crControl = 'true';
     });
   };
   const enhanceWordPressLogin = () => {
     document.querySelectorAll('#loginform, #lostpasswordform, #resetpassform').forEach((form) => {
       form.querySelectorAll(':scope > p, :scope > .user-pass-wrap, :scope > .user-pass1-wrap, :scope > .user-pass2-wrap').forEach((row) => {
-        if (row.querySelector(':scope > .cr-control-shell')) return;
+        if (row.querySelector(':scope > .cr-control')) return;
         const oldLabel = row.querySelector(':scope > label, label');
         const input = oldLabel && oldLabel.querySelector('input:not([type="checkbox"]):not([type="submit"])');
         if (!oldLabel || !input) return;
@@ -53,22 +56,24 @@
         }
         copy = copy.replace(/\s+/g, ' ').trim();
         if (!copy) return;
-        const control = input.closest('.wp-pwd') || input;
-        const shell = document.createElement('fieldset');
-        shell.className = 'cr-control-shell';
-        const legend = document.createElement('legend');
+        const content = input.closest('.wp-pwd') || input;
+        const control = document.createElement('div');
+        control.className = 'cr-control' + (input.type === 'password' ? ' cr-control--password' : '');
         const label = document.createElement('label');
+        label.className = 'cr-control__label';
         label.htmlFor = input.id;
         label.textContent = copy;
-        legend.appendChild(label);
-        shell.append(legend, control);
+        const box = document.createElement('div');
+        box.className = 'cr-control__box';
+        box.appendChild(content);
         oldLabel.remove();
-        row.insertBefore(shell, row.firstChild);
+        control.append(label, box);
+        row.insertBefore(control, row.firstChild);
       });
     });
   };
   const enhance = () => { enhanceWoo(document); enhanceWordPressLogin(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enhance, { once:true });
   else enhance();
-  if (window.jQuery) window.jQuery(document.body).on('updated_checkout.crControlShell country_to_state_changed.crControlShell', enhance);
+  if (window.jQuery) window.jQuery(document.body).on('updated_checkout.crControl country_to_state_changed.crControl', enhance);
 })();
