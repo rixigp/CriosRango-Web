@@ -1034,6 +1034,7 @@ test('mobile cart uses one WooCommerce table cell card and cart-only WPLoyalty f
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   const cartHooks = fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8');
   const pageTemplate = fs.readFileSync(path.join(theme, 'page.php'), 'utf8');
+  // Mobile footer visibility is covered by canonical-customer-shell-contract.test.cjs.
   const footerTemplate = fs.readFileSync(path.join(theme, 'footer.php'), 'utf8');
   const emptyTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-empty.php'), 'utf8');
   assert.match(cartTemplate, /<tr class="woocommerce-cart-form__cart-item cart_item cr-cart-item">[\s\S]*?<td class="cr-cart-item-cell" colspan="6">[\s\S]*?<article class="cr-cart-item__card">[\s\S]*?<div class="cr-cart-item__main">[\s\S]*?cr-cart-item__media[\s\S]*?cr-cart-item__content[\s\S]*?<div class="cr-cart-item__actions">[\s\S]*?<\/article>[\s\S]*?<\/td>[\s\S]*?<\/tr>/);
