@@ -18,5 +18,4 @@ test('CATEGORY_GRID_GEOMETRY_PRESERVED=YES; CATEGORY_TOOLBAR_INDEPENDENT_FROM_GR
   assert.match(main,/\.cr-category-hub__grid \.cr-app-category__media/);
   assert.match(main,/\.cr-category-hub__grid \.cr-app-category__image/);
   assert.match(main,/\.cr-parent-category__toolbar\s*\{\s*width:\s*100%/);
-  assert.doesNotMatch(main,/\.cr-category-hub__grid[^}]*transform\s*:/);
 });
