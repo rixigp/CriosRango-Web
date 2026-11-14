@@ -447,14 +447,14 @@
 /* Split views keep one native WooCommerce form and only change its mobile presentation. */
 @media (max-width: 767px) {
  body.woocommerce-account.cr-account-profile-view-home .woocommerce-EditAccountForm { display: none !important; }
- body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm fieldset { display: none !important; }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm > fieldset { display: none !important; }
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_first_name),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_last_name),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_display_name),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_email),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > .clear { display: none !important; }
- body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset { display: block !important; margin-top: 0; padding-top: 0; border-top: 0; }
- body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset legend { display: none; }
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > fieldset { display: block !important; margin-top: 0; padding-top: 0; border-top: 0; }
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > fieldset > legend { display: none; }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm > p:has(button[name="save_account_details"]),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > p:has(button[name="save_account_details"]) { margin-top: 12px; }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm button[type="submit"],
@@ -505,10 +505,10 @@
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_display_name),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_email),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > .clear { display: none !important; }
- body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset {
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > fieldset {
    display: block !important; margin: 0; padding: 0; border: 0;
  }
- body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset legend { display: none !important; }
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > fieldset > legend { display: none !important; }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm > p:has(button[name="save_account_details"]),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > p:has(button[name="save_account_details"]) {
    width: 100%; margin: 8px 0 0;
