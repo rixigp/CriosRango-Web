@@ -327,7 +327,7 @@ test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_WHITE_WITHOUT_GEOMETRY_OVERRIDES', ()
   assert.match(php, /'Current password \(leave blank to leave unchanged\)'\s*=>\s*'Contraseña actual'/);
   assert.match(php, /'New password \(leave blank to leave unchanged\)'\s*=>\s*'Nueva contraseña'/);
   assert.match(php, /'Confirm new password'\s*=>\s*'Confirmar nueva contraseña'/);
-  assert.match(css, /body\.woocommerce-account\.cr-account-profile-view-password \.woocommerce-EditAccountForm fieldset \.form-row input\[type="password"\]\s*\{\s*background-color:\s*#FFFFFF !important/);
+  assert.match(css, /\.cr-control-shell\s*\{[^}]*background:var\(--cr-control-background\)/);assert.match(css, /\.cr-control-shell :is\(input\[type="password"\],\.password-input input\)\s*\{[^}]*padding-right:46px !important/);
   assert.match(css, /\.cr-account-submit__spinner/);
   assert.match(js, /cr-account-submit--loading/);
 });

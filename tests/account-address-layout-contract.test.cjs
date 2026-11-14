@@ -133,15 +133,15 @@ function cssPaddingLeft(rule) {
 test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
   assert.match(controlsCss, /--cr-control-padding:\s*12px 13px 9px/);
   assert.match(controlsCss, /--cr-control-select-padding:\s*12px 36px 9px 13px/);
-  assert.match(controlsCss, /body\.woocommerce-account :is\(\.woocommerce-EditAccountForm,\.woocommerce-address-fields\) \.form-row/);
-  assert.match(controlsCss, /\.woocommerce form \.form-row \.select2-selection__arrow/);
+  assert.match(controlsCss, /\.cr-control-shell/);
+  assert.match(controlsCss, /\.cr-control-shell \.select2-selection__arrow/);
   assert.doesNotMatch(accountCss, /padding-inline-start:\s*13px !important/);
   assert.doesNotMatch(accountCss, /\.woocommerce-address-fields \.select2-selection__rendered\s*\{/);
 });
 
 test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
-  assert.match(controlsCss, /\.woocommerce form \.form-row \.select2-selection--single,[\s\S]*?padding:0 !important/);
-  assert.match(controlsCss, /\.woocommerce form \.form-row \.select2-selection__rendered,[\s\S]*?padding:var\(--cr-control-select-padding\)/);
+  assert.match(controlsCss, /\.cr-control-shell \.select2-selection--single,[\s\S]*?padding:0 !important/);
+  assert.match(controlsCss, /\.cr-control-shell \.select2-selection__rendered,[\s\S]*?padding:var\(--cr-control-select-padding\)/);
   assert.match(controlsCss, /--cr-control-padding:\s*12px 13px 9px/);
   assert.match(controlsCss, /--cr-control-select-padding:\s*12px 36px 9px 13px/);
 });
@@ -177,7 +177,7 @@ test('SHIPPING_ADDRESS_2_HAS_ONE_OPTIONAL_LABEL_AND_NO_PLACEHOLDER_COPY', () => 
 test('SHIPPING_SELECT_PADDING_USES_SHARED_CONTROL_TOKENS_AND_PRESERVES_SELECT2_ARROW', () => {
   assert.match(controlsCss, /--cr-control-padding:\s*12px 13px 9px/);
   assert.match(controlsCss, /--cr-control-select-padding:\s*12px 36px 9px 13px/);
-  assert.match(controlsCss, /\.woocommerce form \.form-row \.select2-selection__arrow[^}]*height:var\(--cr-control-height\) !important/);
+  assert.match(controlsCss, /\.cr-control-shell \.select2-selection__arrow[^}]*height:var\(--cr-control-height\) !important/);
   assert.doesNotMatch(accountCss, /padding-inline-start:\s*13px !important/);
   assert.doesNotMatch(accountCss, /Final shipping-select content-axis override/);
 });
