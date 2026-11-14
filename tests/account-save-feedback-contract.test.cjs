@@ -330,7 +330,7 @@ test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_TRANSPARENT_WITHOUT_GEOMETRY_OVERRIDE
   assert.match(php, /'Confirm new password'\s*=>\s*'Confirmar nueva contraseña'/);
   const controlShell = controlsCss.match(/\.cr-control-shell\s*\{([^}]*)\}/);
   assert.ok(controlShell, 'canonical fieldset control shell exists');
-  assert.match(controlShell[1], /background\s*:\s*var\(--cr-control-background\)/i, 'control shell consumes the canonical white background token');
+  assert.match(controlShell[1], /background\s*:\s*#fff/i, 'control shell owns the canonical white background surface');
   assert.match(controlsCss, /:root\s*\{[^}]*--cr-control-background:\s*#fff/s, 'canonical control background token resolves to white');
   assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s, 'native legend creates the border opening without a background patch');
   const passwordFieldRules = [...css.matchAll(/([^{}]*?(?:#password_current|#password_1|#password_2)[^{}]*)\{([^}]*)\}/g)];
