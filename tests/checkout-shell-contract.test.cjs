@@ -215,18 +215,18 @@ test('Login, Checkout and Select2 consume one canonical form-control token sourc
   assert.ok(assets.includes("CR2026_URI . '/assets/css/controls.css'"));
   assert.ok(assets.includes("array( 'cr2026-main', 'cr2026-controls', 'cr2026-roboto' )"));
   assert.ok(loginPhp.includes("array( 'cr2026-controls' )"));
-  assert.ok(loginCss.includes('var(--cr-control-height)'));
-  assert.ok(loginCss.includes('var(--cr-control-radius)'));
-  assert.ok(checkoutCss.includes('var(--cr-control-height)'));
-  assert.ok(checkoutCss.includes('var(--cr-control-select-padding)'));
-  assert.ok(checkoutCss.includes('var(--cr-control-error-border)'));
+  assert.ok(controlsCss.includes('body.login #loginform'));
+  assert.ok(controlsCss.includes('.select2-selection--single'));
+  assert.doesNotMatch(loginCss, /\.login form \.input,/);
+  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
 });
 
-test('delivery labels remain in normal flow and native controls use the white field surface', () => {
-  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*position:\s*static;[^}]*display:\s*block;[^}]*background:\s*transparent/s);
-  assert.match(checkoutCss, /\.form-row input\.input-text,[\s\S]*?\.form-row select\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
-  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper \.select2-selection--single\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
-  assert.doesNotMatch(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*position:\s*absolute;[^}]*transform:\s*translateY\(-50%\)/s);
+test('delivery labels float on the page canvas and every native field is white', () => {
+  assert.match(controlsCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\)[\s\S]*?\.woocommerce-billing-fields__field-wrapper > \.form-row > label/);
+  assert.match(controlsCss, /background:var\(--cr-app-canvas\) !important/);
+  assert.match(controlsCss, /background-color:var\(--cr-control-background\) !important/);
+  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
+  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
 });
 
 test('WooCommerce core full shipping labels lose only the appended price separator in Checkout', () => {

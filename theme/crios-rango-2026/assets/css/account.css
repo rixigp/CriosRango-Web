@@ -595,30 +595,6 @@
     margin: 0 0 16px;
     padding: 0;
   }
-  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date label {
-    display: block;
-    margin: 0 0 6px;
-    color: #183b35;
-    font: 300 12px/17px "Roboto", Arial, sans-serif;
-  }
-  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date__value {
-    box-sizing: border-box;
-    display: block;
-    width: 100%;
-    min-width: 0;
-    min-height: 50px;
-    border: 1.5px solid #183b35;
-    border-radius: 12px;
-    background: #fff;
-    color: #20241f;
-    padding: 12px 14px;
-    box-shadow: none;
-    font: 300 15px/1.35 "Roboto", Arial, sans-serif;
-  }
-  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm .cr-account-birth-date__value {
-    background: #f5f6f4;
-    color: #66716a;
-  }
   .cr-account-birth-date__status {
     display: block;
     margin-top: 5px;
