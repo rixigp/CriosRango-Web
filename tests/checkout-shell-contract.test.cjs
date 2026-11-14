@@ -705,8 +705,8 @@ test('checkout assigns the shared Cart gutter only to inner visual surfaces', ()
 
   const deliveryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-delivery-heading');
   const deliveryFields = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper');
-  assert.ok(deliveryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
-  assert.ok(deliveryFields.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  assert.ok(deliveryHeading.includes('margin-inline: 0;'));
+  assert.ok(deliveryFields.includes('margin-inline: 0;'));
 
   const shippingHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading');
   const summaryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading');
@@ -839,7 +839,7 @@ test('checkout additional information uses the Product Detail accordion pattern 
   assert.match(checkoutCss, /\.cr-checkout-additional-info__panel\[hidden\][\s\S]*?display:\s*none\s*!important/);
 });
 
-test('Cart and Checkout cards consume one global responsive rail while delivery fields retain their own gutter', () => {
+test('Cart and Checkout cards consume one global responsive rail and delivery fields sit directly on the page rail', () => {
   assert.match(mainCss, /--cr-card-inline-inset:\s*16px/);
   assert.match(mainCss, /@media\s*\(max-width:\s*767px\)[\s\S]*?--cr-card-inline-inset:\s*11px/);
   assert.match(mainCss, /@media\s*\(max-width:\s*360px\)[\s\S]*?--cr-card-inline-inset:\s*9px/);
@@ -855,8 +855,8 @@ test('Cart and Checkout cards consume one global responsive rail while delivery 
   }
   const deliveryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-delivery-heading');
   const deliveryFields = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper');
-  assert.ok(deliveryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
-  assert.ok(deliveryFields.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  assert.ok(deliveryHeading.includes('margin-inline: 0;'));
+  assert.ok(deliveryFields.includes('margin-inline: 0;'));
 });
 
 
