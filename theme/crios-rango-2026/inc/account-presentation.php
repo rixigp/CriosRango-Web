@@ -777,3 +777,48 @@ function cr2026_account_render_mobile_loyalty_reward() {
     </section>
     <?php
 }
+
+
+/**
+ * Guests see an Account landing first; WooCommerce's native login/register
+ * template is loaded only after the explicit CTA or a protected destination.
+ */
+function cr2026_account_guest_login_view() {
+    return isset( $_GET['cr-account-view'] )
+        && 'login' === sanitize_key( wp_unslash( $_GET['cr-account-view'] ) );
+}
+
+function cr2026_account_guest_login_url( $redirect_to = '' ) {
+    $url = add_query_arg( 'cr-account-view', 'login', wc_get_page_permalink( 'myaccount' ) );
+    if ( $redirect_to ) {
+        $url = add_query_arg( 'redirect_to', $redirect_to, $url );
+    }
+    return $url;
+}
+
+function cr2026_account_guest_home_template( $template, $template_name, $template_path ) {
+    if ( 'myaccount/form-login.php' !== $template_name
+        || is_user_logged_in()
+        || ! function_exists( 'is_account_page' )
+        || ! is_account_page()
+        || cr2026_account_guest_login_view() ) {
+        return $template;
+    }
+
+    $guest_template = CR2026_DIR . '/woocommerce/myaccount/guest-home.php';
+    return file_exists( $guest_template ) ? $guest_template : $template;
+}
+add_filter( 'woocommerce_locate_template', 'cr2026_account_guest_home_template', 20, 3 );
+
+/** Preserve a protected guest-card destination through native login/register POST. */
+function cr2026_account_guest_auth_redirect( $redirect ) {
+    if ( ! isset( $_GET['cr-account-view'], $_GET['redirect_to'] )
+        || 'login' !== sanitize_key( wp_unslash( $_GET['cr-account-view'] ) ) ) {
+        return $redirect;
+    }
+
+    $requested = esc_url_raw( wp_unslash( $_GET['redirect_to'] ) );
+    return wp_validate_redirect( $requested, $redirect );
+}
+add_filter( 'woocommerce_login_redirect', 'cr2026_account_guest_auth_redirect', 20, 1 );
+add_filter( 'woocommerce_registration_redirect', 'cr2026_account_guest_auth_redirect', 20, 1 );

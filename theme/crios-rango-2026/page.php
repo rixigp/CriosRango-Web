@@ -20,7 +20,16 @@ $is_mobile_account = function_exists( 'wp_is_mobile' ) && wp_is_mobile()
                     echo '</div>';
                     ?>
                 <?php elseif ( $is_mobile_account && function_exists( 'is_account_page' ) && is_account_page() && ! is_user_logged_in() ) : ?>
-                    <?php cr2026_render_category_toolbar( __( 'Acceder', 'crios-rango-2026' ), home_url( '/' ), 'parent', false ); ?>
+                    <?php
+                    $guest_account_url = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : home_url( '/mi-cuenta/' );
+                    $guest_login_view = function_exists( 'cr2026_account_guest_login_view' ) && cr2026_account_guest_login_view();
+                    cr2026_render_category_toolbar(
+                        $guest_login_view ? __( 'Acceder', 'crios-rango-2026' ) : __( 'Cuenta', 'crios-rango-2026' ),
+                        $guest_login_view ? $guest_account_url : home_url( '/' ),
+                        'parent',
+                        false
+                    );
+                    ?>
                 <?php elseif ( ! $is_mobile_account && function_exists( 'wp_is_mobile' ) && wp_is_mobile() && ( ! function_exists( 'cr2026_account_is_help_page' ) || ! cr2026_account_is_help_page() ) ) : ?>
                     <?php cr2026_render_category_toolbar( get_the_title(), '', 'parent', false ); ?>
                 <?php endif; ?>

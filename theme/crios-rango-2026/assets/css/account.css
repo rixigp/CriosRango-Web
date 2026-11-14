@@ -1341,3 +1341,50 @@ body.woocommerce-account .cr-account-logout-spinner {
   animation:cr-shell-action-spin .7s linear infinite;
 }
 body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr-account-profile-home__chevron {display:none;}
+
+
+/* Guest Account hero reuses the authenticated home card geometry and palette. */
+.cr-account-home__user--guest {
+  position: relative;
+  min-height: 88px;
+  box-sizing: border-box;
+  color: #20241f;
+  text-decoration: none;
+  background: #f0f1ef;
+}
+.cr-account-home__user--guest:focus-visible,
+.cr-account-home__tile:focus-visible,
+.cr-account-home__information-row:focus-visible {
+  outline: 2px solid var(--cr-brand-green, #183b35);
+  outline-offset: 3px;
+}
+.cr-account-home__user--guest .cr-account-home__avatar {
+  background: #e2e5e2;
+  color: #68716a;
+}
+.cr-account-home__user--guest .cr-account-home__avatar svg {
+  display: block;
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cr-account-home__user--guest .cr-account-home__identity strong {
+  font-weight: 400;
+}
+.cr-account-home__user--guest .cr-account-home__identity > span {
+  font-size: 13px;
+  line-height: 18px;
+}
+.cr-account-home__user--guest .cr-account-home__guest-chevron {
+  margin-left: auto;
+  color: #8a918b;
+  font: 300 25px/1 Arial,sans-serif;
+}
+@media (max-width: 360px) {
+  .cr-account-home__grid { grid-template-columns: 1fr; }
+  .cr-account-home__tile { min-height: 118px; }
+}

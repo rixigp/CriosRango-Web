@@ -9,6 +9,7 @@ const helpers = read('inc/helpers.php');
 const presentation = read('inc/account-presentation.php');
 const page = read('page.php');
 const dashboard = read('woocommerce/myaccount/dashboard.php');
+const guestHome = read('woocommerce/myaccount/guest-home.php');
 const accountCss = read('assets/css/account.css');
 const controlsCss = read('assets/css/controls.css');
 const mainCss = read('assets/css/main.css');
@@ -101,7 +102,20 @@ test('ONE_CANONICAL_ACCOUNT_CONTENT_RAIL_IS_REUSED_BY_HELP_LOYALTY_ORDERS_PROFIL
 
 test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_WOO_VISUAL_CARD=0',()=>{
   const page = read('page.php');
-  assert.match(page, /\$is_mobile_account && function_exists\( 'is_account_page' \) && is_account_page\(\) && ! is_user_logged_in\(\)[\s\S]*?cr2026_render_category_toolbar\( __\( 'Acceder'/,'logged-out toolbar is rendered by the page shell before WooCommerce content');
+  assert.match(page, /\$is_mobile_account && function_exists\( 'is_account_page' \) && is_account_page\(\) && ! is_user_logged_in\(\)[\s\S]*?\$guest_login_view \? __\( 'Acceder'[\s\S]*?__\( 'Cuenta'/,'guest toolbar switches between Account home and login subview');
+  assert.match(presentation,/woocommerce_locate_template[\s\S]*?cr2026_account_guest_home_template/);
+  assert.match(presentation,/myaccount\/form-login\.php/);
+  assert.match(presentation,/cr2026_account_guest_login_view\(\)/);
+  assert.match(presentation,/woocommerce_login_redirect[\s\S]*?woocommerce_registration_redirect/);
+  assert.match(guestHome,/cr-account-home__user--guest/);
+  assert.match(guestHome,/Inicia sesión o regístrate/);
+  assert.match(guestHome,/Accede a tu cuenta/);
+  assert.equal((guestHome.match(/cr-account-home__tile cr-account-home__tile--(?:orders|promotions|profile|help)/g)||[]).length,4);
+  assert.match(presentation,/add_query_arg\( 'redirect_to'/);
+  assert.match(guestHome,/Cambios y devoluciones/);
+  assert.match(guestHome,/Condiciones de contratación/);
+  assert.doesNotMatch(guestHome,/woocommerce-form-login|form-login\.php/);
+  assert.match(accountCss,/\.cr-account-home__user--guest/);
   assert.doesNotMatch(presentation, /woocommerce_before_customer_login_form/,'toolbar is not nested in WooCommerce login markup');
   assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.cr-page,[\s\S]*?body\.woocommerce-account:not\(\.logged-in\) \.u-column1\s*\{[^}]*width:100%!important;[^}]*max-width:none!important;[^}]*margin-inline:0!important;[^}]*padding-inline:0!important;/s,'logged-out outer wrappers inherit the shell without an additional rail');
   assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.woocommerce-form-login\.login\s*\{[^}]*padding:0!important;[^}]*border:0!important;[^}]*border-radius:0!important;[^}]*background:transparent!important;[^}]*box-shadow:none!important;/s,'legacy login visual card is removed');
