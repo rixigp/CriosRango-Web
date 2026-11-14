@@ -27,14 +27,15 @@
 /* Canonical fieldset/legend control shell: the legend creates a real gap in the top border. */
 .woocommerce form .form-row { position:relative; box-sizing:border-box; }
 .cr-control-shell {
-  display:block; box-sizing:border-box; width:100%; min-width:0; min-inline-size:0;
-  min-height:var(--cr-control-height); margin:0; padding:0;
+  position:relative; display:block; box-sizing:border-box; width:100%; min-width:0; min-inline-size:0;
+  height:var(--cr-control-height); min-height:0; margin:0; padding:0;
   border:var(--cr-control-border-width) solid var(--cr-control-border);
   border-radius:var(--cr-control-radius); background:var(--cr-control-background);
 }
 .cr-control-shell > legend {
-  width:auto; max-width:calc(100% - 28px); margin-left:11px; padding:0 0;
-  color:var(--cr-control-label-color); font:300 11px/16px "Roboto",Arial,sans-serif;
+  position:absolute; top:-9px; left:11px; float:none; width:auto; max-width:calc(100% - 28px);
+  margin:0; padding:0 5px; color:var(--cr-control-label-color);
+  font:300 11px/16px "Roboto",Arial,sans-serif;
 }
 .cr-control-shell > legend > label,
 .cr-control-shell > legend > .cr-form-control__label {
@@ -42,29 +43,31 @@
   font:inherit; line-height:inherit; white-space:nowrap;
 }
 .cr-control-shell :is(.woocommerce-input-wrapper,.select2-container,.wp-pwd) {
-  display:block; box-sizing:border-box; width:100%; min-width:0;
+  display:block; box-sizing:border-box; width:100%; height:100%; min-width:0;
 }
 .cr-control-shell :is(input,input.input-text,input[type="email"],input[type="tel"],input[type="text"],input[type="password"],textarea,select,.select2-selection--single) {
-  display:block; box-sizing:border-box !important; width:100% !important; min-width:0;
-  min-height:var(--cr-control-height) !important; margin:0 !important;
-  padding:var(--cr-control-padding) !important; border:0 !important; border-radius:0 !important;
-  background:transparent !important; color:var(--cr-ink,#20241f) !important;
-  box-shadow:none !important; outline:none !important; font:400 14px/20px "Roboto",Arial,sans-serif !important;
+  display:block; box-sizing:border-box !important; width:100% !important; height:100% !important; min-width:0;
+  min-height:0 !important; margin:0 !important; padding:var(--cr-control-padding) !important;
+  border:0 !important; border-radius:0 !important; background:transparent !important;
+  color:var(--cr-ink,#20241f) !important; box-shadow:none !important; outline:none !important;
+  font:400 14px/20px "Roboto",Arial,sans-serif !important;
 }
-.cr-control-shell textarea { min-height:76px !important; resize:vertical; }
+.cr-control-shell:has(textarea) { height:auto; min-height:76px; }
+.cr-control-shell textarea { height:auto !important; min-height:76px !important; resize:vertical; }
 .cr-control-shell:focus-within { border-color:var(--cr-control-focus-border); }
 .cr-control-shell:has(:is(input,textarea,select):disabled),
 .cr-control-shell:has(.select2-selection--single[aria-disabled="true"]) { opacity:.65; background:#f4f4f1; }
 .cr-control-shell:has(:is(input,textarea,select):-webkit-autofill) { background:var(--cr-control-background); }
+.cr-control-shell .select2-container { height:100% !important; }
 .cr-control-shell .select2-selection--single {
-  display:flex !important; align-items:center !important; height:var(--cr-control-height) !important; padding:0 !important;
-  background:transparent !important;
+  display:flex !important; align-items:center !important; width:100% !important;
+  height:100% !important; min-height:0 !important; padding:0 !important; background:transparent !important;
 }
 .cr-control-shell .select2-selection__rendered {
   min-width:0; padding:var(--cr-control-select-padding) !important; color:var(--cr-ink) !important;
   font:400 14px/20px "Roboto",Arial,sans-serif !important;
 }
-.cr-control-shell .select2-selection__arrow { top:0 !important; right:8px !important; height:var(--cr-control-height) !important; }
+.cr-control-shell .select2-selection__arrow { top:0 !important; right:8px !important; height:100% !important; }
 .cr-control-shell :is(input[type="password"],.password-input input) { padding-right:46px !important; }
 .cr-control-shell .show-password-input { top:50% !important; right:12px !important; margin:0 !important; padding:0 !important; transform:translateY(-50%) !important; }
 .woocommerce form .form-row.woocommerce-invalid .cr-control-shell { border-color:var(--cr-control-error-border); }
@@ -78,7 +81,7 @@
 }
 body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date { position:relative; margin-bottom:18px; }
 body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date .cr-control-shell__value {
-  display:block; box-sizing:border-box; width:100%; min-height:var(--cr-control-height); padding:var(--cr-control-padding);
+  display:block; box-sizing:border-box; width:100%; height:100%; min-height:0; padding:var(--cr-control-padding);
   color:var(--cr-ink); font:400 14px/20px "Roboto",Arial,sans-serif;
 }
 
@@ -86,10 +89,10 @@ body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date .cr
 body.login #loginform > p:not(.forgetmenot), body.login #loginform > .user-pass-wrap, body.login #lostpasswordform > p, body.login #resetpassform > p {
   position:relative; margin:0 0 18px; padding:0;
 }
-body.login .cr-control-shell { min-height:var(--cr-control-height); }
+body.login .cr-control-shell { height:var(--cr-control-height); min-height:0; }
 body.login .cr-control-shell > legend { margin-left:11px; }
 body.login .cr-control-shell .input {
-  box-sizing:border-box; width:100%; min-height:var(--cr-control-height); margin:0; padding:var(--cr-control-padding);
+  box-sizing:border-box; width:100%; height:100%; min-height:0; margin:0; padding:var(--cr-control-padding);
   border:0; border-radius:0; background:transparent; color:var(--cr-ink,#20241f); box-shadow:none;
   font:400 14px/20px "Roboto",Arial,sans-serif;
 }

@@ -1973,6 +1973,7 @@ body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub 
 
 @media(max-width:767px) {
   body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub { padding-inline:0 !important; }
+  .cr-category-hub__shell { width:100%; }
 }
 @media(min-width:768px){.cr-category-hub__grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 20px}}
 @media(min-width:1280px){.cr-category-hub__grid{grid-template-columns:repeat(6,minmax(0,1fr))}}

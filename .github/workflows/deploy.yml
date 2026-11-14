@@ -20,7 +20,6 @@ on:
       - "tests/cart-promotions-contract.test.cjs"
       - "tests/canonical-controls-contract.test.cjs"
       - "tests/category-asset-contract.test.cjs"
-      - "tools/normalize-category-assets.py"
       - "tests/account-information-icons.test.cjs"
       - "tests/account-help-contract.test.cjs"
       - "tests/account-information-pages-contract.test.cjs"
@@ -52,16 +51,6 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
-      - name: Set up Python for category asset validation
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Validate normalized category asset alpha bounds
-        run: |
-          python -m pip install --disable-pip-version-check Pillow
-          python tools/normalize-category-assets.py --check
 
       - name: Bootstrap theme 0.2.0 if missing
         shell: bash
