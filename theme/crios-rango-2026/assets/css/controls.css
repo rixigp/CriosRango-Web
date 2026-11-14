@@ -67,7 +67,7 @@
   min-width:0; padding:var(--cr-control-select-padding) !important; color:var(--cr-ink) !important;
   font:400 14px/20px "Roboto",Arial,sans-serif !important;
 }
-.cr-control-shell .select2-selection__arrow { top:0 !important; right:8px !important; height:100% !important; }
+.cr-control-shell .select2-selection__arrow { top:0 !important; right:8px !important; height:var(--cr-control-height) !important; }
 .cr-control-shell :is(input[type="password"],.password-input input) { padding-right:46px !important; }
 .cr-control-shell .show-password-input { top:50% !important; right:12px !important; margin:0 !important; padding:0 !important; transform:translateY(-50%) !important; }
 .woocommerce form .form-row.woocommerce-invalid .cr-control-shell { border-color:var(--cr-control-error-border); }
