@@ -250,19 +250,19 @@ test('WooCommerce core full shipping labels lose only the appended price separat
   assert.equal(removeCoreSeparator('Envío gratuito: <small>Gratis</small>', 'Envío gratuito'), 'Envío gratuito <small>Gratis</small>');
 });
 
-test('delivery labels use normal flow while retaining the real WooCommerce label element', () => {
-  assert.ok(checkoutCss.includes(".woocommerce-billing-fields__field-wrapper > .form-row > label {"));
-  assert.ok(checkoutCss.includes("position: static;"));
-  assert.ok(checkoutCss.includes("display: block;"));
-  assert.ok(checkoutCss.includes("background: transparent;"));
-  assert.ok(checkoutCss.includes(".form-row input.input-text"));
+test('delivery labels use canonical floating-label controls and retain native WooCommerce label elements', () => {
+  assert.ok(controlsCss.includes('.woocommerce form .form-row > label'));
+  assert.ok(controlsCss.includes('position:absolute !important'));
+  assert.ok(controlsCss.includes('background:var(--cr-app-canvas) !important'));
+  assert.ok(controlsCss.includes('background-color:var(--cr-control-background) !important'));
+  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
   assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
 });
 
-test('native delivery controls and Select2 remain presentation-only with no DOM replacement', () => {
+test('native delivery controls and Select2 consume the canonical presentation without DOM replacement', () => {
   assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);
-  assert.ok(checkoutCss.includes(".select2-selection--single"));
-  assert.ok(checkoutCss.includes("height: var(--cr-control-height);"));
+  assert.ok(controlsCss.includes('.select2-selection--single'));
+  assert.ok(controlsCss.includes('height:var(--cr-control-height) !important'));
   const orderDeclarationPattern = new RegExp("^[ \\t]*order[ \\t]*:", "m");
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
   assert.doesNotMatch(checkoutWooCommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
@@ -271,9 +271,9 @@ test('native delivery controls and Select2 remain presentation-only with no DOM 
 test('country and state remain native WooCommerce selects with Select2 presentation only', () => {
   assert.match(checkoutWooCommercePhp, /billing_state/);
   assert.match(checkoutWooCommercePhp, /billing_country/);
-  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper \.select2-container/);
-  assert.match(checkoutCss, /\.select2-selection--single/);
-  assert.match(checkoutCss, /\.select2-container--open\s*\{\s*z-index:/);
+  assert.match(controlsCss, /\.woocommerce form \.form-row \.select2-container/);
+  assert.match(controlsCss, /\.select2-selection--single/);
+  assert.match(controlsCss, /\.select2-container--open\s*\{\s*z-index:/);
   assert.doesNotMatch(checkoutWooCommercePhp, /select2|wp_dequeue_script|woocommerce_form_field/);
 });
 

@@ -40,6 +40,7 @@ body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date > l
 }
 .woocommerce form .form-row .woocommerce-input-wrapper,
 .woocommerce form .form-row .select2-container { display:block; width:100%; min-width:0; }
+.woocommerce form .form-row .select2-container--open { z-index:100000; }
 .woocommerce form .form-row :is(input.input-text,input[type="email"],input[type="tel"],input[type="text"],input[type="password"],textarea,select),
 .woocommerce form .form-row .select2-selection--single,
 body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date__value,
