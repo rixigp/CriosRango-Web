@@ -175,8 +175,8 @@ test('SHIPPING_ADDRESS_2_HAS_ONE_OPTIONAL_LABEL_AND_NO_PLACEHOLDER_COPY', () => 
 });
 
 test('SHIPPING_SELECT_PADDING_USES_SHARED_CONTROL_TOKENS_AND_PRESERVES_SELECT2_ARROW', () => {
-  assert.match(controlsCss, /--cr-control-padding:\s*0 14px/);
-  assert.match(controlsCss, /--cr-control-select-padding:\s*0 36px 0 14px/);
+  assert.match(controlsCss, /\.cr-control-shell input:not\([\s\S]*?padding:\s*13px 14px\s*!important/);
+  assert.match(controlsCss, /\.cr-control-shell select\s*\{[^}]*padding:\s*13px 36px 13px 14px\s*!important/);
   assert.match(controlsCss, /\.cr-control-shell \.select2-selection__arrow\s*\{[^}]*top:\s*0\s*!important[^}]*right:\s*8px\s*!important[^}]*height:\s*100%\s*!important/);
   assert.match(controlsCss, /--cr-control-height:\s*48px/);
   assert.doesNotMatch(accountCss, /padding-inline-start:\s*13px !important/);

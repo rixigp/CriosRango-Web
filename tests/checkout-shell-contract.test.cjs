@@ -274,7 +274,7 @@ test('native delivery controls and Select2 consume the canonical presentation wi
 
 test('global form controls share a zero-padding wrapper, 14px value inset and centered alignment', () => {
   assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0[^}]*background:\s*#fff/s);
-  assert.match(controlsCss, /\.cr-control-shell\s*>\s*:\s*is\([\s\S]*?\.woocommerce-input-wrapper[\s\S]*?\)\s*\{[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0/s);
+  assert.match(controlsCss, /\.cr-control-shell\s*:\s*is\([\s\S]*?\.woocommerce-input-wrapper[\s\S]*?\.select2-container[\s\S]*?\)\s*\{[^}]*position:\s*relative\s*!important[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0/s);
   assert.match(controlsCss, /\.cr-control-shell input:not\([\s\S]*?\)\s*\{[^}]*padding:\s*0 14px/s);
   assert.match(controlsCss, /input\[type="password"\][\s\S]*?padding:\s*0 48px 0 14px/s);
   assert.match(controlsCss, /\.cr-control-shell select\s*\{[^}]*padding:\s*0 36px 0 14px/s);

@@ -81,7 +81,14 @@ test('cart wallet rewards use the Coupons & Promotions shared component contract
   assert.ok(cartUi.includes('cr-account-loyalty__apply'));
   assert.match(cartCss, /background:\s*#E8F5EF/);
   assert.match(cartCss, /background:\s*#D7E8E1/);
-  assert.match(cartCss, /border-radius:\s*18px/);
+  assert.match(cartCss, /body\\.woocommerce-cart \\.cr-cart-promotions :is\\(\\.cr-cart-apply-button, \\.cr-account-loyalty__apply\\)/);
+  assert.match(cartCss, /background-color:\\s*#0F5C4D\\s*!important/);
+  assert.match(cartCss, /border:\\s*0\\s*!important/);
+  assert.match(cartCss, /border-radius:\\s*18px\\s*!important/);
+  assert.match(cartCss, /height:\\s*36px\\s*!important/);
+  assert.match(cartCss, /padding:\\s*0 11px\\s*!important/);
+  assert.match(cartCss, /:is\\(:hover, :focus-visible, :active\\)/);
+  assert.doesNotMatch(cartCss, /background:\\s*#2F8A57/);
   assert.doesNotMatch(cartCss, /rgba\(132,\s*104,\s*190,\s*\.09\)/);
   assert.match(cartCss, /background:\s*#EAF3FF/);
 });

@@ -4,8 +4,6 @@
   --cr-control-border: #d8d9d5;
   --cr-control-radius: 9px;
   --cr-control-background: #fff;
-  --cr-control-padding: 0 14px;
-  --cr-control-select-padding: 0 36px 0 14px;
   --cr-control-focus-border: #aeb2ad;
   --cr-control-focus-outline: none;
   --cr-control-error-border: #c66b61;
@@ -57,16 +55,7 @@
   font: 300 11px/16px "Roboto", Arial, sans-serif;
   white-space: nowrap;
 }
-.cr-control-shell > :is(
-  .woocommerce-input-wrapper,
-  .password-input,
-  .wp-pwd,
-  .cr-control-shell__value,
-  input,
-  textarea,
-  select,
-  .select2-container
-) {
+.cr-control-shell > :is(input, textarea, select) {
   position: absolute;
   inset: 0;
   box-sizing: border-box;
@@ -74,17 +63,37 @@
   height: 100%;
   min-width: 0;
 }
-.cr-control-shell > :is(
+.cr-control-shell :is(
   .woocommerce-input-wrapper,
   .password-input,
   .wp-pwd,
-  .cr-control-shell__value,
   .select2-container
 ) {
+  position: relative !important;
+  inset: auto !important;
   display: flex !important;
   align-items: center !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.cr-control-shell > .cr-control-shell__value {
+  position: relative !important;
+  inset: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -103,7 +112,7 @@
   height: 100% !important;
   min-height: 0 !important;
   margin: 0 !important;
-  padding: 0 14px !important;
+  padding: 13px 14px !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
@@ -116,7 +125,7 @@
 }
 .cr-control-shell input[type="password"],
 .cr-control-shell .password-input input {
-  padding: 0 48px 0 14px !important;
+  padding: 13px 48px 13px 14px !important;
 }
 .cr-control-shell .show-password-input,
 .cr-control-shell .wp-hide-pw {
@@ -136,7 +145,7 @@
   height: 100% !important;
   min-height: 0 !important;
   margin: 0 !important;
-  padding: 0 36px 0 14px !important;
+  padding: 13px 36px 13px 14px !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
@@ -157,6 +166,7 @@
   padding: 0 !important;
 }
 .cr-control-shell .select2-selection--single {
+  position: relative !important;
   display: flex !important;
   align-items: center !important;
   box-sizing: border-box !important;
@@ -171,6 +181,7 @@
   box-shadow: none !important;
 }
 .cr-control-shell .select2-selection__rendered {
+  justify-content: flex-start !important;
   display: flex !important;
   align-items: center !important;
   box-sizing: border-box !important;
@@ -228,7 +239,7 @@
   caret-color: var(--cr-ink);
 }
 
-/* No-JavaScript WooCommerce fallback: same value inset and vertical centering. */
+/* No-JavaScript WooCommerce fallback: preserve the same 13px vertical and 14px leading inset. */
 .woocommerce form .form-row:not([data-cr-control="true"]) > :is(
   input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),
   select
@@ -237,24 +248,27 @@
   box-sizing: border-box !important;
   width: 100% !important;
   height: var(--cr-control-height) !important;
-  min-height: 0 !important;
+  min-height: var(--cr-control-height) !important;
   margin: 0 !important;
-  padding-block: 0 !important;
-  padding-left: 14px !important;
-  padding-right: 14px !important;
+  padding: 13px 14px !important;
+  line-height: 20px !important;
   text-align: left !important;
   text-indent: 0 !important;
   font: 400 15px/20px "Roboto", Arial, sans-serif !important;
 }
 .woocommerce form .form-row:not([data-cr-control="true"]) > select {
-  padding-right: 36px !important;
+  padding: 13px 36px 13px 14px !important;
   text-align-last: left !important;
 }
-/* Standard WooCommerce markup wraps native fields; wrappers never add an inset. */
+.woocommerce form .form-row:not([data-cr-control="true"]) > input[type="password"] {
+  padding: 13px 48px 13px 14px !important;
+}
+/* Standard WooCommerce wrappers never add an inset; the child control owns it. */
 .woocommerce form .form-row:not([data-cr-control="true"]) > .woocommerce-input-wrapper,
 .woocommerce form .form-row:not([data-cr-control="true"]) > .password-input,
 .woocommerce form .form-row:not([data-cr-control="true"]) > .wp-pwd,
 .woocommerce form .form-row:not([data-cr-control="true"]) > .select2-container {
+  position: relative !important;
   display: flex !important;
   align-items: center !important;
   box-sizing: border-box !important;
@@ -269,14 +283,19 @@
 .woocommerce form .form-row:not([data-cr-control="true"]) > .woocommerce-input-wrapper > input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),
 .woocommerce form .form-row:not([data-cr-control="true"]) > .password-input input,
 .woocommerce form .form-row:not([data-cr-control="true"]) > .wp-pwd input {
+  display: block !important;
   box-sizing: border-box !important;
   width: 100% !important;
   height: 100% !important;
   min-height: 0 !important;
   margin: 0 !important;
-  padding: 0 14px !important;
+  padding: 13px 14px !important;
   text-align: left !important;
   font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+}
+.woocommerce form .form-row:not([data-cr-control="true"]) > .password-input input[type="password"],
+.woocommerce form .form-row:not([data-cr-control="true"]) > .wp-pwd input[type="password"] {
+  padding: 13px 48px 13px 14px !important;
 }
 .woocommerce form .form-row:not([data-cr-control="true"]) > .woocommerce-input-wrapper > select {
   box-sizing: border-box !important;
@@ -284,18 +303,22 @@
   height: 100% !important;
   min-height: 0 !important;
   margin: 0 !important;
-  padding: 0 36px 0 14px !important;
+  padding: 13px 36px 13px 14px !important;
   text-align: left !important;
   text-align-last: left !important;
 }
 .woocommerce form .form-row:not([data-cr-control="true"]) .select2-container {
+  position: relative !important;
   box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
   width: 100% !important;
   height: var(--cr-control-height) !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 .woocommerce form .form-row:not([data-cr-control="true"]) .select2-selection--single {
+  position: relative !important;
   display: flex !important;
   align-items: center !important;
   box-sizing: border-box !important;
@@ -308,6 +331,7 @@
 .woocommerce form .form-row:not([data-cr-control="true"]) .select2-selection__rendered {
   display: flex !important;
   align-items: center !important;
+  justify-content: flex-start !important;
   box-sizing: border-box !important;
   width: 100% !important;
   height: 100% !important;
@@ -315,6 +339,15 @@
   padding: 0 36px 0 14px !important;
   line-height: 20px !important;
   text-align: left !important;
+}
+.woocommerce form .form-row:not([data-cr-control="true"]) .show-password-input {
+  position: absolute !important;
+  top: 50% !important;
+  right: 14px !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translateY(-50%) !important;
 }
 
 /* Hide only visual required markers; required attributes and validation remain intact. */
@@ -342,13 +375,7 @@ body.login #loginform > p:not(.forgetmenot), body.login #loginform > .user-pass-
 body.login #lostpasswordform > p, body.login #resetpassform > p { position: relative; margin: 0 0 18px; padding: 0; }
 body.login .cr-control-shell { height: var(--cr-control-height); min-height: 0; }
 body.login .cr-control-shell > legend { margin-left: 11px; }
-body.login .cr-control-shell .input {
-  box-sizing: border-box; width: 100%; height: 100%; min-height: 0; margin: 0;
-  padding: 0 14px; border: 0; border-radius: 0; background: transparent;
-  color: var(--cr-ink, #20241f); box-shadow: none; font: 400 15px/20px "Roboto", Arial, sans-serif;
-}
 body.login .cr-control-shell:focus-within { border-color: var(--cr-control-focus-border); }
-body.login #loginform .wp-pwd .wp-hide-pw { top: 50%; right: 14px; bottom: auto; height: 24px; margin: 0; transform: translateY(-50%); }
 body.login #loginform .forgetmenot { padding-top: 0; }
 
 @media (max-width:767px) {
