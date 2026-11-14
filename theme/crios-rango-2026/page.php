@@ -19,6 +19,8 @@ $is_mobile_account = function_exists( 'wp_is_mobile' ) && wp_is_mobile()
                     cr2026_render_category_toolbar( get_the_title(), $account_back_url, 'parent', false );
                     echo '</div>';
                     ?>
+                <?php elseif ( $is_mobile_account && function_exists( 'is_account_page' ) && is_account_page() && ! is_user_logged_in() ) : ?>
+                    <?php cr2026_render_category_toolbar( __( 'Acceder', 'crios-rango-2026' ), home_url( '/' ), 'parent', false ); ?>
                 <?php elseif ( ! $is_mobile_account && function_exists( 'wp_is_mobile' ) && wp_is_mobile() && ( ! function_exists( 'cr2026_account_is_help_page' ) || ! cr2026_account_is_help_page() ) ) : ?>
                     <?php cr2026_render_category_toolbar( get_the_title(), '', 'parent', false ); ?>
                 <?php endif; ?>

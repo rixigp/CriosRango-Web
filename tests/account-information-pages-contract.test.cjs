@@ -99,8 +99,9 @@ test('ONE_CANONICAL_ACCOUNT_CONTENT_RAIL_IS_REUSED_BY_HELP_LOYALTY_ORDERS_PROFIL
 });
 
 test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_WOO_VISUAL_CARD=0',()=>{
-  assert.match(presentation,/function cr2026_account_logged_out_toolbar\(\)[\s\S]*?is_account_page\(\)[\s\S]*?is_user_logged_in\(\)[\s\S]*?cr2026_render_category_toolbar\( __\( 'Acceder'/,'only logged-out Account receives canonical title toolbar');
-  assert.match(presentation,/add_action\( 'woocommerce_before_customer_login_form', 'cr2026_account_logged_out_toolbar', 1 \)/,'toolbar is attached before native Woo login form');
+  const page = read('page.php');
+  assert.match(page, /\$is_mobile_account && function_exists\( 'is_account_page' \) && is_account_page\(\) && ! is_user_logged_in\(\)[\s\S]*?cr2026_render_category_toolbar\( __\( 'Acceder'/,'logged-out toolbar is rendered by the page shell before WooCommerce content');
+  assert.doesNotMatch(presentation, /woocommerce_before_customer_login_form/,'toolbar is not nested in WooCommerce login markup');
   assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.cr-page,[\s\S]*?body\.woocommerce-account:not\(\.logged-in\) \.u-column1\s*\{[^}]*width:100%!important;[^}]*max-width:none!important;[^}]*margin-inline:0!important;[^}]*padding-inline:0!important;/s,'logged-out outer wrappers inherit the shell without an additional rail');
   assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.woocommerce-form-login\.login\s*\{[^}]*padding:0!important;[^}]*border:0!important;[^}]*border-radius:0!important;[^}]*background:transparent!important;[^}]*box-shadow:none!important;/s,'legacy login visual card is removed');
   assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.woocommerce-form-login\.login \.woocommerce-form-login__submit\s*\{[^}]*width:100%!important;[^}]*border-radius:999px!important;[^}]*background:#183b35!important;/s,'canonical full-width green pill CTA is reused');
