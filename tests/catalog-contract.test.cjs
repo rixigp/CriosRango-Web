@@ -30,7 +30,17 @@ function extractWorkflowStep(workflow, stepName) {
 }
 
 function catalogStateApi() {
-  const window = {};
+  const windowListeners = new Map();
+  const window = {
+    addEventListener(type, listener) {
+      if (!windowListeners.has(type)) windowListeners.set(type, []);
+      windowListeners.get(type).push(listener);
+    },
+    removeEventListener(type, listener) {
+      const listeners = windowListeners.get(type) || [];
+      windowListeners.set(type, listeners.filter((item) => item !== listener));
+    }
+  };
   const document = {
     querySelector: () => null,
     querySelectorAll: () => [],
