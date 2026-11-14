@@ -4,7 +4,7 @@ const theme=path.resolve(__dirname,'../theme/crios-rango-2026'),read=p=>fs.readF
 const controls=read('assets/css/controls.css'),assets=read('inc/assets.php'),wpLogin=read('assets/js/form-controls.js'),accountCss=read('assets/css/account.css'),checkoutCss=read('assets/css/checkout.css');
 test('WALLET_ICON_BADGE_SINGLE_SOURCE=YES',()=>{const cart=read('assets/js/cart-ui.js'),loyalty=read('assets/js/account-loyalty.js');assert.match(cart,/cr-wallet-icon-badge cr-cart-wallet__icon/);assert.match(loyalty,/cr-wallet-icon-badge cr-account-loyalty__wallet-icon/);assert.match(controls,/\.cr-wallet-icon-badge\s*\{/);assert.match(controls,/--cr-wallet-badge-size:\s*38px/);});
 test('CR_CONTROL_SHELL=YES; NATIVE_FIELDSET_LEGEND_NOTCH=YES; WHITE_SURFACE=YES', () => {
-  assert.match(controls, /\\.cr-control-shell\\s*\\{[^}]*background:\\s*#fff/s);
+  assert.match(controls, /\.cr-control-shell\s*\{[^}]*background:\s*#fff/s);
   assert.match(controls, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*position:\s*relative/s);
   assert.match(controls, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s);
   assert.match(controls, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*font:\s*300 11px\/16px/s);
@@ -40,7 +40,7 @@ test('GLOBAL_CONTROL_VALUE_ALIGNMENT_HAS_SINGLE_CONTROL_PADDING_SOURCE',()=>{
   assert.match(controls,/\.cr-control-shell \.select2-selection--single\s*\{[^}]*display:\s*flex\s*!important[^}]*align-items:\s*center\s*!important/s);
   assert.match(controls,/\.cr-control-shell \.select2-selection__rendered\s*\{[^}]*padding:\s*0 36px 0 14px\s*!important/s);
   assert.match(controls,/\.cr-control-shell \.select2-selection__arrow\s*\{[^}]*top:\s*0\s*!important[^}]*right:\s*8px\s*!important[^}]*height:\s*100%\s*!important/s);
-  assert.match(controls,/\.cr-control-shell input\[type="password"\]\s*\{[^}]*padding:\s*0 48px 0 14px\s*!important/s);
+  assert.match(controls,/\.cr-control-shell input\[type="password"\],[\s\S]*?padding:\s*0 48px 0 14px\s*!important/s);
   assert.match(controls,/\.cr-control-shell \.show-password-input,[\s\S]*?top:\s*50%\s*!important[\s\S]*?right:\s*14px\s*!important[\s\S]*?transform:\s*translateY\(-50%\)\s*!important/s);
   assert.match(controls,/\.woocommerce form \.form-row > label abbr\.required[\s\S]*?display:\s*none\s*!important/);
 });
