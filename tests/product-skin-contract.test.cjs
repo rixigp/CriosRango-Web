@@ -10,6 +10,7 @@ const setup = fs.readFileSync(path.join(theme, 'inc/setup.php'), 'utf8');
 const functions = fs.readFileSync(path.join(theme, 'functions.php'), 'utf8');
 const assets = fs.readFileSync(path.join(theme, 'inc/assets.php'), 'utf8');
 const skin = fs.readFileSync(path.join(theme, 'inc/product-skin.php'), 'utf8');
+const helpers = fs.readFileSync(path.join(theme, 'inc/helpers.php'), 'utf8');
 const woocommerce = fs.readFileSync(path.join(theme, 'inc/woocommerce.php'), 'utf8');
 const skinCss = fs.readFileSync(path.join(theme, 'assets/css/product-detail-skin.css'), 'utf8');
 const productUiJs = fs.readFileSync(path.join(theme, 'assets/js/product-ui-enhancements.js'), 'utf8');
@@ -41,10 +42,11 @@ test('product detail stylesheet is enqueued only on is_product pages', () => {
 
 test('toolbar back prefers validated same-origin history and has a server-rendered category fallback', () => {
   assert.match(skin, /woocommerce_before_single_product/);
-  assert.match(skin, /cr-parent-category__toolbar/);
-  assert.match(skin, /cr-parent-category__back/);
-  assert.match(skin, /cr-parent-category__title/);
+  assert.match(skin, /cr2026_render_category_toolbar\([\s\S]*?'cr-product-detail-toolbar'/);
   assert.match(skin, /data-fallback-url/);
+  assert.match(helpers, /cr-parent-category__toolbar/);
+  assert.match(helpers, /cr-parent-category__back/);
+  assert.match(helpers, /cr-parent-category__title/);
   assert.match(skin, /window\.history\.back\(\)/);
   assert.match(skin, /previous\.origin === current\.origin/);
   assert.match(skin, /window\.history\.length < 2/);
@@ -959,7 +961,7 @@ test('display title removes only an exact final product_brand suffix and Product
   assert.ok(renderer.includes('cr2026_product_skin_display_title( $original_title, $brand instanceof WP_Term ? $brand->name :'));
   assert.ok(renderer.includes('esc_html( $display_title )'));
   assert.equal(renderer.includes('esc_html( $product->get_name() )'), false);
-  assert.ok(skin.includes("echo '<h1 class=\"cr-parent-category__title\">' . esc_html( $product->get_name() ) . '</h1>'"));
+  assert.ok(helpers.includes("echo '<h1 class=\"cr-parent-category__title\"' . $title_id_attribute . '>' . esc_html( $title ) . '</h1>'"));
   assert.equal(renderer.includes('esc_html( $display_title )'),true,'PRODUCT_INFO_RENDER_USES_DISPLAY_TITLE=YES');
 });
 
@@ -1514,9 +1516,7 @@ test('CART_GLOBAL_PRODUCT_CARD_INSET=PASS; CART_PRODUCT_ROW_USES_GLOBAL_INSET=PA
  const c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
  const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
  const p=fs.readFileSync(path.join(theme,'woocommerce/cart/cart.php'),'utf8');
- assert.match(c,/body\.woocommerce-cart \{ --cr-cart-card-inline-gutter:16px; \}/,'desktop gutter remains 16px');
- assert.match(c,/@media\(max-width:767px\)\{body\.woocommerce-cart\{--cr-cart-card-inline-gutter:11px\}\}/,'mobile gutter remains 11px');
- assert.match(c,/@media\(max-width:360px\)\{body\.woocommerce-cart\{--cr-cart-card-inline-gutter:9px\}\}/,'narrow mobile gutter remains 9px');
+ assert.doesNotMatch(c,/--cr-cart-card-inline-gutter|var\(--cr-cart-card-inline-gutter\)/,'secondary rail must not introduce an outer gutter');
  assert.match(c,/\.cr-cart-table tr\.cr-cart-item \{[^}]*padding-inline:var\(--cr-card-inline-inset\);/,'product row consumes global card inset');
  assert.match(m,/--cr-card-inline-inset:\s*16px/,'global desktop card inset');
  assert.match(m,/@media \(max-width: 767px\)[\s\S]*?--cr-card-inline-inset:\s*11px/,'global mobile card inset');
@@ -1524,8 +1524,8 @@ test('CART_GLOBAL_PRODUCT_CARD_INSET=PASS; CART_PRODUCT_ROW_USES_GLOBAL_INSET=PA
  const shared=c.match(/body\.woocommerce-cart \.cr-cart-content \.cr-cart-wallet__summary,[\s\S]*?body\.woocommerce-cart \.cr-cart-content \.cr-cart-applied\s*\{[^}]*\}/);
  assert.ok(shared,'one shared secondary surface rule exists');
  for(const selector of ['cr-cart-wallet__summary','cr-cart-wallet__rewards','cr-cart-promo-card','cr-cart-applied'])assert.ok(shared[0].includes(selector),selector);
- assert.match(shared[0],/inline-size:auto;[\s\S]*?margin-inline:var\(--cr-cart-card-inline-gutter\);[\s\S]*?box-sizing:border-box;/);
- assert.doesNotMatch(shared[0],/width\s*:\s*100%|max-width\s*:\s*100%|margin-inline\s*:\s*0/,'secondary cards must not stretch across full rail');
+ assert.match(shared[0],/inline-size:auto;[\s\S]*?margin-inline:0;[\s\S]*?box-sizing:border-box;/);
+ assert.doesNotMatch(shared[0],/width\s*:\s*100%|max-width\s*:\s*100%/,'secondary cards retain their own intrinsic sizing');
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-item__card\{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box\}/,'product card width remains unchanged');
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail\{[\s\S]*?width:100%!important;[\s\S]*?max-width:100%!important;[\s\S]*?padding:0!important/,'secondary rail remains unchanged');
  assert.match(c,/body\.woocommerce-cart \.cr-cart-content \.cr-cart-secondary-rail > \.cr-cart-promotions,[\s\S]*?width:100%!important;[\s\S]*?max-width:100%!important/,'promotion wrapper rail remains full width');
@@ -1551,19 +1551,17 @@ test('CART_PROMOTIONS_TITLE_USES_SHARED_GUTTER=PASS; CART_MANUAL_COUPON_USES_SHA
  const j=fs.readFileSync(path.join(theme,'assets/js/cart-ui.js'),'utf8');
  const refinement=c.slice(c.lastIndexOf('/* Promotions and order summary align to the approved product-card gutter.'));
  assert.ok(refinement.length>0,'final presentation refinement exists');
- assert.match(refinement,/\.cr-cart-promotions > h2,\s*body\.woocommerce-cart \.cr-cart-manual-coupon\s*\{\s*margin-inline:var\(--cr-cart-card-inline-gutter\);/);
+ assert.match(refinement,/\.cr-cart-promotions > h2,\s*body\.woocommerce-cart \.cr-cart-manual-coupon\s*\{\s*margin-inline:0;/);
  assert.match(refinement,/\.cr-cart-promotions > h2\s*\{\s*font-weight:600;/);
  for(const selector of ['.cr-cart-wallet__title','.cr-cart-promotions__subheading','.cr-cart-applied__title'])assert.ok(refinement.includes(selector),selector);
  assert.match(refinement,/\.cr-cart-wallet__balance,[\s\S]*?font-weight:400!important/);
- assert.match(refinement,/\.cr-cart-summary \.cr-cart-summary__rows\s*\{[\s\S]*?inline-size:auto!important;[\s\S]*?width:auto!important;[\s\S]*?margin:0 var\(--cr-cart-card-inline-gutter\) 14px!important;[\s\S]*?padding:12px;[\s\S]*?border-radius:15px;/);
+ assert.match(refinement,/\.cr-cart-summary \.cr-cart-summary__rows\s*\{[\s\S]*?inline-size:auto!important;[\s\S]*?width:auto!important;[\s\S]*?margin:0 0 14px!important;[\s\S]*?padding:12px;[\s\S]*?border-radius:15px;/);
  assert.match(refinement,/\.cr-cart-summary \.cr-cart-summary__row\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) auto;[\s\S]*?border:0!important/);
  assert.match(refinement,/\.cr-cart-summary \.cr-cart-summary__row--total\s*\{[\s\S]*?border:0!important/);
  assert.match(refinement,/\.cr-cart-summary__row--total \.cr-cart-summary__value strong\s*\{[\s\S]*?font-weight:700!important/);
- assert.match(refinement,/\.cr-cart-content \.cr-cart-summary \.wc-proceed-to-checkout\s*\{[\s\S]*?width:auto!important;[\s\S]*?margin:0 var\(--cr-cart-card-inline-gutter\)!important/);
+ assert.match(refinement,/\.cr-cart-content \.cr-cart-summary \.wc-proceed-to-checkout\s*\{[\s\S]*?width:auto!important;[\s\S]*?margin:0!important/);
  assert.match(refinement,/\.cr-cart-content \.cr-cart-summary \.checkout-button\s*\{[\s\S]*?width:100%!important/);
- assert.match(c,/body\.woocommerce-cart \{ --cr-cart-card-inline-gutter:16px; \}/);
- assert.match(c,/--cr-cart-card-inline-gutter:11px/);
- assert.match(c,/--cr-cart-card-inline-gutter:9px/);
+ assert.doesNotMatch(c,/--cr-cart-card-inline-gutter|var\(--cr-cart-card-inline-gutter\)/);
  assert.match(c,/\.cr-cart-content \.cr-cart-item__card\{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box\}/);
  assert.match(c,/\.cr-cart-content \.cr-cart-table tbody\{\s*display:grid!important;\s*row-gap:8px!important;/);
  assert.match(p,/class="cr-cart-header-shell"/);
@@ -1589,7 +1587,7 @@ test('CART_PROMOTIONS_LOADING_TEXT_NOT_VISUALLY_RENDERED=PASS; CART_PROMOTIONS_L
  assert.equal((loading[0].match(/class="cr-cart-promotions__skeleton-bar/g)||[]).length,2,'two decorative skeleton bars');
  assert.match(loading[0],/aria-hidden="true"/);
  const skeleton=c.slice(c.lastIndexOf('/* Promotions loading state:'));
- assert.match(skeleton,/\.cr-cart-promotions__loading\s*\{[\s\S]*?min-height:68px;[\s\S]*?margin-inline:var\(--cr-cart-card-inline-gutter\);[\s\S]*?border-radius:13px;[\s\S]*?background:rgba\(53,95,75,\.055\)/);
+ assert.match(skeleton,/\.cr-cart-promotions__loading\s*\{[\s\S]*?min-height:68px;[\s\S]*?margin-inline:0;[\s\S]*?border-radius:13px;[\s\S]*?background:rgba\(53,95,75,\.055\)/);
  assert.match(skeleton,/\.cr-cart-promotions__skeleton-bar--title\s*\{\s*width:42%;/);
  assert.match(skeleton,/\.cr-cart-promotions__skeleton-bar--copy\s*\{\s*width:29%;/);
  assert.match(skeleton,/@media \(prefers-reduced-motion:reduce\)\s*\{[\s\S]*?animation:none!important/);

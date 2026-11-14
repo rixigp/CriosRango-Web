@@ -684,16 +684,9 @@ test('checkout review wrapper and root table lose only their inherited outer car
 
 
 
-test('checkout assigns the shared Cart gutter only to inner visual surfaces', () => {
-  assert.ok(cartCss.includes('body.woocommerce-cart { --cr-cart-card-inline-gutter:16px; }'));
-  assert.ok(cartCss.includes('@media(max-width:767px){body.woocommerce-cart{--cr-cart-card-inline-gutter:11px}}'));
-  assert.ok(cartCss.includes('@media(max-width:360px){body.woocommerce-cart{--cr-cart-card-inline-gutter:9px}}'));
-  assert.ok(cartCss.includes('margin-inline:var(--cr-cart-card-inline-gutter)'));
-
-  assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 16px;'));
-  assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 11px;'));
-  assert.ok(checkoutCss.includes('--cr-cart-card-inline-gutter: 9px;'));
-
+test('Checkout first-level components align directly to the canonical PAGE RAIL', () => {
+  assert.doesNotMatch(cartCss, /--cr-cart-card-inline-gutter|var\(--cr-cart-card-inline-gutter\)/);
+  assert.doesNotMatch(checkoutCss, /--cr-cart-card-inline-gutter|var\(--cr-cart-card-inline-gutter\)|var\(--cr-card-inline-inset\)/);
   assert.equal(checkoutCss.includes('.cr-main > .cr-shell.cr-page-shell'),false);
 
   const form = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocommerce-checkout');
@@ -710,12 +703,12 @@ test('checkout assigns the shared Cart gutter only to inner visual surfaces', ()
 
   const shippingHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading');
   const summaryHeading = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading');
-  assert.ok(shippingHeading.includes('margin-inline: var(--cr-card-inline-inset);'));
-  assert.ok(summaryHeading.includes('margin-inline: var(--cr-cart-card-inline-gutter);'));
+  assert.ok(shippingHeading.includes('margin-inline: 0;'));
+  assert.ok(summaryHeading.includes('margin-inline: 0;'));
 
   const methods = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
   assert.ok(methods.includes('width: auto;'));
-  assert.ok(methods.includes('margin-inline: var(--cr-card-inline-inset);'));
+  assert.ok(methods.includes('margin-inline: 0;'));
   assert.equal(methods.includes('width: 100%;'), false);
 });
 
@@ -755,7 +748,7 @@ test('shipping remains the only visible method card and native AJAX root is pres
   const methodLabel = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > label');
   assert.ok(methodLabel.includes('margin-inline-start: 10px;'), 'Shipping labels must have a generic gap after the radio');
   assert.ok(methodLabel.includes('width: auto;'), 'Shipping label auto sizing must preserve the radio-to-label gap');
-  assert.ok(checkoutCss.includes('border-top: 1px solid var(--cr-checkout-field-border);'));
+  assert.ok(checkoutCss.includes('border-top: 1px solid var(--cr-control-border);'));
   assert.ok(!checkoutCss.includes('background: color-mix(in srgb, var(--cr-green) 5%, var(--cr-app-canvas));'));
   const shippingListSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
   const shippingRowSelector = shippingListSelector + ' > li';
@@ -808,7 +801,7 @@ test('checkout shipping mini-table is flattened to block sizing without changing
 
   const methods = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods');
   assert.match(methods, /max-width:\s*none/);
-  assert.match(methods, /margin-inline:\s*var\(--cr-card-inline-inset\)/);
+  assert.match(methods, /margin-inline:\s*0/);
   assert.equal(methods.includes('padding-inline'), false);
   assert.equal(methods.includes('margin-left'), false);
   assert.equal(methods.includes('margin-right'), false);
@@ -868,7 +861,7 @@ test('checkout app cards consume the global surface contract without changing th
   for (const rule of [shipping, info]) {
     assert.ok(rule.includes('border: var(--cr-card-border-width) solid var(--cr-border);'));
     assert.ok(rule.includes('border-radius: var(--cr-card-radius);'));
-    assert.ok(rule.includes('margin-inline: var(--cr-card-inline-inset);'));
+    assert.ok(rule.includes('margin-inline: 0;'));
   }
   assert.ok(shipping.includes('background: var(--cr-white);'));
   assert.ok(info.includes('background: var(--cr-app-canvas);'));
@@ -897,7 +890,7 @@ test('Checkout payment methods use the native WooCommerce list as one shared whi
   const list = cssLastRuleBody(checkoutCss, listSelector);
   for (const property of [
     'width: auto;',
-    'margin: 0 var(--cr-card-inline-inset) 24px;',
+    'margin: 0 0 24px;',
     'border: var(--cr-card-border-width) solid var(--cr-border);',
     'border-radius: var(--cr-card-radius);',
     'overflow: hidden;',
@@ -905,7 +898,7 @@ test('Checkout payment methods use the native WooCommerce list as one shared whi
   ]) assert.ok(list.includes(property), 'payment methods card must preserve the shared card contract: ' + property);
 
   assert.ok(checkoutCss.includes('#payment > ul.wc_payment_methods > li.wc_payment_method + li.wc_payment_method'));
-  assert.ok(checkoutCss.includes('border-top: 1px solid var(--cr-checkout-field-border);'));
+  assert.ok(checkoutCss.includes('border-top: 1px solid var(--cr-control-border);'));
   const row = cssLastRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) #payment > ul.wc_payment_methods > li.wc_payment_method');
   assert.ok(row.includes('background: var(--cr-white);'));
   assert.ok(row.includes('grid-template-columns: 18px minmax(0, 1fr);'));
@@ -1032,9 +1025,9 @@ test('Checkout final action hides privacy/terms wrappers and preserves exactly t
   );
   for (const property of [
     'display: block;',
-    'width: calc(100% - (2 * var(--cr-card-inline-inset)));',
+    'width: 100%;',
     'min-height: 56px;',
-    'margin: 0 var(--cr-card-inline-inset) 24px;',
+    'margin: 0 0 24px;',
     'border-radius: var(--cr-card-radius) !important;',
     'background: var(--cr-green-dark) !important;',
     'color: #fff !important;'

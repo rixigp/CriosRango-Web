@@ -100,7 +100,7 @@ test('WooCommerce includes-tax detail stays secondary and full-width beneath the
 });
 
 test('summary card consumes global border, radius and canonical rail with mobile-safe wrapping', () => {
-  assert.match(checkoutCss, /\.cr-checkout-summary-products\s*,[\s\S]*?\.cr-checkout-summary-totals\s*\{[\s\S]*?margin-inline:\s*var\(--cr-card-inline-inset\)/);
+  assert.match(checkoutCss, /\.cr-checkout-summary-products\s*,[\s\S]*?\.cr-checkout-summary-totals\s*\{[\s\S]*?margin-inline:\s*0/);
   assert.match(checkoutCss, /\.cr-checkout-summary-products\s*\{[\s\S]*?border:\s*var\(--cr-card-border-width\) solid var\(--cr-border\)/);
   assert.match(checkoutCss, /\.cr-checkout-summary-products\s*\{[\s\S]*?border-radius:\s*var\(--cr-card-radius\)/);
   assert.match(checkoutCss, /\.cr-checkout-summary-products > tr\.cart_item > td\.product-name/);
