@@ -1,11 +1,11 @@
 :root {
-  --cr-control-height: 58px;
+  --cr-control-height: 48px;
   --cr-control-border-width: 1px;
   --cr-control-border: #d8d9d5;
-  --cr-control-radius: 14px;
+  --cr-control-radius: 9px;
   --cr-control-background: #fff;
-  --cr-control-padding: 15px 16px 8px;
-  --cr-control-select-padding: 15px 36px 8px 16px;
+  --cr-control-padding: 8px 14px 0;
+  --cr-control-select-padding: 8px 36px 0 14px;
   --cr-control-focus-border: #aeb2ad;
   --cr-control-focus-outline: none;
   --cr-control-error-border: #c66b61;
@@ -26,21 +26,125 @@
 
 /* Canonical floating-label control shared by WooCommerce and WordPress authentication forms. */
 .woocommerce form .form-row { position:relative; box-sizing:border-box; }
-.cr-control { position:relative; width:100%; min-width:0; }
-.cr-control__box { position:relative; display:block; box-sizing:border-box; width:100%; min-width:0; min-height:58px; border:1px solid #d8d9d5; border-radius:14px; background:#fff; }
-.cr-control__label { position:absolute; z-index:2; top:0; left:16px; transform:translateY(-50%); display:inline-block; max-width:calc(100% - 32px); margin:0; padding:0 6px; background:var(--cr-app-canvas); color:#777b77; font:300 14px/20px "Roboto",Arial,sans-serif; white-space:nowrap; }
-.cr-control__box > :is(.woocommerce-input-wrapper,.password-input,.wp-pwd,.cr-control__value,input,textarea,select,.select2-container) { position:absolute; inset:0; box-sizing:border-box; display:block; width:100%; height:100%; min-width:0; }
-.cr-control__box :is(.woocommerce-input-wrapper,.password-input,.wp-pwd,.select2-container) { display:block; box-sizing:border-box; width:100%; height:100%; min-width:0; }
-.cr-control__box :is(input,input.input-text,input[type="email"],input[type="tel"],input[type="text"],input[type="password"],textarea,select,.select2-selection--single) { display:block; box-sizing:border-box !important; width:100% !important; height:100% !important; min-width:0; min-height:58px !important; margin:0 !important; padding:15px 16px 8px !important; border:0 !important; border-radius:inherit !important; background:transparent !important; color:var(--cr-ink,#20241f) !important; box-shadow:none !important; outline:none !important; font:400 16px/22px "Roboto",Arial,sans-serif !important; }
-.cr-control__box:has(textarea) { min-height:76px; }
-.cr-control__box textarea { height:auto !important; min-height:76px !important; resize:vertical; }
+.cr-control { position: relative; width: 100%; min-width: 0; }
+
+.cr-control__box {
+  position: relative; display: block; box-sizing: border-box; width: 100%; min-width: 0;
+  min-height: var(--cr-control-height);
+  border: var(--cr-control-border-width) solid var(--cr-control-border);
+  border-radius: var(--cr-control-radius); background: var(--cr-control-background);
+}
+
+.cr-control__label {
+  position: absolute !important; z-index: 2;
+  top: 0 !important; left: 12px !important; right: auto !important; bottom: auto !important;
+  transform: translateY(-50%) !important;
+  display: inline-flex !important; align-items: center; box-sizing: border-box;
+  width: auto !important; min-width: 0 !important; max-width: calc(100% - 24px) !important;
+  height: auto !important; min-height: 0 !important; margin: 0 !important;
+  padding: 0 5px !important; border: 0 !important;
+  background: var(--cr-app-canvas, #FCFAF7) !important;
+  color: var(--cr-control-label-color) !important;
+  font: 300 11px/16px "Roboto", Arial, sans-serif !important;
+  line-height: 16px !important; white-space: nowrap;
+}
+
+.cr-control__box > :is(
+  .woocommerce-input-wrapper, .password-input, .wp-pwd, .cr-control__value,
+  input, textarea, select, .select2-container
+) {
+  position: absolute; inset: 0; box-sizing: border-box; display: block;
+  width: 100%; height: 100%; min-width: 0;
+}
+
+.cr-control__box :is(.woocommerce-input-wrapper, .password-input, .wp-pwd, .select2-container) {
+  display: block; box-sizing: border-box; width: 100%; height: 100%; min-width: 0;
+}
+
+.cr-control__box :is(
+  input, input.input-text, input[type="email"], input[type="tel"], input[type="text"],
+  input[type="password"], textarea, select, .select2-selection--single
+) {
+  display: block; box-sizing: border-box !important; width: 100% !important; height: 100% !important;
+  min-width: 0; min-height: var(--cr-control-height) !important; margin: 0 !important;
+  padding: var(--cr-control-padding) !important; border: 0 !important; border-radius: inherit !important;
+  background: transparent !important; color: var(--cr-ink, #20241f) !important;
+  box-shadow: none !important; outline: none !important;
+  font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+}
+
+.cr-control__box:has(textarea) { min-height: var(--cr-control-height); }
+.cr-control__box textarea { height: 100% !important; min-height: var(--cr-control-height) !important; resize: none; }
+
+.woocommerce form .form-row:not([data-cr-control="true"]):has(
+  > input:not([type="checkbox"]):not([type="radio"]):not([type="submit"])
+),
+.woocommerce form .form-row:not([data-cr-control="true"]):has(> select),
+.woocommerce form .form-row:not([data-cr-control="true"]):has(> textarea),
+.woocommerce form .form-row:not([data-cr-control="true"]):has(> .woocommerce-input-wrapper),
+.woocommerce form .form-row:not([data-cr-control="true"]):has(> .password-input) { position: relative !important; }
+
+.woocommerce form .form-row:not([data-cr-control="true"])
+> label:not(.woocommerce-form__label-for-checkbox):not(.woocommerce-form-login__rememberme) {
+  position: absolute !important; z-index: 2 !important; top: 0 !important; left: 12px !important;
+  width: auto !important; max-width: calc(100% - 24px) !important; margin: 0 !important;
+  padding: 0 5px !important; transform: translateY(-50%) !important;
+  background: var(--cr-app-canvas, #FCFAF7) !important;
+  color: var(--cr-control-label-color) !important;
+  font: 300 11px/16px "Roboto", Arial, sans-serif !important;
+  line-height: 16px !important; white-space: nowrap;
+}
+
+.woocommerce form .form-row:not([data-cr-control="true"])
+> :is(input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]), select, textarea, .woocommerce-input-wrapper, .password-input) {
+  box-sizing: border-box !important; display: block !important; width: 100% !important;
+  min-height: var(--cr-control-height) !important; margin: 0 !important;
+  border: var(--cr-control-border-width) solid var(--cr-control-border) !important;
+  border-radius: var(--cr-control-radius) !important; background: #fff !important; box-shadow: none !important;
+}
+
+.woocommerce form .form-row:not([data-cr-control="true"])
+> :is(input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]), select, textarea) {
+  padding: var(--cr-control-padding) !important; color: var(--cr-ink, #20241f) !important;
+  font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+}
+
+.woocommerce form .form-row:not([data-cr-control="true"])
+> :is(.woocommerce-input-wrapper, .password-input) > :is(input, select, textarea) {
+  box-sizing: border-box !important; width: 100% !important;
+  min-height: calc(var(--cr-control-height) - 2px) !important; margin: 0 !important;
+  padding: var(--cr-control-padding) !important; border: 0 !important; border-radius: inherit !important;
+  background: transparent !important; box-shadow: none !important;
+  color: var(--cr-ink, #20241f) !important; font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+}
+
+.cr-control__box .select2-container { height: 100% !important; }
+.cr-control__box .select2-selection--single {
+  display: flex !important; align-items: center !important; width: 100% !important; height: 100% !important;
+  min-height: var(--cr-control-height) !important; padding: 0 !important; background: transparent !important;
+}
+.cr-control__box .select2-selection__rendered {
+  display: flex !important; align-items: center !important; min-width: 0; height: 100% !important;
+  padding: var(--cr-control-select-padding) !important; color: var(--cr-ink) !important;
+  font: 400 15px/20px "Roboto", Arial, sans-serif !important; line-height: 20px !important; text-align: left !important;
+}
+.cr-control__box .select2-selection__arrow { top: 0 !important; right: 8px !important; height: var(--cr-control-height) !important; }
+.cr-control__box select {
+  padding: var(--cr-control-select-padding) !important; text-align: left !important; text-align-last: left !important;
+  font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+}
+.cr-control__box :is(input[type="password"], .password-input input) { padding-right: 46px !important; }
+.cr-control__box .show-password-input {
+  position: absolute !important; top: 50% !important; right: 12px !important;
+  margin: 0 !important; padding: 0 !important; transform: translateY(-50%) !important;
+}
 .cr-control:focus-within .cr-control__box { border-color:var(--cr-control-focus-border); }
 .cr-control:has(:is(input,textarea,select):disabled) .cr-control__box,.cr-control:has(.select2-selection--single[aria-disabled="true"]) .cr-control__box { opacity:.65; }
 .cr-control__box:has(:is(input,textarea,select):-webkit-autofill) { background:#fff; }
 .cr-control__box .select2-container { height:100% !important; }
-.cr-control__box .select2-selection--single { display:flex !important; align-items:center !important; width:100% !important; height:100% !important; min-height:58px !important; padding:0 !important; background:transparent !important; }
+.cr-control__box .select2-selection--single { display:flex !important; align-items:center !important; width:100% !important; height:100% !important; min-height:var(--cr-control-height) !important; padding:0 !important; background:transparent !important; }
 .cr-control__box .select2-selection__rendered { min-width:0; padding:var(--cr-control-select-padding) !important; color:var(--cr-ink) !important; font:400 16px/22px "Roboto",Arial,sans-serif !important; }
-.cr-control__box .select2-selection__arrow { top:0 !important; right:8px !important; height:58px !important; }
+.cr-control__box .select2-selection__arrow { top:0 !important; right:8px !important; height:var(--cr-control-height) !important; }
 .cr-control__box :is(input[type="password"],.password-input input) { padding-right:46px !important; }
 .cr-control__box .show-password-input { position:absolute !important; top:50% !important; right:16px !important; margin:0 !important; padding:0 !important; transform:translateY(-50%) !important; }
 .woocommerce form .form-row.woocommerce-invalid .cr-control__box { border-color:var(--cr-control-error-border); }
@@ -48,15 +152,24 @@
 .woocommerce form .form-row .select2-container--focus { outline:none; }
 .woocommerce form .form-row :is(input,textarea,select):-webkit-autofill,.woocommerce form .form-row :is(input,textarea,select):-webkit-autofill:hover,.woocommerce form .form-row :is(input,textarea,select):-webkit-autofill:focus { -webkit-box-shadow:0 0 0 1000px #fff inset !important; -webkit-text-fill-color:var(--cr-ink) !important; caret-color:var(--cr-ink); }
 body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date { position:relative; margin-bottom:18px; }
-body.woocommerce-account .woocommerce-EditAccountForm .cr-control__value { display:block; box-sizing:border-box; width:100%; min-height:58px; padding:15px 16px 8px; color:var(--cr-ink); font:400 16px/22px "Roboto",Arial,sans-serif; }
+body.woocommerce-account .woocommerce-EditAccountForm .cr-control__value { display:block; box-sizing:border-box; width:100%; min-height:var(--cr-control-height); padding:15px 16px 8px; color:var(--cr-ink); font:400 16px/22px "Roboto",Arial,sans-serif; }
 body.login #loginform > p:not(.forgetmenot),body.login #loginform > .user-pass-wrap,body.login #lostpasswordform > p,body.login #resetpassform > p { position:relative; margin:0 0 18px; padding:0; }
-body.login .cr-control__box,body.login .cr-control__box .input { min-height:58px; }
-body.login .cr-control__box .input { box-sizing:border-box; width:100%; height:100%; margin:0; padding:15px 16px 8px; border:0; border-radius:inherit; background:transparent; color:var(--cr-ink,#20241f); box-shadow:none; font:400 16px/22px "Roboto",Arial,sans-serif; }
+body.login .cr-control__box,body.login .cr-control__box .input { min-height:var(--cr-control-height); }
+body.login .cr-control__box .input {
+  box-sizing: border-box; width: 100%; height: 100%; margin: 0; padding: var(--cr-control-padding);
+  border: 0; border-radius: inherit; background: transparent; color: var(--cr-ink, #20241f);
+  box-shadow: none; font: 400 15px/20px "Roboto", Arial, sans-serif;
+}
 body.login .cr-control:focus-within .cr-control__box { border-color:var(--cr-control-focus-border); }
-body.login #loginform .wp-pwd .wp-hide-pw { top:0; height:58px; }
+body.login #loginform .wp-pwd .wp-hide-pw { top:0; height:var(--cr-control-height); }
 body.login #loginform .forgetmenot { padding-top:0; }
 
 @media (max-width:767px) {
+  body.woocommerce-account:not(.logged-in) #customer_login > .u-column1 > h2,
+  body.woocommerce-account:not(.logged-in) #customer_login > .u-column2 > h2,
   body.woocommerce-account:not(.logged-in) .u-column1 > h2,
-  body.woocommerce-account:not(.logged-in) .u-column2 > h2 { display:none !important; }
+  body.woocommerce-account:not(.logged-in) .u-column2 > h2,
+  body.woocommerce-account:not(.logged-in) .woocommerce > h2,
+  body.woocommerce-account:not(.logged-in) .woocommerce h2:has(+ form.woocommerce-form-login),
+  body.woocommerce-account:not(.logged-in) .woocommerce h2:has(~ form.woocommerce-form-login) { display: none !important; }
 }

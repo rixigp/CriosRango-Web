@@ -16,14 +16,31 @@
     });
     row.dataset.crControl = 'true';
   };
+  const findWooControlContent = (row) => {
+    const directChildren = Array.from(row.children);
+    const wrapper = directChildren.find((child) =>
+      child.matches('.woocommerce-input-wrapper,.password-input,.wp-pwd')
+    );
+    if (wrapper) return wrapper;
+    return directChildren.find((child) =>
+      child.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),select,textarea')
+    );
+  };
   const enhanceWoo = (root) => {
-    root.querySelectorAll('.woocommerce form .form-row').forEach((row) => {
+    root.querySelectorAll(
+      '.woocommerce form .form-row,' +
+      'form.woocommerce-EditAccountForm .form-row,' +
+      '.woocommerce-address-fields .form-row,' +
+      'form.checkout .form-row,' +
+      'form.woocommerce-form-login .form-row,' +
+      'form.woocommerce-ResetPassword .form-row'
+    ).forEach((row) => {
       if (row.dataset.crControl === 'true') return;
       const label = Array.from(row.children).find((child) => child.tagName === 'LABEL' && isFloatingLabel(child));
       if (!label) return;
-      const wrapper = Array.from(row.children).find((child) => child.matches('.woocommerce-input-wrapper,.password-input'));
-      if (!wrapper) return;
-      makeControl(row, label, wrapper);
+      const content = findWooControlContent(row);
+      if (!content) return;
+      makeControl(row, label, content);
     });
     root.querySelectorAll('.cr-account-birth-date').forEach((row) => {
       if (row.dataset.crControl === 'true') return;
@@ -75,5 +92,26 @@
   const enhance = () => { enhanceWoo(document); enhanceWordPressLogin(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enhance, { once:true });
   else enhance();
-  if (window.jQuery) window.jQuery(document.body).on('updated_checkout.crControl country_to_state_changed.crControl', enhance);
+
+  window.addEventListener('load', enhance, { once: true });
+
+  if ('MutationObserver' in window) {
+    let queued = false;
+    const observer = new MutationObserver(() => {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(() => {
+        queued = false;
+        enhance();
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  if (window.jQuery) {
+    window.jQuery(document.body).on(
+      'updated_checkout.crControl country_to_state_changed.crControl',
+      enhance
+    );
+  }
 })();

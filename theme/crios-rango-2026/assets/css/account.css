@@ -560,7 +560,7 @@
    position: relative; float: none; box-sizing: border-box; width: 100%; margin: 0 0 16px; padding: 0;
  }
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset .show-password-input {
-   top: 36px; right: 12px;
+   right: 12px;
  }
 }
 
@@ -743,7 +743,7 @@
 /* Password screen fields stay white above the shared canvas field override; geometry is untouched. */
 @media (max-width: 767px) {
   body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset .form-row input[type="password"] {
-    background-color: #FFFFFF !important;
+    background-color: transparent !important;
   }
 }
 
@@ -753,8 +753,8 @@
   body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm #password_current,
   body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm #password_1,
   body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm #password_2 {
-    background: #FFFFFF !important;
-    background-color: #FFFFFF !important;
+    background: transparent !important;
+    background-color: transparent !important;
     background-image: none !important;
   }
 
