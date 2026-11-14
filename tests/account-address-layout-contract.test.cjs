@@ -141,7 +141,7 @@ test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
 
 test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
   assert.match(controlsCss, /\.cr-control-shell \.select2-selection--single\s*\{[^}]*padding:0 !important/);
-  assert.match(controlsCss, /\.cr-control-shell \.select2-selection__rendered,[\s\S]*?padding:var\(--cr-control-select-padding\)/);
+  assert.match(controlsCss, /\.cr-control-shell \.select2-selection__rendered\s*\{[^}]*padding:var\(--cr-control-select-padding\)/);
   assert.match(controlsCss, /--cr-control-padding:\s*12px 13px 9px/);
   assert.match(controlsCss, /--cr-control-select-padding:\s*12px 36px 9px 13px/);
 });
