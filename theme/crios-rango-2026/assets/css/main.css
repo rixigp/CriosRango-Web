@@ -1761,6 +1761,7 @@ body.cr-parent-category-view .cr-home-mark__logo { width: 34px; height: 34px; }
 /* Category app header inherits the exact Home Search/Cart icon styling. */
 body.cr-parent-category-view .cr-parent-category__canvas { flex: 1 0 auto; padding: 0; }
 .cr-parent-category__toolbar {
+  width: 100%;
   min-height: 64px;
   margin: 0 0 14px;
   display: grid;
@@ -1972,7 +1973,6 @@ body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub 
 
 @media(max-width:767px) {
   body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub { padding-inline:0 !important; }
-  .cr-category-hub__shell { width:100%; }
 }
 @media(min-width:768px){.cr-category-hub__grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 20px}}
 @media(min-width:1280px){.cr-category-hub__grid{grid-template-columns:repeat(6,minmax(0,1fr))}}

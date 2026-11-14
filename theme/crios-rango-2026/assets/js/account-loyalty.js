@@ -136,7 +136,7 @@
   const renderWallet = (payload) => {
     const card = node('article', 'cr-account-loyalty__wallet-card');
     const top = node('div', 'cr-account-loyalty__wallet-top');
-    top.appendChild(icon('wallet', 'cr-account-loyalty__wallet-icon'));
+    top.appendChild(icon('wallet', 'cr-wallet-icon-badge cr-account-loyalty__wallet-icon'));
     const copy = node('div', 'cr-account-loyalty__wallet-copy');
     copy.appendChild(node('h2', 'cr-account-loyalty__wallet-title', 'Monedero'));
     const current = moneyMinor(payload.wallet_value || '0.00');

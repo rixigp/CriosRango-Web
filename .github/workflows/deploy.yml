@@ -18,6 +18,7 @@ on:
       - "tests/checkout-points-runtime.test.php"
       - "tests/checkout-review-contract.test.cjs"
       - "tests/cart-promotions-contract.test.cjs"
+      - "tests/canonical-controls-contract.test.cjs"
       - "tests/account-information-icons.test.cjs"
       - "tests/account-help-contract.test.cjs"
       - "tests/account-information-pages-contract.test.cjs"
@@ -405,6 +406,9 @@ jobs:
 
       - name: Run cart promotions contract tests
         run: node --test tests/cart-promotions-contract.test.cjs
+
+      - name: Run canonical controls and login contracts
+        run: node --test tests/canonical-controls-contract.test.cjs
 
       - name: Run Account information icon geometry tests
         run: node --test tests/account-information-icons.test.cjs

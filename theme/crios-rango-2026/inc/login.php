@@ -11,6 +11,14 @@ function cr2026_login_enqueue_scripts() {
     $relative_logo = '/assets/images/brand/home_logo.png';
     $logo_url = CR2026_URI . $relative_logo;
 
+    wp_enqueue_script(
+        'cr2026-form-controls',
+        CR2026_URI . '/assets/js/form-controls.js',
+        array(),
+        cr2026_asset_version( 'assets/js/form-controls.js' ),
+        true
+    );
+
     wp_enqueue_style(
         'cr2026-controls',
         CR2026_URI . '/assets/css/controls.css',

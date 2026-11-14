@@ -314,7 +314,7 @@
     walletPanel.hidden = false;
     const summary = node('div', 'cr-cart-wallet__summary');
     const info = node('div', 'cr-cart-wallet__info');
-    summary.appendChild(cartIcon('wallet', 'cr-cart-wallet__icon'));
+    summary.appendChild(cartIcon('wallet', 'cr-wallet-icon-badge cr-cart-wallet__icon'));
     summary.appendChild(info);
     const walletHeading = node('div', 'cr-cart-wallet__heading');
     walletHeading.appendChild(node('h3', 'cr-cart-wallet__title', 'Monedero'));
