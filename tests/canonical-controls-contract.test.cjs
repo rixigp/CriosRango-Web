@@ -28,7 +28,7 @@ test('GLOBAL_FORM_GEOMETRY_AND_REQUIRED_MARKERS_USE_ONE_CANONICAL_SOURCE',()=>{
   assert.match(controls,/\.cr-control-shell \.show-password-input\s*\{[^}]*top:\s*50%[^}]*right:\s*14px[^}]*bottom:\s*auto[^}]*transform:\s*translateY\(-50%\)/s);
   assert.match(controls,/\.cr-control-shell textarea\s*\{[^}]*padding:\s*12px 14px/s);
   assert.match(controls,/\.cr-control-shell \.select2-selection--single\s*\{[^}]*align-items:\s*center/s);
-  assert.match(controls,/\.cr-control-shell \.select2-selection__rendered\s*\{[^}]*padding:\s*0 36px 0 14px/s);
+  assert.match(controls,/\.cr-control-shell \.select2-selection__rendered\s*\{[^}]*padding:\s*var\(--cr-control-select-padding\)/s);
   assert.match(controls,/\.woocommerce form \.form-row:not\(\[data-cr-control="true"\]\)/);
   assert.match(assets,/One global DOM enhancer/);
   assert.doesNotMatch(wpLogin,/removeAttribute\(['"]required['"]\)|removeAttribute\(['"]aria-required['"]\)/);
