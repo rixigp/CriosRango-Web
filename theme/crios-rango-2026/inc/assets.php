@@ -92,7 +92,17 @@ function cr2026_enqueue_assets() {
         cr2026_asset_version( 'assets/css/controls.css' )
     );
 
- 
+
+    if ( $uses_account_app_skin || $uses_checkout_shell ) {
+        wp_enqueue_script(
+            'cr2026-form-controls',
+            CR2026_URI . '/assets/js/form-controls.js',
+            array(),
+            cr2026_asset_version( 'assets/js/form-controls.js' ),
+            true
+        );
+    }
+
     if ( $uses_account_app_skin && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
         wp_enqueue_script(
             'cr2026-account-save-feedback',

@@ -221,12 +221,13 @@ test('Login, Checkout and Select2 consume one canonical form-control token sourc
   assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
 });
 
-test('delivery labels cut the canonical white control border without a visible label background', () => {
-  assert.match(controlsCss, /body\.woocommerce-checkout:not\(\.woocommerce-order-received\)[\s\S]*?\.woocommerce-billing-fields__field-wrapper > \.form-row > label/);
-  assert.match(controlsCss, /--cr-control-label-notch:\s*linear-gradient\(to bottom, transparent 0 3px, var\(--cr-control-background\) 3px 5px, transparent 5px 100%\)/);
-  assert.match(controlsCss, /background:var\(--cr-control-label-notch\)/);
-  assert.doesNotMatch(controlsCss, /background:\s*var\(--cr-app-canvas\)/);
-  assert.match(controlsCss, /background-color:var\(--cr-control-background\) !important/);
+test('delivery labels use the canonical fieldset/legend border notch and white interior', () => {
+  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend/);
+  assert.match(controlsCss, /\.cr-control-shell\s*\{/);
+  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend/);
+  assert.match(controlsCss, /\.cr-control-shell:focus-within/);
+  assert.match(controlsCss, /background:var\(--cr-control-background\)/);
+  assert.doesNotMatch(controlsCss, /cr-control-label-notch|background:\s*var\(--cr-app-canvas\)/);
   assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
   assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
 });
@@ -255,9 +256,9 @@ test('WooCommerce core full shipping labels lose only the appended price separat
 test('delivery labels use transparent canonical notched labels and retain native WooCommerce label elements', () => {
   assert.ok(controlsCss.includes('.woocommerce form .form-row > label'));
   assert.ok(controlsCss.includes('position:absolute !important'));
-  assert.ok(controlsCss.includes('background:var(--cr-control-label-notch) !important'));
-  assert.ok(controlsCss.includes('background:var(--cr-control-label-notch)'));
-  assert.ok(!controlsCss.includes('background:var(--cr-app-canvas)'));
+  assert.ok(controlsCss.includes('.cr-control-shell > legend'));
+  assert.ok(controlsCss.includes('.cr-control-shell:focus-within'));
+  assert.ok(!controlsCss.includes('cr-control-label-notch'));
   assert.ok(controlsCss.includes('background-color:var(--cr-control-background) !important'));
   assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
   assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
