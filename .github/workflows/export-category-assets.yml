@@ -4,7 +4,7 @@ on:
     branches:
       - asset-normalization-export
 permissions:
-  contents: read
+  contents: write
 jobs:
   normalize:
     runs-on: ubuntu-latest
@@ -22,6 +22,15 @@ jobs:
           python tools/normalize-category-assets.py --check
           cd /tmp/category-export
           zip -q /tmp/category-assets-normalized.zip *.png
+      - name: Commit normalized assets and implementation to staging branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/export-category-assets.yml
+          git add theme/crios-rango-2026/assets/images/categories/*.png
+          git commit -m "assets(categories): normalize transparent image padding"
+          git push origin HEAD:refs/heads/style/product-detail-app-skin
       - uses: actions/upload-artifact@v4
         with:
           name: normalized-category-assets
