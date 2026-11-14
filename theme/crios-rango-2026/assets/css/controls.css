@@ -83,7 +83,7 @@ body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date .cr
 }
 
 /* Native WordPress Login, Lost Password and Reset Password share the same fieldset shell. */
-body.login #loginform > p:not(.forgetmenot), body.login #lostpasswordform > p, body.login #resetpassform > p {
+body.login #loginform > p:not(.forgetmenot), body.login #loginform > .user-pass-wrap, body.login #lostpasswordform > p, body.login #resetpassform > p {
   position:relative; margin:0 0 18px; padding:0;
 }
 body.login .cr-control-shell { min-height:var(--cr-control-height); }

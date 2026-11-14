@@ -41,9 +41,9 @@
   };
   const enhanceWordPressLogin = () => {
     document.querySelectorAll('#loginform, #lostpasswordform, #resetpassform').forEach((form) => {
-      form.querySelectorAll(':scope > p').forEach((row) => {
+      form.querySelectorAll(':scope > p, :scope > .user-pass-wrap, :scope > .user-pass1-wrap, :scope > .user-pass2-wrap').forEach((row) => {
         if (row.querySelector(':scope > .cr-control-shell')) return;
-        const oldLabel = row.querySelector(':scope > label');
+        const oldLabel = row.querySelector(':scope > label, label');
         const input = oldLabel && oldLabel.querySelector('input:not([type="checkbox"]):not([type="submit"])');
         if (!oldLabel || !input) return;
         let copy = '';
