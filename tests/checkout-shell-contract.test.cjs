@@ -204,11 +204,11 @@ test('delivery field semantics define five full-width fields and two half-width 
 
 test('Login, Checkout and Select2 consume one canonical form-control token source', () => {
   for (const token of [
-    '--cr-control-height: 48px;',
+    '--cr-control-height: 58px;',
     '--cr-control-border: #d8d9d5;',
-    '--cr-control-radius: 9px;',
+    '--cr-control-radius: 14px;',
     '--cr-control-background: #fff;',
-    '--cr-control-padding: 12px 13px 9px;',
+    '--cr-control-padding: 15px 16px 8px;',
     '--cr-control-focus-border: #aeb2ad;',
     '--cr-control-error-border: #c66b61;'
   ]) assert.ok(controlsCss.includes(token), 'missing shared form-control token: ' + token);
@@ -249,7 +249,7 @@ test('checkout consumes the shared floating-label control without replacing nati
 test('native delivery controls and Select2 consume the canonical presentation without DOM replacement', () => {
   assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);
   assert.ok(controlsCss.includes('.select2-selection--single'));
-  assert.ok(controlsCss.includes('height:100% !important') && controlsCss.includes('height:var(--cr-control-height); min-height:0'));
+  assert.ok(controlsCss.includes('height:100% !important') && controlsCss.includes('min-height:58px !important'));
   const orderDeclarationPattern = new RegExp("^[ \\t]*order[ \\t]*:", "m");
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
   assert.doesNotMatch(checkoutWooCommercePhp, /appendChild|insertBefore|insertAdjacentElement/);
