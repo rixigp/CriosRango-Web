@@ -244,7 +244,7 @@ body.woocommerce-cart .cr-cart-remove svg { width: 20px; height: 20px; }
 body.woocommerce-cart .cr-cart-empty-form button { text-decoration:none; font-weight:400; }
 
 /* Promotion blocks sit on the page canvas; component panels remain independently tinted. */
-body.woocommerce-cart .cr-cart-promotions { padding:0; border:0; border-radius:0; }
+body.woocommerce-cart .cr-cart-promotions { padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
 body.woocommerce-cart .cr-cart-promotions > h2 { font-size: 16px; font-weight: 500; margin-bottom: 10px; }
 body.woocommerce-cart .cr-cart-promotions__subheading { font-size: 13px; font-weight: 500; }
 body.woocommerce-cart .cr-cart-wallet__summary { background: #E8F5EF; }
@@ -649,8 +649,8 @@ body.woocommerce-cart .cr-cart-item__subtotal { margin:0 0 2px; }
     width: auto !important;
     min-width: 0;
     padding: 8px 0 !important;
-    border: 0 !important;
-    background: transparent !important;
+    border: 0;
+    background: transparent;
     font-weight: 400 !important;
   }
   body.woocommerce-cart .cr-cart-summary table.shop_table td {
@@ -1145,12 +1145,23 @@ body.woocommerce-cart .cr-cart-promo-card--welcome > .cr-cart-promo-card__icon s
 
 /* Cart coupon accordion: the closed disclosure is text-only on the app canvas. The expanded form controls retain their white field surface. */
 body.woocommerce-cart .cr-cart-manual-coupon:not([open]) {
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 body.woocommerce-cart .cr-cart-manual-coupon:not([open]) > summary {
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+
+/* Cart page content shares the canonical outer .cr-shell rail; the prose max-width must not narrow its toolbar or content. */
+@media (max-width: 767px) {
+  body.woocommerce-cart .cr-page,
+  body.woocommerce-cart .cr-page .cr-prose {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
 }
