@@ -298,7 +298,6 @@ body.woocommerce-cart .cr-cart-summary .checkout-button::after {
 
 /* Inline wallet/reward/promo icons use fixed authored SVGs from cart-ui.js. */
 body.woocommerce-cart .cr-cart-wallet__summary { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:10px; }
-body.woocommerce-cart .cr-cart-wallet__icon { display:inline-flex; flex:0 0 24px; align-items:center; justify-content:center; border-radius:50%; background:#D7E8E1; color:#0F5C4D; }
 body.woocommerce-cart .cr-cart-wallet__info { min-width:0; }
 body.woocommerce-cart .cr-cart-wallet__heading { display:flex; align-items:center; min-width:0; }
 body.woocommerce-cart .cr-cart-wallet__info-icon { justify-self:end; align-self:center; display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; min-width:44px; min-height:44px; padding:0; border:0; border-radius:50%; background:transparent; color:#315B52; font-family:inherit; font-size:22px; font-weight:500; line-height:1; cursor:pointer; }

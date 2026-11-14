@@ -64,27 +64,6 @@ body.login * { box-sizing: border-box; }
   background: #fff;
   box-shadow: 0 5px 24px rgba(24, 59, 53, .035);
 }
-.login form .input, .login input[type="text"], .login input[type="password"],
-.login input[type="email"], .login input[type="tel"] {
-  width: 100%;
-  min-height: var(--cr-control-height);
-  margin: 6px 0 16px;
-  padding: var(--cr-control-padding);
-  border: var(--cr-control-border-width) solid var(--cr-control-border);
-  border-radius: var(--cr-control-radius);
-  background: var(--cr-control-background);
-  color: var(--cr-login-text);
-  font: 400 15px/1.4 Roboto, Arial, sans-serif;
-  box-shadow: none;
-}
-.login form .input:focus, .login input[type="text"]:focus,
-.login input[type="password"]:focus, .login input[type="email"]:focus,
-.login input[type="tel"]:focus {
-  border-color: var(--cr-control-focus-border);
-  outline: var(--cr-control-focus-outline);
-  outline-offset: 1px;
-  box-shadow: none;
-}
 .login label {
   color: var(--cr-login-text);
   font: 400 14px/1.45 Roboto, Arial, sans-serif;
@@ -137,13 +116,10 @@ body.login * { box-sizing: border-box; }
   box-shadow: none;
 }
 .login .wp-pwd { position: relative; }
-.login .wp-pwd .input { padding-right: 48px; }
 .login .wp-pwd .wp-hide-pw {
   position: absolute;
-  top: 6px;
   right: 0;
   width: 44px;
-  height: 48px;
   margin: 0;
   border: 0;
   border-radius: 10px;

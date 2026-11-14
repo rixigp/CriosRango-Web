@@ -26,6 +26,12 @@
 
 /* Canonical WooCommerce floating-label control shared by Checkout, Login and Account. */
 .woocommerce form .form-row { position:relative; box-sizing:border-box; }
+body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date { position:relative; padding-top:5px; margin-bottom:18px; }
+body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date > label {
+  position:absolute !important; top:-3px !important; left:11px !important; margin:0 !important; padding:0 5px !important;
+  background:var(--cr-app-canvas) !important; color:var(--cr-control-label-color) !important;
+  font:300 11px/16px "Roboto",Arial,sans-serif !important;
+}
 .woocommerce form .form-row > label:not(.woocommerce-form__label-for-checkbox):not(.woocommerce-form-login__rememberme) {
   position:absolute !important; z-index:2; top:-3px !important; left:11px !important; display:inline-block !important;
   width:auto !important; max-width:calc(100% - 24px) !important; margin:0 !important; padding:0 5px !important;

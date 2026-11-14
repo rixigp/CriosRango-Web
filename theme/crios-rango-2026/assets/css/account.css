@@ -342,23 +342,6 @@
     color: #183b35;
     font: 400 16px/22px "Roboto", Arial, sans-serif;
   }
-  body.woocommerce-account .woocommerce-EditAccountForm label,
-  body.woocommerce-account .woocommerce-address-fields label {
-    color: #5d665f;
-    font: 300 12px/17px "Roboto", Arial, sans-serif;
-  }
-  body.woocommerce-account .woocommerce-EditAccountForm input.input-text,
-  body.woocommerce-account .woocommerce-address-fields input.input-text,
-  body.woocommerce-account .woocommerce-address-fields select,
-  body.woocommerce-account .woocommerce-address-fields textarea {
-    box-sizing: border-box;
-    width: 100%;
-    min-height: 46px;
-    border: 1px solid rgba(24,59,53,.15);
-    border-radius: 12px;
-    background: #fff;
-    padding: 10px 12px;
-  }
   body.woocommerce-account .woocommerce-EditAccountForm button[type="submit"],
   body.woocommerce-account .woocommerce-address-fields button[type="submit"] {
     min-height: 44px;
@@ -515,16 +498,6 @@
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p.form-row {
    position: relative; float: none; box-sizing: border-box; width: 100%; margin: 0 0 16px; padding: 0;
  }
- body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm label,
- body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm label {
-   display: block; margin: 0 0 6px; color: #183b35; font: 300 12px/17px "Roboto", Arial, sans-serif;
- }
- body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm input.input-text,
- body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm input.input-text {
-   box-sizing: border-box; display: block; width: 100%; min-width: 0; min-height: 50px;
-   border: 1.5px solid #183b35; border-radius: 12px; background: #fff; color: #20241f;
-   padding: 12px 14px; box-shadow: none; font: 300 15px/1.35 "Roboto", Arial, sans-serif;
- }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_display_name) { display: block; }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm fieldset { display: none !important; }
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_first_name),
@@ -572,29 +545,6 @@
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row {
    position: relative; float: none; box-sizing: border-box; width: 100%; margin: 0 0 16px; padding: 0;
  }
- body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields label {
-   display: block; margin: 0 0 6px; color: #183b35; font: 300 12px/17px "Roboto", Arial, sans-serif;
- }
- body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields input.input-text,
- body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields textarea,
- body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields select,
- body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection--single {
-   box-sizing: border-box; display: block; width: 100%; min-width: 0; min-height: 50px;
-   border: 1.5px solid #183b35; border-radius: 12px; background: #fff; color: #20241f;
-   padding: 12px 14px; box-shadow: none; font: 300 15px/1.35 "Roboto", Arial, sans-serif;
- }
- body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-container {
-   width: 100% !important; min-width: 0;
- }
- body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection--single {
-   display: flex; align-items: center; height: 50px; padding: 0;
- }
- body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection__rendered {
-   min-width: 0; padding: 0 36px 0 14px; color: #20241f; font: 300 15px/1.35 "Roboto", Arial, sans-serif;
- }
- body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection__arrow {
-   top: 0; right: 8px; height: 50px;
- }
 
  /* Align visible address-select values with the text-input content axis. */
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields select {
@@ -617,14 +567,6 @@
 @media (max-width: 767px) {
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset .form-row {
    position: relative; float: none; box-sizing: border-box; width: 100%; margin: 0 0 16px; padding: 0;
- }
- body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset label {
-   display: block; margin: 0 0 6px; color: #183b35; font: 300 12px/17px "Roboto", Arial, sans-serif;
- }
- body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset input.input-text {
-   box-sizing: border-box; display: block; width: 100%; min-width: 0; min-height: 50px;
-   border: 1.5px solid #183b35; border-radius: 12px; background: #fff; color: #20241f;
-   padding: 12px 14px; box-shadow: none; font: 300 15px/1.35 "Roboto", Arial, sans-serif;
  }
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm fieldset .show-password-input {
    top: 36px; right: 12px;
@@ -724,267 +666,6 @@
     display: none !important;
   }
 }
-
-/*
- * Canonical Account form-field contract.
- * Shared by Personal Data, Shipping Address and Change Password.
- * WooCommerce markup, names, IDs, validation and submission remain native.
- */
-@media (max-width: 767px) {
-  body.woocommerce-account :is(
-    .woocommerce-EditAccountForm .form-row,
-    .woocommerce-address-fields .form-row
-  ) {
-    position: relative;
-    box-sizing: border-box;
-    padding-top: 5px;
-    margin-bottom: 18px;
-  }
-
-  body.woocommerce-account :is(
-    .woocommerce-EditAccountForm .form-row > label:not(.woocommerce-form__label-for-checkbox),
-    .woocommerce-address-fields .form-row > label:not(.woocommerce-form__label-for-checkbox)
-  ) {
-    position: absolute;
-    z-index: 2;
-    top: -3px;
-    left: 11px;
-    display: inline-block;
-    width: auto;
-    max-width: calc(100% - 24px);
-    margin: 0;
-    padding: 0 5px;
-    overflow: hidden;
-    background: var(--cr-app-canvas);
-    color: #777b77;
-    font: 300 11px/16px "Roboto", Arial, sans-serif;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    pointer-events: none;
-  }
-
-  body.woocommerce-account :is(
-    .woocommerce-EditAccountForm .form-row input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
-    .woocommerce-EditAccountForm .form-row select,
-    .woocommerce-EditAccountForm .form-row textarea,
-    .woocommerce-address-fields .form-row input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
-    .woocommerce-address-fields .form-row select,
-    .woocommerce-address-fields .form-row textarea
-  ) {
-    box-sizing: border-box;
-    display: block;
-    width: 100%;
-    min-width: 0;
-    min-height: 48px;
-    margin: 0;
-    padding: 12px 13px 9px;
-    border: 1px solid #d8d9d5;
-    border-radius: 9px;
-    outline: 0;
-    background-color: var(--cr-app-canvas);
-    color: var(--cr-ink);
-    box-shadow: none;
-    font: 400 14px/20px "Roboto", Arial, sans-serif;
-  }
-
-  body.woocommerce-account :is(
-    .woocommerce-EditAccountForm .form-row input:focus,
-    .woocommerce-EditAccountForm .form-row select:focus,
-    .woocommerce-EditAccountForm .form-row textarea:focus,
-    .woocommerce-address-fields .form-row input:focus,
-    .woocommerce-address-fields .form-row select:focus,
-    .woocommerce-address-fields .form-row textarea:focus
-  ) {
-    border-color: #aeb2ad;
-    outline: none;
-    box-shadow: none;
-  }
-
-  body.woocommerce-account :is(
-    .woocommerce-EditAccountForm .form-row textarea,
-    .woocommerce-address-fields .form-row textarea
-  ) {
-    min-height: 76px;
-    padding-top: 13px;
-    resize: vertical;
-  }
-
-  body.woocommerce-account .woocommerce-address-fields .form-row .select2-container {
-    display: block;
-    width: 100% !important;
-    min-width: 0;
-  }
-
-  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection--single {
-    display: flex;
-    align-items: center;
-    height: 48px;
-    padding: 0;
-  }
-
-  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection__rendered {
-    min-width: 0;
-    padding: 0 36px 0 13px;
-    color: var(--cr-ink);
-    font: 400 14px/20px "Roboto", Arial, sans-serif;
-  }
-
-  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection__arrow {
-    top: 0;
-    right: 8px;
-    height: 48px;
-  }
-
-  body.woocommerce-account .woocommerce-EditAccountForm .form-row .show-password-input {
-    top: 17px;
-    right: 12px;
-    margin: 0;
-    padding: 0;
-    transform: none;
-  }
-
-  body.woocommerce-account .woocommerce-EditAccountForm .form-row input[type="password"] {
-    padding-right: 46px;
-  }
-
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date {
-    padding-top: 5px;
-  }
-
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date > label {
-    top: -3px;
-    left: 11px;
-    margin: 0;
-    padding: 0 5px;
-    background: var(--cr-app-canvas);
-    color: #777b77;
-    font: 300 11px/16px "Roboto", Arial, sans-serif;
-  }
-
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date__value {
-    box-sizing: border-box;
-    width: 100%;
-    min-height: 48px;
-    margin: 0;
-    padding: 12px 13px 9px;
-    border: 1px solid #d8d9d5;
-    border-radius: 9px;
-    background: var(--cr-app-canvas);
-    color: var(--cr-ink);
-    box-shadow: none;
-    font: 400 14px/20px "Roboto", Arial, sans-serif;
-  }
-
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date__value:focus {
-    border-color: #aeb2ad;
-    outline: none;
-    box-shadow: none;
-  }
-
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date__value {
-    background: var(--cr-app-canvas);
-    color: var(--cr-ink);
-    opacity: 1;
-  }
-}
-
-/* Ensure this shared contract wins over earlier endpoint-specific field rules. */
-@media (max-width: 767px) {
-  body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row > label:not(.woocommerce-form__label-for-checkbox),
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date > label {
-    position: absolute !important;
-    top: -3px !important;
-    left: 11px !important;
-    display: inline-block !important;
-    width: auto !important;
-    margin: 0 !important;
-    padding: 0 5px !important;
-    background: var(--cr-app-canvas) !important;
-    color: #777b77 !important;
-    font: 300 11px/16px "Roboto", Arial, sans-serif !important;
-  }
-
-  body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row :is(input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), select, textarea),
-  body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date__value {
-    min-height: 48px !important;
-    border: 1px solid #d8d9d5 !important;
-    border-radius: 9px !important;
-    background: var(--cr-app-canvas) !important;
-    color: var(--cr-ink) !important;
-    padding: 12px 13px 9px !important;
-    box-shadow: none !important;
-    font: 400 14px/20px "Roboto", Arial, sans-serif !important;
-  }
-
-  /* Select2 outer control is not a generic padded field; its rendered value owns the inset. */
-  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection--single {
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    min-width: 0;
-    min-height: 48px !important;
-    height: 48px !important;
-    margin: 0;
-    padding: 0 !important;
-    border: 1px solid #d8d9d5 !important;
-    border-radius: 9px !important;
-    background: var(--cr-app-canvas) !important;
-    color: var(--cr-ink) !important;
-    box-shadow: none !important;
-    font: 400 14px/20px "Roboto", Arial, sans-serif !important;
-  }
-
-  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection--single:focus {
-    border-color: #aeb2ad;
-    outline: none;
-    box-shadow: none;
-  }
-
-  body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row textarea {
-    min-height: 76px !important;
-    padding-top: 13px !important;
-  }
-
-  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection--single {
-    height: 48px !important;
-    padding: 0 !important;
-  }
-
-  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection__rendered {
-    padding: 0 36px 0 13px !important;
-    color: var(--cr-ink) !important;
-    font: 400 14px/20px "Roboto", Arial, sans-serif !important;
-  }
-
-  body.woocommerce-account .woocommerce-address-fields .form-row .select2-selection__arrow {
-    height: 48px !important;
-  }
-
-  body.woocommerce-account .woocommerce-EditAccountForm .form-row input[type="password"] {
-    padding-right: 46px !important;
-  }
-
-  body.woocommerce-account .woocommerce-EditAccountForm .form-row .show-password-input {
-    top: 17px !important;
-    right: 12px !important;
-  }
-}
-
-
-/* Final shipping-select content-axis override: preserve native controls and Select2 chevron. */
-@media (max-width: 767px) {
-  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields select {
-    padding-inline-start: 13px !important;
-    text-indent: 0 !important;
-  }
-
-  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection__rendered {
-    padding: 0 36px 0 13px !important;
-    text-indent: 0 !important;
-  }
-}
-
 
 /* Shared mobile Account submit feedback: retain native CTA geometry while processing. */
 @media (max-width: 767px) {
@@ -1334,7 +1015,6 @@
     align-items: center;
     gap: 10px;
   }
-  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-icon,
   body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-icon,
   body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-icon {
     width: 38px;
@@ -1347,7 +1027,6 @@
     background: #F0ECFA;
     color: #0F5C4D;
   }
-  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-icon svg,
   body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-icon svg,
   body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__promotion-icon svg {
     width: 21px;
@@ -1506,7 +1185,6 @@
 
 /* Loyalty rewards palette parity with the approved cart wallet — endpoint only. */
 @media (max-width: 767px) {
-  body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__wallet-icon,
   body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-icon {
     background: #D7E8E1;
     color: #0F5C4D;
@@ -1651,29 +1329,12 @@ body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login {
   background:transparent!important;
   box-shadow:none!important;
 }
-@media(max-width:767px){
-  body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login > h2 {display:none!important;}
-}
 body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login .form-row {
   box-sizing:border-box;
   float:none;
   width:100%;
   margin:0 0 16px;
   padding:0;
-}
-body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login input.input-text {
-  box-sizing:border-box;
-  display:block;
-  width:100%;
-  min-width:0;
-  min-height:48px;
-  border:1px solid #d8d9d5;
-  border-radius:9px;
-  background:var(--cr-app-canvas);
-  color:var(--cr-ink);
-  padding:12px 13px 9px;
-  box-shadow:none;
-  font:400 14px/20px "Roboto",Arial,sans-serif;
 }
 body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login .woocommerce-form-login__rememberme {
   display:inline-flex;
