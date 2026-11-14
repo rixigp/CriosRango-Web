@@ -66,7 +66,7 @@
 }
 .cr-control-shell .select2-selection__rendered {
   display: flex !important; align-items: center !important; min-width: 0; height: 100% !important;
-  padding: 0 36px 0 14px !important; color: var(--cr-ink) !important;
+  padding: var(--cr-control-select-padding) !important; color: var(--cr-ink) !important;
   font: 400 15px/20px "Roboto", Arial, sans-serif !important; line-height: 20px !important; text-align: left !important;
 }
 .cr-control-shell .select2-selection__arrow { top: 50% !important; right: 8px !important; height: 24px !important; transform: translateY(-50%) !important; }
@@ -98,7 +98,7 @@
 .cr-control-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),select,textarea,.select2-selection--single) { border:0!important; background:transparent!important; box-shadow:none!important; outline:none!important; }
 .cr-control-shell > legend > label { display:inline!important; width:auto!important; margin:0!important; padding:0 5px!important; background:transparent!important; }
 .cr-control-shell .select2-selection--single { border:0!important; background:transparent!important; box-shadow:none!important; }
-.cr-control-shell .select2-selection__rendered { padding:0 36px 0 14px!important; }
+.cr-control-shell .select2-selection__rendered { padding:var(--cr-control-select-padding)!important; }
 body.login .cr-control-shell .input { padding:0 14px!important; }
 body.login .cr-control-shell .wp-pwd .wp-hide-pw { top:50%!important; bottom:auto!important; transform:translateY(-50%)!important; }
 
