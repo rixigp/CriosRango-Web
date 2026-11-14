@@ -3,6 +3,11 @@
 /* Checkout owns its own values for the shared inner-card gutter token. */
 body.woocommerce-checkout:not(.woocommerce-order-received) {
   --cr-cart-card-inline-gutter: 16px;
+  --cr-checkout-field-height: 48px;
+  --cr-checkout-field-border: #d8d9d5;
+  --cr-checkout-field-radius: 9px;
+  --cr-checkout-field-label-size: 13px;
+  --cr-checkout-field-row-gap: 16px;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,
@@ -118,15 +123,13 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   width: 100%;
   min-width: 0;
   min-height: var(--cr-checkout-field-height);
-  border: 1.5px solid var(--cr-checkout-field-border);
+  border: 1px solid var(--cr-checkout-field-border);
   border-radius: var(--cr-checkout-field-radius);
   background: var(--cr-white);
   color: var(--cr-ink);
   box-shadow: none;
-  font: inherit;
-  font-weight: 300;
-  line-height: 1.35;
-  padding: 15px 14px 12px;
+  font: 400 14px/20px "Roboto", Arial, sans-serif;
+  padding: 12px 13px 9px;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row input:focus,
@@ -136,13 +139,13 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row select:focus,
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row select:focus-visible,
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-container--focus .select2-selection--single {
-  border-color: var(--cr-green);
-  outline: 2px solid color-mix(in srgb, var(--cr-green) 22%, transparent);
-  outline-offset: 1px;
+  border-color: #aeb2ad;
+  outline: none;
+  box-shadow: none;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-container {
-  width: 100% !important;
+  width: 100%;
   min-width: 0;
 }
 
@@ -152,7 +155,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   align-items: center;
   width: 100%;
   height: var(--cr-checkout-field-height);
-  border: 1.5px solid var(--cr-checkout-field-border);
+  border: 1px solid var(--cr-checkout-field-border);
   border-radius: var(--cr-checkout-field-radius);
   background: var(--cr-white);
   box-shadow: none;
@@ -160,11 +163,9 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection__rendered {
   min-width: 0;
-  padding: 15px 36px 12px 14px;
+  padding: 12px 36px 9px 13px;
   color: var(--cr-ink);
-  font: inherit;
-  font-weight: 300;
-  line-height: 1.35;
+  font: 400 14px/20px "Roboto", Arial, sans-serif;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection__arrow {
@@ -485,15 +486,15 @@ body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocomm
   box-sizing: border-box;
 }
 
-/* Delivery surfaces share the Cart inset independently. */
+/* The outer .cr-shell owns the page rail; delivery heading and fields add no second inset. */
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-delivery-heading {
-  margin-inline: var(--cr-cart-card-inline-gutter);
+  margin-inline: 0;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper {
   width: auto;
   min-width: 0;
-  margin-inline: var(--cr-cart-card-inline-gutter);
+  margin-inline: 0;
   box-sizing: border-box;
 }
 
@@ -1391,38 +1392,49 @@ body.cr-cecabank-redirect-page .cr-cecabank-redirect__message {
 }
 
 
-/* Presentation hotfix: keep delivery labels in normal flow and unify controls with the clean login-field geometry. */
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row { margin-bottom: 16px; }
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row input.input-text,
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row textarea,
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row select {
-  min-height: 48px;
-  padding: 10px 13px;
-  border-width: 1px;
-  border-radius: 13px;
-  background-color: #fff;
+/* Match Checkout controls to the canonical Login field geometry without a second override block. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row {
+  margin-bottom: var(--cr-checkout-field-row-gap);
 }
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection--single {
-  height: 48px;
-  min-height: 48px;
-  border-width: 1px;
-  border-radius: 13px;
-  background-color: #fff;
+  min-height: var(--cr-checkout-field-height);
 }
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection__rendered {
-  padding: 10px 36px 10px 13px;
-  line-height: 1.35;
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection__arrow {
+  height: var(--cr-checkout-field-height);
 }
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection__arrow { height: 48px; }
-/* Remove only the native WooCommerce login-toggle notice skin; preserve its notice/link and native toggle behavior. */
-body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-login-toggle,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row input.input-text:-webkit-autofill,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row textarea:-webkit-autofill,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--cr-white) inset;
+  -webkit-text-fill-color: var(--cr-ink);
+  caret-color: var(--cr-ink);
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row.woocommerce-invalid input.input-text,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row.woocommerce-invalid textarea,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row.woocommerce-invalid select,
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row.woocommerce-invalid .select2-selection--single {
+  border-color: #c66b61;
+  outline: none;
+  box-shadow: none;
+}
+/* Keep WooCommerce's native login notice and toggle, but assign the inset only once. */
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-login-toggle {
+  width: 100%;
+  max-width: none;
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--cr-ink);
+  box-shadow: none;
+}
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-login-toggle .woocommerce-info {
   width: auto;
   max-width: none;
-  margin: 0 var(--cr-cart-card-inline-gutter) 16px;
+  margin: 0;
   padding: 0;
   border: 0;
-  border-top: 0;
   border-radius: 0;
   background: transparent;
   color: var(--cr-ink);
