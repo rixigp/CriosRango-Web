@@ -328,11 +328,11 @@ test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_TRANSPARENT_WITHOUT_GEOMETRY_OVERRIDE
   assert.match(php, /'Current password \(leave blank to leave unchanged\)'\s*=>\s*'Contraseña actual'/);
   assert.match(php, /'New password \(leave blank to leave unchanged\)'\s*=>\s*'Nueva contraseña'/);
   assert.match(php, /'Confirm new password'\s*=>\s*'Confirmar nueva contraseña'/);
-  const controlBox = controlsCss.match(/\.cr-control__box\s*\{([^}]*)\}/);
-  assert.ok(controlBox, 'canonical control box rule exists');
-  assert.match(controlBox[1], /background\s*:\s*var\(--cr-control-background\)/i, 'control box consumes the canonical background token');
+  const controlShell = controlsCss.match(/\.cr-control-shell\s*\{([^}]*)\}/);
+  assert.ok(controlShell, 'canonical fieldset control shell exists');
+  assert.match(controlShell[1], /background\s*:\s*var\(--cr-control-background\)/i, 'control shell consumes the canonical white background token');
   assert.match(controlsCss, /:root\s*\{[^}]*--cr-control-background:\s*#fff/s, 'canonical control background token resolves to white');
-  assert.match(controlsCss, /\.cr-control__label\s*\{[^}]*background:\s*var\(--cr-app-canvas(?:,\s*#FCFAF7)?\)/s, 'label uses the page canvas to cut the border');
+  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s, 'native legend creates the border opening without a background patch');
   const passwordFieldRules = [...css.matchAll(/([^{}]*?(?:#password_current|#password_1|#password_2)[^{}]*)\{([^}]*)\}/g)];
   assert.ok(passwordFieldRules.length > 0, 'password field-specific rules exist');
   for (const rule of passwordFieldRules) {

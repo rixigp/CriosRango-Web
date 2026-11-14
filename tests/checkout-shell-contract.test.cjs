@@ -222,12 +222,11 @@ test('Login, Checkout and Select2 consume one canonical form-control token sourc
   assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
 });
 
-test('delivery labels use the canonical floating-label border cut and white control surface', () => {
-  assert.match(controlsCss, /\.cr-control__label\s*\{[^}]*background:\s*var\(--cr-app-canvas(?:,\s*#FCFAF7)?\)/s);
-  assert.match(controlsCss, /\.cr-control__box\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
-  assert.match(controlsCss, /\.cr-control__box\s*\{[^}]*border:\s*var\(--cr-control-border-width\)\s+solid\s+var\(--cr-control-border\)/s);
-  assert.match(controlsCss, /\.cr-control:focus-within \.cr-control__box/);
-  assert.doesNotMatch(controlsCss, /cr-control-shell|createElement\('fieldset'\)|createElement\('legend'\)/);
+test('delivery labels use the native legend notch and canonical white control surface', () => {
+  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s);
+  assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
+  assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*border:\s*var\(--cr-control-border-width\)\s+solid\s+var\(--cr-control-border\)/s);
+  assert.match(controlsCss, /\.cr-control-shell:focus-within/);
   assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
 });
 
@@ -252,12 +251,12 @@ test('WooCommerce core full shipping labels lose only the appended price separat
   assert.equal(removeCoreSeparator('Envío gratuito: <small>Gratis</small>', 'Envío gratuito'), 'Envío gratuito <small>Gratis</small>');
 });
 
-test('checkout consumes the shared floating-label control without replacing native WooCommerce labels', () => {
-  assert.ok(controlsCss.includes('.cr-control__label'));
-  assert.ok(controlsCss.includes('.cr-control__box'));
+test('checkout consumes the shared native fieldset control without replacing native WooCommerce labels', () => {
+  assert.ok(controlsCss.includes('.cr-control-shell'));
+  assert.ok(controlsCss.includes('.cr-control-shell > legend'));
   assert.ok(controlsCss.includes('background: var(--cr-control-background)'));
-  assert.match(controlsCss, /background:\s*var\(--cr-app-canvas(?:,\s*#FCFAF7)?\)/);
-  assert.doesNotMatch(controlsCss, /cr-control-shell|fieldset.*legend/);
+  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s);
+  assert.doesNotMatch(controlsCss, /cr-control__box|cr-control__label|--cr-app-canvas/);
   assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
 });
 

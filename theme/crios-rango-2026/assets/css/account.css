@@ -331,13 +331,13 @@
     width: 100%;
     margin: 0 0 14px;
   }
-  body.woocommerce-account .woocommerce-EditAccountForm fieldset {
+  body.woocommerce-account .woocommerce-EditAccountForm > fieldset {
     margin: 18px 0 14px;
     padding: 14px 0 0;
     border: 0;
     border-top: 1px solid rgba(32,36,31,.09);
   }
-  body.woocommerce-account .woocommerce-EditAccountForm fieldset legend {
+  body.woocommerce-account .woocommerce-EditAccountForm > fieldset > legend {
     padding: 0 0 10px;
     color: #183b35;
     font: 400 16px/22px "Roboto", Arial, sans-serif;

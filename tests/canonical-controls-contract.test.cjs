@@ -3,18 +3,21 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const theme=path.resolve(__dirname,'../theme/crios-rango-2026'),read=p=>fs.readFileSync(path.join(theme,p),'utf8');
 const controls=read('assets/css/controls.css'),assets=read('inc/assets.php'),wpLogin=read('assets/js/form-controls.js'),accountCss=read('assets/css/account.css'),checkoutCss=read('assets/css/checkout.css');
 test('WALLET_ICON_BADGE_SINGLE_SOURCE=YES',()=>{const cart=read('assets/js/cart-ui.js'),loyalty=read('assets/js/account-loyalty.js');assert.match(cart,/cr-wallet-icon-badge cr-cart-wallet__icon/);assert.match(loyalty,/cr-wallet-icon-badge cr-account-loyalty__wallet-icon/);assert.match(controls,/\.cr-wallet-icon-badge\s*\{/);assert.match(controls,/--cr-wallet-badge-size:\s*38px/);});
-test('CR_CONTROL_WRAPPER=YES; CR_CONTROL_LABEL=YES; CR_CONTROL_BOX=YES; CONTROL_BACKGROUND_WHITE=YES; NO_ARTIFICIAL_FIELDSET_LEGEND=YES', () => {
-  assert.match(controls, /\.cr-control\s*\{[^}]*position:\s*relative/);
-  assert.match(controls, /\.cr-control__label\s*\{[^}]*position:\s*absolute/);
-  assert.match(controls, /\.cr-control__label\s*\{[^}]*background:\s*var\(--cr-app-canvas(?:,\s*#FCFAF7)?\)/);
-  assert.match(controls, /:root\s*\{[^}]*--cr-control-background:\s*#fff/s);
-  assert.match(controls, /\.cr-control__box\s*\{[^}]*background:\s*var\(--cr-control-background\)/);
-  assert.match(controls, /\.cr-control__box\s*\{[^}]*border:\s*var\(--cr-control-border-width\)\s+solid\s+var\(--cr-control-border\)/);
-  assert.match(controls, /\.cr-control__box\s*\{[^}]*border-radius:\s*var\(--cr-control-radius\)/);
+test('CR_CONTROL_SHELL=YES; NATIVE_FIELDSET_LEGEND_NOTCH=YES; WHITE_SURFACE=YES', () => {
+  assert.match(controls, /\.cr-control-shell\s*\{[^}]*height:\s*var\(--cr-control-height\)/s);
+  assert.match(controls, /\.cr-control-shell\s*\{[^}]*border:\s*var\(--cr-control-border-width\)\s+solid\s+var\(--cr-control-border\)/s);
+  assert.match(controls, /\.cr-control-shell\s*\{[^}]*border-radius:\s*var\(--cr-control-radius\)/s);
+  assert.match(controls, /\.cr-control-shell\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
+  assert.match(controls, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*position:\s*relative/s);
+  assert.match(controls, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s);
+  assert.match(controls, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*font:\s*300 11px\/16px/s);
   assert.match(controls, /:root\s*\{[^}]*--cr-control-height:\s*48px;[^}]*--cr-control-radius:\s*9px/s);
-  assert.doesNotMatch(controls, /cr-control-shell|\.cr-control\s*>\s*legend/);
-  assert.doesNotMatch(wpLogin, /createElement\('fieldset'\)|createElement\('legend'\)|cr-control-shell/);
-  assert.match(wpLogin, /cr-control__label/);
-  assert.match(wpLogin, /cr-control__box/);
+  assert.match(controls, /:root\s*\{[^}]*--cr-control-background:\s*#fff/s);
+  assert.match(wpLogin, /createElement\('fieldset'\)/);
+  assert.match(wpLogin, /createElement\('legend'\)/);
+  assert.match(wpLogin, /cr-control-shell/);
+  assert.doesNotMatch(controls, /cr-control__box|cr-control__label|--cr-app-canvas/);
+  assert.match(accountCss, /body\.woocommerce-account \.woocommerce-EditAccountForm > fieldset\s*\{/);
+  assert.match(accountCss, /body\.woocommerce-account \.woocommerce-EditAccountForm > fieldset > legend\s*\{/);
 });
-test('ALL_FORMS_CONSUME_ONE_CANONICAL_COMPONENT_AND_NATIVE_SELECT2',()=>{assert.match(assets,/\$uses_account_app_skin \|\| \$uses_checkout_shell[\s\S]*?assets\/js\/form-controls\.js/);assert.match(wpLogin,/#loginform[\s\S]*#lostpasswordform[\s\S]*#resetpassform/);assert.match(controls,/\.select2-selection--single/);assert.match(controls,/\.cr-control__box \.select2-selection__arrow/);assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);assert.doesNotMatch(accountCss,/woocommerce-EditAccountForm label/);});
+test('ALL_FORMS_CONSUME_ONE_CANONICAL_COMPONENT_AND_NATIVE_SELECT2',()=>{assert.match(assets,/\$uses_account_app_skin \|\| \$uses_checkout_shell[\s\S]*?assets\/js\/form-controls\.js/);assert.match(wpLogin,/#loginform[\s\S]*#lostpasswordform[\s\S]*#resetpassform/);assert.match(controls,/\.select2-selection--single/);assert.match(controls,/\.cr-control-shell \.select2-selection__arrow/);assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);assert.doesNotMatch(accountCss,/woocommerce-EditAccountForm label/);});
