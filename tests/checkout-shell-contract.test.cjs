@@ -199,11 +199,11 @@ test('delivery field semantics define five full-width fields and two half-width 
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
 });
 
-test('delivery controls and floating-label notch use the white card surface', () => {
-  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*background:\s*var\(--cr-white\)/s);
+test('delivery labels remain in normal flow and native controls use the white field surface', () => {
+  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*position:\s*static;[^}]*display:\s*block;[^}]*background:\s*transparent/s);
   assert.match(checkoutCss, /\.form-row input\.input-text,[\s\S]*?\.form-row select\s*\{[^}]*background:\s*var\(--cr-white\)/s);
   assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper \.select2-selection--single\s*\{[^}]*background:\s*var\(--cr-white\)/s);
-  assert.match(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*position:\s*absolute;[^}]*transform:\s*translateY\(-50%\)/s);
+  assert.doesNotMatch(checkoutCss, /\.woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{[^}]*position:\s*absolute;[^}]*transform:\s*translateY\(-50%\)/s);
 });
 
 test('WooCommerce core full shipping labels lose only the appended price separator in Checkout', () => {
@@ -227,12 +227,11 @@ test('WooCommerce core full shipping labels lose only the appended price separat
   assert.equal(removeCoreSeparator('Envío gratuito: <small>Gratis</small>', 'Envío gratuito'), 'Envío gratuito <small>Gratis</small>');
 });
 
-test('delivery labels float over native controls and retain the real WooCommerce label element', () => {
+test('delivery labels use normal flow while retaining the real WooCommerce label element', () => {
   assert.ok(checkoutCss.includes(".woocommerce-billing-fields__field-wrapper > .form-row > label {"));
-  assert.ok(checkoutCss.includes("position: absolute;"));
-  assert.ok(checkoutCss.includes("transform: translateY(-50%);"));
-  assert.ok(checkoutCss.includes("background: var(--cr-white);"));
-  assert.ok(checkoutCss.includes("pointer-events: none;"));
+  assert.ok(checkoutCss.includes("position: static;"));
+  assert.ok(checkoutCss.includes("display: block;"));
+  assert.ok(checkoutCss.includes("background: transparent;"));
   assert.ok(checkoutCss.includes(".form-row input.input-text"));
   assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
 });
