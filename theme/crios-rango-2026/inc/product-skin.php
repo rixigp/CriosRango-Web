@@ -186,10 +186,19 @@ function cr2026_product_skin_toolbar() {
         return;
     }
     $fallback_url = cr2026_product_skin_back_fallback_url( $product->get_id() );
-    echo '<div class="cr-product-detail-toolbar cr-parent-category__toolbar">';
-    echo '<a class="cr-parent-category__back" href="' . esc_url( $fallback_url ) . '" data-fallback-url="' . esc_url( $fallback_url ) . '" data-site-path="' . esc_attr( wp_parse_url( home_url( '/' ), PHP_URL_PATH ) ) . '" aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
-    echo '<h1 class="cr-parent-category__title">' . esc_html( $product->get_name() ) . '</h1>';
-    echo '</div>';
+    cr2026_render_category_toolbar(
+        $product->get_name(),
+        $fallback_url,
+        'product',
+        false,
+        '',
+        '',
+        'cr-product-detail-toolbar',
+        array(
+            'data-fallback-url' => $fallback_url,
+            'data-site-path' => wp_parse_url( home_url( '/' ), PHP_URL_PATH ),
+        )
+    );
 }
 add_action( 'woocommerce_before_single_product', 'cr2026_product_skin_toolbar', 5 );
 

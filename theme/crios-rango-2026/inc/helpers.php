@@ -174,12 +174,21 @@ function cr2026_checkout_render_toolbar() {
 }
 add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_render_toolbar', 5 );
 
-function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context = 'parent', $show_filters = true, $right_action_html = '', $title_id = '' ) {
+function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context = 'parent', $show_filters = true, $right_action_html = '', $title_id = '', $toolbar_extra_class = '', $back_attributes = array() ) {
     $title_id_attribute = '' !== $title_id ? ' id="' . esc_attr( $title_id ) . '"' : '';
     $toolbar_class = '' === $back_url ? 'cr-parent-category__toolbar cr-parent-category__toolbar--no-back' : 'cr-parent-category__toolbar';
+    if ( '' !== $toolbar_extra_class ) {
+        $toolbar_class .= ' ' . sanitize_html_class( $toolbar_extra_class );
+    }
+    $back_attribute_html = '';
+    foreach ( (array) $back_attributes as $attribute_name => $attribute_value ) {
+        if ( in_array( $attribute_name, array( 'data-fallback-url', 'data-site-path' ), true ) && is_scalar( $attribute_value ) ) {
+            $back_attribute_html .= ' ' . $attribute_name . '="' . esc_attr( (string) $attribute_value ) . '"';
+        }
+    }
     echo '<div class="' . esc_attr( $toolbar_class ) . '">';
     if ( '' !== $back_url ) {
-        echo '<a class="cr-parent-category__back" href="' . esc_url( $back_url ) . '" aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
+        echo '<a class="cr-parent-category__back" href="' . esc_url( $back_url ) . '"' . $back_attribute_html . ' aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
     }
     echo '<h1 class="cr-parent-category__title"' . $title_id_attribute . '>' . esc_html( $title ) . '</h1>';
     if ( '' !== $right_action_html ) {
@@ -600,10 +609,10 @@ function cr2026_product_card( $product ) {
     }
 
     $url   = get_permalink( $product->get_id() );
-    $image = $product->get_image( 'woocommerce_thumbnail', array( 'loading' => 'lazy' ) );
+    $image = $product->get_image( 'woocommerce_thumbnail', array( 'loading' => 'lazy', 'class' => 'cr-product-card__image' ) );
     ?>
     <article class="cr-product-card">
-        <a class="cr-product-card__image" href="<?php echo esc_url( $url ); ?>">
+        <a class="cr-product-card__media" href="<?php echo esc_url( $url ); ?>">
             <?php echo wp_kses_post( $image ); ?>
             <?php cr2026_render_product_sale_badge( $product ); ?>
         </a>

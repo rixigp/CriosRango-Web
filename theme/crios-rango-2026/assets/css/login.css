@@ -5,7 +5,7 @@
   --cr-login-green-hover: #244B43;
   --cr-login-text: #26312D;
   --cr-login-muted: #747B76;
-  --cr-login-border: #E3E5DF;
+  --cr-login-border: var(--cr-control-border);
   --cr-login-radius: 18px;
 }
 body.login {
@@ -67,12 +67,12 @@ body.login * { box-sizing: border-box; }
 .login form .input, .login input[type="text"], .login input[type="password"],
 .login input[type="email"], .login input[type="tel"] {
   width: 100%;
-  min-height: 48px;
+  min-height: var(--cr-control-height);
   margin: 6px 0 16px;
-  padding: 10px 13px;
-  border: 1px solid var(--cr-login-border);
-  border-radius: 13px;
-  background: #fff;
+  padding: var(--cr-control-padding);
+  border: var(--cr-control-border-width) solid var(--cr-control-border);
+  border-radius: var(--cr-control-radius);
+  background: var(--cr-control-background);
   color: var(--cr-login-text);
   font: 400 15px/1.4 Roboto, Arial, sans-serif;
   box-shadow: none;
@@ -80,8 +80,8 @@ body.login * { box-sizing: border-box; }
 .login form .input:focus, .login input[type="text"]:focus,
 .login input[type="password"]:focus, .login input[type="email"]:focus,
 .login input[type="tel"]:focus {
-  border-color: var(--cr-login-green);
-  outline: 2px solid rgba(24, 59, 53, .16);
+  border-color: var(--cr-control-focus-border);
+  outline: var(--cr-control-focus-outline);
   outline-offset: 1px;
   box-shadow: none;
 }

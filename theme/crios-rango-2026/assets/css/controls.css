@@ -1,0 +1,12 @@
+:root {
+  --cr-control-height: 48px;
+  --cr-control-border-width: 1px;
+  --cr-control-border: #d8d9d5;
+  --cr-control-radius: 9px;
+  --cr-control-background: #fff;
+  --cr-control-padding: 12px 13px 9px;
+  --cr-control-select-padding: 12px 36px 9px 13px;
+  --cr-control-focus-border: #aeb2ad;
+  --cr-control-focus-outline: 2px solid rgba(24, 59, 53, .16);
+  --cr-control-error-border: #c66b61;
+}

@@ -2,10 +2,6 @@
 
 /* Checkout owns its own values for the shared inner-card gutter token. */
 body.woocommerce-checkout:not(.woocommerce-order-received) {
-  --cr-cart-card-inline-gutter: 16px;
-  --cr-checkout-field-height: 48px;
-  --cr-checkout-field-border: #d8d9d5;
-  --cr-checkout-field-radius: 9px;
   --cr-checkout-field-label-size: 13px;
   --cr-checkout-field-row-gap: 16px;
 }
@@ -122,14 +118,14 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   display: block;
   width: 100%;
   min-width: 0;
-  min-height: var(--cr-checkout-field-height);
-  border: 1px solid var(--cr-checkout-field-border);
-  border-radius: var(--cr-checkout-field-radius);
-  background: var(--cr-white);
+  min-height: var(--cr-control-height);
+  border: var(--cr-control-border-width) solid var(--cr-control-border);
+  border-radius: var(--cr-control-radius);
+  background: var(--cr-control-background);
   color: var(--cr-ink);
   box-shadow: none;
   font: 400 14px/20px "Roboto", Arial, sans-serif;
-  padding: 12px 13px 9px;
+  padding: var(--cr-control-padding);
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row input:focus,
@@ -139,7 +135,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row select:focus,
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row select:focus-visible,
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-container--focus .select2-selection--single {
-  border-color: #aeb2ad;
+  border-color: var(--cr-control-focus-border);
   outline: none;
   box-shadow: none;
 }
@@ -154,16 +150,16 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   display: flex;
   align-items: center;
   width: 100%;
-  height: var(--cr-checkout-field-height);
-  border: 1px solid var(--cr-checkout-field-border);
-  border-radius: var(--cr-checkout-field-radius);
-  background: var(--cr-white);
+  height: var(--cr-control-height);
+  border: var(--cr-control-border-width) solid var(--cr-control-border);
+  border-radius: var(--cr-control-radius);
+  background: var(--cr-control-background);
   box-shadow: none;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection__rendered {
   min-width: 0;
-  padding: 12px 36px 9px 13px;
+  padding: var(--cr-control-select-padding);
   color: var(--cr-ink);
   font: 400 14px/20px "Roboto", Arial, sans-serif;
 }
@@ -171,7 +167,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection__arrow {
   top: 0;
   right: 8px;
-  height: var(--cr-checkout-field-height);
+  height: var(--cr-control-height);
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .select2-container--open {
@@ -275,7 +271,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li + li {
-  border-top: 1px solid var(--cr-checkout-field-border);
+  border-top: 1px solid var(--cr-control-border);
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods > li > input.shipping_method[type="radio"] {
@@ -448,18 +444,6 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #order_review > .wooc
   margin: 0;
 }
 
-@media (max-width: 767px) {
-  body.woocommerce-checkout:not(.woocommerce-order-received) {
-    --cr-cart-card-inline-gutter: 11px;
-  }
-}
-
-@media (max-width: 360px) {
-  body.woocommerce-checkout:not(.woocommerce-order-received) {
-    --cr-cart-card-inline-gutter: 9px;
-  }
-}
-
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose {
   width: 100%;
@@ -629,14 +613,14 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-heading {
   width: auto;
   min-width: 0;
-  margin-inline: var(--cr-card-inline-inset);
+  margin-inline: 0;
   box-sizing: border-box;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-heading {
   width: auto;
   min-width: 0;
-  margin-inline: var(--cr-cart-card-inline-gutter);
+  margin-inline: 0;
   box-sizing: border-box;
 }
 
@@ -646,7 +630,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping
   width: auto;
   max-width: none;
   min-width: 0;
-  margin-inline: var(--cr-card-inline-inset);
+  margin-inline: 0;
   margin-block: 0;
   padding: 0;
   border: var(--cr-card-border-width) solid var(--cr-border);
@@ -663,7 +647,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-addition
   min-width: 0;
   box-sizing: border-box;
   margin: 0 0 22px;
-  margin-inline: var(--cr-card-inline-inset);
+  margin-inline: 0;
   overflow: hidden;
   border: var(--cr-card-border-width) solid var(--cr-border);
   border-radius: var(--cr-card-radius);
@@ -763,7 +747,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-
   display: block;
   width: auto;
   min-width: 0;
-  margin-inline: var(--cr-card-inline-inset);
+  margin-inline: 0;
   box-sizing: border-box;
   background: var(--cr-white);
 }
@@ -1018,7 +1002,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-summary-
 
 /* Checkout payment methods: one native WooCommerce list, presented as the shared app card. */
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-payment-heading {
-  margin-inline: var(--cr-card-inline-inset);
+  margin-inline: 0;
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) #payment {
@@ -1036,7 +1020,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #payment > ul.wc_paym
   float: none;
   width: auto;
   min-width: 0;
-  margin: 0 var(--cr-card-inline-inset) 24px;
+  margin: 0 0 24px;
   padding: 0;
   border: var(--cr-card-border-width) solid var(--cr-border);
   border-radius: var(--cr-card-radius);
@@ -1063,7 +1047,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #payment > ul.wc_paym
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) #payment > ul.wc_payment_methods > li.wc_payment_method + li.wc_payment_method {
-  border-top: 1px solid var(--cr-checkout-field-border);
+  border-top: 1px solid var(--cr-control-border);
 }
 
 body.woocommerce-checkout:not(.woocommerce-order-received) #payment .wc_payment_method > input[name="payment_method"][type="radio"] {
@@ -1227,9 +1211,9 @@ body.woocommerce-checkout:not(.woocommerce-order-received) #payment .form-row.pl
 
 body.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order {
   display: block;
-  width: calc(100% - (2 * var(--cr-card-inline-inset)));
+  width: 100%;
   min-height: 56px;
-  margin: 0 var(--cr-card-inline-inset) 24px;
+  margin: 0 0 24px;
   padding: 14px 18px;
   border: 0;
   border-radius: var(--cr-card-radius) !important;
@@ -1397,15 +1381,15 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
   margin-bottom: var(--cr-checkout-field-row-gap);
 }
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection--single {
-  min-height: var(--cr-checkout-field-height);
+  min-height: var(--cr-control-height);
 }
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper .select2-selection__arrow {
-  height: var(--cr-checkout-field-height);
+  height: var(--cr-control-height);
 }
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row input.input-text:-webkit-autofill,
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row textarea:-webkit-autofill,
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row select:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0 1000px var(--cr-white) inset;
+  -webkit-box-shadow: 0 0 0 1000px var(--cr-control-background) inset;
   -webkit-text-fill-color: var(--cr-ink);
   caret-color: var(--cr-ink);
 }
@@ -1413,7 +1397,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row.woocommerce-invalid textarea,
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row.woocommerce-invalid select,
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row.woocommerce-invalid .select2-selection--single {
-  border-color: #c66b61;
+  border-color: var(--cr-control-error-border);
   outline: none;
   box-shadow: none;
 }

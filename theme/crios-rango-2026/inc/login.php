@@ -12,9 +12,16 @@ function cr2026_login_enqueue_scripts() {
     $logo_url = CR2026_URI . $relative_logo;
 
     wp_enqueue_style(
+        'cr2026-controls',
+        CR2026_URI . '/assets/css/controls.css',
+        array(),
+        cr2026_asset_version( 'assets/css/controls.css' )
+    );
+
+    wp_enqueue_style(
         'cr2026-login',
         CR2026_URI . '/assets/css/login.css',
-        array(),
+        array( 'cr2026-controls' ),
         cr2026_asset_version( 'assets/css/login.css' )
     );
 

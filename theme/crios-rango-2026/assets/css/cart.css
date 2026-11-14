@@ -1,7 +1,4 @@
-/* Cart component inset: card gutters are internal component spacing, not the global shell rail. */
-body.woocommerce-cart { --cr-cart-card-inline-gutter:16px; }
-@media(max-width:767px){body.woocommerce-cart{--cr-cart-card-inline-gutter:11px}}
-@media(max-width:360px){body.woocommerce-cart{--cr-cart-card-inline-gutter:9px}}
+/* First-level Cart surfaces align to the canonical page rail. */
 
 
 @media(max-width:767px){}
@@ -845,7 +842,7 @@ body.woocommerce-cart .cr-cart-content .cr-cart-promo-card,
 body.woocommerce-cart .cr-cart-content .cr-cart-applied {
   inline-size:auto;
   min-inline-size:0;
-  margin-inline:var(--cr-cart-card-inline-gutter);
+  margin-inline:0;
   box-sizing:border-box;
 }
 
@@ -854,7 +851,7 @@ body.woocommerce-cart .cr-cart-content .cr-cart-applied {
    This is presentation-only: retain the existing DOM, Store API and checkout hooks. */
 body.woocommerce-cart .cr-cart-promotions > h2,
 body.woocommerce-cart .cr-cart-manual-coupon {
-  margin-inline:var(--cr-cart-card-inline-gutter);
+  margin-inline:0;
 }
 body.woocommerce-cart .cr-cart-promotions > h2 {
   font-weight:600;
@@ -881,7 +878,7 @@ body.woocommerce-cart .cr-cart-content .cr-cart-summary .cr-cart-summary__rows {
   inline-size:auto!important;
   width:auto!important;
   min-inline-size:0;
-  margin:0 var(--cr-cart-card-inline-gutter) 14px!important;
+  margin:0 0 14px!important;
   padding:12px;
   box-sizing:border-box;
   border:1px solid rgba(53,95,75,.12);
@@ -924,7 +921,7 @@ body.woocommerce-cart .cr-cart-content .cr-cart-summary .wc-proceed-to-checkout 
   width:auto!important;
   max-width:none!important;
   min-width:0;
-  margin:0 var(--cr-cart-card-inline-gutter)!important;
+  margin:0!important;
   padding:8px 0 0!important;
   box-sizing:border-box;
 }
@@ -945,7 +942,7 @@ body.woocommerce-cart .cr-cart-promotions .cr-cart-promotions__loading {
   justify-content:center;
   gap:9px;
   min-height:68px;
-  margin-inline:var(--cr-cart-card-inline-gutter);
+  margin-inline:0;
   padding:14px;
   box-sizing:border-box;
   overflow:hidden;
