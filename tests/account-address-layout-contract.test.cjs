@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 
 const root = path.resolve(__dirname, '..');
 const accountCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/account.css'), 'utf8');
+const controlsCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/controls.css'), 'utf8');
 const mainCss = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
 const accountPresentation = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/account-presentation.php'), 'utf8');
 const birthdayContract = fs.readFileSync(path.join(root, 'tests/account-birthday-contract.test.php'), 'utf8');
@@ -130,62 +131,19 @@ function cssPaddingLeft(rule) {
 }
 
 test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
-  const fieldContractStart = accountCss.indexOf('body.woocommerce-account :is(.woocommerce-EditAccountForm, .woocommerce-address-fields) .form-row :is(');
-  const fieldContractOpen = accountCss.indexOf('{', fieldContractStart);
-  const fieldContractClose = accountCss.indexOf('}', fieldContractOpen);
-  const fieldContract = accountCss.slice(fieldContractOpen, fieldContractClose);
-  assert.ok(fieldContractStart >= 0 && fieldContractOpen > fieldContractStart && fieldContractClose > fieldContractOpen, 'canonical Account field contract exists');
-  assert.match(fieldContract, /padding:\s*12px 13px 9px !important/);
-
-  const addressStart = accountCss.indexOf('/* Mobile native shipping address form:');
-  const addressEnd = accountCss.indexOf('/* Password app subview:', addressStart);
-  const addressBlock = accountCss.slice(addressStart, addressEnd);
-  const nativeSelect = addressBlock.match(/body\.woocommerce-account\.woocommerce-edit-address \.woocommerce-address-fields select \{([\s\S]*?)\n \}/);
-  const select2ValueStart = addressBlock.lastIndexOf('body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields .select2-selection__rendered {');
-  const select2ValueOpen = addressBlock.indexOf('{', select2ValueStart);
-  const select2ValueClose = addressBlock.indexOf('}', select2ValueOpen);
-  const select2Value = addressBlock.slice(select2ValueOpen, select2ValueClose);
-  assert.ok(nativeSelect, 'native shipping select alignment override exists');
-  assert.ok(select2ValueStart >= 0 && select2ValueOpen > select2ValueStart && select2ValueClose > select2ValueOpen, 'visible Select2 value alignment override exists');
-  assert.match(nativeSelect[1], /padding-inline-start:\s*13px !important/);
-  assert.match(nativeSelect[1], /text-indent:\s*0 !important/);
-  assert.match(select2Value, /padding-inline-start:\s*13px !important/);
-  assert.match(select2Value, /text-indent:\s*0 !important/);
-  assert.match(addressBlock, /\.select2-selection__arrow \{[\s\S]*?height:\s*50px/);
-  assert.doesNotMatch(nativeSelect[1], /appearance\s*:/i);
+  assert.match(controlsCss, /--cr-control-padding:\s*12px 13px 9px/);
+  assert.match(controlsCss, /--cr-control-select-padding:\s*12px 36px 9px 13px/);
+  assert.match(controlsCss, /body\.woocommerce-account :is\(\.woocommerce-EditAccountForm,\.woocommerce-address-fields\) \.form-row/);
+  assert.match(controlsCss, /\.woocommerce form \.form-row \.select2-selection__arrow/);
+  assert.doesNotMatch(accountCss, /padding-inline-start:\s*13px !important/);
+  assert.doesNotMatch(accountCss, /\.woocommerce-address-fields \.select2-selection__rendered\s*\{/);
 });
 
-
 test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
-  const rules = parseAccountCssRules(accountCss);
-  const genericRules = rules.filter(rule => {
-    const selector = rule.selector;
-    return /body\s*\.woocommerce-account/i.test(selector)
-      && /woocommerce-address-fields/i.test(selector)
-      && /woocommerce-EditAccountForm/i.test(selector)
-      && /\binput\b/i.test(selector)
-      && /\bselect\b/i.test(selector)
-      && /\btextarea\b/i.test(selector);
-  });
-
-  assert.ok(genericRules.length > 0, 'shared Account field selector exists');
-  assert.ok(genericRules.every(rule => !/\.select2-selection--single/i.test(rule.selector)),
-    'generic field selectors exclude the Select2 outer wrapper');
-  assert.ok(genericRules.some(rule => cssPaddingLeft(rule) === '13px'),
-    'generic input/select/textarea fields use a 13px left inset');
-
-  const select2OuterRules = rules.filter(rule =>
-    /\.select2-selection--single/i.test(rule.selector)
-    && !/\.select2-selection__rendered/i.test(rule.selector)
-  );
-  assert.ok(select2OuterRules.some(rule => cssPaddingLeft(rule) === '0'),
-    'dedicated Select2 outer rule resets padding to zero');
-
-  const renderedValueRules = rules.filter(rule =>
-    /\.select2-selection__rendered/i.test(rule.selector)
-  );
-  assert.ok(renderedValueRules.some(rule => cssPaddingLeft(rule) === '13px'),
-    'Select2 rendered value uses the same 13px left inset as inputs');
+  assert.match(controlsCss, /\.woocommerce form \.form-row \.select2-selection--single\s*\{[^}]*padding:0 !important/);
+  assert.match(controlsCss, /\.woocommerce form \.form-row \.select2-selection__rendered\s*\{[^}]*padding:var\(--cr-control-select-padding\)/);
+  assert.match(controlsCss, /--cr-control-padding:\s*12px 13px 9px/);
+  assert.match(controlsCss, /--cr-control-select-padding:\s*12px 36px 9px 13px/);
 });
 
 test('ADDRESS_SCREEN_USES_ONLY_THE_GLOBAL_BOTTOM_NAV_RESERVED_SPACE', () => {
