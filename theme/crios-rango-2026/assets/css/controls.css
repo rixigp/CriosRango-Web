@@ -10,6 +10,7 @@
   --cr-control-focus-outline: none;
   --cr-control-error-border: #c66b61;
   --cr-control-label-color: #777b77;
+  --cr-control-label-notch: linear-gradient(to bottom, transparent 0 3px, var(--cr-control-background) 3px 5px, transparent 5px 100%);
   --cr-wallet-badge-size: 38px;
   --cr-wallet-badge-background: #D7E8E1;
   --cr-wallet-badge-color: #0F5C4D;
@@ -29,13 +30,13 @@
 body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date { position:relative; padding-top:5px; margin-bottom:18px; }
 body.woocommerce-account .woocommerce-EditAccountForm .cr-account-birth-date > label {
   position:absolute !important; top:-3px !important; left:11px !important; margin:0 !important; padding:0 5px !important;
-  background:var(--cr-app-canvas) !important; color:var(--cr-control-label-color) !important;
+  background:var(--cr-control-label-notch) !important; color:var(--cr-control-label-color) !important;
   font:300 11px/16px "Roboto",Arial,sans-serif !important;
 }
 .woocommerce form .form-row > label:not(.woocommerce-form__label-for-checkbox):not(.woocommerce-form-login__rememberme) {
   position:absolute !important; z-index:2; top:-3px !important; left:11px !important; display:inline-block !important;
   width:auto !important; max-width:calc(100% - 24px) !important; margin:0 !important; padding:0 5px !important;
-  overflow:hidden; transform:none !important; background:var(--cr-app-canvas) !important; color:var(--cr-control-label-color) !important;
+  overflow:hidden; transform:none !important; background:var(--cr-control-label-notch) !important; color:var(--cr-control-label-color) !important;
   font:300 11px/16px "Roboto",Arial,sans-serif !important; text-overflow:ellipsis; white-space:nowrap; pointer-events:none;
 }
 .woocommerce form .form-row .woocommerce-input-wrapper,
@@ -57,7 +58,7 @@ body.woocommerce-account :is(.woocommerce-EditAccountForm,.woocommerce-address-f
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row > label,
 body.woocommerce-account:not(.logged-in) .woocommerce-form-login .form-row > label {
   position:absolute !important; top:-3px !important; left:11px !important; margin:0 !important; padding:0 5px !important;
-  background:var(--cr-app-canvas) !important; color:var(--cr-control-label-color) !important;
+  background:var(--cr-control-label-notch) !important; color:var(--cr-control-label-color) !important;
   font:300 11px/16px "Roboto",Arial,sans-serif !important;
 }
 .woocommerce form .form-row :is(input,textarea,select):focus,
@@ -98,7 +99,7 @@ body.login #loginform > p:not(.forgetmenot), body.login #lostpasswordform > p, b
 body.login #loginform label.cr-form-control, body.login #lostpasswordform label.cr-form-control, body.login #resetpassform label.cr-form-control { position:relative; display:block; padding-top:5px; }
 body.login .cr-form-control__label {
   position:absolute; z-index:2; top:-3px; left:11px; max-width:calc(100% - 24px); padding:0 5px; overflow:hidden;
-  background:var(--cr-login-cream,var(--cr-app-canvas)); color:var(--cr-control-label-color);
+  background:var(--cr-control-label-notch); color:var(--cr-control-label-color);
   font:300 11px/16px "Roboto",Arial,sans-serif; text-overflow:ellipsis; white-space:nowrap; pointer-events:none;
 }
 body.login #loginform .input, body.login #lostpasswordform .input, body.login #resetpassform .input {
