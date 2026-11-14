@@ -110,7 +110,7 @@ test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_
 });
 
 test('LOGOUT_LOADING_STATE=YES; LOGOUT_DOUBLE_CLICK_PROTECTED=YES; LOGOUT_NATIVE_URL_PRESERVED=YES',()=>{
-  assert.match(dashboard,/class="cr-account-profile-home__action cr-account-profile-home__action--logout" href="<\?php echo esc_url\( wc_logout_url\(\) \); \?>"/,'native Woo logout URL remains the link destination');
+  assert.match(presentation,/class="cr-account-profile-home__action cr-account-profile-home__action--logout" href="<\?php echo esc_url\( wc_logout_url\(\) \); \?>"/,'native Woo logout URL remains the link destination');
   assert.match(mainJs,/\.cr-account-profile-home__action--logout/,'logout loading behavior is restricted to the native Account logout link');
   assert.match(mainJs,/link\.dataset\.crLogoutLoading === 'true'[\s\S]*?event\.preventDefault\(\)/,'second logout click is prevented');
   assert.match(mainJs,/label\.textContent = 'Cerrando sesión…'/,'logout loading copy is shown');
