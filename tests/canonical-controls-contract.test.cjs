@@ -45,5 +45,5 @@ test('GLOBAL_CONTROL_VALUE_ALIGNMENT_HAS_SINGLE_CONTROL_PADDING_SOURCE',()=>{
   assert.match(controls,/\.cr-control-shell \.select2-selection__arrow\s*\{[^}]*top:\s*0\s*!important[^}]*right:\s*8px\s*!important[^}]*height:\s*100%\s*!important/s);
   assert.match(controls,/\.cr-control-shell input\[type="password"\]\s*\{[^}]*padding:\s*0 48px 0 14px\s*!important/s);
   assert.match(controls,/\.cr-control-shell \.show-password-input\s*\{[^}]*top:\s*50%\s*!important[^}]*right:\s*14px\s*!important[^}]*transform:\s*translateY\(-50%\)\s*!important/s);
-  assert.match(controls,/\\.woocommerce form \\.form-row > label abbr\\.required[\\s\\S]*?display:\\s*none\\s*!important/);
+  assert.match(controls,/\.woocommerce form \.form-row > label abbr\.required[\s\S]*?display:\s*none\s*!important/);
 });
