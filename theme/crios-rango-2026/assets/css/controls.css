@@ -16,7 +16,7 @@
   --cr-control-label-line-height: 16px;
   --cr-control-label-weight: 400;
   --cr-control-label-color: #777277;
-  --cr-control-background: transparent;
+  --cr-control-background: #FFFFFF;
   --cr-control-focus-outline: none;
   --cr-control-error-border: #c66b61;
   --cr-wallet-badge-size: 38px;
@@ -39,13 +39,13 @@
   position: relative; display: flex; align-items: center; box-sizing: border-box;
   width: 100%; min-width: 0; height: var(--cr-control-height); min-height: var(--cr-control-height);
   margin: 0; padding: 0; border: var(--cr-control-border-width) solid var(--cr-control-border);
-  border-radius: var(--cr-control-radius); background: transparent;
+  border-radius: var(--cr-control-radius); background: var(--cr-control-background);
 }
 .cr-control-shell:focus-within { border-width: var(--cr-control-border-width-focus); border-color: var(--cr-control-border-focus); }
 .cr-control-shell > legend {
   position: relative; float: none; width: auto; max-width: calc(100% - 24px);
   margin: 0 0 0 12px; padding: 0 4px; color: #777277;
-  background: var(--cr-app-canvas, #FCFAF7);
+  background: var(--cr-control-background);
   font-family: "Roboto", Arial, sans-serif; font-size: 13px; font-weight: 400; line-height: 16px;
   white-space: nowrap;
 }
@@ -109,7 +109,7 @@
 .woocommerce form .form-row.billing_country_field .cr-control-shell,
 .woocommerce form .form-row.shipping_country_field .cr-control-shell { border-radius: var(--cr-control-select-radius); }
 .cr-control-shell:has(:is(input,textarea,select):disabled), .cr-control-shell:has(.select2-selection--single[aria-disabled="true"]) { opacity: .65; }
-.cr-control-shell:has(:is(input,textarea,select):-webkit-autofill) { background: transparent; }
+.cr-control-shell:has(:is(input,textarea,select):-webkit-autofill) { background: var(--cr-control-background); }
 .woocommerce form .form-row.woocommerce-invalid .cr-control-shell { border-color: var(--cr-control-error-border); }
 .woocommerce form .form-row .select2-container--open { z-index: 100000; }
 .woocommerce form .form-row .select2-container--focus { outline: none; }
