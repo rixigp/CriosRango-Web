@@ -53,3 +53,23 @@ test('CR_CONTROL_SHELL=YES; NATIVE_FIELDSET_LEGEND_NOTCH=YES; MATERIAL3_TRANSPAR
   assert.match(controls,/billing_state_field[\s\S]*?border-radius:\s*var\(--cr-control-select-radius\)/);
   assert.match(controls,/billing_country_field[\s\S]*?border-radius:\s*var\(--cr-control-select-radius\)/);
 });
+test('PERSONAL_ACCOUNT_SHELL_EXCLUSION_AND_CONTENT_LAYER_IDEMPOTENCE_CONTRACT',()=>{
+  const presentation=read('inc/account-presentation.php');
+  assert.match(accountCss,/\.woocommerce-EditAccountForm > fieldset:not\(\.cr-control-shell\)\s*\{\s*display:\s*none\s*!important/s);
+  assert.match(accountCss,/\.woocommerce-EditAccountForm fieldset:not\(\.cr-control-shell\)\s*\{\s*display:\s*none\s*!important/s);
+  assert.doesNotMatch(accountCss,/\.woocommerce-EditAccountForm(?:\s*>|\s+)fieldset\s*\{\s*display:\s*none\s*!important/s);
+  assert.match(presentation,/class="cr-account-birth-date__value"/);
+  assert.match(presentation,/data-birth-date-source="wordpress-user-meta"/);
+  assert.match(wpLogin,/row\.dataset\.crControl === 'true'/);
+  assert.match(wpLogin,/alreadyCanonical\(row\)/);
+  assert.match(wpLogin,/alreadyCanonical\(original\)/);
+  assert.match(wpLogin,/content\.className = 'cr-control-shell__content'/);
+  assert.match(wpLogin,/content\.appendChild\(original\)/);
+  assert.match(wpLogin,/window\.cr2026EnhanceFormControls = enhance/);
+  assert.match(controls,/\.cr-control-shell__content\s*\{[^}]*inset:\s*0;[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*height:\s*100%/s);
+  assert.match(controls,/\.cr-control-shell__content input[^{}]*height:\s*24px\s*!important/);
+  assert.match(controls,/\.cr-control-shell__content select\s*\{[^}]*padding:\s*0 48px 0 16px\s*!important/s);
+  assert.match(controls,/\.cr-control-shell__content \.select2-selection__rendered\s*\{[^}]*height:\s*24px\s*!important/);
+  assert.match(controls,/\.cr-control-shell__content input\[type="password"\][\s\S]*?padding:\s*0 48px 0 16px\s*!important/s);
+  assert.match(controls,/\.cr-control-shell \.show-password-input\s*\{[^}]*top:\s*50%[^}]*right:\s*16px[^}]*translateY\(-50%\)/s);
+});
