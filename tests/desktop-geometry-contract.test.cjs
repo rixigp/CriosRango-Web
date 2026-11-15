@@ -68,7 +68,7 @@ test('DESKTOP_GRID_COLUMNS_RESPONSIVE=PASS — archive and category cards use fl
 test('DESKTOP_FOOTER_CANONICAL_RAIL=PASS — footer inner rails consume the same token formula', () => {
   const layer = desktop('main.css');
   assert.match(layer, /width: min\(calc\(100vw - var\(--cr-desktop-sidebar\) - 2 \* var\(--cr-desktop-gutter\)\), var\(--cr-desktop-content-max\)\)/);
-  assert.match(layer, /\.cr-footer__grid, \.cr-footer__bottom[\s\S]*?margin-left: calc\(var\(--cr-desktop-sidebar\) \+ max\(var\(--cr-desktop-gutter\)/);
+  assert.match(layer, /\.cr-footer__grid, \.cr-footer__bottom[\s\S]*?margin-left: max\(var\(--cr-desktop-gutter\), \(100vw - var\(--cr-desktop-sidebar\) - var\(--cr-desktop-content-max\)\) \/ 2\)/);
 });
 
 test('DESKTOP_NO_HORIZONTAL_OVERFLOW=PASS — desktop shells and cards permit intrinsic shrink', () => {
