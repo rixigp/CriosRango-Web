@@ -33,6 +33,6 @@ test('GLOBAL_TOOLBAR_GEOMETRY_SOURCE_COUNT=1',()=>{
 test('GLOBAL_BOTTOM_NAV_MARKUP_SOURCE_COUNT=1 and GLOBAL_MOBILE_FOOTER_POLICY_COUNT=1',()=>{
  assert.equal((footer.match(/<nav class="cr-mobile-bottom-nav cr-app-bottom-nav"/g)||[]).length,1);
  assert.doesNotMatch(footer,/wp_is_mobile/);
- assert.equal((main.match(/\.cr-footer\s*\{\s*display:\s*none;/g)||[]).length,1);
+ assert.doesNotMatch(footer,/<footer\\b/i);\n assert.doesNotMatch(main,/\\.cr-footer\\b/);\n assert.match(footer,/<\\?php\\s+wp_footer\\(\\);\\s+\\?>/);
  assert.match(main,/padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
 });
