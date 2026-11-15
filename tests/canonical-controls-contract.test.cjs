@@ -4,11 +4,11 @@ const theme=path.resolve(__dirname,'../theme/crios-rango-2026'),read=p=>fs.readF
 const controls=read('assets/css/controls.css'),assets=read('inc/assets.php'),wpLogin=read('assets/js/form-controls.js'),accountCss=read('assets/css/account.css'),checkoutCss=read('assets/css/checkout.css');
 test('WALLET_ICON_BADGE_SINGLE_SOURCE=YES',()=>{const cart=read('assets/js/cart-ui.js'),loyalty=read('assets/js/account-loyalty.js');assert.match(cart,/cr-wallet-icon-badge cr-cart-wallet__icon/);assert.match(loyalty,/cr-wallet-icon-badge cr-account-loyalty__wallet-icon/);assert.match(controls,/\.cr-wallet-icon-badge\s*\{/);assert.match(controls,/--cr-wallet-badge-size:\s*38px/);});
 test('CR_CONTROL_SHELL=YES; NATIVE_FIELDSET_LEGEND_NOTCH=YES; WHITE_FIELD_SURFACE=YES',()=>{
-  assert.match(controls,/\.cr-control-shell\s*\{[^}]*background:\s*transparent/s);
+  assert.match(controls,/\.cr-control-shell\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
   assert.match(controls,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-app-canvas/s);
   assert.match(controls,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*font-size:\s*13px/s);
   assert.match(controls,/:root\s*\{[^}]*--cr-control-height:\s*58px;[^}]*--cr-control-radius:\s*4px;[^}]*--cr-control-select-radius:\s*3px/s);
-  assert.match(controls,/:root\s*\{[^}]*--cr-control-background:\s*transparent/s);
+  assert.match(controls,/:root\s*\{[^}]*--cr-control-background:\s*#FFFFFF/s);
   assert.match(wpLogin,/createElement\('fieldset'\)/); assert.match(wpLogin,/createElement\('legend'\)/); assert.match(wpLogin,/cr-control-shell/);
   assert.doesNotMatch(controls,/cr-control__box|cr-control__label/);
   assert.match(accountCss,/body\.woocommerce-account \.woocommerce-EditAccountForm > fieldset\s*\{/);
@@ -28,7 +28,7 @@ test('CR_CONTROL_SHELL=YES; NATIVE_FIELDSET_LEGEND_NOTCH=YES; WHITE_FIELD_SURFAC
   assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
   assert.doesNotMatch(accountCss,/woocommerce-EditAccountForm label/);
 });test('GLOBAL_FORM_GEOMETRY_AND_REQUIRED_MARKERS_USE_ONE_CANONICAL_SOURCE',()=>{
-  assert.match(controls,/\.cr-control-shell\s*\{[^}]*background:\s*transparent/s);
+  assert.match(controls,/\.cr-control-shell\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
   assert.match(controls,/\.cr-control-shell input\[type="password"\][\s\S]*?padding:\s*8px 48px 8px 16px/s);
   assert.match(controls,/\.cr-control-shell \.show-password-input,[\s\S]*?top:\s*50%[\s\S]*?right:\s*16px[\s\S]*?transform:\s*translateY\(-50%\)/s);
   assert.match(controls,/\.cr-control-shell textarea\s*\{[^}]*padding:\s*8px 16px/s);
