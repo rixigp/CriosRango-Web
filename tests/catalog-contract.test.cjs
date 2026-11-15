@@ -830,7 +830,9 @@ test('Nuestras marcas route includes all product_brand terms, including zero-cou
   assert.match(helpers, /cr2026_brands_index_view/);
   const footer = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/footer.php'), 'utf8');
   assert.doesNotMatch(footer, /wp_is_mobile/);
-  assert.match(css, /\.cr-footer\s*\{\s*display:\s*none;/);
+  assert.doesNotMatch(footer, /<footer\\b/i);
+  assert.doesNotMatch(css, /cr-footer/);
+  assert.match(footer, /<\\?php\\s+wp_footer\\(\\);\\s+\\?>/);
   assert.match(css, /GLOBAL MOBILE APP SHELL/);
 });
 
