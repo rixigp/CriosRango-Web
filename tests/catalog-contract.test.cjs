@@ -947,7 +947,7 @@ test('PRODUCT_LIST_RESPONSE_SCHEMA_UNCHANGED=PASS', () => {
   const responseEnd = fn.indexOf(');', responseStart);
   const normalResponse = fn.slice(responseStart, responseEnd + 2);
   for (const field of ['html', 'has_more', 'count']) {
-    assert.equal((normalResponse.match(new RegExp("'" + field + "'\s*=>", 'g')) || []).length, 1);
+    assert.equal((normalResponse.match(new RegExp("'" + field + "'\\s*=>", 'g')) || []).length, 1);
   }
   assert.match(fn, /return rest_ensure_response\( array\( 'html' => '', 'has_more' => false, 'count' => 0 \) \)/);
 });
