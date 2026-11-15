@@ -197,7 +197,7 @@ body.login #loginform .forgetmenot { padding-top: 0; }
   letter-spacing: .5px !important;
   text-align: left !important;
 }
-.cr-control-shell__content select {
+.cr-control-shell__content select:not(.select2-hidden-accessible) {
   position: relative !important;
   top: -6px !important;
   box-sizing: border-box !important;
@@ -281,4 +281,42 @@ body.login #loginform .forgetmenot { padding-top: 0; }
   height: 100% !important;
   margin: 0 !important;
   padding: 0 16px !important;
+}
+
+.cr-control-shell__content select.select2-hidden-accessible {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Shared vertical spacing for form fields across Checkout, Account and WP auth. */
+:root {
+  --cr-form-field-gap: 20px;
+}
+body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row {
+  margin-bottom: var(--cr-form-field-gap) !important;
+}
+body.woocommerce-account .woocommerce-EditAccountForm .form-row,
+body.woocommerce-account .woocommerce-address-fields .form-row,
+body.woocommerce-account:not(.logged-in) #customer_login .form-row,
+body.woocommerce-account:not(.logged-in) .woocommerce-form-login .form-row,
+body.woocommerce-account:not(.logged-in) .woocommerce-form-register .form-row,
+body.woocommerce-account:not(.logged-in) .lost_reset_password .form-row {
+  margin: 0 0 var(--cr-form-field-gap) !important;
+}
+body.login #loginform > p:not(.forgetmenot),
+body.login #loginform > .user-pass-wrap,
+body.login #lostpasswordform > p,
+body.login #resetpassform > p,
+body.login #registerform > p,
+body.login #registerform > .user-pass1-wrap,
+body.login #registerform > .user-pass2-wrap {
+  margin: 0 0 var(--cr-form-field-gap) !important;
 }
