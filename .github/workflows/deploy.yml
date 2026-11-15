@@ -31,6 +31,7 @@ on:
       - "tests/account-order-detail-contract.test.cjs"
       - "tests/account-coupons-promotions-contract.test.cjs"
       - "tests/global-mobile-shell-contract.test.cjs"
+      - "tests/desktop-geometry-contract.test.cjs"
       - "tests/canonical-customer-shell-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
@@ -393,6 +394,9 @@ jobs:
 
       - name: Run catalog contract tests
         run: node --test tests/catalog-contract.test.cjs
+      - name: Run desktop geometry contracts
+        run: node --test tests/desktop-geometry-contract.test.cjs
+
       - name: Run canonical customer shell architecture contracts
         run: node --test tests/global-mobile-shell-contract.test.cjs tests/canonical-customer-shell-contract.test.cjs
 

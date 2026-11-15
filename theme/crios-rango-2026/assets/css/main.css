@@ -2904,3 +2904,32 @@ body.search .cr-search-form__submit.is-loading::before,
     font-size: var(--cr-desktop-body-size);
   }
 }
+
+/* Cart desktop consumer moved into the global desktop layer to keep cart.css mobile contracts isolated. */
+@media (min-width: 1280px) {
+  body.woocommerce-cart.woocommerce-cart .cr-cart-content,
+  body.woocommerce-cart.woocommerce-cart .cr-cart-content > .cr-cart-layout {
+    width: 100% !important; max-width: none !important; min-width: 0; box-sizing: border-box;
+  }
+  body.woocommerce-cart.woocommerce-cart .cr-cart-content .cr-cart-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+    align-items: start; gap: clamp(28px, 2.5vw, 40px); flex-direction: initial !important;
+  }
+  body.woocommerce-cart.woocommerce-cart .cr-cart-content .cr-cart-form {
+    grid-column: 1; width: 100% !important; max-width: none !important; min-width: 0; flex: initial !important;
+  }
+  body.woocommerce-cart.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail {
+    grid-column: 2; grid-row: 1; width: 100% !important; max-width: none !important; min-width: 0;
+    margin: 0 !important; flex: initial !important; display: flex; flex-direction: column; gap: 28px;
+  }
+  body.woocommerce-cart.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail > .cr-cart-promotions,
+  body.woocommerce-cart.woocommerce-cart .cr-cart-content .cr-cart-secondary-rail > .cr-cart-summary { width: 100% !important; max-width: none !important; }
+  body.woocommerce-cart.woocommerce-cart .cr-cart-content .cr-cart-item__card { padding: 20px; }
+  body.woocommerce-cart.woocommerce-cart .cr-cart-content .cr-cart-item__main { grid-template-columns: 124px minmax(0,1fr); gap: 0 20px; }
+  body.woocommerce-cart.woocommerce-cart .cr-cart-content .cr-cart-item__media,
+  body.woocommerce-cart.woocommerce-cart table.cart .cr-cart-item__media { width: 124px; height: 152px; min-width: 124px; max-width: 124px; flex-basis: 124px; }
+  body.woocommerce-cart.woocommerce-cart .cr-cart-item__name { font-size: 18px; line-height: 1.45; }
+  body.woocommerce-cart.woocommerce-cart .cr-cart-item__unit,
+  body.woocommerce-cart.woocommerce-cart .cr-cart-item__subtotal { font-size: 15px; }
+}
