@@ -2741,7 +2741,7 @@ body.search .cr-search-form__submit.is-loading::before,
     --cr-desktop-content-max: 1440px;
     --cr-desktop-section-gap: clamp(32px, 3vw, 56px);
     --cr-desktop-reading-max: 920px;
-    --cr-desktop-card-min: 230px;
+    --cr-desktop-card-min: 225px;
     --cr-desktop-body-size: clamp(16px, .25vw + 13px, 18px);
     --cr-desktop-label-size: clamp(14px, .18vw + 12px, 16px);
     --cr-desktop-title-size: clamp(30px, 1.1vw + 18px, 42px);

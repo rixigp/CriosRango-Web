@@ -61,7 +61,7 @@ test('DESKTOP_ACCOUNT_NO_720_CAP=PASS — shared nav/content grid replaces dashb
 test('DESKTOP_GRID_COLUMNS_RESPONSIVE=PASS — archive and category cards use flexible minimum tracks', () => {
   const layer = desktop('main.css');
   assert.match(layer, /grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(var\(--cr-desktop-card-min\),\s*1fr\)\)/);
-  assert.match(layer, /--cr-desktop-card-min:\s*230px/);
+  assert.match(layer, /--cr-desktop-card-min:\s*225px/);
   assert.match(layer, /cr-parent-category__grid[\s\S]*?repeat\(auto-fit,\s*minmax\(210px,\s*1fr\)\)/);
 });
 
