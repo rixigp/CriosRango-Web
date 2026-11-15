@@ -30,9 +30,11 @@ test('GLOBAL_TOOLBAR_GEOMETRY_SOURCE_COUNT=1',()=>{
  assert.match(main,/\.cr-parent-category__back\s*\{[^}]*width:\s*48px;[^}]*height:\s*48px;/s);
  assert.match(main,/\.cr-parent-category__title\s*\{[^}]*font:\s*300 21px\/28px/s);
 });
-test('GLOBAL_BOTTOM_NAV_MARKUP_SOURCE_COUNT=1 and GLOBAL_MOBILE_FOOTER_POLICY_COUNT=1',()=>{
+test('GLOBAL_BOTTOM_NAV_MARKUP_SOURCE_COUNT=1 and GLOBAL_VISUAL_FOOTER_ABSENT=1',()=>{
  assert.equal((footer.match(/<nav class="cr-mobile-bottom-nav cr-app-bottom-nav"/g)||[]).length,1);
  assert.doesNotMatch(footer,/wp_is_mobile/);
- assert.doesNotMatch(footer,/<footer\\b/i);\n assert.doesNotMatch(main,/\\.cr-footer\\b/);\n assert.match(footer,/<\\?php\\s+wp_footer\\(\\);\\s+\\?>/);
+ assert.doesNotMatch(footer,/<footer\b/i);
+ assert.doesNotMatch(main, /\.cr-footer\b/);
+ assert.match(footer, /<\?php\s+wp_footer\(\);\s+\?>/);
  assert.match(main,/padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
 });
