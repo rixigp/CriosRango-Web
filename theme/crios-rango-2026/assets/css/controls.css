@@ -112,20 +112,20 @@
   height: 100% !important;
   min-height: 0 !important;
   margin: 0 !important;
-  padding: 13px 14px !important;
+  padding: 0 14px !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
   outline: 0 !important;
   color: var(--cr-ink, #20241f) !important;
-  font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+  font: 400 15px/48px "Roboto", Arial, sans-serif !important;
   text-align: left !important;
   text-indent: 0 !important;
 }
 .cr-control-shell input[type="password"],
 .cr-control-shell .password-input input {
-  padding: 13px 48px 13px 14px !important;
+  padding: 0 48px 0 14px !important;
 }
 .cr-control-shell .show-password-input,
 .cr-control-shell .wp-hide-pw {
@@ -145,14 +145,14 @@
   height: 100% !important;
   min-height: 0 !important;
   margin: 0 !important;
-  padding: 13px 36px 13px 14px !important;
+  padding: 0 36px 0 14px !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
   outline: 0 !important;
   color: var(--cr-ink, #20241f) !important;
-  font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+  font: 400 15px/48px "Roboto", Arial, sans-serif !important;
   text-align: left !important;
   text-align-last: left !important;
   text-indent: 0 !important;
@@ -239,7 +239,7 @@
   caret-color: var(--cr-ink);
 }
 
-/* No-JavaScript WooCommerce fallback: preserve the same 13px vertical and 14px leading inset. */
+/* Native single-line controls use the full 48px line box for reliable vertical centering, including Android Chrome. */
 .woocommerce form .form-row:not([data-cr-control="true"]) > :is(
   input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),
   select
@@ -250,18 +250,19 @@
   height: var(--cr-control-height) !important;
   min-height: var(--cr-control-height) !important;
   margin: 0 !important;
-  padding: 13px 14px !important;
-  line-height: 20px !important;
+  padding: 0 14px !important;
+  line-height: 48px !important;
   text-align: left !important;
   text-indent: 0 !important;
   font: 400 15px/20px "Roboto", Arial, sans-serif !important;
 }
 .woocommerce form .form-row:not([data-cr-control="true"]) > select {
-  padding: 13px 36px 13px 14px !important;
+  padding: 0 36px 0 14px !important;
+  line-height: 48px !important;
   text-align-last: left !important;
 }
 .woocommerce form .form-row:not([data-cr-control="true"]) > input[type="password"] {
-  padding: 13px 48px 13px 14px !important;
+  padding: 0 48px 0 14px !important;
 }
 /* Standard WooCommerce wrappers never add an inset; the child control owns it. */
 .woocommerce form .form-row:not([data-cr-control="true"]) > .woocommerce-input-wrapper,
@@ -289,13 +290,14 @@
   height: 100% !important;
   min-height: 0 !important;
   margin: 0 !important;
-  padding: 13px 14px !important;
+  padding: 0 14px !important;
+  line-height: 48px !important;
   text-align: left !important;
-  font: 400 15px/20px "Roboto", Arial, sans-serif !important;
+  font: 400 15px/48px "Roboto", Arial, sans-serif !important;
 }
 .woocommerce form .form-row:not([data-cr-control="true"]) > .password-input input[type="password"],
 .woocommerce form .form-row:not([data-cr-control="true"]) > .wp-pwd input[type="password"] {
-  padding: 13px 48px 13px 14px !important;
+  padding: 0 48px 0 14px !important;
 }
 .woocommerce form .form-row:not([data-cr-control="true"]) > .woocommerce-input-wrapper > select {
   box-sizing: border-box !important;
@@ -303,7 +305,8 @@
   height: 100% !important;
   min-height: 0 !important;
   margin: 0 !important;
-  padding: 13px 36px 13px 14px !important;
+  padding: 0 36px 0 14px !important;
+  line-height: 48px !important;
   text-align: left !important;
   text-align-last: left !important;
 }
