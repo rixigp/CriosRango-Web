@@ -830,9 +830,9 @@ test('Nuestras marcas route includes all product_brand terms, including zero-cou
   assert.match(helpers, /cr2026_brands_index_view/);
   const footer = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/footer.php'), 'utf8');
   assert.doesNotMatch(footer, /wp_is_mobile/);
-  assert.doesNotMatch(footer, /<footer\\b/i);
+  assert.doesNotMatch(footer, /<footer\b/i);
   assert.doesNotMatch(css, /cr-footer/);
-  assert.match(footer, /<\\?php\\s+wp_footer\\(\\);\\s+\\?>/);
+  assert.match(footer, /<\?php\s+wp_footer\(\);\s+\?>/);
   assert.match(css, /GLOBAL MOBILE APP SHELL/);
 });
 
@@ -947,7 +947,7 @@ test('PRODUCT_LIST_RESPONSE_SCHEMA_UNCHANGED=PASS', () => {
   const responseEnd = fn.indexOf(');', responseStart);
   const normalResponse = fn.slice(responseStart, responseEnd + 2);
   for (const field of ['html', 'has_more', 'count']) {
-    assert.equal((normalResponse.match(new RegExp("'" + field + "'\\s*=>", 'g')) || []).length, 1);
+    assert.equal((normalResponse.match(new RegExp("'" + field + "'\s*=>", 'g')) || []).length, 1);
   }
   assert.match(fn, /return rest_ensure_response\( array\( 'html' => '', 'has_more' => false, 'count' => 0 \) \)/);
 });
