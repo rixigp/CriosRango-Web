@@ -21,10 +21,12 @@ test('GLOBAL_TOOLBAR_GEOMETRY_SOURCE_COUNT=1',()=>{
  }
  assert.doesNotMatch(Object.values(css).join('\n'),/\.cr-brands-index__toolbar\b|\.cr-brand-archive__back-row\b/);
 });
-test('GLOBAL_MOBILE_FOOTER_POLICY_COUNT=1 and safe-area clearance is global',()=>{
+test('GLOBAL_VISUAL_FOOTER_ABSENT=1 and safe-area clearance is global',()=>{
  const footer=fs.readFileSync(path.join(root,'footer.php'),'utf8');
  assert.doesNotMatch(footer,/wp_is_mobile/);
- assert.doesNotMatch(footer,/<footer\\b/i);\n assert.doesNotMatch(main,/\\.cr-footer\\b/);\n assert.match(footer,/<\\?php\\s+wp_footer\\(\\);\\s+\\?>/);
+ assert.doesNotMatch(footer,/<footer\b/i);
+ assert.doesNotMatch(main, /\.cr-footer\b/);
+ assert.match(footer, /<\?php\s+wp_footer\(\);\s+\?>/);
  assert.match(main,/padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
 });
 test('ACCOUNT_OUTER_GUTTER_SOURCE=.cr-shell; ACCOUNT_CONTENT_WIDTH=100%; ACCOUNT_CONTENT_MAX_WIDTH=none; ACCOUNT_CONTENT_MARGIN_INLINE=0; ACCOUNT_EXTRA_OUTER_GUTTERS=0',()=>{
