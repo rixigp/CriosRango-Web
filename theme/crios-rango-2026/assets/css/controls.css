@@ -180,7 +180,7 @@ body.login #loginform .forgetmenot { padding-top: 0; }
 }
 .cr-control-shell__content input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]) {
   position: relative !important;
-  top: -3px !important;
+  top: -6px !important;
   box-sizing: border-box !important;
   width: 100% !important;
   height: 24px !important;
@@ -199,7 +199,7 @@ body.login #loginform .forgetmenot { padding-top: 0; }
 }
 .cr-control-shell__content select {
   position: relative !important;
-  top: -3px !important;
+  top: -6px !important;
   box-sizing: border-box !important;
   width: 100% !important;
   height: 24px !important;
@@ -233,7 +233,7 @@ body.login #loginform .forgetmenot { padding-top: 0; }
 }
 .cr-control-shell__content .select2-selection__rendered {
   position: relative !important;
-  top: -3px !important;
+  top: -6px !important;
   display: flex !important;
   align-items: center !important;
   box-sizing: border-box !important;
@@ -260,7 +260,7 @@ body.login #loginform .forgetmenot { padding-top: 0; }
 .cr-control-shell__content input[type="password"],
 .cr-control-shell__content .password-input input {
   position: relative !important;
-  top: -3px !important;
+  top: -6px !important;
   height: 24px !important;
   min-height: 24px !important;
   padding: 0 48px 0 16px !important;
