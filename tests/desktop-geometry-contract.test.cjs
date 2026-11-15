@@ -77,3 +77,8 @@ test('DESKTOP_NO_HORIZONTAL_OVERFLOW=PASS — desktop shells and cards permit in
   assert.match(layer, /\.cr-product-card[\s\S]*?min-width:\s*0/);
   assert.match(desktop('account.css'), /woocommerce-MyAccount-content[\s\S]*?min-width:\s*0/);
 });
+
+test('DESKTOP_CART_PAGE_SHELL_UNCAPPED=PASS — cart outer prose wrapper cannot inherit the 860px reading cap', () => {
+  const layer = desktop('main.css');
+  assert.match(layer, /body\.woocommerce-cart \.cr-page,[\s\S]*?body\.woocommerce-cart \.cr-page \.cr-prose[\s\S]*?width:\s*100%\s*!important[\s\S]*?max-width:\s*none\s*!important/);
+});

@@ -2955,3 +2955,15 @@ body.search .cr-search-form__submit.is-loading::before,
   body.woocommerce-cart.woocommerce-cart .cr-cart-item__unit,
   body.woocommerce-cart.woocommerce-cart .cr-cart-item__subtotal { font-size: 15px; }
 }
+
+/* Cart PAGE SHELL consumes the canonical rail; only actual inner reading columns may keep a measure. */
+@media (min-width: 1280px) {
+  body.woocommerce-cart .cr-page,
+  body.woocommerce-cart .cr-page .cr-prose {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin-inline: 0 !important;
+  }
+}
