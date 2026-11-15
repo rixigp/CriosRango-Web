@@ -2811,18 +2811,28 @@ body.search .cr-search-form__submit.is-loading::before,
   body.home .cr-app-header,
   body.cr-app-nav-shell .cr-app-header,
   body.cr-product-listing-view .cr-app-header { left: var(--cr-desktop-sidebar) !important; }
+  /* The home main establishes the sidebar content region; its children center inside that region. */
+  body.home .cr-home--app { width: calc(100vw - var(--cr-desktop-sidebar)) !important; margin-left: var(--cr-desktop-sidebar) !important; margin-right: 0 !important; }
   body.home .cr-app-shell,
   body.home .cr-home-section {
-    width: min(calc(100vw - var(--cr-desktop-sidebar) - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max)) !important;
+    width: min(calc(100% - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max)) !important;
     max-width: var(--cr-desktop-content-max) !important;
-    margin-left: calc(var(--cr-desktop-sidebar) + max(var(--cr-desktop-gutter), (100vw - var(--cr-desktop-sidebar) - var(--cr-desktop-content-max)) / 2)) !important;
-    margin-right: auto !important;
+    margin-inline: auto !important;
   }
 
-  /* Home consumer geometry: hero and sections share the canonical rail. */
-  body.home .cr-home--app .cr-app-hero,
+  /* Home hero, categories and sections share the same desktop rail. */
+  body.home .cr-home--app .cr-app-hero {
+    width: min(calc(100% - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max)) !important;
+    max-width: var(--cr-desktop-content-max) !important;
+    margin-inline: auto !important;
+  }
   body.home .cr-home--app .cr-app-hero__slides,
   body.home .cr-home--app .cr-app-hero__image { width: 100%; max-width: none; }
+  body.home .cr-home-topbar {
+    width: min(calc(100% - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max)) !important;
+    max-width: var(--cr-desktop-content-max) !important;
+    margin-inline: auto !important;
+  }
   body.home .cr-home-section { margin-top: var(--cr-desktop-section-gap) !important; }
   body.home .cr-home-section__header { margin-bottom: 24px; }
   body.home .cr-home-products {
@@ -2846,7 +2856,13 @@ body.search .cr-search-form__submit.is-loading::before,
 
   /* Category and Outlet hubs: proportionate tiles across the same rail. */
   body.cr-parent-category-view .cr-app-header .cr-home-topbar { width: 100% !important; max-width: none !important; padding-inline: var(--cr-desktop-gutter) !important; }
-  body.cr-parent-category-view .cr-parent-category__canvas { width: 100% !important; max-width: none !important; }
+  body.cr-parent-category-view .cr-parent-category__canvas {
+    box-sizing: border-box;
+    width: min(calc(100vw - var(--cr-desktop-sidebar) - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max)) !important;
+    max-width: var(--cr-desktop-content-max) !important;
+    margin-left: calc(var(--cr-desktop-sidebar) + max(var(--cr-desktop-gutter), (100vw - var(--cr-desktop-sidebar) - var(--cr-desktop-content-max)) / 2)) !important;
+    margin-right: auto !important;
+  }
   body.cr-parent-category-view .cr-parent-category__grid,
   .cr-category-hub__grid {
     width: 100% !important;
@@ -2880,7 +2896,13 @@ body.search .cr-search-form__submit.is-loading::before,
   .woocommerce ul.products li.product .price { font-size: clamp(16px, .25vw + 14px, 19px); }
 
   /* Brand index shares the global rail; only reading/text columns retain deliberate caps. */
-  .cr-brands-index { width: 100% !important; max-width: none !important; margin: 0 !important; }
+  .cr-brands-index {
+    box-sizing: border-box;
+    width: min(calc(100vw - var(--cr-desktop-sidebar) - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max)) !important;
+    max-width: var(--cr-desktop-content-max) !important;
+    margin-left: calc(var(--cr-desktop-sidebar) + max(var(--cr-desktop-gutter), (100vw - var(--cr-desktop-sidebar) - var(--cr-desktop-content-max)) / 2)) !important;
+    margin-right: auto !important;
+  }
   .cr-brands-index__shell { width: 100% !important; max-width: none !important; }
   .cr-brands-index__grid { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important; gap: 24px !important; }
   .cr-brands-index__card { min-height: 150px; padding: 24px; }

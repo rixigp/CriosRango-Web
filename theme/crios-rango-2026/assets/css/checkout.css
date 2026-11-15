@@ -1342,6 +1342,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-log
     gap: 0 24px;
   }
   body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row {
+    margin-inline: 0;
     margin-bottom: 16px !important;
   }
   body.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order {
