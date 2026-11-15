@@ -1499,3 +1499,25 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
   body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login .form-row { margin-bottom: 20px !important; }
   body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login .woocommerce-form-login__submit { min-height: 56px; font-size: 16px !important; }
 }
+
+
+/* Guest Account landing consumes the same desktop rail; only the login form stays measured. */
+@media (min-width: 1280px) {
+  body.woocommerce-account:not(.logged-in):has(.cr-account-home) .woocommerce,
+  body.woocommerce-account:not(.logged-in):has(.cr-account-home) .woocommerce-MyAccount-content {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+  }
+
+  body.woocommerce-account:not(.logged-in):has(.cr-account-home) .cr-account-home {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}

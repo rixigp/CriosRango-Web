@@ -1856,3 +1856,70 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
     box-sizing:border-box;
   }
 }
+
+
+/* Desktop Product Detail: true two-column purchase rail; mobile/tablet remain unchanged. */
+@media (min-width: 1280px) {
+  body.cr-product-detail-app .cr-main--woocommerce div.product {
+    display: grid;
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+    align-items: start;
+    column-gap: clamp(28px, 3vw, 48px);
+    row-gap: clamp(24px, 2.5vw, 40px);
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 24px 0 40px;
+    box-sizing: border-box;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .woocommerce-product-gallery {
+    grid-column: 1;
+    grid-row: 1;
+    float: none;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
+    align-self: start;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .cr-product-actions {
+    grid-column: 1;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  /* Keep the Woo summary's native children and behavior; expose them as grid items
+     so the description can follow the purchase row across the complete rail. */
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary {
+    display: contents;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > *:not(.cr-product-description) {
+    grid-column: 2;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding-inline: clamp(4px, 1.5vw, 24px);
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > .cr-product-description {
+    grid-column: 1 / -1;
+    order: 90;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding-inline: 0;
+    box-sizing: border-box;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .woocommerce-tabs {
+    grid-column: 1 / -1;
+    order: 100;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}

@@ -1619,3 +1619,17 @@ test('CART_REMOVE_PRODUCT_NOTICE_SUPPRESSED=PASS; CART_REMOVE_PRODUCT_UNDO_NOT_R
  assert.match(template,/class="cr-cart-promotions"/,'promotions block remains');
  assert.match(template,/class="cart-collaterals cr-cart-summary"/,'summary block remains');
 });
+
+
+test('DESKTOP_PRODUCT_DETAIL_TWO_COLUMN_RAIL=PASS — grid geometry is desktop-only and description spans the rail', () => {
+  const start = skinCss.lastIndexOf('@media (min-width: 1280px) {');
+  assert.ok(start >= 0, 'desktop-only Product Detail layer exists');
+  const layer = skinCss.slice(start);
+  assert.match(layer, /div\.product\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*minmax\(0,\s*\.92fr\)\s+minmax\(0,\s*1\.08fr\)/);
+  assert.match(layer, /\.woocommerce-product-gallery\s*\{[\s\S]*?grid-column:\s*1;[\s\S]*?grid-row:\s*1;/);
+  assert.match(layer, /div\.product\s*>\s*\.summary\s*\{\s*display:\s*contents;/);
+  assert.match(layer, /\.summary\s*>\s*\.cr-product-description\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;[\s\S]*?order:\s*90;/);
+  assert.match(layer, /div\.product\s*>\s*\.woocommerce-tabs\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;/);
+  assert.match(layer, /div\.product\s*>\s*\.cr-product-actions\s*\{\s*grid-column:\s*1;/);
+  assert.doesNotMatch(layer, /transform:\s*|\\bzoom\s*:/);
+});

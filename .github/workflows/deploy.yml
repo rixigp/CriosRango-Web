@@ -32,6 +32,7 @@ on:
       - "tests/account-coupons-promotions-contract.test.cjs"
       - "tests/global-mobile-shell-contract.test.cjs"
       - "tests/desktop-geometry-contract.test.cjs"
+      - "tests/desktop-targeted-browser.cjs"
       - "tests/canonical-customer-shell-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
@@ -916,6 +917,18 @@ jobs:
           curl --silent --show-error --fail --ssl-reqd --ftp-pasv --connect-timeout 20 --retry 2 \
             --user "${SFTP_USER}:${SFTP_PASSWORD}" "${BASE_URL}/build.json" --output /tmp/criosrango-build.json
           node -e 'const fs=require("fs");const manifest=JSON.parse(fs.readFileSync("/tmp/criosrango-build.json","utf8"));if(manifest.sha!==process.env.EXPECTED_THEME_SHA){console.error("STAGING_BUILD_SHA mismatch: "+manifest.sha+" != "+process.env.EXPECTED_THEME_SHA);process.exit(1)}console.log("STAGING_BUILD_SHA="+manifest.sha);console.log("REPOSITORY_HEAD="+process.env.GITHUB_SHA);console.log("THEME_DEPLOY_SHA="+manifest.sha);'
+      - name: Run targeted desktop browser geometry checks
+        if: github.ref == 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
+        shell: bash
+        env:
+          STAGING_BASE_URL: https://criosrango.es/prueba
+          STAGING_ACCOUNT_EMAIL: ${{ secrets.STAGING_ACCOUNT_EMAIL }}
+          STAGING_ACCOUNT_PASSWORD: ${{ secrets.STAGING_ACCOUNT_PASSWORD }}
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install chromium
+          node tests/desktop-targeted-browser.cjs
       - name: Benchmark staging catalog endpoint (3 cold + 3 warm requests)
         if: github.ref == 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
         shell: bash

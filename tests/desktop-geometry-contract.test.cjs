@@ -84,3 +84,10 @@ test('VISUAL_FOOTER_MOBILE_ABSENT=PASS — no footer visual markup or CSS', () =
 test('VISUAL_FOOTER_TABLET_ABSENT=PASS — visual footer absent at tablet widths', () => { assert.doesNotMatch(footerTemplate, /<footer\b/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
 test('VISUAL_FOOTER_DESKTOP_ABSENT=PASS — visual footer absent at desktop widths', () => { assert.doesNotMatch(footerTemplate, /<footer\b/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
 test('WP_FOOTER_HOOK_PRESENT=PASS — technical WordPress hook retained', () => { assert.match(footerTemplate, /<\?php\s+wp_footer\(\);\s+\?>/); });
+
+
+test('DESKTOP_GUEST_ACCOUNT_HOME_USES_CANONICAL_RAIL=PASS — guest landing has no inherited 720px cap', () => {
+  const layer = desktop('account.css');
+  assert.match(layer, /body\.woocommerce-account:not\(\.logged-in\):has\(\.cr-account-home\)\s+\.cr-account-home[\s\S]*?width:\s*100%\s*!important;[\s\S]*?max-width:\s*none\s*!important/);
+  assert.match(layer, /body\.woocommerce-account\.logged-in\s+\.woocommerce[\s\S]*?grid-template-columns:\s*minmax\(220px,\s*250px\)\s+minmax\(0,\s*1fr\)/);
+});
