@@ -282,7 +282,8 @@ test('global form controls share a zero-padding wrapper, 14px value inset and ce
   assert.match(controlsCss, /\.cr-control-shell textarea\s*\{[^}]*padding:\s*12px 14px/s);
   assert.match(controlsCss, /\.woocommerce form label > \.required[\s\S]*?display:\s*none/s);
   assert.doesNotMatch(controlsCss, /padding:\s*var\(--cr-control-(?:select-)?padding\)/);
-  assert.match(controlsCss, /font:\s*400 15px\/48px/);\n  assert.doesNotMatch(controlsCss, /text-align-last:\s*center|text-align:\s*center/);
+  assert.match(controlsCss, /font:\s*400 15px\/48px/);
+  assert.doesNotMatch(controlsCss, /text-align-last:\s*center|text-align:\s*center/);
 });
 
 test('country and state remain native WooCommerce selects with Select2 presentation only', () => {
