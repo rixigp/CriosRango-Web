@@ -2909,11 +2909,44 @@ body.search .cr-search-form__submit.is-loading::before,
   .cr-brands-index__card img { height: 100px; }
   .cr-brands-index__card span { font-size: var(--cr-desktop-label-size); }
 
-  /* Full-bleed footer background stays; both inner footer rails align to canonical content. */
-  .cr-footer__grid, .cr-footer__bottom { width: min(calc(100vw - var(--cr-desktop-sidebar) - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max)); max-width: var(--cr-desktop-content-max); margin-left: calc(var(--cr-desktop-sidebar) + max(var(--cr-desktop-gutter), (100vw - var(--cr-desktop-sidebar) - var(--cr-desktop-content-max)) / 2)); margin-right: auto; }
-  .cr-footer__grid { grid-template-columns: minmax(0, 1.4fr) minmax(220px, 1fr) minmax(220px, 1fr); gap: clamp(32px, 3vw, 56px); }
-  .cr-footer__brand { font-size: 1.6rem; }
-  .cr-footer__bottom { font-size: 15px; }
+  /* Desktop footer: green bleed starts at the sidebar edge; inner content uses the canonical rail. */
+  .cr-footer {
+    box-sizing: border-box;
+    width: calc(100vw - var(--cr-desktop-sidebar));
+    margin-left: var(--cr-desktop-sidebar);
+    padding: 32px 0 16px;
+    flex: 0 0 auto;
+  }
+  .cr-footer__grid, .cr-footer__bottom {
+    box-sizing: border-box;
+    width: min(calc(100vw - var(--cr-desktop-sidebar) - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max));
+    max-width: var(--cr-desktop-content-max);
+    margin-left: max(var(--cr-desktop-gutter), (100vw - var(--cr-desktop-sidebar) - var(--cr-desktop-content-max)) / 2);
+    margin-right: auto;
+  }
+  .cr-footer__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, auto);
+    align-items: start;
+    gap: clamp(20px, 1.8vw, 32px);
+  }
+  .cr-footer__brand { font-size: clamp(20px, .35vw + 17px, 24px); line-height: 1.3; }
+  .cr-footer p, .cr-footer__menu, .cr-footer__legal { font-size: var(--cr-desktop-label-size); line-height: 1.5; }
+  .cr-footer__menu, .cr-footer__legal { gap: 8px; }
+  .cr-footer__bottom { margin-top: 20px; padding-top: 12px; font-size: var(--cr-desktop-label-size); }
+
+  /* Short desktop pages stretch the shared main flow, not per-page spacers. */
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  body > main#primary,
+  body > main.cr-main,
+  body > .cr-main {
+    flex: 1 0 auto;
+    min-height: 0;
+  }
+  body > .cr-footer { flex: 0 0 auto; }
 }
 
 /* Legal and informational pages use the canonical page shell plus a comfortable reading measure. */
