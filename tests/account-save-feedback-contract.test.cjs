@@ -332,7 +332,7 @@ test('PASSWORD_LABELS_ARE_SHORT_AND_FIELDS_WHITE_WITHOUT_GEOMETRY_OVERRIDES', ()
   assert.ok(controlShell, 'canonical fieldset control shell exists');
   assert.match(controlShell[1], /background\s*:\s*var\(--cr-control-background\)/i, 'control shell uses the shared white field surface');
   assert.match(controlsCss, /:root\s*\{[^}]*--cr-control-background:\s*#FFFFFF/s, 'canonical control background token resolves to white');
-  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-app-canvas/s, 'native legend cutout blends with the app canvas');
+  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s, 'native legend cutout has no painted surface');
   const passwordFieldRules = [...css.matchAll(/([^{}]*?(?:#password_current|#password_1|#password_2)[^{}]*)\{([^}]*)\}/g)];
   assert.ok(passwordFieldRules.length > 0, 'password field-specific rules exist');
   for (const rule of passwordFieldRules) {
