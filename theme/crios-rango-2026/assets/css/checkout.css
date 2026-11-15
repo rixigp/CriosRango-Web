@@ -1346,7 +1346,7 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-log
     margin-inline: 0;
     margin-bottom: 16px !important;
   }
-  body.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order {
+  body.woocommerce-checkout.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order {
     min-height: 60px;
     font-size: 17px;
   }
