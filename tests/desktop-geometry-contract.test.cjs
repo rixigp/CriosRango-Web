@@ -80,7 +80,7 @@ test('DESKTOP_CART_PAGE_SHELL_UNCAPPED=PASS — cart outer prose wrapper cannot 
 
 
 
-test('VISUAL_FOOTER_MOBILE_ABSENT=PASS — no footer visual markup or CSS', () => { assert.doesNotMatch(footerTemplate, /<footer\\b|Críos\\s*&amp;\\s*Rango|Moda para crecer|Aviso legal|Privacidad|Cookies|©/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
-test('VISUAL_FOOTER_TABLET_ABSENT=PASS — visual footer absent at tablet widths', () => { assert.doesNotMatch(footerTemplate, /<footer\\b/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
-test('VISUAL_FOOTER_DESKTOP_ABSENT=PASS — visual footer absent at desktop widths', () => { assert.doesNotMatch(footerTemplate, /<footer\\b/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
-test('WP_FOOTER_HOOK_PRESENT=PASS — technical WordPress hook retained', () => { assert.match(footerTemplate, /<\\?php\\s+wp_footer\\(\\);\\s+\\?>/); });
+test('VISUAL_FOOTER_MOBILE_ABSENT=PASS — no footer visual markup or CSS', () => { assert.doesNotMatch(footerTemplate, /<footer\b|Críos\s*&amp;\s*Rango|Moda para crecer|Aviso legal|Privacidad|Cookies|©/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
+test('VISUAL_FOOTER_TABLET_ABSENT=PASS — visual footer absent at tablet widths', () => { assert.doesNotMatch(footerTemplate, /<footer\b/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
+test('VISUAL_FOOTER_DESKTOP_ABSENT=PASS — visual footer absent at desktop widths', () => { assert.doesNotMatch(footerTemplate, /<footer\b/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
+test('WP_FOOTER_HOOK_PRESENT=PASS — technical WordPress hook retained', () => { assert.match(footerTemplate, /<\?php\s+wp_footer\(\);\s+\?>/); });
