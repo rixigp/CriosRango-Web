@@ -204,7 +204,7 @@ test('delivery field semantics define five full-width fields and two half-width 
 
 test('Login, Checkout and Select2 consume one canonical Material 3 form-control token source',()=>{
   const normalizedControlsCss=controlsCss.replace(/\s+/g,'');
-  for(const token of ['--cr-control-height:58px;','--cr-control-border:#8A858A;','--cr-control-radius:4px;','--cr-control-select-radius:3px;','--cr-control-background:transparent;','--cr-control-border-focus:#183B35;','--cr-control-error-border:#c66b61;']) assert.ok(normalizedControlsCss.includes(token),'missing shared form-control token: '+token);
+  for(const token of ['--cr-control-height:58px;','--cr-control-border:#8A858A;','--cr-control-radius:4px;','--cr-control-select-radius:3px;','--cr-control-background:#FFFFFF;','--cr-control-border-focus:#183B35;','--cr-control-error-border:#c66b61;']) assert.ok(normalizedControlsCss.includes(token),'missing shared form-control token: '+token);
   assert.ok(assets.includes("CR2026_URI . '/assets/css/controls.css'"));
   assert.ok(assets.includes("array( 'cr2026-main', 'cr2026-controls', 'cr2026-roboto' )"));
   assert.ok(loginPhp.includes("array( 'cr2026-controls' )"));
@@ -212,9 +212,9 @@ test('Login, Checkout and Select2 consume one canonical Material 3 form-control 
   assert.ok(controlsCss.includes('.select2-selection--single'));
   assert.doesNotMatch(loginCss,/\.login form \.input,/);
   assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
-});test('delivery labels use the native legend notch and transparent canvas surface',()=>{
-  assert.match(controlsCss,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-app-canvas/s);
-  assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*background:\s*transparent/s);
+});test('delivery labels use the native legend notch and white field surface',()=>{
+  assert.match(controlsCss,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-control-background/s);
+  assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*background:\s*var\(--cr-control-background/s);
   assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*border:\s*var\(--cr-control-border-width\)\s+solid\s+var\(--cr-control-border\)/s);
   assert.match(controlsCss,/\.cr-control-shell:focus-within/);
   assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
@@ -243,7 +243,7 @@ test('checkout consumes the shared native fieldset control without replacing nat
   assert.ok(controlsCss.includes('.cr-control-shell'));
   assert.ok(controlsCss.includes('.cr-control-shell > legend'));
   assert.ok(controlsCss.includes('background: transparent'));
-  assert.match(controlsCss,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-app-canvas/s);
+  assert.match(controlsCss,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-control-background/s);
   assert.doesNotMatch(controlsCss,/cr-control__box|cr-control__label/);
   assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
 });test('native delivery controls and Select2 consume the canonical presentation without DOM replacement', () => {
@@ -259,7 +259,7 @@ test('checkout consumes the shared native fieldset control without replacing nat
 
 
 test('global form controls share the Material 3 16px inset and left alignment',()=>{
-  assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0[^}]*background:\s*transparent/s);
+  assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0[^}]*background:\s*var\(--cr-control-background/s);
   assert.match(controlsCss,/\.cr-control-shell\s*:is\([\s\S]*?\.woocommerce-input-wrapper[\s\S]*?\.select2-container[\s\S]*?\)\s*\{[^}]*position:\s*relative\s*!important[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0/s);
   assert.ok(controlsCss.includes('padding: 8px 16px !important'));
   assert.match(controlsCss,/input\[type="password"\][\s\S]*?padding:\s*8px 48px 8px 16px/s);
