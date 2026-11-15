@@ -2729,3 +2729,178 @@ body.search .cr-search-form__submit.is-loading::before,
   animation:cr-shell-action-spin .7s linear infinite;
 }
 @keyframes cr-shell-action-spin {to {transform:rotate(360deg);}}
+
+
+/* DESKTOP GEOMETRY FOUNDATION — canonical rail and scales.
+ * This layer is intentionally desktop-only; mobile/tablet declarations above remain frozen.
+ */
+@media (min-width: 1280px) {
+  :root {
+    --cr-desktop-sidebar: 112px;
+    --cr-desktop-gutter: clamp(32px, 3vw, 64px);
+    --cr-desktop-content-max: 1440px;
+    --cr-desktop-section-gap: clamp(32px, 3vw, 56px);
+    --cr-desktop-reading-max: 920px;
+    --cr-desktop-card-min: 230px;
+    --cr-desktop-body-size: clamp(16px, .25vw + 13px, 18px);
+    --cr-desktop-label-size: clamp(14px, .18vw + 12px, 16px);
+    --cr-desktop-title-size: clamp(30px, 1.1vw + 18px, 42px);
+    --cr-desktop-section-title-size: clamp(24px, .7vw + 16px, 32px);
+    --cr-desktop-control-height: 54px;
+    --cr-shell: var(--cr-desktop-content-max);
+  }
+
+  /* One content rail: viewport minus sidebar and two gutters, capped for large monitors. */
+  .cr-shell {
+    box-sizing: border-box;
+    width: min(calc(100vw - var(--cr-desktop-sidebar) - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max));
+    max-width: var(--cr-desktop-content-max);
+    margin-left: calc(var(--cr-desktop-sidebar) + max(var(--cr-desktop-gutter), (100vw - var(--cr-desktop-sidebar) - var(--cr-desktop-content-max)) / 2));
+    margin-right: auto;
+  }
+
+  .cr-main,
+  main#primary,
+  .cr-main--woocommerce,
+  .cr-page-shell {
+    min-width: 0;
+  }
+
+  .cr-page-shell { padding-block: var(--cr-desktop-section-gap); }
+  .cr-prose { max-width: var(--cr-desktop-reading-max); margin-inline: auto; font-size: var(--cr-desktop-body-size); }
+  .cr-prose p, .cr-prose li { line-height: 1.78; }
+
+  /* Shared desktop typography scale for the page, section, catalog and navigation hierarchy. */
+  .cr-page__header h1,
+  .woocommerce-products-header__title.page-title,
+  body.woocommerce-account .cr-page__header h1 { font-size: var(--cr-desktop-title-size); line-height: 1.12; }
+  .cr-section-heading h2,
+  .cr-home-section__header h2,
+  body.home .cr-home--app .cr-app-section-title { font-size: var(--cr-desktop-section-title-size); line-height: 1.2; }
+  body { font-size: var(--cr-desktop-body-size); }
+  .cr-nav-list a { font-size: var(--cr-desktop-label-size); }
+  .cr-icon-button { width: 48px; height: 48px; }
+  .cr-icon-button .cr-icon, .cr-header__actions .cr-icon { width: 26px; height: 26px; }
+
+  /* Desktop header uses the same rail and proportionate brand/actions, not a separate container. */
+  .cr-header__inner { min-height: 92px; gap: clamp(24px, 2vw, 36px); }
+  .cr-brand { min-width: 190px; }
+  .cr-brand .custom-logo { max-width: 220px; max-height: 64px; }
+  .cr-brand__text { font-size: clamp(1.5rem, .4vw + 1.2rem, 1.8rem); }
+  .cr-header__actions { gap: 12px; }
+
+  /* Widen the existing fixed navigation rail and its visual controls without changing routes. */
+  body.home .cr-desktop-rail,
+  body.cr-parent-category-view .cr-desktop-rail {
+    width: var(--cr-desktop-sidebar) !important;
+    padding: 16px 10px !important;
+    gap: 24px !important;
+  }
+  body.home .cr-desktop-rail__brand img,
+  body.cr-parent-category-view .cr-desktop-rail__brand img { width: 48px !important; height: 48px !important; }
+  body.home .cr-desktop-rail__destination,
+  body.cr-parent-category-view .cr-desktop-rail__destination {
+    min-height: 76px;
+    padding-block: 10px;
+    font-size: var(--cr-desktop-label-size) !important;
+    line-height: 1.35;
+  }
+  body.home .cr-desktop-rail__destination .cr-icon,
+  body.cr-parent-category-view .cr-desktop-rail__destination .cr-icon { width: 28px !important; height: 28px !important; }
+
+  body.home .cr-app-header,
+  body.cr-app-nav-shell .cr-app-header,
+  body.cr-product-listing-view .cr-app-header { left: var(--cr-desktop-sidebar) !important; }
+  body.home .cr-app-shell,
+  body.home .cr-home-section {
+    width: min(calc(100vw - var(--cr-desktop-sidebar) - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max)) !important;
+    max-width: var(--cr-desktop-content-max) !important;
+    margin-left: calc(var(--cr-desktop-sidebar) + max(var(--cr-desktop-gutter), (100vw - var(--cr-desktop-sidebar) - var(--cr-desktop-content-max)) / 2)) !important;
+    margin-right: auto !important;
+  }
+
+  /* Home consumer geometry: hero and sections share the canonical rail. */
+  body.home .cr-home--app .cr-app-hero,
+  body.home .cr-home--app .cr-app-hero__slides,
+  body.home .cr-home--app .cr-app-hero__image { width: 100%; max-width: none; }
+  body.home .cr-home-section { margin-top: var(--cr-desktop-section-gap) !important; }
+  body.home .cr-home-section__header { margin-bottom: 24px; }
+  body.home .cr-home-products {
+    width: 100% !important;
+    max-width: none !important;
+    grid-template-columns: repeat(auto-fit, minmax(var(--cr-desktop-card-min), 1fr));
+    gap: 24px !important;
+  }
+  body.home .cr-home-product { min-width: 0; }
+  body.home .cr-home-product__image { width: 100%; }
+  body.home .cr-home-product__name { font-size: var(--cr-desktop-label-size) !important; line-height: 1.45; }
+  body.home .cr-home-product__price { font-size: clamp(16px, .25vw + 14px, 19px) !important; }
+  body.home .cr-home-outlet__grid { width: 100% !important; max-width: none !important; gap: 24px; }
+  body.home .cr-home-outlet-card { min-width: 0; height: clamp(220px, 17vw, 300px) !important; }
+  body.home .cr-home-outlet-card__copy strong { font-size: clamp(20px, .6vw + 15px, 26px) !important; }
+  body.home .cr-home-outlet-card__copy > span { font-size: var(--cr-desktop-label-size) !important; }
+  body.home .cr-home-brands { width: 100% !important; max-width: none !important; margin-inline: 0 !important; }
+  body.home .cr-home-brand-grid { width: 100%; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important; gap: 20px !important; }
+  body.home .cr-home-brand { min-width: 0; height: 96px !important; }
+  body.home .cr-home-brand > span { font-size: var(--cr-desktop-label-size) !important; }
+
+  /* Category and Outlet hubs: proportionate tiles across the same rail. */
+  body.cr-parent-category-view .cr-app-header .cr-home-topbar { width: 100% !important; max-width: none !important; padding-inline: var(--cr-desktop-gutter) !important; }
+  body.cr-parent-category-view .cr-parent-category__canvas { width: 100% !important; max-width: none !important; }
+  body.cr-parent-category-view .cr-parent-category__grid,
+  .cr-category-hub__grid {
+    width: 100% !important;
+    max-width: none !important;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important;
+    gap: clamp(24px, 2vw, 36px) !important;
+  }
+  body.cr-parent-category-view .cr-parent-category__media { width: min(100%, 280px) !important; max-width: none !important; margin-inline: auto; }
+  body.cr-parent-category-view .cr-parent-category__label,
+  .cr-category-hub__grid .cr-app-category__label { font-size: var(--cr-desktop-label-size) !important; line-height: 1.45; }
+
+  /* Archive product cards adapt to a meaningful minimum card width, not fixed skinny columns. */
+  body.cr-product-listing-view .cr-product-listing { width: 100% !important; max-width: none !important; }
+  body.cr-product-listing-view .cr-product-grid {
+    width: 100% !important;
+    max-width: none !important;
+    grid-template-columns: repeat(auto-fit, minmax(var(--cr-desktop-card-min), 1fr)) !important;
+    gap: clamp(24px, 1.7vw, 32px) !important;
+  }
+  body.cr-product-listing-view .cr-product-card__name { font-size: var(--cr-desktop-label-size) !important; line-height: 1.45; min-height: 2.8em; }
+  body.cr-product-listing-view .cr-product-card__price { font-size: clamp(16px, .25vw + 14px, 19px) !important; }
+  body.cr-product-listing-view .cr-product-listing__ordering,
+  body.cr-product-listing-view .cr-product-listing__active-filters { margin-inline: 0 !important; }
+  .woocommerce ul.products {
+    width: 100%;
+    max-width: none;
+    grid-template-columns: repeat(auto-fit, minmax(var(--cr-desktop-card-min), 1fr));
+    gap: clamp(24px, 1.7vw, 32px);
+  }
+  .woocommerce ul.products li.product .woocommerce-loop-product__title { font-size: var(--cr-desktop-label-size); line-height: 1.45; }
+  .woocommerce ul.products li.product .price { font-size: clamp(16px, .25vw + 14px, 19px); }
+
+  /* Brand index shares the global rail; only reading/text columns retain deliberate caps. */
+  .cr-brands-index { width: 100% !important; max-width: none !important; margin: 0 !important; }
+  .cr-brands-index__shell { width: 100% !important; max-width: none !important; }
+  .cr-brands-index__grid { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important; gap: 24px !important; }
+  .cr-brands-index__card { min-height: 150px; padding: 24px; }
+  .cr-brands-index__card img { height: 100px; }
+  .cr-brands-index__card span { font-size: var(--cr-desktop-label-size); }
+
+  /* Full-bleed footer background stays; both inner footer rails align to canonical content. */
+  .cr-footer__grid, .cr-footer__bottom { width: min(calc(100vw - var(--cr-desktop-sidebar) - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max)); max-width: var(--cr-desktop-content-max); margin-left: calc(var(--cr-desktop-sidebar) + max(var(--cr-desktop-gutter), (100vw - var(--cr-desktop-sidebar) - var(--cr-desktop-content-max)) / 2)); margin-right: auto; }
+  .cr-footer__grid { grid-template-columns: minmax(0, 1.4fr) minmax(220px, 1fr) minmax(220px, 1fr); gap: clamp(32px, 3vw, 56px); }
+  .cr-footer__brand { font-size: 1.6rem; }
+  .cr-footer__bottom { font-size: 15px; }
+}
+
+/* Legal and informational pages use the canonical page shell plus a comfortable reading measure. */
+@media (min-width: 1280px) {
+  body.page:not(.woocommerce-account):not(.home) .cr-page .cr-prose,
+  body.page:not(.woocommerce-account):not(.home) main#primary .cr-prose {
+    width: min(100%, var(--cr-desktop-reading-max));
+    max-width: var(--cr-desktop-reading-max);
+    margin-inline: auto;
+    font-size: var(--cr-desktop-body-size);
+  }
+}

@@ -1388,3 +1388,114 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
   .cr-account-home__grid { grid-template-columns: 1fr; }
   .cr-account-home__tile { min-height: 118px; }
 }
+
+
+/* ACCOUNT DESKTOP SHELL — common Woo endpoints, with mobile rules above frozen. */
+@media (min-width: 1280px) {
+  body.woocommerce-account.logged-in .cr-page,
+  body.woocommerce-account.logged-in .cr-page .cr-prose,
+  body.woocommerce-account.logged-in .woocommerce {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin-inline: 0 !important;
+  }
+
+  body.woocommerce-account.logged-in .cr-page .cr-prose { padding: 0 !important; }
+
+  body.woocommerce-account.logged-in .woocommerce {
+    display: grid !important;
+    grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(28px, 2.5vw, 40px);
+  }
+
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation {
+    box-sizing: border-box;
+    float: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 22px !important;
+    position: sticky;
+    top: calc(var(--cr-app-topbar-height, 88px) + 24px);
+  }
+
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation li a {
+    padding: 13px 14px;
+    font-size: var(--cr-desktop-label-size, 15px);
+    line-height: 1.4;
+  }
+
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-content {
+    box-sizing: border-box;
+    float: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+    padding: clamp(24px, 2vw, 36px) !important;
+    font-size: var(--cr-desktop-body-size, 16px);
+  }
+
+  /* Dashboard no longer inherits the mobile 720px cap; its cards expand with the content rail. */
+  body.woocommerce-account.logged-in .cr-account-home {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body.woocommerce-account.logged-in .cr-account-home__user { min-height: 108px; padding: 24px; gap: 18px; }
+  body.woocommerce-account.logged-in .cr-account-home__avatar { width: 64px; height: 64px; flex-basis: 64px; font-size: 20px; }
+  body.woocommerce-account.logged-in .cr-account-home__identity strong { font-size: 18px; line-height: 1.4; }
+  body.woocommerce-account.logged-in .cr-account-home__identity > span { font-size: 15px; line-height: 1.5; }
+  body.woocommerce-account.logged-in .cr-account-home__grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px; }
+  body.woocommerce-account.logged-in .cr-account-home__tile { min-height: 210px; padding: 24px; border-radius: 22px; }
+  body.woocommerce-account.logged-in .cr-account-home__icon,
+  body.woocommerce-account.logged-in .cr-account-home__icon svg { width: 34px; height: 34px; }
+  body.woocommerce-account.logged-in .cr-account-home__tile > strong { font-size: 18px; line-height: 1.4; }
+  body.woocommerce-account.logged-in .cr-account-home__tile > span:last-child { font-size: 15px; line-height: 1.5; }
+  body.woocommerce-account.logged-in .cr-account-home__information { margin-top: 36px; }
+  body.woocommerce-account.logged-in .cr-account-home__information h2 { font-size: 24px; line-height: 1.3; margin-bottom: 18px; }
+  body.woocommerce-account.logged-in .cr-account-home__information-row { min-height: 64px; padding-inline: 20px; font-size: 16px; }
+  body.woocommerce-account.logged-in .cr-account-home__information-icon,
+  body.woocommerce-account.logged-in .cr-account-home__information-icon svg { width: 26px; height: 26px; }
+
+  /* Shared endpoint content: readable forms and flexible order/reward surfaces. */
+  body.woocommerce-account.logged-in .woocommerce-EditAccountForm,
+  body.woocommerce-account.logged-in .woocommerce-address-fields,
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-content > form {
+    width: 100%;
+    max-width: 1040px;
+    min-width: 0;
+  }
+  body.woocommerce-account.logged-in .woocommerce-EditAccountForm .form-row,
+  body.woocommerce-account.logged-in .woocommerce-address-fields .form-row { margin-bottom: 18px !important; }
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-content table.shop_table { width: 100%; max-width: none; font-size: 15px; }
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-content table.shop_table th,
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-content table.shop_table td { padding: 16px 18px; }
+  body.woocommerce-account.logged-in .cr-account-orders,
+  body.woocommerce-account.logged-in .cr-account-order-detail,
+  body.woocommerce-account.logged-in .cr-account-loyalty,
+  body.woocommerce-account.logged-in .cr-account-information { width: 100%; max-width: none; }
+}
+
+/* Logged-out login is a deliberate reading/form measure, centered within the desktop rail. */
+@media (min-width: 1280px) {
+  body.woocommerce-account:not(.logged-in) .woocommerce,
+  body.woocommerce-account:not(.logged-in) .woocommerce-MyAccount-content {
+    width: 100% !important;
+    max-width: none !important;
+    margin-inline: 0 !important;
+  }
+  body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login {
+    width: min(100%, 560px) !important;
+    max-width: 560px !important;
+    margin-inline: auto !important;
+  }
+  body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login .form-row { margin-bottom: 20px !important; }
+  body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login .woocommerce-form-login__submit { min-height: 56px; font-size: 16px !important; }
+}

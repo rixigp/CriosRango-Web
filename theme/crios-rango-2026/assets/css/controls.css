@@ -320,3 +320,23 @@ body.login #registerform > .user-pass1-wrap,
 body.login #registerform > .user-pass2-wrap {
   margin: 0 0 var(--cr-form-field-gap) !important;
 }
+
+
+/* Canonical desktop control scale; mobile/tablet field geometry remains unchanged. */
+@media (min-width: 1280px) {
+  :root { --cr-desktop-control-height: 56px; --cr-form-field-gap: 16px; }
+  .cr-control-shell { min-height: var(--cr-desktop-control-height); }
+  .cr-control-shell__content input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),
+  .cr-control-shell__content select:not(.select2-hidden-accessible),
+  .cr-control-shell__content input[type="password"],
+  .cr-control-shell__content .password-input input,
+  .cr-control-shell__content .select2-selection__rendered {
+    font-size: 17px !important;
+    line-height: 26px !important;
+  }
+  body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row,
+  body.woocommerce-account .woocommerce-EditAccountForm .form-row,
+  body.woocommerce-account .woocommerce-address-fields .form-row,
+  body.woocommerce-account:not(.logged-in) #customer_login .form-row,
+  body.woocommerce-account:not(.logged-in) .woocommerce-form-login .form-row { margin-bottom: var(--cr-form-field-gap) !important; }
+}

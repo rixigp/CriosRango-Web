@@ -1324,3 +1324,29 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-log
 }
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-login-toggle .woocommerce-info::before { display: none; }
 body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-form-login-toggle a { color: var(--cr-green); text-decoration: underline; text-underline-offset: 2px; }
+
+
+/* Checkout desktop consumer: page shell stays full rail; inner reading forms may remain measured. */
+@media (min-width: 1280px) {
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page,
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose,
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-page .cr-prose > .woocommerce,
+  body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin-inline: 0 !important;
+  }
+  body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper {
+    gap: 0 24px;
+  }
+  body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper > .form-row {
+    margin-bottom: 16px !important;
+  }
+  body.woocommerce-checkout:not(.woocommerce-order-received) #payment #place_order {
+    min-height: 60px;
+    font-size: 17px;
+  }
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-delivery-heading h2 { font-size: 24px; }
+}
