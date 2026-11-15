@@ -1631,5 +1631,5 @@ test('DESKTOP_PRODUCT_DETAIL_TWO_COLUMN_RAIL=PASS — grid geometry is desktop-o
   assert.match(layer, /\.summary\s*>\s*\.cr-product-description\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;[\s\S]*?order:\s*90;/);
   assert.match(layer, /div\.product\s*>\s*\.woocommerce-tabs\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;/);
   assert.match(layer, /div\.product\s*>\s*\.cr-product-actions\s*\{\s*grid-column:\s*1;/);
-  assert.doesNotMatch(layer, /transform:\s*|\\bzoom\s*:/);
+  assert.doesNotMatch(layer, /transform:\s*|\bzoom\s*:/);
 });
