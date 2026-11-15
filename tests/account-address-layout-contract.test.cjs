@@ -130,23 +130,16 @@ function cssPaddingLeft(rule) {
   return values[3].toLowerCase();
 }
 
-test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START', () => {
-  assert.match(controlsCss, /padding:\s*0 14px\s*!important/);
-  assert.match(controlsCss, /padding:\s*0 36px 0 14px\s*!important/);
-  assert.match(controlsCss, /\.cr-control-shell/);
-  assert.match(controlsCss, /\.cr-control-shell \.select2-selection__arrow/);
-  assert.doesNotMatch(accountCss, /padding-inline-start:\s*13px !important/);
-  assert.doesNotMatch(accountCss, /\.woocommerce-address-fields \.select2-selection__rendered\s*\{/);
-});
-
-test('SELECT2_OUTER_AND_RENDERED_VALUE_HAVE_SEPARATE_PADDING_CONTRACTS', () => {
-  assert.match(controlsCss, /\.cr-control-shell \.select2-selection--single\s*\{[^}]*padding:\s*0\s*!important/);
-  assert.match(controlsCss, /\.cr-control-shell \.select2-selection__rendered\s*\{[^}]*padding:\s*0 36px 0 14px/);
-  assert.match(controlsCss, /padding:\s*0 14px\s*!important/);
-  assert.match(controlsCss, /padding:\s*0 36px 0 14px\s*!important/);
-});
-
-test('ADDRESS_SCREEN_USES_ONLY_THE_GLOBAL_BOTTOM_NAV_RESERVED_SPACE', () => {
+test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START',()=>{
+  assert.match(controlsCss,/padding:\s*8px 16px\s*!important/); assert.match(controlsCss,/padding:\s*8px 48px 8px 16px\s*!important/);
+  assert.match(controlsCss,/\.cr-control-shell/); assert.match(controlsCss,/\.cr-control-shell \.select2-selection__arrow/);
+  assert.doesNotMatch(accountCss,/padding-inline-start:\s*13px !important/);
+  assert.doesNotMatch(accountCss,/\.woocommerce-address-fields \.select2-selection__rendered\s*\{/);
+});test('SELECT2_OUTER_AND_RENDERED_VALUE_USE_SHARED_MATERIAL3_PADDING',()=>{
+  assert.match(controlsCss,/\.cr-control-shell \.select2-selection--single\s*\{[^}]*padding:\s*0\s*!important/s);
+  assert.match(controlsCss,/\.cr-control-shell \.select2-selection__rendered\s*\{[^}]*padding:\s*8px 48px 8px 16px/s);
+  assert.match(controlsCss,/padding:\s*8px 16px\s*!important/); assert.match(controlsCss,/padding:\s*8px 48px 8px 16px\s*!important/);
+});test('ADDRESS_SCREEN_USES_ONLY_THE_GLOBAL_BOTTOM_NAV_RESERVED_SPACE', () => {
   const addressStart = accountCss.indexOf('/* Mobile native shipping address form:');
   const addressEnd = accountCss.indexOf('/* Password app subview:', addressStart);
   assert.ok(addressStart >= 0 && addressEnd > addressStart);
@@ -174,11 +167,10 @@ test('SHIPPING_ADDRESS_2_HAS_ONE_OPTIONAL_LABEL_AND_NO_PLACEHOLDER_COPY', () => 
   assert.match(birthdayContract, /'' === \$shipping_fields\['shipping_address_2'\]\['placeholder'\]/);
 });
 
-test('SHIPPING_SELECT_PADDING_USES_SHARED_CONTROL_TOKENS_AND_PRESERVES_SELECT2_ARROW', () => {
-  assert.match(controlsCss, /\.cr-control-shell input:not\([\s\S]*?padding:\s*0 14px\s*!important/);
-  assert.match(controlsCss, /\.cr-control-shell select\s*\{[^}]*padding:\s*0 36px 0 14px\s*!important/);
-  assert.match(controlsCss, /\.cr-control-shell \.select2-selection__arrow\s*\{[^}]*top:\s*0\s*!important[^}]*right:\s*8px\s*!important[^}]*height:\s*100%\s*!important/);
-  assert.match(controlsCss, /--cr-control-height:\s*48px/);
-  assert.doesNotMatch(accountCss, /padding-inline-start:\s*13px !important/);
-  assert.doesNotMatch(accountCss, /Final shipping-select content-axis override/);
+test('SHIPPING_SELECTS_USE_SHARED_MATERIAL3_TOKENS_AND_TRAILING_ARROW',()=>{
+  assert.match(controlsCss,/\.cr-control-shell input:not\([\s\S]*?padding:\s*8px 16px\s*!important/);
+  assert.match(controlsCss,/\.cr-control-shell select\s*\{[^}]*padding:\s*8px 48px 8px 16px\s*!important/s);
+  assert.match(controlsCss,/\.cr-control-shell \.select2-selection__arrow\s*\{[^}]*top:\s*50%\s*!important[^}]*right:\s*16px\s*!important[^}]*width:\s*24px\s*!important/s);
+  assert.match(controlsCss,/--cr-control-height:\s*58px/); assert.match(controlsCss,/--cr-control-select-radius:\s*3px/);
+  assert.doesNotMatch(accountCss,/padding-inline-start:\s*13px !important/); assert.doesNotMatch(accountCss,/Final shipping-select content-axis override/);
 });
