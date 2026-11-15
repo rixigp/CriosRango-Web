@@ -5,6 +5,13 @@ const { chromium } = require('playwright');
 const BASE_URL = (process.env.STAGING_BASE_URL || 'https://criosrango.es/prueba').replace(/\/+$/, '');
 const VIEWPORTS = [1280, 1440, 1920];
 const accountUrl = new URL('mi-cuenta/', BASE_URL + '/').toString();
+const EXPECTED_INFORMATION_LABELS = [
+  'Cambios y devoluciones',
+  'Condiciones de contratación',
+  'Política de privacidad',
+  'Aviso legal',
+  'Política de cookies'
+];
 
 function log(key, value) {
   console.log(key + '=' + value);
@@ -186,6 +193,27 @@ async function authenticatedAccountLayout(page, viewport) {
   if (!pass) throw new Error('ACCOUNT_AUTH_DESKTOP_SHELL_FAILED at ' + viewport);
 }
 
+async function accountInformationLinks(page, audience, viewport) {
+  const rows = await page.evaluate(() => Array.from(
+    document.querySelectorAll('body.woocommerce-account .cr-account-home__information-row')
+  ).map(row => ({
+    label: (row.querySelector('span:nth-child(2)')?.textContent || '').trim(),
+    href: row.href || '',
+    hasIcon: Boolean(row.querySelector('.cr-account-home__information-icon svg')),
+    hasChevron: Boolean(row.querySelector('.cr-account-home__information-chevron'))
+  })));
+  const labels = rows.map(row => row.label);
+  const valid = rows.length === 5
+    && JSON.stringify(labels) === JSON.stringify(EXPECTED_INFORMATION_LABELS)
+    && rows.every(row => row.href && /^https?:\/\//i.test(row.href) && row.hasIcon && row.hasChevron);
+  log(audience + '_INFORMATION_LINKS_' + viewport, valid ? 'PASS' : 'FAIL');
+  log(audience + '_INFORMATION_LINK_COUNT_' + viewport, rows.length);
+  log(audience + '_INFORMATION_LINK_ORDER_' + viewport, JSON.stringify(labels));
+  log(audience + '_INFORMATION_LINK_URLS_' + viewport, JSON.stringify(rows.map(row => row.href)));
+  if (!valid) throw new Error(audience + '_INFORMATION_LINKS_INVALID at ' + viewport + ': ' + JSON.stringify(rows));
+  return rows.map(row => ({ label: row.label, href: row.href }));
+}
+
 async function loginForAuthenticatedAccount(page) {
   await visit(page, accountUrl);
   let loginForm = page.locator('form.woocommerce-form-login');
@@ -260,6 +288,29 @@ async function loginForAuthenticatedAccount(page) {
     if (!mobilePass) throw new Error('PRODUCT_MOBILE_GEOMETRY_CHANGED');
 
     await visit(page, accountUrl);
+    let guestInformationLinks = null;
+    for (const viewport of [390, 768, 1280]) {
+      await page.setViewportSize({ width: viewport, height: 900 });
+      await page.waitForTimeout(250);
+      const links = await accountInformationLinks(page, 'GUEST', viewport);
+      if (!guestInformationLinks) guestInformationLinks = links;
+      else if (JSON.stringify(links) !== JSON.stringify(guestInformationLinks)) {
+        throw new Error('GUEST_INFORMATION_LINKS_VARY_BY_VIEWPORT');
+      }
+    }
+    log('GUEST_INFORMATION_LINK_COUNT', guestInformationLinks.length);
+    log('INFORMATION_LINK_ORDER', 'PASS');
+
+    for (const link of guestInformationLinks) {
+      const response = await page.request.get(link.href, { timeout: 90000 });
+      const finalUrl = response.url();
+      if (!response.ok() || new URL(finalUrl).pathname.includes('/mi-cuenta/')) {
+        throw new Error('INFORMATION_DESTINATION_NOT_PUBLIC=' + link.label + ' URL=' + link.href + ' STATUS=' + response.status() + ' FINAL=' + finalUrl);
+      }
+      log('INFORMATION_PUBLIC_DESTINATION_' + link.label.replace(/[^A-Za-z0-9]+/g, '_').toUpperCase(), 'PASS');
+    }
+    log('INFORMATION_DESTINATIONS_PUBLIC', 'PASS');
+
     for (const viewport of VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
@@ -269,6 +320,20 @@ async function loginForAuthenticatedAccount(page) {
 
     if (process.env.STAGING_ACCOUNT_EMAIL && process.env.STAGING_ACCOUNT_PASSWORD) {
       await loginForAuthenticatedAccount(page);
+      let authenticatedInformationLinks = null;
+      for (const viewport of [390, 768, 1280]) {
+        await page.setViewportSize({ width: viewport, height: 900 });
+        await page.waitForTimeout(250);
+        const links = await accountInformationLinks(page, 'AUTH', viewport);
+        if (!authenticatedInformationLinks) authenticatedInformationLinks = links;
+        else if (JSON.stringify(links) !== JSON.stringify(authenticatedInformationLinks)) {
+          throw new Error('AUTH_INFORMATION_LINKS_VARY_BY_VIEWPORT');
+        }
+      }
+      const sameLinks = JSON.stringify(authenticatedInformationLinks) === JSON.stringify(guestInformationLinks);
+      log('AUTH_INFORMATION_LINK_COUNT', authenticatedInformationLinks.length);
+      log('GUEST_AUTH_INFORMATION_LINKS_MATCH', sameLinks ? 'PASS' : 'FAIL');
+      if (!sameLinks) throw new Error('GUEST_AUTH_INFORMATION_LINKS_DIFFER');
       for (const viewport of VIEWPORTS) {
         await page.setViewportSize({ width: viewport, height: 900 });
         await page.waitForTimeout(250);
@@ -276,6 +341,7 @@ async function loginForAuthenticatedAccount(page) {
         overflowResults.push(await checkOverflow(page, 'ACCOUNT_AUTH', viewport));
       }
     } else {
+      log('AUTH_INFORMATION_LINKS_MATCH', 'NOT_RUN_MISSING_STAGING_ACCOUNT_CREDENTIALS');
       log('ACCOUNT_AUTH_BROWSER', 'NOT_RUN_MISSING_STAGING_ACCOUNT_CREDENTIALS');
     }
 

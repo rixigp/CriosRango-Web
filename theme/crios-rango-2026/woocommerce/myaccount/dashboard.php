@@ -40,13 +40,8 @@ $find_account_page = static function( $slugs ) {
 };
 $help_url = $find_account_page( array( 'ayuda', 'preguntas-frecuentes', 'contacto' ) );
 
-$information = array(
-    array( 'label' => __( 'Cambios y devoluciones', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>', 'slugs' => array( 'cambios-y-devoluciones' ) ),
-    array( 'label' => __( 'Condiciones de contratación', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8M8 17h8"></path></svg>', 'slugs' => array( 'condiciones-generales-de-contratacion' ) ),
-    array( 'label' => __( 'Política de privacidad', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="shield-info"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"></path><circle cx="12" cy="11" r="3"></circle><path d="M12 10.5v3"></path><path d="M12 9h.01"></path></svg>', 'slugs' => array( 'politica-de-privacidad' ) ),
-    array( 'label' => __( 'Aviso legal', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8M8 17h8"></path></svg>', 'slugs' => array( 'aviso-legal' ) ),
-    array( 'label' => __( 'Política de cookies', 'crios-rango-2026' ), 'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="cookie"><path d="M20.5 12a8.5 8.5 0 1 1-8.5-8.5c0 1.1.9 2 2 2h.5a3 3 0 0 0 3 3h.5a2.5 2.5 0 0 1 2.5 2.5Z"></path><circle cx="8.5" cy="11" r=".8"></circle><circle cx="11" cy="16" r=".8"></circle><circle cx="15" cy="12.5" r=".8"></circle><circle cx="7.5" cy="15.5" r=".8"></circle></svg>', 'slugs' => array( 'politica-de-cookies' ) ),
-);
+$information = cr2026_account_information_links();
+
 ?>
 <?php cr2026_render_category_toolbar( __( 'Cuenta', 'crios-rango-2026' ), home_url( '/' ), 'parent', false, '', 'cr-account-title' ); ?>
 <section class="cr-account-home" aria-labelledby="cr-account-title">
@@ -93,12 +88,9 @@ $information = array(
     <section class="cr-account-home__information" aria-labelledby="cr-account-information-title">
         <h2 id="cr-account-information-title"><?php esc_html_e( 'Información', 'crios-rango-2026' ); ?></h2>
         <div class="cr-account-home__information-card">
-            <?php foreach ( $information as $item ) :
-                $page_url = $find_account_page( $item['slugs'] );
-                if ( ! $page_url ) { continue; }
-            ?>
-                <a class="cr-account-home__information-row" href="<?php echo esc_url( $page_url ); ?>">
-                    <span class="cr-account-home__information-icon" aria-hidden="true"><?php echo $item['icon_svg']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed inline SVG markup defined in this template. ?></span>
+            <?php foreach ( $information as $item ) : ?>
+                <a class="cr-account-home__information-row" href="<?php echo esc_url( $item['url'] ); ?>">
+                    <span class="cr-account-home__information-icon" aria-hidden="true"><?php echo $item['icon_svg']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- canonical inline SVG markup defined in inc/helpers.php. ?></span>
                     <span><?php echo esc_html( $item['label'] ); ?></span>
                     <span class="cr-account-home__information-chevron" aria-hidden="true">›</span>
                 </a>

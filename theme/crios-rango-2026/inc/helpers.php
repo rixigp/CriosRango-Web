@@ -294,14 +294,70 @@ function cr2026_app_nav_urls() {
  * The five editorial destinations linked from Account > Información.
  * WordPress remains the source of each page ID, URL, title and body.
  */
-function cr2026_account_information_page_slugs() {
+/**
+ * One canonical definition for every public Account > Información link.
+ * Labels, icons, order and page slugs are shared by guest and authenticated
+ * Account landings. WordPress remains the source of each published page URL.
+ */
+function cr2026_account_information_link_definitions() {
     return array(
-        'cambios-y-devoluciones',
-        'condiciones-generales-de-contratacion',
-        'politica-de-privacidad',
-        'aviso-legal',
-        'politica-de-cookies',
+        array(
+            'slug' => 'cambios-y-devoluciones',
+            'label' => __( 'Cambios y devoluciones', 'crios-rango-2026' ),
+            'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>',
+        ),
+        array(
+            'slug' => 'condiciones-generales-de-contratacion',
+            'label' => __( 'Condiciones de contratación', 'crios-rango-2026' ),
+            'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8M8 17h8"></path></svg>',
+        ),
+        array(
+            'slug' => 'politica-de-privacidad',
+            'label' => __( 'Política de privacidad', 'crios-rango-2026' ),
+            'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="shield-info"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"></path><circle cx="12" cy="11" r="3"></circle><path d="M12 10.5v3"></path><path d="M12 9h.01"></path></svg>',
+        ),
+        array(
+            'slug' => 'aviso-legal',
+            'label' => __( 'Aviso legal', 'crios-rango-2026' ),
+            'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8M8 17h8"></path></svg>',
+        ),
+        array(
+            'slug' => 'politica-de-cookies',
+            'label' => __( 'Política de cookies', 'crios-rango-2026' ),
+            'icon_svg' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" data-icon="cookie"><path d="M20.5 12a8.5 8.5 0 1 1-8.5-8.5c0 1.1.9 2 2 2h.5a3 3 0 0 0 3 3h.5a2.5 2.5 0 0 1 2.5 2.5Z"></path><circle cx="8.5" cy="11" r=".8"></circle><circle cx="11" cy="16" r=".8"></circle><circle cx="15" cy="12.5" r=".8"></circle><circle cx="7.5" cy="15.5" r=".8"></circle></svg>',
+        ),
     );
+}
+
+/** Keep the page-context detector tied to the same canonical page slugs. */
+function cr2026_account_information_page_slugs() {
+    return array_map(
+        static function( $item ) {
+            return $item['slug'];
+        },
+        cr2026_account_information_link_definitions()
+    );
+}
+
+/**
+ * Resolve the public destinations from published WordPress pages.
+ * Deliberately independent of login, customer identity and WooCommerce session.
+ */
+function cr2026_account_information_links() {
+    $links = array();
+    foreach ( cr2026_account_information_link_definitions() as $item ) {
+        $page = get_page_by_path( $item['slug'], OBJECT, 'page' );
+        if ( ! $page instanceof WP_Post || 'publish' !== $page->post_status ) {
+            continue;
+        }
+        $url = get_permalink( $page );
+        if ( ! is_string( $url ) || '' === trim( $url ) ) {
+            continue;
+        }
+        $item['url'] = $url;
+        $links[] = $item;
+    }
+    return $links;
 }
 
 /** Identify these pages only in the mobile app-style Account context. */

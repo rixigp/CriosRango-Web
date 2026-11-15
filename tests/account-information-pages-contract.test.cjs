@@ -24,13 +24,41 @@ const slugs = [
   'politica-de-cookies',
 ];
 
-test('INFORMATION_PAGES_COUNT_IS_FIVE_AND_MATCHES_ACCOUNT_DESTINATIONS', () => {
-  assert.equal((dashboard.match(/'label' => __\( '(?:Cambios y devoluciones|Condiciones de contratación|Política de privacidad|Aviso legal|Política de cookies)'/g) || []).length, 5);
+test('GUEST_INFORMATION_LINK_COUNT=5; AUTH_INFORMATION_LINK_COUNT=5; GUEST_AUTH_INFORMATION_LINKS_MATCH=PASS; INFORMATION_LINK_ORDER=PASS', () => {
+  const definitionsStart = helpers.indexOf('function cr2026_account_information_link_definitions()');
+  const definitionsEnd = helpers.indexOf('function cr2026_account_information_page_slugs()', definitionsStart);
+  assert.ok(definitionsStart >= 0 && definitionsEnd > definitionsStart, 'one canonical Information definition exists');
+  const definitions = helpers.slice(definitionsStart, definitionsEnd);
+  const labels = [...definitions.matchAll(/'label' => __\( '([^']+)'/g)].map(match => match[1]);
+  const expectedLabels = [
+    'Cambios y devoluciones',
+    'Condiciones de contratación',
+    'Política de privacidad',
+    'Aviso legal',
+    'Política de cookies',
+  ];
+  assert.deepEqual(labels, expectedLabels, 'canonical Information order');
+  assert.equal(slugs.length, 5);
   for (const slug of slugs) {
-    assert.ok(dashboard.includes("'slugs' => array( '" + slug + "' )"), 'Account links ' + slug);
-    assert.ok(helpers.includes("'" + slug + "'"), 'mobile Account route ' + slug);
+    assert.ok(definitions.includes("'slug' => '" + slug + "'"), 'canonical Information slug ' + slug);
   }
+  assert.match(dashboard, /\$information = cr2026_account_information_links\(\)/);
+  assert.match(guestHome, /\$information = cr2026_account_information_links\(\)/);
+  assert.doesNotMatch(dashboard + guestHome, /'label' => __\( '(?:Cambios y devoluciones|Condiciones de contratación|Política de privacidad|Aviso legal|Política de cookies)'/);
+  assert.match(dashboard, /\$item\['icon_svg'\]/);
+  assert.match(guestHome, /\$item\['icon_svg'\]/);
   assert.match(presentation, /function cr2026_account_information_page_content\(/);
+});
+
+test('INFORMATION_DESTINATIONS_USE_PUBLISHED_WORDPRESS_PAGES_AND_PUBLIC_PERMALINKS', () => {
+  const resolverStart = helpers.indexOf('function cr2026_account_information_links()');
+  const resolverEnd = helpers.indexOf('/** Identify these pages only', resolverStart);
+  const resolver = helpers.slice(resolverStart, resolverEnd);
+  assert.match(resolver, /get_page_by_path\( \$item\['slug'\], OBJECT, 'page' \)/);
+  assert.match(resolver, /'publish' !== \$page->post_status/);
+  assert.match(resolver, /get_permalink\( \$page \)/);
+  assert.doesNotMatch(resolver, /is_user_logged_in|customer_id|WC\(\)->session|woocommerce_session/);
+  assert.match(helpers, /function cr2026_account_information_page_slugs\(\)[\s\S]*?cr2026_account_information_link_definitions\(\)/);
 });
 
 test('ALL_FIVE_PAGES_USE_ONE_WORDPRESS_CONTENT_RENDERER_AND_CANONICAL_TOOLBAR', () => {
@@ -113,8 +141,9 @@ test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_
   assert.deepEqual([...new Set([...guestHome.matchAll(/cr-account-home__tile--(orders|promotions|profile|help)/g)].map(match=>match[1]))].sort(),['help','orders','profile','promotions']);
   assert.equal((guestHome.match(/<a class="cr-account-home__tile cr-account-home__tile--/g)||[]).length,4);
   assert.match(presentation,/add_query_arg\( 'redirect_to'/);
-  assert.match(guestHome,/Cambios y devoluciones/);
-  assert.match(guestHome,/Condiciones de contratación/);
+  assert.match(guestHome,/\$information = cr2026_account_information_links\(\)/);
+  assert.match(dashboard,/\$information = cr2026_account_information_links\(\)/);
+  assert.doesNotMatch(guestHome,/Cambios y devoluciones|Condiciones de contratación/);
   assert.doesNotMatch(guestHome,/woocommerce-form-login|form-login\.php/);
   assert.match(accountCss,/\.cr-account-home__user--guest/);
   assert.match(accountCss,/\.cr-account-home__user\s*\{[^}]*background:\s*#fff/,'authenticated identity hero surface is white');

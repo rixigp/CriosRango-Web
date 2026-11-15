@@ -21,18 +21,8 @@ $find_guest_page = static function( $slugs ) {
 };
 $help_url = $find_guest_page( array( 'ayuda', 'preguntas-frecuentes', 'contacto' ) );
 
-$information = array(
-    array(
-        'label' => __( 'Cambios y devoluciones', 'crios-rango-2026' ),
-        'url' => $find_guest_page( array( 'cambios-y-devoluciones' ) ),
-        'icon' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5M12 7v5l4 2"></path></svg>',
-    ),
-    array(
-        'label' => __( 'Condiciones de contratación', 'crios-rango-2026' ),
-        'url' => $find_guest_page( array( 'condiciones-generales-de-contratacion' ) ),
-        'icon' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8"></path></svg>',
-    ),
-);
+$information = cr2026_account_information_links();
+
 ?>
 <section class="cr-account-home cr-account-home--guest" aria-label="<?php esc_attr_e( 'Cuenta', 'crios-rango-2026' ); ?>">
     <a class="cr-account-home__user cr-account-home__user--guest" href="<?php echo esc_url( $login_url ); ?>">
@@ -81,7 +71,7 @@ $information = array(
             <?php foreach ( $information as $item ) : ?>
                 <?php if ( $item['url'] ) : ?>
                     <a class="cr-account-home__information-row" href="<?php echo esc_url( $item['url'] ); ?>">
-                        <span class="cr-account-home__information-icon" aria-hidden="true"><?php echo $item['icon']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed inline SVG defined in this template. ?></span>
+                        <span class="cr-account-home__information-icon" aria-hidden="true"><?php echo $item['icon_svg']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- canonical inline SVG markup defined in inc/helpers.php. ?></span>
                         <span><?php echo esc_html( $item['label'] ); ?></span>
                         <span class="cr-account-home__information-chevron" aria-hidden="true">›</span>
                     </a>
