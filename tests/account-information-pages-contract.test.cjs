@@ -124,8 +124,8 @@ test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_
   assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.woocommerce-form-login\.login\s*\{[^}]*padding:0!important;[^}]*border:0!important;[^}]*border-radius:0!important;[^}]*background:transparent!important;[^}]*box-shadow:none!important;/s,'legacy login visual card is removed');
   assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.woocommerce-form-login\.login \.woocommerce-form-login__submit\s*\{[^}]*width:100%!important;[^}]*border-radius:999px!important;[^}]*background:#183b35!important;/s,'canonical full-width green pill CTA is reused');
   assert.match(controlsCss,/\.cr-control-shell input:not\(\[type="checkbox"\]\)/,'login fields use the shared native fieldset control primitive');
-  assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*background:\s*transparent/s,'login fields use the shared transparent field surface');
-  assert.match(controlsCss,/:root\s*\{[^}]*--cr-control-background:\s*transparent/s,'shared control background token resolves to transparent');
+  assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*background:\s*var\(--cr-control-background\)/s,'login fields use the shared white field surface');
+  assert.match(controlsCss,/:root\s*\{[^}]*--cr-control-background:\s*#FFFFFF/s,'shared control background token resolves to white');
   assert.match(accountCss,/woocommerce-form-login__rememberme/,'Remember me remains styled but functional');
   assert.match(accountCss,/lost_password a/,'lost password destination remains styled and functional');
 });
