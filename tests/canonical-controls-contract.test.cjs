@@ -37,7 +37,7 @@ test('CR_CONTROL_SHELL=YES; NATIVE_FIELDSET_LEGEND_NOTCH=YES; MATERIAL3_TRANSPAR
   assert.match(controls,/\.woocommerce form label > \.required[\s\S]*?display:\s*none/s);
   assert.doesNotMatch(wpLogin,/removeAttribute\(['"]required['"]\)|removeAttribute\(['"]aria-required['"]\)/);
   assert.doesNotMatch(wpLogin,/setAttribute\(['"]required['"]|setAttribute\(['"]aria-required['"]/);
-  assert.doesNotMatch(controls,/overflow:\s*hidden/);
+  assert.match(controls,/.cr-control-shell__content select.select2-hidden-accessible\s*\{[^}]*overflow:\s*hidden\s*!important[^}]*clip:\s*rect\(0 0 0 0\)\s*!important[^}]*clip-path:\s*inset\(50%\)\s*!important/s);
 });test('MATERIAL3_1_4_0_EFFECTIVE_WEB_GEOMETRY',()=>{
   assert.match(controls,/--cr-control-height:\s*58px/); assert.match(controls,/--cr-control-radius:\s*4px/);
   assert.match(controls,/--cr-control-select-radius:\s*3px/); assert.match(controls,/--cr-control-border:\s*#8A858A/);
@@ -68,7 +68,8 @@ test('PERSONAL_ACCOUNT_SHELL_EXCLUSION_AND_CONTENT_LAYER_IDEMPOTENCE_CONTRACT',(
   assert.match(wpLogin,/window\.cr2026EnhanceFormControls = enhance/);
   assert.match(controls,/\.cr-control-shell__content\s*\{[^}]*inset:\s*0;[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*height:\s*100%/s);
   assert.match(controls,/\.cr-control-shell__content input[^{}]*\{[^}]*height:\s*24px\s*!important/s);
-  assert.match(controls,/\.cr-control-shell__content select\s*\{[^}]*padding:\s*0 48px 0 16px\s*!important/s);
+  assert.match(controls,/.cr-control-shell__content select:not\(.select2-hidden-accessible\)\s*\{[^}]*padding:\s*0 48px 0 16px\s*!important/s);
+  assert.match(controls,/.cr-control-shell__content select.select2-hidden-accessible\s*\{[^}]*position:\s*absolute\s*!important[^}]*width:\s*1px\s*!important[^}]*height:\s*1px\s*!important/s);
   assert.match(controls,/\.cr-control-shell__content \.select2-selection__rendered\s*\{[^}]*height:\s*24px\s*!important/);
   assert.match(controls,/\.cr-control-shell__content input\[type="password"\][\s\S]*?padding:\s*0 48px 0 16px\s*!important/s);
   assert.match(controls,/\.cr-control-shell \.show-password-input\s*\{[^}]*top:\s*50%[^}]*right:\s*16px[^}]*translateY\(-50%\)/s);
