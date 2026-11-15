@@ -3,7 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const theme=path.resolve(__dirname,'../theme/crios-rango-2026'),read=p=>fs.readFileSync(path.join(theme,p),'utf8');
 const controls=read('assets/css/controls.css'),assets=read('inc/assets.php'),wpLogin=read('assets/js/form-controls.js'),accountCss=read('assets/css/account.css'),checkoutCss=read('assets/css/checkout.css');
 test('WALLET_ICON_BADGE_SINGLE_SOURCE=YES',()=>{const cart=read('assets/js/cart-ui.js'),loyalty=read('assets/js/account-loyalty.js');assert.match(cart,/cr-wallet-icon-badge cr-cart-wallet__icon/);assert.match(loyalty,/cr-wallet-icon-badge cr-account-loyalty__wallet-icon/);assert.match(controls,/\.cr-wallet-icon-badge\s*\{/);assert.match(controls,/--cr-wallet-badge-size:\s*38px/);});
-test('CR_CONTROL_SHELL=YES; NATIVE_FIELDSET_LEGEND_NOTCH=YES; WHITE_FIELD_SURFACE=YES',()=>{
+test('CR_CONTROL_SHELL=YES; TRANSPARENT_FIELDSET_LEGEND_NOTCH=YES; WHITE_FIELD_SURFACE=YES',()=>{
   assert.match(controls,/\.cr-control-shell\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
   assert.match(controls,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s);
   assert.match(controls,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*font-size:\s*13px/s);
