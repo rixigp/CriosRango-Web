@@ -45,7 +45,7 @@
 .cr-control-shell > legend {
   position: relative; float: none; width: auto; max-width: calc(100% - 24px);
   margin: 0 0 0 12px; padding: 0 4px; color: #777277;
-  background: var(--cr-app-canvas);
+  background: transparent;
   font-family: "Roboto", Arial, sans-serif; font-size: 13px; font-weight: 400; line-height: 16px;
   white-space: nowrap;
 }
