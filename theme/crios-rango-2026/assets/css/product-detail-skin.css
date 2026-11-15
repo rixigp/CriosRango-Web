@@ -1873,7 +1873,7 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
     box-sizing: border-box;
   }
 
-  body.cr-product-detail-app .cr-main--woocommerce div.product > .woocommerce-product-gallery {
+  body.cr-product-detail-app .cr-main--woocommerce div.product > div.woocommerce-product-gallery {
     grid-column: 1;
     grid-row: 1;
     float: none;
@@ -1895,6 +1895,11 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
      so the description can follow the purchase row across the complete rail. */
   body.cr-product-detail-app .cr-main--woocommerce div.product > .summary {
     display: contents;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > .cr-product-title-brand-row {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > *:not(.cr-product-description) {
