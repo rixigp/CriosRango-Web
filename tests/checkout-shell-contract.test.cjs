@@ -202,34 +202,23 @@ test('delivery field semantics define five full-width fields and two half-width 
   assert.doesNotMatch(checkoutCss, orderDeclarationPattern);
 });
 
-test('Login, Checkout and Select2 consume one canonical form-control token source', () => {
-  const normalizedControlsCss = controlsCss.replace(/\s+/g, '');
-  for (const token of [
-    '--cr-control-height:48px;',
-    '--cr-control-border:#d8d9d5;',
-    '--cr-control-radius:9px;',
-    '--cr-control-background:#fff;',
-    '--cr-control-focus-border:#aeb2ad;',
-    '--cr-control-error-border:#c66b61;'
-  ]) assert.ok(normalizedControlsCss.includes(token), 'missing shared form-control token: ' + token);
+test('Login, Checkout and Select2 consume one canonical Material 3 form-control token source',()=>{
+  const normalizedControlsCss=controlsCss.replace(/\s+/g,'');
+  for(const token of ['--cr-control-height:58px;','--cr-control-border:#8A858A;','--cr-control-radius:4px;','--cr-control-select-radius:3px;','--cr-control-background:transparent;','--cr-control-border-focus:#183B35;','--cr-control-error-border:#c66b61;']) assert.ok(normalizedControlsCss.includes(token),'missing shared form-control token: '+token);
   assert.ok(assets.includes("CR2026_URI . '/assets/css/controls.css'"));
   assert.ok(assets.includes("array( 'cr2026-main', 'cr2026-controls', 'cr2026-roboto' )"));
   assert.ok(loginPhp.includes("array( 'cr2026-controls' )"));
   assert.ok(controlsCss.includes('body.login #loginform'));
   assert.ok(controlsCss.includes('.select2-selection--single'));
-  assert.doesNotMatch(loginCss, /\.login form \.input,/);
-  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
-});
-
-test('delivery labels use the native legend notch and canonical white control surface', () => {
-  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s);
-  assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*background:\s*#fff/s);
-  assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*border:\s*var\(--cr-control-border-width\)\s+solid\s+var\(--cr-control-border\)/s);
-  assert.match(controlsCss, /\.cr-control-shell:focus-within/);
-  assert.doesNotMatch(checkoutCss, /woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
-});
-
-test('WooCommerce core full shipping labels lose only the appended price separator in Checkout', () => {
+  assert.doesNotMatch(loginCss,/\.login form \.input,/);
+  assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
+});test('delivery labels use the native legend notch and transparent canvas surface',()=>{
+  assert.match(controlsCss,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-app-canvas/s);
+  assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*background:\s*transparent/s);
+  assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*border:\s*var\(--cr-control-border-width\)\s+solid\s+var\(--cr-control-border\)/s);
+  assert.match(controlsCss,/\.cr-control-shell:focus-within/);
+  assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row > label\s*\{/);
+});test('WooCommerce core full shipping labels lose only the appended price separator in Checkout', () => {
   assert.match(checkoutWooCommercePhp, /function cr2026_checkout_shipping_full_label_presentation\( \$label, \$method \)/);
   assert.ok(checkoutWooCommercePhp.includes("add_filter( 'woocommerce_cart_shipping_method_full_label', 'cr2026_checkout_shipping_full_label_presentation', 99, 2 );"));
   assert.ok(checkoutWooCommercePhp.includes("$method->get_label()"));
@@ -250,16 +239,14 @@ test('WooCommerce core full shipping labels lose only the appended price separat
   assert.equal(removeCoreSeparator('Envío gratuito: <small>Gratis</small>', 'Envío gratuito'), 'Envío gratuito <small>Gratis</small>');
 });
 
-test('checkout consumes the shared native fieldset control without replacing native WooCommerce labels', () => {
+test('checkout consumes the shared native fieldset control without replacing native WooCommerce labels',()=>{
   assert.ok(controlsCss.includes('.cr-control-shell'));
   assert.ok(controlsCss.includes('.cr-control-shell > legend'));
-  assert.ok(controlsCss.includes('background: #fff'));
-  assert.match(controlsCss, /\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s);
-  assert.doesNotMatch(controlsCss, /cr-control__box|cr-control__label|--cr-app-canvas/);
+  assert.ok(controlsCss.includes('background: transparent'));
+  assert.match(controlsCss,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-app-canvas/s);
+  assert.doesNotMatch(controlsCss,/cr-control__box|cr-control__label/);
   assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
-});
-
-test('native delivery controls and Select2 consume the canonical presentation without DOM replacement', () => {
+});test('native delivery controls and Select2 consume the canonical presentation without DOM replacement', () => {
   assert.doesNotMatch(checkoutWooCommercePhp, /woocommerce_form_field|select2|wp_dequeue_script/);
   assert.ok(controlsCss.includes('.select2-selection--single'));
   const normalizedControlsCss = controlsCss.replace(/\s+/g, '');
@@ -271,22 +258,20 @@ test('native delivery controls and Select2 consume the canonical presentation wi
 });
 
 
-test('global form controls share a zero-padding wrapper, 14px value inset and centered alignment', () => {
-  assert.match(controlsCss, /\.cr-control-shell\s*\{[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0[^}]*background:\s*#fff/s);
-  assert.match(controlsCss, /\.cr-control-shell\s*:\s*is\([\s\S]*?\.woocommerce-input-wrapper[\s\S]*?\.select2-container[\s\S]*?\)\s*\{[^}]*position:\s*relative\s*!important[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0/s);
-  assert.match(controlsCss, /\.cr-control-shell input:not\([\s\S]*?\)\s*\{[^}]*padding:\s*0 14px/s);
-  assert.match(controlsCss, /input\[type="password"\][\s\S]*?padding:\s*0 48px 0 14px/s);
-  assert.match(controlsCss, /\.cr-control-shell select\s*\{[^}]*padding:\s*0 36px 0 14px/s);
-  assert.match(controlsCss, /\.select2-selection__rendered\s*\{[^}]*padding:\s*0 36px 0 14px/s);
-  assert.match(controlsCss, /\.show-password-input[\s\S]*?top:\s*50%[\s\S]*?transform:\s*translateY\(-50%\)/);
-  assert.match(controlsCss, /\.cr-control-shell textarea\s*\{[^}]*padding:\s*12px 14px/s);
-  assert.match(controlsCss, /\.woocommerce form label > \.required[\s\S]*?display:\s*none/s);
-  assert.doesNotMatch(controlsCss, /padding:\s*var\(--cr-control-(?:select-)?padding\)/);
-  assert.match(controlsCss, /font:\s*400 15px\/48px/);
-  assert.doesNotMatch(controlsCss, /text-align-last:\s*center|text-align:\s*center/);
-});
-
-test('country and state remain native WooCommerce selects with Select2 presentation only', () => {
+test('global form controls share the Material 3 16px inset and left alignment',()=>{
+  assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0[^}]*background:\s*transparent/s);
+  assert.match(controlsCss,/\.cr-control-shell\s*:is\([\s\S]*?\.woocommerce-input-wrapper[\s\S]*?\.select2-container[\s\S]*?\)\s*\{[^}]*position:\s*relative\s*!important[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*padding:\s*0/s);
+  assert.match(controlsCss,/\.cr-control-shell input:not\([\s\S]*?\)\s*\{[^}]*padding:\s*8px 16px/s);
+  assert.match(controlsCss,/input\[type="password"\][\s\S]*?padding:\s*8px 48px 8px 16px/s);
+  assert.match(controlsCss,/\.cr-control-shell select\s*\{[^}]*padding:\s*8px 48px 8px 16px/s);
+  assert.match(controlsCss,/\.select2-selection__rendered\s*\{[^}]*padding:\s*8px 48px 8px 16px/s);
+  assert.match(controlsCss,/\.show-password-input[\s\S]*?top:\s*50%[\s\S]*?right:\s*16px[\s\S]*?transform:\s*translateY\(-50%\)/);
+  assert.match(controlsCss,/\.cr-control-shell textarea\s*\{[^}]*padding:\s*8px 16px/s);
+  assert.match(controlsCss,/\.woocommerce form label > \.required[\s\S]*?display:\s*none/s);
+  assert.doesNotMatch(controlsCss,/padding:\s*var\(--cr-control-(?:select-)?padding\)/);
+  assert.match(controlsCss,/font-size:\s*16px\s*!important[\s\S]*?line-height:\s*24px\s*!important/s);
+  assert.doesNotMatch(controlsCss,/text-align-last:\s*center|text-align:\s*center/);
+});test('country and state remain native WooCommerce selects with Select2 presentation only', () => {
   assert.match(checkoutWooCommercePhp, /billing_state/);
   assert.match(checkoutWooCommercePhp, /billing_country/);
   assert.match(controlsCss, /\.woocommerce form \.form-row \.select2-container/);
