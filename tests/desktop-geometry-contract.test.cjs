@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
 
 const root = path.resolve(__dirname, '..');
 const css = file => fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css', file), 'utf8');
+const footerTemplate = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/footer.php'), 'utf8');
 
 function mediaBlocks(source, query) {
   const blocks = [];
@@ -65,12 +66,6 @@ test('DESKTOP_GRID_COLUMNS_RESPONSIVE=PASS — archive and category cards use fl
   assert.match(layer, /cr-parent-category__grid[\s\S]*?repeat\(auto-fit,\s*minmax\(210px,\s*1fr\)\)/);
 });
 
-test('DESKTOP_FOOTER_CANONICAL_RAIL=PASS — footer inner rails consume the same token formula', () => {
-  const layer = desktop('main.css');
-  assert.match(layer, /width: min\(calc\(100vw - var\(--cr-desktop-sidebar\) - 2 \* var\(--cr-desktop-gutter\)\), var\(--cr-desktop-content-max\)\)/);
-  assert.match(layer, /\.cr-footer__grid, \.cr-footer__bottom[\s\S]*?margin-left: max\(var\(--cr-desktop-gutter\), \(100vw - var\(--cr-desktop-sidebar\) - var\(--cr-desktop-content-max\)\) \/ 2\)/);
-});
-
 test('DESKTOP_NO_HORIZONTAL_OVERFLOW=PASS — desktop shells and cards permit intrinsic shrink', () => {
   const layer = desktop('main.css');
   assert.match(layer, /\.cr-main,[\s\S]*?min-width:\s*0/);
@@ -84,24 +79,8 @@ test('DESKTOP_CART_PAGE_SHELL_UNCAPPED=PASS — cart outer prose wrapper cannot 
 });
 
 
-test('DESKTOP_FOOTER_BACKGROUND_FROM_SIDEBAR=PASS — green background starts at sidebar edge and spans viewport remainder', () => {
-  const layer = desktop('main.css');
-  assert.match(layer, /\.cr-footer\s*\{[\s\S]*?width:\s*calc\(100vw - var\(--cr-desktop-sidebar\)\)[\s\S]*?margin-left:\s*var\(--cr-desktop-sidebar\)/);
-  assert.match(layer, /\.cr-footer__grid, \.cr-footer__bottom[\s\S]*?width:\s*min\(calc\(100vw - var\(--cr-desktop-sidebar\) - 2 \* var\(--cr-desktop-gutter\)\), var\(--cr-desktop-content-max\)\)/);
-  assert.match(layer, /\.cr-footer__grid, \.cr-footer__bottom[\s\S]*?margin-left:\s*max\(var\(--cr-desktop-gutter\)/);
-});
 
-test('DESKTOP_FOOTER_SCALE_AND_DENSITY=PASS — footer text is readable and vertical padding compact', () => {
-  const layer = desktop('main.css');
-  assert.match(layer, /\.cr-footer__brand\s*\{[\s\S]*?font-size:\s*clamp\(20px,/);
-  assert.match(layer, /\.cr-footer p, \.cr-footer__menu, \.cr-footer__legal[\s\S]*?font-size:\s*var\(--cr-desktop-label-size\)/);
-  assert.match(layer, /\.cr-footer\s*\{[\s\S]*?padding:\s*32px 0 16px/);
-  assert.match(layer, /\.cr-footer__bottom\s*\{[\s\S]*?margin-top:\s*20px[\s\S]*?padding-top:\s*12px/);
-});
-
-test('DESKTOP_SHORT_PAGE_FOOTER_BOTTOM=PASS — global body flex flow stretches main without page-specific spacing', () => {
-  const layer = desktop('main.css');
-  assert.match(layer, /body\s*\{[\s\S]*?min-height:\s*100vh[\s\S]*?display:\s*flex[\s\S]*?flex-direction:\s*column/);
-  assert.match(layer, /body > main#primary,[\s\S]*?flex:\s*1 0 auto/);
-  assert.match(layer, /body > \.cr-footer\s*\{\s*flex:\s*0 0 auto/);
-});
+test('VISUAL_FOOTER_MOBILE_ABSENT=PASS — no footer visual markup or CSS', () => { assert.doesNotMatch(footerTemplate, /<footer\\b|Críos\\s*&amp;\\s*Rango|Moda para crecer|Aviso legal|Privacidad|Cookies|©/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
+test('VISUAL_FOOTER_TABLET_ABSENT=PASS — visual footer absent at tablet widths', () => { assert.doesNotMatch(footerTemplate, /<footer\\b/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
+test('VISUAL_FOOTER_DESKTOP_ABSENT=PASS — visual footer absent at desktop widths', () => { assert.doesNotMatch(footerTemplate, /<footer\\b/i); assert.doesNotMatch(css('main.css'), /cr-footer/); });
+test('WP_FOOTER_HOOK_PRESENT=PASS — technical WordPress hook retained', () => { assert.match(footerTemplate, /<\\?php\\s+wp_footer\\(\\);\\s+\\?>/); });

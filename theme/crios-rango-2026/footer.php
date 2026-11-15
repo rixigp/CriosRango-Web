@@ -14,30 +14,7 @@ $is_cart_active = 'cart' === $active_nav_item;
 $is_account_active = 'account' === $active_nav_item;
 $is_mobile_account_active = cr2026_is_account_context();
 ?>
-<footer class="cr-footer">
-    <div class="cr-shell cr-footer__grid">
-        <div>
-            <div class="cr-footer__brand">Críos &amp; Rango</div>
-            <p><?php esc_html_e( 'Moda para crecer, jugar y disfrutar.', 'crios-rango-2026' ); ?></p>
-        </div>
-        <nav aria-label="<?php esc_attr_e( 'Navegación del pie', 'crios-rango-2026' ); ?>">
-            <?php
-            wp_nav_menu( array(
-                'theme_location' => 'footer',
-                'container'      => false,
-                'menu_class'     => 'cr-footer__menu',
-                'fallback_cb'    => false,
-            ) );
-            ?>
-        </nav>
-        <div class="cr-footer__legal">
-            <a href="<?php echo esc_url( home_url( '/aviso-legal/' ) ); ?>"><?php esc_html_e( 'Aviso legal', 'crios-rango-2026' ); ?></a>
-            <a href="<?php echo esc_url( home_url( '/politica-de-privacidad/' ) ); ?>"><?php esc_html_e( 'Privacidad', 'crios-rango-2026' ); ?></a>
-            <a href="<?php echo esc_url( home_url( '/politica-de-cookies/' ) ); ?>"><?php esc_html_e( 'Cookies', 'crios-rango-2026' ); ?></a>
-        </div>
-    </div>
-    <div class="cr-shell cr-footer__bottom">© <?php echo esc_html( gmdate( 'Y' ) ); ?> Críos &amp; Rango</div>
-</footer>
+
 
 <?php if ( $is_app_nav_shell ) : ?>
 <nav class="cr-desktop-rail" aria-label="<?php esc_attr_e( 'Navegación principal', 'crios-rango-2026' ); ?>">
