@@ -447,7 +447,7 @@
 /* Split views keep one native WooCommerce form and only change its mobile presentation. */
 @media (max-width: 767px) {
  body.woocommerce-account.cr-account-profile-view-home .woocommerce-EditAccountForm { display: none !important; }
- body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm > fieldset { display: none !important; }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm > fieldset:not(.cr-control-shell) { display: none !important; }
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_first_name),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_last_name),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_display_name),
@@ -499,7 +499,7 @@
    position: relative; float: none; box-sizing: border-box; width: 100%; margin: 0 0 16px; padding: 0;
  }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_display_name) { display: block; }
- body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm fieldset { display: none !important; }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm fieldset:not(.cr-control-shell) { display: none !important; }
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_first_name),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_last_name),
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_display_name),
