@@ -5,7 +5,7 @@ const controls=read('assets/css/controls.css'),assets=read('inc/assets.php'),wpL
 test('WALLET_ICON_BADGE_SINGLE_SOURCE=YES',()=>{const cart=read('assets/js/cart-ui.js'),loyalty=read('assets/js/account-loyalty.js');assert.match(cart,/cr-wallet-icon-badge cr-cart-wallet__icon/);assert.match(loyalty,/cr-wallet-icon-badge cr-account-loyalty__wallet-icon/);assert.match(controls,/\.cr-wallet-icon-badge\s*\{/);assert.match(controls,/--cr-wallet-badge-size:\s*38px/);});
 test('CR_CONTROL_SHELL=YES; NATIVE_FIELDSET_LEGEND_NOTCH=YES; WHITE_FIELD_SURFACE=YES',()=>{
   assert.match(controls,/\.cr-control-shell\s*\{[^}]*background:\s*var\(--cr-control-background\)/s);
-  assert.match(controls,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-app-canvas/s);
+  assert.match(controls,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*transparent/s);
   assert.match(controls,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*font-size:\s*13px/s);
   assert.match(controls,/:root\s*\{[^}]*--cr-control-height:\s*58px;[^}]*--cr-control-radius:\s*4px;[^}]*--cr-control-select-radius:\s*3px/s);
   assert.match(controls,/:root\s*\{[^}]*--cr-control-background:\s*#FFFFFF/s);
