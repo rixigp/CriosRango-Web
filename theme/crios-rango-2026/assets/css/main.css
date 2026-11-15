@@ -2751,7 +2751,7 @@ body.search .cr-search-form__submit.is-loading::before,
   }
 
   /* One content rail: viewport minus sidebar and two gutters, capped for large monitors. */
-  .cr-shell {
+  :is(.cr-shell) {
     box-sizing: border-box;
     width: min(calc(100vw - var(--cr-desktop-sidebar) - 2 * var(--cr-desktop-gutter)), var(--cr-desktop-content-max));
     max-width: var(--cr-desktop-content-max);
