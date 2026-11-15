@@ -213,7 +213,7 @@ test('Login, Checkout and Select2 consume one canonical Material 3 form-control 
   assert.doesNotMatch(loginCss,/\.login form \.input,/);
   assert.doesNotMatch(checkoutCss,/woocommerce-billing-fields__field-wrapper > \.form-row input\.input-text/);
 });test('delivery labels use the native legend notch and white field surface',()=>{
-  assert.match(controlsCss,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-control-background/s);
+  assert.match(controlsCss,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-app-canvas/s);
   assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*background:\s*var\(--cr-control-background/s);
   assert.match(controlsCss,/\.cr-control-shell\s*\{[^}]*border:\s*var\(--cr-control-border-width\)\s+solid\s+var\(--cr-control-border\)/s);
   assert.match(controlsCss,/\.cr-control-shell:focus-within/);
@@ -243,7 +243,7 @@ test('checkout consumes the shared native fieldset control without replacing nat
   assert.ok(controlsCss.includes('.cr-control-shell'));
   assert.ok(controlsCss.includes('.cr-control-shell > legend'));
   assert.ok(controlsCss.includes('background: transparent'));
-  assert.match(controlsCss,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-control-background/s);
+  assert.match(controlsCss,/\.cr-control-shell\s*>\s*legend\s*\{[^}]*background:\s*var\(--cr-app-canvas/s);
   assert.doesNotMatch(controlsCss,/cr-control__box|cr-control__label/);
   assert.ok(checkoutWooCommercePhp.includes("$fields[ $key ]['label'] = $presentation['label'];"));
 });test('native delivery controls and Select2 consume the canonical presentation without DOM replacement', () => {
