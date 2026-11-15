@@ -33,14 +33,21 @@ test('GLOBAL_FORM_GEOMETRY_AND_REQUIRED_MARKERS_USE_ONE_CANONICAL_SOURCE',()=>{
 });
 
 
-test('ANDROID_SINGLE_LINE_CONTROL_TEXT_USES_FULL_HEIGHT_LINE_BOX',()=>{\n  assert.match(controls,/\.cr-control-shell input:not\(\[type="checkbox"\]\)[\s\S]*?padding:\s*0 14px\s*!important[\s\S]*?font:\s*400 15px\/48px/s);\n  assert.match(controls,/\.cr-control-shell select\s*\{[^}]*padding:\s*0 36px 0 14px\s*!important[^}]*font:\s*400 15px\/48px/s);\n  assert.match(controls,/form \.form-row:not\(\[data-cr-control="true"\]\)[\s\S]*?padding:\s*0 14px\s*!important;[\s\S]*?line-height:\s*48px\s*!important/s);\n  assert.doesNotMatch(controls,/padding:\s*13px 14px\s*!important/);\n});\n\ntest('GLOBAL_CONTROL_VALUE_ALIGNMENT_HAS_SINGLE_CONTROL_PADDING_SOURCE',()=>{
+test('ANDROID_SINGLE_LINE_CONTROL_TEXT_USES_FULL_HEIGHT_LINE_BOX',()=>{
+  assert.match(controls,/\.cr-control-shell input:not\(\[type="checkbox"\]\)[\s\S]*?padding:\s*0 14px\s*!important[\s\S]*?font:\s*400 15px\/48px/s);
+  assert.match(controls,/\.cr-control-shell select\s*\{[^}]*padding:\s*0 36px 0 14px\s*!important[^}]*font:\s*400 15px\/48px/s);
+  assert.match(controls,/form \.form-row:not\(\[data-cr-control="true"\]\)[\s\S]*?padding:\s*0 14px\s*!important;[\s\S]*?line-height:\s*48px\s*!important/s);
+  assert.doesNotMatch(controls,/padding:\s*13px 14px\s*!important/);
+});
+
+test('GLOBAL_CONTROL_VALUE_ALIGNMENT_HAS_SINGLE_CONTROL_PADDING_SOURCE',()=>{
   assert.match(controls,/\.cr-control-shell :is\([\s\S]*?\.woocommerce-input-wrapper[\s\S]*?\.select2-container[\s\S]*?\)\s*\{[^}]*position:\s*relative\s*!important[^}]*padding:\s*0\s*!important/s);
   assert.match(controls,/\.cr-control-shell input:not\(\[type="checkbox"\]\)[\s\S]*?padding:\s*0 14px\s*!important[\s\S]*?font:\s*400 15px\/48px/s);
   assert.match(controls,/\.cr-control-shell select\s*\{[^}]*padding:\s*0 36px 0 14px\s*!important/s);
   assert.match(controls,/\.cr-control-shell \.select2-selection--single\s*\{[^}]*display:\s*flex\s*!important[^}]*align-items:\s*center\s*!important/s);
   assert.match(controls,/\.cr-control-shell \.select2-selection__rendered\s*\{[^}]*padding:\s*0 36px 0 14px\s*!important/s);
   assert.match(controls,/\.cr-control-shell \.select2-selection__arrow\s*\{[^}]*top:\s*0\s*!important[^}]*right:\s*8px\s*!important[^}]*height:\s*100%\s*!important/s);
-  assert.match(controls,/\.cr-control-shell input\[type="password"\],[\s\S]*?padding:\s*13px 48px 13px 14px\s*!important/s);
+  assert.match(controls,/\.cr-control-shell input\[type="password"\],[\s\S]*?padding:\s*0 48px 0 14px\s*!important/s);
   assert.match(controls,/\.cr-control-shell \.show-password-input,[\s\S]*?top:\s*50%\s*!important[\s\S]*?right:\s*14px\s*!important[\s\S]*?transform:\s*translateY\(-50%\)\s*!important/s);
   assert.match(controls,/\.woocommerce form \.form-row > label abbr\.required[\s\S]*?display:\s*none\s*!important/);
 });
