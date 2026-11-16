@@ -12,4 +12,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 <a class="cr-skip-link" href="#primary"><?php esc_html_e( 'Saltar al contenido', 'crios-rango-2026' ); ?></a>
+<div class="cr-desktop-shell" data-cr-desktop-shell>
 <?php cr2026_render_app_header(); ?>
