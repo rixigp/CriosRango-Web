@@ -43,13 +43,13 @@ const inventory = [
   ['Cambiar contraseña','inc/account-presentation.php','cr2026_render_category_toolbar()',true],
   ['Ayuda','inc/account-presentation.php','cr2026_render_category_toolbar()',true],
   ['Eliminar cuenta','inc/account-presentation.php','cr2026_render_category_toolbar()',true],
-  ['Cambios y devoluciones','page.php','cr2026_render_category_toolbar() without a back link',true],
-  ['Condiciones de contratación','page.php','cr2026_render_category_toolbar() without a back link',true],
-  ['Política de privacidad','page.php','cr2026_render_category_toolbar() without a back link',true],
-  ['Aviso legal','page.php','cr2026_render_category_toolbar() without a back link',true],
-  ['Política de cookies','page.php','cr2026_render_category_toolbar() without a back link',true],
+  ['Cambios y devoluciones','page.php','cr2026_render_category_toolbar() with contextual back destination',true],
+  ['Condiciones de contratación','page.php','cr2026_render_category_toolbar() with contextual back destination',true],
+  ['Política de privacidad','page.php','cr2026_render_category_toolbar() with contextual back destination',true],
+  ['Aviso legal','page.php','cr2026_render_category_toolbar() with contextual back destination',true],
+  ['Política de cookies','page.php','cr2026_render_category_toolbar() with contextual back destination',true],
   ['Login','inc/login.php','WordPress wp-login screen; outside storefront mobile page shell',false],
-  ['404','404.php','cr2026_render_category_toolbar() without a back link',true],
+  ['404','404.php','cr2026_render_category_toolbar() with contextual back destination',true],
   ['Pago seguro (redirección Cecabank)','inc/woocommerce.php','transaction-status heading inside gateway card; not global page title',false],
 ];
 
@@ -102,31 +102,35 @@ test('Orders and order detail use the canonical title renderer', () => {
   assert.match(account, /cr2026_account_render_endpoint_toolbar\( \$title, wc_get_account_endpoint_url\( 'orders' \) \)/);
 });
 
-test('legal pages, both search modes, brands and 404 use the canonical mobile title', () => {
-  assert.match(page, /cr2026_render_category_toolbar\(\s*get_the_title\(\),\s*''/);
+test('legal pages and help use the canonical toolbar with contextual back destinations', () => {
+  assert.match(page, /cr2026_render_category_toolbar\(\s*get_the_title\(\),\s*\$page_back_url/);
   assert.match(page, /cr2026_render_category_toolbar\(\s*get_the_title\(\),\s*\$account_back_url/);
   assert.match(page, /cr2026_account_is_help_page/);
+  assert.match(page, /\$page_back_url\s*=\s*\(\s*function_exists\( 'cr2026_account_is_help_page' \)[\s\S]*?\?\s*\$page_account_url\s*:\s*home_url\( '\/' \)/);
   assert.match(search, /cr2026_render_category_toolbar\(\s*sprintf\([\s\S]*?cr2026_shop_url\(\)/);
   assert.match(brandsIndex, /cr2026_render_category_toolbar\(\s*__\( 'Nuestras marcas'[\s\S]*?home_url\( '\/' \)/);
   assert.match(brandArchive, /cr2026_render_category_toolbar\(\s*\$brand_term->name,\s*\$brands_index_url/);
   assert.match(notFound, /cr2026_render_category_toolbar\(\s*__\( 'Página no encontrada'[\s\S]*?''/);
 });
 
-test('legacy page headings are hidden on mobile while their desktop presentation remains available', () => {
-  assert.match(mainCss, /@media \(max-width: 767px\)[\s\S]*?\.cr-page__header \{ display: none/);
-    assert.match(mainCss, /\.cr-empty-state > h1 \{ display: none/);
+test('generic WordPress pages use only the canonical toolbar at every viewport', () => {
+  assert.doesNotMatch(page, /<header class="cr-page__header">/);
+  assert.match(page, /cr2026_render_category_toolbar\(\s*get_the_title\(\),\s*\$page_back_url/);
+  assert.match(mainCss, /\.cr-parent-category__toolbar\s*\{/);
+  assert.match(mainCss, /\.cr-parent-category__title\s*\{/);
   assert.match(orders, /else\s*:\s*\?>[\s\S]*?cr-account-orders__desktop-toolbar/);
-  assert.match(page, /<header class="cr-page__header">/);
-  });
+});
 
-test('Account page template does not emit its generic page title on mobile Account endpoints', () => {
-  assert.match(page, /if \( ! \$is_mobile_account \) : \?>[\s\S]*?<header class="cr-page__header">/);
+test('Account information and guest login templates use the canonical toolbar without duplicate page titles', () => {
+  assert.match(page, /if \( \$is_mobile_account && function_exists\( 'cr2026_is_account_information_page' \)/);
+  assert.match(page, /elseif \( \$is_mobile_account && function_exists\( 'is_account_page' \) && is_account_page\(\) && ! is_user_logged_in\(\)/);
+  assert.doesNotMatch(page, /<header class="cr-page__header">/);
   assert.match(account, /cr2026_account_render_endpoint_toolbar\( \$title/);
 });
 
 test('one mobile PAGE TITLE is emitted per route and Product Detail remains excluded', () => {
   assert.doesNotMatch(orders, /cr-account-orders__toolbar/);
-  assert.match(page, /! cr2026_account_is_help_page\(\)/);
+  assert.match(page, /cr2026_account_is_help_page\(\)/);
   assert.match(account, /woocommerce_account_view-order_endpoint/);
   assert.match(productSkin, /cr2026_render_category_toolbar\([\s\S]*?'cr-product-detail-toolbar'/);
   assert.match(helpers, /echo '<h1 class="cr-parent-category__title"'/);
