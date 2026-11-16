@@ -240,5 +240,14 @@ function cr2026_enqueue_assets() {
             true
         );
     }
+    // Last-loaded visual harmonization layer: shared presentation only, after every
+    // page-specific skin. It does not register scripts or alter WooCommerce behavior.
+    wp_enqueue_style(
+        'cr2026-visual-system',
+        CR2026_URI . '/assets/css/visual-system.css',
+        array( 'cr2026-main' ),
+        cr2026_asset_version( 'assets/css/visual-system.css' )
+    );
+
 }
 add_action( 'wp_enqueue_scripts', 'cr2026_enqueue_assets', 30 );

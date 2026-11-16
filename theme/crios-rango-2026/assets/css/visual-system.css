@@ -1,0 +1,335 @@
+/*
+ * CR 2026 — shared visual system
+ * Mobile remains the canonical component reference. Wider viewports may
+ * redistribute the same components but must not replace their visual language.
+ */
+:root {
+  --cr-type-page-title: 21px;
+  --cr-type-section-title: 18px;
+  --cr-type-card-title: 14px;
+  --cr-type-body: 14px;
+  --cr-type-secondary: 12px;
+  --cr-type-button: 14px;
+  --cr-type-navigation: 11px;
+  --cr-page-top-gap: 32px;
+  --cr-page-inline-gutter: 20px;
+  --cr-section-gap: 28px;
+  --cr-card-gap: 12px;
+  --cr-card-radius-canonical: 18px;
+  --cr-control-radius-canonical: 4px;
+  --cr-border-canonical: #D8D9D5;
+  --cr-brand-canonical: #183B35;
+  --cr-canvas-canonical: #FCFAF7;
+}
+@media (max-width: 767px) {
+  :root {
+    --cr-page-top-gap: 20px;
+    --cr-page-inline-gutter: 20px;
+    --cr-section-gap: 22px;
+    --cr-card-gap: 10px;
+  }
+}
+
+/* One page-heading language, whether supplied by a Woo toolbar or a page template. */
+.cr-parent-category__toolbar,
+.cr-page__header {
+  box-sizing: border-box;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0 0 18px;
+}
+.cr-parent-category__toolbar {
+  padding-block: 0;
+}
+.cr-parent-category__back {
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  color: var(--cr-brand-canonical);
+  text-decoration: none;
+}
+.cr-parent-category__back .cr-icon,
+.cr-parent-category__back svg {
+  width: 24px;
+  height: 24px;
+}
+.cr-parent-category__title,
+.cr-page__header h1 {
+  min-width: 0;
+  margin: 0;
+  color: var(--cr-brand-canonical);
+  font: 300 var(--cr-type-page-title)/28px "Roboto", Arial, sans-serif;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+.cr-parent-category__title { flex: 1 1 auto; }
+.cr-parent-category__filters {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--cr-border-canonical);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--cr-brand-canonical);
+  font: 400 13px/18px "Roboto", Arial, sans-serif;
+}
+.cr-page__header h1 { width: 100%; }
+
+/* Consistent vertical rhythm without per-route offsets. */
+.cr-page-shell {
+  padding-top: var(--cr-page-top-gap);
+  padding-bottom: clamp(40px, 4vw, 64px);
+}
+.cr-page-shell .cr-prose {
+  width: 100%;
+  max-width: 920px;
+}
+.cr-page-shell .cr-prose > :first-child { margin-top: 0; }
+.cr-main--woocommerce:not(.cr-main--product-detail) {
+  padding-top: var(--cr-page-top-gap);
+}
+.cr-main--woocommerce .cr-parent-category__toolbar { margin-bottom: 18px; }
+
+/* Home identity: keep the mobile white logo medallion on every viewport. */
+body.home .cr-app-header.is-home-hero .cr-home-mark {
+  box-sizing: border-box;
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 1px 7px rgba(0,0,0,.14);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+body.home .cr-app-header.is-home-hero .cr-home-mark img,
+body.home .cr-app-header.is-home-hero .cr-home-mark .custom-logo,
+body.home .cr-app-header.is-home-hero .cr-home-mark__logo {
+  width: 38px;
+  height: 38px;
+  max-width: 38px;
+  max-height: 38px;
+  object-fit: contain;
+}
+.cr-home-topbar__actions { align-items: center; }
+.cr-app-icon-button {
+  box-sizing: border-box;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  display: inline-grid;
+  place-items: center;
+}
+.cr-app-icon-button .cr-icon {
+  width: 29px;
+  height: 29px;
+}
+.cr-app-icon-button .cr-cart-count {
+  min-width: 18px;
+  height: 18px;
+  top: 2px;
+  right: 1px;
+  font: 700 10px/18px "Roboto", Arial, sans-serif;
+}
+@media (max-width: 767px) {
+  body.home .cr-app-header.is-home-hero .cr-home-mark {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+  }
+  body.home .cr-app-header.is-home-hero .cr-home-mark img,
+  body.home .cr-app-header.is-home-hero .cr-home-mark .custom-logo,
+  body.home .cr-app-header.is-home-hero .cr-home-mark__logo {
+    width: 34px;
+    height: 34px;
+    max-width: 34px;
+    max-height: 34px;
+  }
+  .cr-app-icon-button {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+  }
+  .cr-app-icon-button .cr-icon {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Product archive typography and badges share one scale; catalogue geometry is frozen. */
+.cr-product-card__title,
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+  font-size: var(--cr-type-card-title);
+  line-height: 1.32;
+  font-weight: 400;
+}
+.cr-product-card__price,
+.woocommerce ul.products li.product .price {
+  font-size: var(--cr-type-body);
+  line-height: 1.3;
+  font-weight: 700;
+}
+.cr-product-card__media,
+.woocommerce ul.products li.product a img {
+  border-radius: 14px;
+}
+.cr-product-card__badge,
+.woocommerce ul.products li.product .onsale,
+.woocommerce span.onsale {
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+/* Account cards retain the exact mobile palette, iconography and content hierarchy. */
+.cr-account-home__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--cr-card-gap);
+}
+.cr-account-home__tile {
+  min-height: 142px;
+  padding: 12px 14px;
+  border-radius: 20px;
+}
+.cr-account-home__tile-top { margin-bottom: 10px; }
+.cr-account-home__icon,
+.cr-account-home__icon .cr-icon,
+.cr-account-home__icon svg {
+  width: 30px;
+  height: 30px;
+}
+.cr-account-home__tile > strong {
+  font-size: 14px;
+  line-height: 19px;
+}
+.cr-account-home__tile > span:last-child {
+  font-size: 11px;
+  line-height: 16px;
+}
+.cr-account-home__information { margin-top: 24px; }
+.cr-account-home__information h2 {
+  margin-bottom: 12px;
+  font-size: 18px;
+  line-height: 25px;
+}
+.cr-account-home__information-card { border-radius: 18px; }
+.cr-account-home__information-row {
+  min-height: 53px;
+  grid-template-columns: 25px minmax(0,1fr) 16px;
+  gap: 10px;
+  padding-inline: 14px;
+  font-size: 13px;
+  line-height: 18px;
+}
+.cr-account-home__information-icon,
+.cr-account-home__information-icon svg {
+  width: 20px;
+  height: 20px;
+}
+@media (min-width: 900px) and (max-width: 1279px) {
+  .cr-account-home__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .cr-account-home__tile { min-height: 148px; }
+}
+@media (min-width: 1280px) {
+  body.woocommerce-account .woocommerce-MyAccount-content {
+    padding: 24px !important;
+  }
+  body.woocommerce-account.logged-in .cr-account-home__grid,
+  body.woocommerce-account:not(.logged-in) .cr-account-home__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  body.woocommerce-account .cr-account-home__tile {
+    min-height: 148px;
+    padding: 14px;
+    border-radius: 20px;
+  }
+  body.woocommerce-account .cr-account-home__icon,
+  body.woocommerce-account .cr-account-home__icon svg {
+    width: 30px;
+    height: 30px;
+  }
+  body.woocommerce-account .cr-account-home__information { margin-top: 26px; }
+}
+
+/* Account forms use a readable inner measure without narrowing the account rail. */
+@media (min-width: 768px) {
+  body.woocommerce-account.logged-in .woocommerce-EditAccountForm,
+  body.woocommerce-account.logged-in .woocommerce-address-fields,
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-content > form {
+    max-width: 900px;
+  }
+  body.woocommerce-account.logged-in .woocommerce-EditAccountForm .form-row-first,
+  body.woocommerce-account.logged-in .woocommerce-EditAccountForm .form-row-last,
+  body.woocommerce-account.logged-in .woocommerce-address-fields .form-row-first,
+  body.woocommerce-account.logged-in .woocommerce-address-fields .form-row-last {
+    width: calc(50% - 8px);
+  }
+  body.woocommerce-account:not(.logged-in) .woocommerce-form-login.login {
+    max-width: 560px;
+  }
+}
+
+/* Product Detail: same app-skin components in a true two-column purchase layout. */
+@media (min-width: 1280px) {
+  body.cr-product-detail-app .cr-main--woocommerce div.product {
+    grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+    column-gap: clamp(28px, 3vw, 44px);
+    row-gap: 28px;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .woocommerce-product-gallery {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .woocommerce-product-gallery .woocommerce-product-gallery__image img {
+    max-height: min(72vh, 760px);
+    object-fit: contain;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > .cr-product-title-brand-row {
+    grid-column: 2;
+    grid-row: 1;
+    margin-bottom: 16px;
+  }
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > .cr-product-description {
+    grid-column: 1 / -1;
+    padding-inline: 0;
+  }
+}
+
+/* Shared visual control language; preserve dimensions and behavior of the native controls. */
+.cr-button,
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce input.button,
+.woocommerce div.product form.cart .button,
+body.woocommerce-account .woocommerce-form-login__submit {
+  font-family: "Roboto", Arial, sans-serif;
+  font-weight: 400;
+}
+.woocommerce table.shop_table,
+.woocommerce-cart .cart-collaterals .cart_totals,
+.woocommerce-checkout #order_review,
+body.woocommerce-account .woocommerce-MyAccount-content {
+  border-color: var(--cr-border-canonical);
+}
+@media (max-width: 1279px) {
+  body.woocommerce-account .woocommerce-MyAccount-navigation { display: none !important; }
+}
+@media (max-width: 1279px) {
+  .cr-page-shell { width: min(calc(100% - 40px), var(--cr-shell)); }
+}
