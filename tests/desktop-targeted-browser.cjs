@@ -100,6 +100,8 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
     const railStyle = rails[0] && getComputedStyle(rails[0]);
     const innerStyle = nav && getComputedStyle(nav.querySelector('.cr-mobile-bottom-nav__inner'));
     const linkStyle = links[0] && getComputedStyle(links[0]);
+    const label = links[0] && links[0].querySelector(':scope > span:not(.cr-cart-count):not(.cr-icon)');
+    const labelStyle = label && getComputedStyle(label);
     const iconStyle = icon && getComputedStyle(icon);
     const badgeStyle = badge && getComputedStyle(badge);
     const activeLinks = links.filter(link => link.classList.contains('is-active'));
@@ -133,16 +135,29 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
       bottomPosition: navStyle ? navStyle.position : 'MISSING',
       bottomBottom: navStyle ? navStyle.bottom : 'MISSING',
       bottomMinHeight: navStyle ? navStyle.minHeight : 'MISSING',
+      navPaddingTop: navStyle ? navStyle.paddingTop : 'MISSING',
+      navPaddingBottom: navStyle ? navStyle.paddingBottom : 'MISSING',
       innerDisplay: innerStyle ? innerStyle.display : 'MISSING',
       innerColumns: innerStyle ? innerStyle.gridTemplateColumns.split(' ').length : 0,
+      innerColumnGap: innerStyle ? innerStyle.columnGap : 'MISSING',
       linkCount: links.length,
+      linkMinHeight: linkStyle ? linkStyle.minHeight : 'MISSING',
       linkDisplay: linkStyle ? linkStyle.display : 'MISSING',
       linkDirection: linkStyle ? linkStyle.flexDirection : 'MISSING',
       linkTextDecoration: linkStyle ? linkStyle.textDecorationLine : 'MISSING',
       linkFontSize: linkStyle ? linkStyle.fontSize : 'MISSING',
+      linkLineHeight: linkStyle ? linkStyle.lineHeight : 'MISSING',
       linkGap: linkStyle ? linkStyle.gap : 'MISSING',
+      labelFontSize: labelStyle ? labelStyle.fontSize : 'MISSING',
+      labelLineHeight: labelStyle ? labelStyle.lineHeight : 'MISSING',
       iconWidth: iconStyle ? iconStyle.width : 'MISSING',
       iconHeight: iconStyle ? iconStyle.height : 'MISSING',
+      badgeMinWidth: badgeStyle ? badgeStyle.minWidth : 'MISSING',
+      badgeWidth: badgeStyle ? badgeStyle.width : 'MISSING',
+      badgeHeight: badgeStyle ? badgeStyle.height : 'MISSING',
+      badgeFontSize: badgeStyle ? badgeStyle.fontSize : 'MISSING',
+      badgeTop: badgeStyle ? badgeStyle.top : 'MISSING',
+      badgeRight: badgeStyle ? badgeStyle.right : 'MISSING',
       activeCount: activeLinks.length,
       activeLabels: activeLinks.map(link => (link.querySelector(':scope > span:not(.cr-cart-count):not(.cr-icon)')?.textContent || '').trim().replace(/\s+/g, ' ')),
       desktopActiveLabels,
@@ -155,14 +170,28 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
   });
   let pass;
   if (viewport < 1280) {
+    const intermediate = viewport >= 768;
+    const scalePass = intermediate
+      ? state.bottomMinHeight === '88px'
+        && state.navPaddingTop === '8px'
+        && state.linkMinHeight === '68px'
+        && state.linkFontSize === '13px'
+        && state.labelFontSize === '13px' && state.labelLineHeight === '16px'
+        && state.linkGap === '5px' && state.innerColumnGap === '8px'
+        && state.iconWidth === '28px' && state.iconHeight === '28px'
+        && state.badgeMinWidth === '22px' && state.badgeHeight === '22px'
+        && state.badgeFontSize === '12px' && state.badgeTop === '2px'
+        && parseFloat(state.bodyPaddingBottom) >= 88
+      : state.bottomMinHeight === '72px'
+        && state.linkFontSize === '10.88px'
+        && state.iconWidth === '22px' && state.iconHeight === '22px'
+        && parseFloat(state.bodyPaddingBottom) >= 72;
     pass = state.bottomCount === 1 && state.railCount === 1
       && state.bottomDisplay !== 'none' && state.railDisplay === 'none' && state.bottomPosition === 'fixed'
       && state.bottomBottom === '0px' && state.innerDisplay === 'grid'
       && state.innerColumns === 5 && state.linkCount === 5
       && state.linkDisplay === 'flex' && state.linkDirection === 'column'
-      && state.linkTextDecoration === 'none' && state.linkFontSize === '10.88px'
-      && state.linkGap === '3px' && state.iconWidth === '22px' && state.iconHeight === '22px'
-      && parseFloat(state.bodyPaddingBottom) >= 72
+      && state.linkTextDecoration === 'none' && scalePass
       && state.activeMatchesCurrent && state.badgeCount === 1
       && state.badgeStates['0'].display === 'none'
       && state.badgeStates['1'].display !== 'none'
@@ -170,6 +199,7 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
       && state.badgeStates['0'].sameNode && state.badgeStates['1'].sameNode && state.badgeStates['2'].sameNode;
     if (expectedActiveLabel) pass = pass && state.activeLabels.length === 1
       && state.activeLabels[0] === expectedActiveLabel;
+    log(label + (intermediate ? '_INTERMEDIATE_SCALE_' : '_MOBILE_SCALE_') + viewport, pass ? 'PASS' : 'FAIL');
   } else {
     pass = state.bottomCount === 1 && state.railCount === 1
       && state.bottomDisplay === 'none' && state.railCount === 1 && state.railDisplay === 'flex';
