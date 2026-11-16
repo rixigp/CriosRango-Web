@@ -26,6 +26,7 @@ function mediaBlock(source, query) {
 }
 
 const tablet = mediaBlock(css, 'max-width: 1279px');
+const intermediateScale = mediaBlock(css, 'min-width: 768px) and (max-width: 1279px');
 const desktop = mediaBlock(css, 'min-width: 1280px');
 
 test('GLOBAL_SHELL_PRESENT_FOR_ALL_NORMAL_PUBLIC_REQUESTS=PASS', () => {
@@ -63,6 +64,22 @@ test('ONE_CANONICAL_BOTTOM_NAV_COMPONENT_AND_SHARED_MOBILE_STYLES=PASS', () => {
   assert.doesNotMatch(css, /@media\s*\(max-width:\s*767px\)[\s\S]{0,1400}\.cr-mobile-bottom-nav\s+a\s*\{/);
 });
 
+
+test('CANONICAL_BOTTOM_NAV_INTERMEDIATE_SCALE_ONLY=PASS', () => {
+  assert.match(intermediateScale, /--cr-bottom-nav:\s*88px/);
+  assert.match(intermediateScale, /padding:\s*8px\s+8px\s+env\(safe-area-inset-bottom\)/);
+  assert.match(intermediateScale, /min-height:\s*68px/);
+  assert.match(intermediateScale, /font-size:\s*13px/);
+  assert.match(intermediateScale, /line-height:\s*16px/);
+  assert.match(intermediateScale, /gap:\s*5px/);
+  assert.match(intermediateScale, /column-gap:\s*8px/);
+  assert.match(intermediateScale, /width:\s*28px[\s\S]*?height:\s*28px/);
+  assert.match(intermediateScale, /min-width:\s*22px[\s\S]*?height:\s*22px[\s\S]*?font-size:\s*12px/);
+  assert.match(intermediateScale, /top:\s*2px[\s\S]*?right:\s*calc\(50%\s*-\s*32px\)/);
+  assert.match(intermediateScale, /padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
+  assert.match(intermediateScale, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav/);
+  assert.doesNotMatch(intermediateScale, /tablet-bottom-nav|intermediate-bottom-nav|desktop-bottom-nav/);
+});
 
 test('ACCOUNT_INTERNAL_DESKTOP_NAV_STARTS_AT_1280=PASS', () => {
   assert.match(account, /@media\s*\(max-width:\s*1279px\)\s*\{[\s\S]*?woocommerce-MyAccount-navigation\s*\{\s*display:\s*none\s*!important/s);
