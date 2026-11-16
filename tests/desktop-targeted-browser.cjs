@@ -217,7 +217,9 @@ async function accountHomeLayout(page, viewport) {
     };
   });
   if (!state.found) throw new Error('ACCOUNT_HOME_MARKUP_MISSING at ' + viewport);
-  const pass = state.homeRatio >= 0.98 && (viewport < 1280 || state.homeMaxWidth === 'none');
+  const pass = viewport >= 1280
+    ? state.homeRatio >= 0.98 && state.homeMaxWidth === 'none'
+    : state.homeWidth <= state.shellWidth + 1 && state.homeWidth >= Math.min(state.shellWidth, 720) - 2;
   log('ACCOUNT_HOME_USES_DESKTOP_WIDTH_' + viewport, pass ? 'PASS' : 'FAIL');
   log('ACCOUNT_HOME_GEOMETRY_' + viewport, JSON.stringify(state));
   if (!pass) throw new Error('ACCOUNT_HOME_DESKTOP_WIDTH_FAILED at ' + viewport);
@@ -254,6 +256,25 @@ async function authenticatedAccountLayout(page, viewport) {
   log('ACCOUNT_AUTH_SHELL_USES_DESKTOP_WIDTH_' + viewport, pass ? 'PASS' : 'FAIL');
   log('ACCOUNT_AUTH_GEOMETRY_' + viewport, JSON.stringify(state));
   if (!pass) throw new Error('ACCOUNT_AUTH_DESKTOP_SHELL_FAILED at ' + viewport);
+}
+
+async function accountResponsiveNavigation(page, viewport) {
+  const state = await page.evaluate(() => {
+    const accountNav = document.querySelector('body.woocommerce-account .woocommerce-MyAccount-navigation');
+    const bottomNav = document.querySelector('.cr-mobile-bottom-nav');
+    const desktopRail = document.querySelector('.cr-desktop-rail');
+    return {
+      accountNav: accountNav ? getComputedStyle(accountNav).display : 'MISSING',
+      bottomNav: bottomNav ? getComputedStyle(bottomNav).display : 'MISSING',
+      desktopRail: desktopRail ? getComputedStyle(desktopRail).display : 'MISSING'
+    };
+  });
+  const pass = viewport < 1280
+    ? state.accountNav === 'none' && state.bottomNav !== 'none' && state.desktopRail === 'none'
+    : state.accountNav !== 'none' && state.bottomNav === 'none' && state.desktopRail !== 'none';
+  log('ACCOUNT_NAV_MODE_' + viewport, pass ? 'PASS' : 'FAIL');
+  log('ACCOUNT_NAV_STATE_' + viewport, JSON.stringify(state));
+  if (!pass) throw new Error('ACCOUNT_NAV_MODE_FAILED at ' + viewport);
 }
 
 async function accountInformationLinks(page, audience, viewport) {
@@ -407,10 +428,11 @@ async function loginForAuthenticatedAccount(page) {
       log('AUTH_INFORMATION_LINK_COUNT', authenticatedInformationLinks.length);
       log('GUEST_AUTH_INFORMATION_LINKS_MATCH', sameLinks ? 'PASS' : 'FAIL');
       if (!sameLinks) throw new Error('GUEST_AUTH_INFORMATION_LINKS_DIFFER');
-      for (const viewport of VIEWPORTS) {
+      for (const viewport of RESPONSIVE_VIEWPORTS) {
         await page.setViewportSize({ width: viewport, height: 900 });
         await page.waitForTimeout(250);
-        await authenticatedAccountLayout(page, viewport);
+        if (viewport >= 1280) await authenticatedAccountLayout(page, viewport);
+        await accountResponsiveNavigation(page, viewport);
         overflowResults.push(await checkOverflow(page, 'ACCOUNT_AUTH', viewport));
       }
     } else {
