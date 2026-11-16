@@ -2948,3 +2948,49 @@ body.search .cr-search-form__submit.is-loading::before,
     margin-inline: 0 !important;
   }
 }
+
+
+/* GLOBAL RESPONSIVE PRIMARY NAVIGATION — one shared 1280px boundary.
+ * Tablet and mobile always use the fixed bottom navigation; desktop always uses the rail.
+ */
+@media (max-width: 1279px) {
+  body {
+    padding-bottom: calc(var(--cr-bottom-nav) + env(safe-area-inset-bottom)) !important;
+  }
+
+  .cr-mobile-bottom-nav.cr-app-bottom-nav {
+    position: fixed !important;
+    z-index: 1200 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    display: block !important;
+    min-height: calc(var(--cr-bottom-nav) + env(safe-area-inset-bottom));
+    padding: 7px 4px env(safe-area-inset-bottom);
+  }
+
+  .cr-mobile-bottom-nav__inner {
+    display: grid !important;
+    width: min(100%, 720px);
+    margin-inline: auto;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .cr-desktop-rail {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  body {
+    padding-bottom: 0 !important;
+  }
+
+  .cr-mobile-bottom-nav.cr-app-bottom-nav {
+    display: none !important;
+  }
+
+  .cr-desktop-rail {
+    display: flex !important;
+  }
+}
