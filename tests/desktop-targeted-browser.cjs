@@ -97,6 +97,7 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
     const icon = links[0] && links[0].querySelector('.cr-icon');
     const badge = nav && nav.querySelector('[data-cr-cart-count]');
     const navStyle = nav && getComputedStyle(nav);
+    const railStyle = rails[0] && getComputedStyle(rails[0]);
     const innerStyle = nav && getComputedStyle(nav.querySelector('.cr-mobile-bottom-nav__inner'));
     const linkStyle = links[0] && getComputedStyle(links[0]);
     const iconStyle = icon && getComputedStyle(icon);
@@ -126,6 +127,8 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
     return {
       bottomCount: bottoms.length,
       railCount: rails.length,
+      railDisplay: railStyle ? railStyle.display : 'MISSING',
+      bodyPaddingBottom: getComputedStyle(document.body).paddingBottom,
       bottomDisplay: navStyle ? navStyle.display : 'MISSING',
       bottomPosition: navStyle ? navStyle.position : 'MISSING',
       bottomBottom: navStyle ? navStyle.bottom : 'MISSING',
@@ -153,12 +156,13 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
   let pass;
   if (viewport < 1280) {
     pass = state.bottomCount === 1 && state.railCount === 1
-      && state.bottomDisplay !== 'none' && state.bottomPosition === 'fixed'
+      && state.bottomDisplay !== 'none' && state.railDisplay === 'none' && state.bottomPosition === 'fixed'
       && state.bottomBottom === '0px' && state.innerDisplay === 'grid'
       && state.innerColumns === 5 && state.linkCount === 5
       && state.linkDisplay === 'flex' && state.linkDirection === 'column'
       && state.linkTextDecoration === 'none' && state.linkFontSize === '10.88px'
       && state.linkGap === '3px' && state.iconWidth === '22px' && state.iconHeight === '22px'
+      && parseFloat(state.bodyPaddingBottom) >= 72
       && state.activeMatchesCurrent && state.badgeCount === 1
       && state.badgeStates['0'].display === 'none'
       && state.badgeStates['1'].display !== 'none'
@@ -168,7 +172,7 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
       && state.activeLabels[0] === expectedActiveLabel;
   } else {
     pass = state.bottomCount === 1 && state.railCount === 1
-      && state.bottomDisplay === 'none' && state.railCount === 1;
+      && state.bottomDisplay === 'none' && state.railCount === 1 && state.railDisplay === 'flex';
     if (expectedActiveLabel) pass = pass && state.desktopActiveLabels.length === 1
       && state.desktopActiveLabels[0] === expectedActiveLabel;
   }
