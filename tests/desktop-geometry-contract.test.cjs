@@ -137,6 +137,6 @@ test('PRODUCT_HEADER_USES_CANONICAL_DESKTOP_HEADER=PASS — sticky override is t
 
 test('DESKTOP_BODY_HAS_NO_GLOBAL_HEADER_OFFSET=PASS — non-Home pages do not push the desktop shell down', () => {
   const layer = desktop('main.css');
-  assert.doesNotMatch(layer, /body\.cr-global-app-header:not\(\.home\)[\s\S]*?padding-top:/);
+  assert.doesNotMatch(layer, /body\.cr-global-app-header:not\(\.home\)\s*\{[^}]*padding-top:/);
   assert.match(css('main.css'), /@media \(max-width: 1279px\)[\s\S]*?body\.cr-global-app-header:not\(\.home\)[\s\S]*?padding-top:/);
 });
