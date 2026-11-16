@@ -95,20 +95,23 @@ async function productStackedLayout(page, viewport) {
     const summary = product.querySelector(':scope > .summary');
     const summaryContent = summary && (summary.querySelector(':scope > .cr-product-title-brand-row') || summary.firstElementChild);
     const productRect = product.getBoundingClientRect();
+    const productStyle = getComputedStyle(product);
+    const innerWidth = productRect.width - parseFloat(productStyle.paddingLeft) - parseFloat(productStyle.paddingRight);
     const galleryRect = gallery && gallery.getBoundingClientRect();
     const summaryRect = summaryContent && summaryContent.getBoundingClientRect();
     return {
       found: Boolean(galleryRect && summaryRect),
-      display: getComputedStyle(product).display,
+      display: productStyle.display,
       summaryDisplay: summary ? getComputedStyle(summary).display : 'MISSING',
       productWidth: productRect.width,
+      innerWidth,
       galleryWidth: galleryRect && galleryRect.width,
       galleryTop: galleryRect && galleryRect.top,
       summaryTop: summaryRect && summaryRect.top
     };
   });
   const pass = state.found && state.display === 'flex' && state.summaryDisplay !== 'contents'
-    && state.galleryWidth >= state.productWidth - 2 && state.galleryTop <= state.summaryTop;
+    && state.galleryWidth >= state.innerWidth - 2 && state.galleryTop <= state.summaryTop;
   log('PRODUCT_TABLET_STACKED_' + viewport, pass ? 'PASS' : 'FAIL');
   log('PRODUCT_TABLET_GEOMETRY_' + viewport, JSON.stringify(state));
   if (!pass) throw new Error('PRODUCT_TABLET_LAYOUT_FAILED at ' + viewport);
