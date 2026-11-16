@@ -408,8 +408,9 @@ function cr2026_app_nav_active_item() {
 }
 
 function cr2026_is_app_nav_shell() {
-    // Every normal front-end request is a customer-facing app surface.
-    // Exclude only non-document WordPress responses; templates must not opt in individually.
+    // Product-brand archives are explicitly customer-facing; all other normal front-end
+    // document requests inherit the same shell without template-level opt-in.
+    if ( function_exists( 'is_tax' ) && is_tax( 'product_brand' ) ) { return true; }
     return ! (
         ( function_exists( 'is_feed' ) && is_feed() )
         || ( function_exists( 'is_trackback' ) && is_trackback() )
