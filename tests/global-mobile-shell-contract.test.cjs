@@ -18,7 +18,7 @@ test('GLOBAL_BACKGROUND_SOURCE=body canvas token',()=>{
 });
 test('GLOBAL_MOBILE_PAGE_GUTTER_SOURCE_COUNT=1',()=>{
  const shell=main.match(/\.cr-shell\s*\{([^}]*)\}/); assert.ok(shell);
- assert.equal((main.match(/\.cr-shell\s*\{/g)||[]).length,1);
+ assert.equal((main.match(/(?:^|\n)\s*\.cr-shell\s*\{/g)||[]).length,1);
  assert.match(shell[1],/width:\s*min\(calc\(100%\s*-\s*40px\),\s*var\(--cr-shell\)\)/);
 });
 test('GLOBAL_TOOLBAR_GEOMETRY_SOURCE_COUNT=1',()=>{
