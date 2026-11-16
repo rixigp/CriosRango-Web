@@ -3274,3 +3274,13 @@ body.search .cr-search-form__submit.is-loading::before,
     gap: 9px;
   }
 }
+
+
+/* Override the legacy wide-screen auto-fit brand grid only inside desktop Home. */
+@media (min-width: 1280px) {
+  body.home .cr-desktop-shell > #primary.cr-home--app .cr-home-brands .cr-home-brand-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-auto-rows: 64px;
+    gap: 12px !important;
+  }
+}
