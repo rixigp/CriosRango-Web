@@ -31,6 +31,8 @@ test('HOME_DESKTOP_BRANDS_GRID_AND_PAGINATION_ARE_BREAKPOINT_SCOPED=PASS',()=>{
  assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
  assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-template-rows:\s*repeat\(2,\s*96px\)/);
  assert.match(css,/row-gap:\s*20px/);
+ assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?\.cr-home-brands\s*\{\s*padding-bottom:\s*20px;\s*\}/);
+ assert.doesNotMatch(css,/\.cr-home-brand-dots--desktop\s*\{[^}]*padding-bottom/i);
  assert.match(css,/height:\s*96px\s*!important/);
  assert.match(css,/height:\s*64px/);
  assert.match(css,/max-height:\s*64px/);

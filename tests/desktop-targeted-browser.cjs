@@ -312,6 +312,8 @@ async function homeDesktopBrands(page, viewport) {
     return {found:true,desktopDisplay:getComputedStyle(desktop).display,mobileDisplay:getComputedStyle(mobile).display,
       desktopPages:names(desktop),mobilePages:names(mobile),
       dots:section.querySelectorAll('.cr-home-brand-dots--desktop [data-cr-brand-dot]').length,
+      sectionPaddingBottom:getComputedStyle(section).paddingBottom,
+      dotsGeometry:(()=>{const d=section.querySelector('.cr-home-brand-dots--desktop'),r=d&&d.getBoundingClientRect(),s=section.getBoundingClientRect();return r?{top:r.top,bottom:r.bottom,left:r.left,right:r.right,center:(r.left+r.right)/2,sectionBottom:s.bottom,sectionCenter:(s.left+s.right)/2}:null;})(),
       columns:grids[0]?getComputedStyle(grids[0]).gridTemplateColumns.split(' ').length:0,
       rows:grids[0]?getComputedStyle(grids[0]).gridTemplateRows.split(' ').length:0,
       clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,
@@ -330,7 +332,8 @@ async function homeDesktopBrands(page, viewport) {
   const cardHeightsShared=state.pagesGeometry.length===2&&state.pagesGeometry.every(p=>p.cardHeightShared);
   const logoBoxHeightsShared=state.pagesGeometry.length===2&&state.pagesGeometry.every(p=>p.logoBoxHeightShared);
   const noOverflow=state.scrollWidth<=state.clientWidth+1&&state.pagerScrollWidth<=state.pagerClientWidth*2+1;
-  const pass=state.desktopDisplay!=='none'&&state.mobileDisplay==='none'&&state.desktopPages.length===2&&counts.every(n=>n===10)&&state.dots===2&&state.columns===5&&state.rows===2&&rowsDoNotOverlap&&cardHeightsShared&&logoBoxHeightsShared&&noClip&&noOverflow;
+  const dotsSpacingPass=state.sectionPaddingBottom==='20px'&&state.dotsGeometry&&state.dotsGeometry.sectionBottom-state.dotsGeometry.bottom>=19&&Math.abs(state.dotsGeometry.center-state.dotsGeometry.sectionCenter)<=1;
+  const pass=state.desktopDisplay!=='none'&&state.mobileDisplay==='none'&&state.desktopPages.length===2&&counts.every(n=>n===10)&&state.dots===2&&state.columns===5&&state.rows===2&&rowsDoNotOverlap&&cardHeightsShared&&logoBoxHeightsShared&&noClip&&noOverflow&&dotsSpacingPass;
   log('HOME_DESKTOP_BRANDS_TOTAL_'+viewport,state.desktopPages.flat().length);
   log('HOME_DESKTOP_BRANDS_PAGE_1_'+viewport,JSON.stringify(state.desktopPages[0]));
   log('HOME_DESKTOP_BRANDS_PAGE_2_'+viewport,JSON.stringify(state.desktopPages[1]));
@@ -350,6 +353,13 @@ async function homeDesktopBrands(page, viewport) {
   const active=await page.locator('.cr-home-brand-dots--desktop [data-cr-brand-dot="1"]').getAttribute('aria-current');
   log('HOME_DESKTOP_BRANDS_DOTS_SYNC_'+viewport,active==='true'?'PASS':'FAIL');
   if(active!=='true')throw new Error('HOME_DESKTOP_BRANDS_DOTS_NOT_SYNCED_'+viewport);
+  const page2Spacing=await page.evaluate(()=>{const s=document.querySelector('.cr-home-brands'),d=s&&s.querySelector('.cr-home-brand-dots--desktop'),r=d&&d.getBoundingClientRect(),sr=s&&s.getBoundingClientRect();return {padding:getComputedStyle(s).paddingBottom,bottom:r&&r.bottom,sectionBottom:sr&&sr.bottom,center:r&&(r.left+r.right)/2,sectionCenter:sr&&(sr.left+sr.right)/2};});
+  const page2Pass=page2Spacing.padding==='20px'&&page2Spacing.bottom!==null&&page2Spacing.sectionBottom-page2Spacing.bottom>=19&&Math.abs(page2Spacing.center-page2Spacing.sectionCenter)<=1;
+  log('BRANDS_DOTS_BOTTOM_SPACING_PAGE_2_'+viewport,page2Pass?'PASS':'FAIL');
+  log('BRANDS_SECTION_NO_COLLISION_PAGE_2_'+viewport,page2Pass?'PASS':'FAIL');
+  if(!page2Pass)throw new Error('HOME_BRANDS_PAGE_2_DOTS_SPACING_FAILED_'+viewport);
+  log('BRANDS_DOTS_BOTTOM_SPACING_'+viewport,dotsSpacingPass?'PASS':'FAIL');
+  log('BRANDS_SECTION_NO_COLLISION_'+viewport,dotsSpacingPass?'PASS':'FAIL');
   await page.locator('.cr-home-brand-dots--desktop [data-cr-brand-dot="0"]').click();
   await page.waitForTimeout(650);
 }

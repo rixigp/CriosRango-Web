@@ -3238,6 +3238,7 @@ body.search .cr-search-form__submit.is-loading::before,
 }
 .cr-home-brand__fallback[hidden] { display: none !important; }
 @media (min-width: 1280px) {
+  .cr-home-brands { padding-bottom: 20px; }
   .cr-home-brand-pager--mobile,
   .cr-home-brand-dots--mobile { display: none !important; }
   .cr-home-brand-pager--desktop { display: flex; }
