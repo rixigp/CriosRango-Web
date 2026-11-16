@@ -7,6 +7,7 @@ const { test } = require('node:test');
 const theme = path.join(__dirname, '..', 'theme', 'crios-rango-2026');
 const css = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
 const footer = fs.readFileSync(path.join(theme, 'footer.php'), 'utf8');
+const header = fs.readFileSync(path.join(theme, 'header.php'), 'utf8');
 const helpers = fs.readFileSync(path.join(theme, 'inc/helpers.php'), 'utf8');
 const account = fs.readFileSync(path.join(theme, 'assets/css/account.css'), 'utf8');
 const product = fs.readFileSync(path.join(theme, 'assets/css/product-detail-skin.css'), 'utf8');
@@ -100,4 +101,26 @@ test('DESKTOP_CONTENT_TOP_GAP_USES_ONE_TOKEN=PASS', () => {
 test('VISUAL_FOOTER_ABSENT_AND_WP_FOOTER_PRESERVED=PASS', () => {
   assert.doesNotMatch(footer, /<footer\b/i);
   assert.match(footer, /<\?php\s+wp_footer\(\);\s+\?>/);
+});
+
+
+test('DESKTOP_SIDEBAR_AND_CONTENT_SHARE_ONE_CENTERED_SHELL=PASS', () => {
+  assert.match(header, /<div class="cr-desktop-shell" data-cr-desktop-shell>/);
+  assert.match(footer, /<nav class="cr-desktop-rail"[\\s\\S]*?<\\/nav>\\s*<\\/div>\\s*<nav class="cr-mobile-bottom-nav/s);
+  assert.match(css, /@media \\(max-width: 1279px\\)\\s*\\{\\s*\\.cr-desktop-shell\\s*\\{\\s*display:\\s*contents\\s*;?\\s*\\}/);
+  assert.match(css, /grid-template-columns:\\s*var\\(--cr-desktop-sidebar\\)\\s+minmax\\(0,\\s*1fr\\)/);
+  assert.match(css, /column-gap:\\s*0/);
+  assert.match(css, /width:\\s*min\\(calc\\(100vw - 2 \\* var\\(--cr-desktop-shell-outer\\)\\),\\s*var\\(--cr-desktop-shell-max\\)\\)/);
+  assert.match(css, /\.cr-desktop-shell > #primary\\s*\\{[\\s\\S]*?grid-column:\\s*2[\\s\\S]*?padding-left:\\s*var\\(--cr-desktop-content-padding\\)/);
+  assert.match(css, /\.cr-desktop-shell > \\.cr-desktop-rail\\s*\\{[\\s\\S]*?grid-column:\\s*1[\\s\\S]*?position:\\s*sticky/);
+  assert.match(css, /--cr-desktop-content-padding:\\s*20px/);
+});
+
+test('DESKTOP_LOGO_OWNERSHIP_AND_MOBILE_HOME_IDENTITY=PASS', () => {
+  assert.match(footer, /<a class="cr-desktop-rail__brand"[\\s\\S]*?home_logo\\.png/);
+  assert.match(css, /\.cr-desktop-shell > \\.cr-app-header \\.cr-home-mark\\s*\\{\\s*display:\\s*none\\s*!important/);
+  assert.match(css, /\.cr-desktop-shell > \\.cr-app-header \\.cr-home-mark\\s*\\{\\s*display:\\s*none\\s*!important/);
+  assert.match(css, /@media \\(max-width: 1279px\\)[\\s\\S]*?\.cr-desktop-shell\\s*\\{\\s*display:\\s*contents/);
+  assert.match(css, /@media \\(max-width: 1279px\\)[\\s\\S]*?\.cr-desktop-rail\\s*\\{[^}]*display:\\s*none\\s*!important/s);
+  assert.match(css, /@media \\(min-width: 1280px\\)[\\s\\S]*?\.cr-desktop-shell > \\.cr-desktop-rail[\\s\\S]*?display:\\s*flex\\s*!important/s);
 });
