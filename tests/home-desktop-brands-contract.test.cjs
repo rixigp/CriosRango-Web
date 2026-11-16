@@ -8,13 +8,17 @@ const css=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
 const js=fs.readFileSync(path.join(theme,'assets/js/main.js'),'utf8');
 const start=helpers.indexOf('function cr2026_home_brands()'),end=helpers.indexOf('\n}\n',start),query=helpers.slice(start,end+3);
 test('HOME_BRANDS_SOURCE_AND_PUBLISHED_COUNT_ORDER=PASS',()=>{
- assert.match(query,/taxonomy'\s*=>\s*'product_brand'/);assert.match(query,/hide_empty'\s*=>\s*true/);
- assert.match(query,/number'\s*=>\s*0/);assert.match(query,/\$term->count\s*>\s*0/);
- assert.match(query,/\(int\)\s*\$right->count\s*<=>\s*\(int\)\s*\$left->count/);
- assert.match(query,/strcasecmp\(\s*trim\(\s*\$left->name/);assert.match(query,/strcmp\(\s*trim\(\s*\$left->name/);
- assert.match(query,/array_slice\(\s*\$terms,\s*0,\s*20\s*\)/);
- assert.doesNotMatch(query,/orderby'\s*=>\s*'date|menu_order|hard.?cod/i);
+ assert.match(query,/taxonomy\s*=\s*%s/);
+ assert.match(query,/p\.post_type\s*=\s*%s/);
+ assert.match(query,/p\.post_status\s*=\s*%s/);
+ assert.match(query,/'product_brand'[\s\S]*?'product'[\s\S]*?'publish'/);
+ assert.match(query,/HAVING COUNT\(DISTINCT p\.ID\) > 0/);
+ assert.match(query,/ORDER BY published_product_count DESC, t\.name ASC/);
+ assert.match(query,/LIMIT 20/);
+ assert.match(query,/get_terms\([\s\S]*?'taxonomy'\s*=>\s*'product_brand'/);
+ assert.doesNotMatch(query,/usort\s*\(|orderby'\s*=>\s*'date|menu_order/i);
 });
+
 test('HOME_DESKTOP_20_IN_TWO_PAGES_OF_10_AND_MOBILE_16_OF_8=PASS',()=>{
  assert.match(home,/\$desktop_brand_pages\s*=\s*array_chunk\(\s*\$home_brands,\s*10\s*\)/);
  assert.match(home,/\$mobile_brand_pages\s*=\s*array_chunk\(\s*array_slice\(\s*\$home_brands,\s*0,\s*16\s*\),\s*8\s*\)/);

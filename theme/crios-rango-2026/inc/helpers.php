@@ -769,10 +769,45 @@ function cr2026_home_brands() {
         return array();
     }
 
+    global $wpdb;
+
+    // Count only published WooCommerce products assigned to each real brand.
+    // Do not trust cached term counts: the required ranking is explicit in SQL.
+    $brand_rows = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT tt.term_id, t.name, COUNT(DISTINCT p.ID) AS published_product_count
+            FROM {$wpdb->term_taxonomy} AS tt
+            INNER JOIN {$wpdb->terms} AS t ON t.term_id = tt.term_id
+            INNER JOIN {$wpdb->term_relationships} AS tr ON tr.term_taxonomy_id = tt.term_taxonomy_id
+            INNER JOIN {$wpdb->posts} AS p ON p.ID = tr.object_id
+            WHERE tt.taxonomy = %s
+                AND p.post_type = %s
+                AND p.post_status = %s
+            GROUP BY tt.term_id, t.name
+            HAVING COUNT(DISTINCT p.ID) > 0
+            ORDER BY published_product_count DESC, t.name ASC
+            LIMIT 20",
+            'product_brand',
+            'product',
+            'publish'
+        ),
+        ARRAY_A
+    );
+
+    if ( ! is_array( $brand_rows ) || empty( $brand_rows ) ) {
+        return array();
+    }
+
+    $term_ids = array_values( array_filter( array_map( 'absint', wp_list_pluck( $brand_rows, 'term_id' ) ) ) );
+    if ( empty( $term_ids ) ) {
+        return array();
+    }
+
     $terms = get_terms(
         array(
             'taxonomy'   => 'product_brand',
-            'hide_empty' => true,
+            'hide_empty' => false,
+            'include'    => $term_ids,
             'number'     => 0,
         )
     );
@@ -781,32 +816,28 @@ function cr2026_home_brands() {
         return array();
     }
 
-    $terms = array_values(
-        array_filter(
-            $terms,
-            static function ( $term ) {
-                return $term instanceof WP_Term
-                    && $term->term_id > 0
-                    && $term->count > 0
-                    && '' !== trim( $term->name );
-            }
-        )
-    );
-
-    usort(
-        $terms,
-        static function ( $left, $right ) {
-            if ( (int) $left->count !== (int) $right->count ) {
-                return (int) $right->count <=> (int) $left->count;
-            }
-            $name_order = strcasecmp( trim( $left->name ), trim( $right->name ) );
-            return 0 !== $name_order ? $name_order : strcmp( trim( $left->name ), trim( $right->name ) );
+    $terms_by_id = array();
+    foreach ( $terms as $term ) {
+        if ( $term instanceof WP_Term && $term->term_id > 0 && '' !== trim( $term->name ) ) {
+            $terms_by_id[ (int) $term->term_id ] = $term;
         }
-    );
+    }
 
-    return array_slice( $terms, 0, 20 );
+    $ordered_terms = array();
+    foreach ( $brand_rows as $row ) {
+        $term_id = isset( $row['term_id'] ) ? absint( $row['term_id'] ) : 0;
+        if ( ! $term_id || ! isset( $terms_by_id[ $term_id ] ) ) {
+            continue;
+        }
+        $term = clone $terms_by_id[ $term_id ];
+        $term->count = (int) $row['published_product_count'];
+        if ( $term->count > 0 ) {
+            $ordered_terms[] = $term;
+        }
+    }
+
+    return $ordered_terms;
 }
-
 
 /** Return every populated product brand in strict alphabetical order for /marcas/. */
 function cr2026_brands_index_terms() {
