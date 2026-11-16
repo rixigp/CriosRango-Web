@@ -408,18 +408,13 @@ function cr2026_app_nav_active_item() {
 }
 
 function cr2026_is_app_nav_shell() {
-    return is_front_page()
-        || ( function_exists( 'is_shop' ) && is_shop() )
-        || ( function_exists( 'is_product_category' ) && is_product_category() )
-        || ( function_exists( 'is_tax' ) && is_tax( 'product_brand' ) )
-        || ( function_exists( 'get_query_var' ) && ( get_query_var( 'cr2026_brands_index' ) || get_query_var( 'cr2026_novelties' ) ) )
-        || ( function_exists( 'is_product' ) && is_product() )
-        || ( function_exists( 'is_404' ) && is_404() )
-        || ( function_exists( 'is_cart' ) && is_cart() )
-        || ( function_exists( 'is_checkout' ) && is_checkout() )
-        || ( function_exists( 'is_account_page' ) && is_account_page() )
-        || ( function_exists( 'is_page' ) && is_page() )
-        || cr2026_is_account_information_page();
+    // Every normal front-end request is a customer-facing app surface.
+    // Exclude only non-document WordPress responses; templates must not opt in individually.
+    return ! (
+        ( function_exists( 'is_feed' ) && is_feed() )
+        || ( function_exists( 'is_trackback' ) && is_trackback() )
+        || ( function_exists( 'is_embed' ) && is_embed() )
+    );
 }
 function cr2026_app_nav_body_class( $classes ) {
     $classes[] = 'cr-global-app-header';

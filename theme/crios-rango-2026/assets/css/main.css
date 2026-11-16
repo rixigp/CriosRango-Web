@@ -2724,6 +2724,7 @@ body.search .cr-search-form__submit.is-loading::before,
     --cr-desktop-sidebar: 112px;
     --cr-desktop-gutter: clamp(32px, 3vw, 64px);
     --cr-desktop-content-max: 1440px;
+    --cr-desktop-content-top-gap: 32px;
     --cr-desktop-section-gap: clamp(32px, 3vw, 56px);
     --cr-desktop-reading-max: 920px;
     --cr-desktop-card-min: 225px;
@@ -2984,6 +2985,15 @@ body.search .cr-search-form__submit.is-loading::before,
 @media (min-width: 1280px) {
   body {
     padding-bottom: 0 !important;
+  }
+
+  .cr-main,
+  .cr-parent-category__canvas {
+    padding-top: var(--cr-desktop-content-top-gap) !important;
+  }
+
+  .cr-page-shell {
+    padding-top: 0 !important;
   }
 
   .cr-mobile-bottom-nav.cr-app-bottom-nav {

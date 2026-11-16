@@ -5,7 +5,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $active_nav_item = cr2026_app_nav_active_item();
 $is_app_home = 'home' === $active_nav_item;
-$is_app_nav_shell = cr2026_is_app_nav_shell();
 $cart_count = cr2026_cart_count();
 $nav_urls = cr2026_app_nav_urls();
 $is_outlet_active = 'outlet' === $active_nav_item;
@@ -16,7 +15,6 @@ $is_mobile_account_active = cr2026_is_account_context();
 ?>
 
 
-<?php if ( $is_app_nav_shell ) : ?>
 <nav class="cr-desktop-rail" aria-label="<?php esc_attr_e( 'Navegación principal', 'crios-rango-2026' ); ?>">
     <a class="cr-desktop-rail__brand" href="<?php echo esc_url( $nav_urls['home'] ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
         <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/brand/home_logo.png' ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="42" height="42" decoding="async">
@@ -29,7 +27,6 @@ $is_mobile_account_active = cr2026_is_account_context();
         <a class="cr-desktop-rail__destination<?php echo $is_account_active ? ' is-active' : ''; ?>" href="<?php echo esc_url( $nav_urls['account'] ); ?>"<?php echo $is_account_active ? ' aria-current="page"' : ''; ?>><?php echo cr2026_icon( $is_account_active ? 'account-filled' : 'account-outlined' ); ?><span><?php esc_html_e( 'Cuenta', 'crios-rango-2026' ); ?></span></a>
     </div>
 </nav>
-<?php endif; ?>
 <nav class="cr-mobile-bottom-nav cr-app-bottom-nav" aria-label="<?php esc_attr_e( 'Navegación móvil', 'crios-rango-2026' ); ?>">
 <div class="cr-mobile-bottom-nav__inner">
     <a class="<?php echo $is_app_home ? 'is-active' : ''; ?>" href="<?php echo esc_url( $nav_urls['home'] ); ?>"<?php echo $is_app_home ? ' aria-current="page"' : ''; ?>><?php echo cr2026_icon( $is_app_home ? 'home-filled' : 'home-outlined' ); ?><span><?php esc_html_e( 'Inicio', 'crios-rango-2026' ); ?></span></a>

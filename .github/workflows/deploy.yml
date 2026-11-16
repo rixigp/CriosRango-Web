@@ -34,6 +34,7 @@ on:
       - "tests/global-responsive-navigation-contract.test.cjs"
       - "tests/desktop-geometry-contract.test.cjs"
       - "tests/desktop-targeted-browser.cjs"
+      - "tests/global-shell-browser-smoke.cjs"
       - "tests/canonical-customer-shell-contract.test.cjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/catalog-contract.yml"
@@ -933,6 +934,7 @@ jobs:
           npm install --no-save --no-package-lock playwright@1.65.1
           npx playwright install chromium
           node tests/desktop-targeted-browser.cjs
+          node tests/global-shell-browser-smoke.cjs
       - name: Benchmark staging catalog endpoint (3 cold + 3 warm requests)
         if: github.ref == 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
         shell: bash
