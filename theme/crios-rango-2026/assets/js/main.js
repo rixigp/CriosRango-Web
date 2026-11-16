@@ -188,11 +188,21 @@
     }
   }
 
-  const brandPager = document.querySelector('[data-cr-brand-pager]');
-  const brandPages = brandPager ? Array.from(brandPager.querySelectorAll('[data-cr-brand-page]')) : [];
-  const brandDots = Array.from(document.querySelectorAll('[data-cr-brand-dot]'));
-
-  if (brandPager && brandPages.length > 1 && brandDots.length === brandPages.length) {
+  document.querySelectorAll('[data-cr-brand-pager]').forEach((brandPager) => {
+    const brandPages = Array.from(brandPager.querySelectorAll('[data-cr-brand-page]'));
+    const section = brandPager.closest('.cr-home-brands');
+    const brandDotsContainer = section && section.querySelector(
+      brandPager.dataset.crBrandPagerVariant === 'desktop' ? '.cr-home-brand-dots--desktop' : '.cr-home-brand-dots--mobile'
+    );
+    const brandDots = brandDotsContainer ? Array.from(brandDotsContainer.querySelectorAll('[data-cr-brand-dot]')) : [];
+    brandPager.querySelectorAll('.cr-home-brand img').forEach((image) => {
+      image.addEventListener('error', () => {
+        image.hidden = true;
+        const fallback = image.parentElement && image.parentElement.querySelector('.cr-home-brand__fallback');
+        if (fallback) fallback.hidden = false;
+      }, { once: true });
+    });
+    if (brandPages.length < 2 || brandDots.length !== brandPages.length) return;
     const setActiveBrandPage = (index) => {
       brandDots.forEach((dot, dotIndex) => {
         const active = dotIndex === index;
@@ -200,7 +210,6 @@
         dot.setAttribute('aria-current', active ? 'true' : 'false');
       });
     };
-
     brandDots.forEach((dot) => {
       dot.addEventListener('click', () => {
         const index = Number(dot.getAttribute('data-cr-brand-dot'));
@@ -208,7 +217,6 @@
         if (page) brandPager.scrollTo({ left: page.offsetLeft - brandPager.offsetLeft, behavior: 'smooth' });
       });
     });
-
     if ('IntersectionObserver' in window) {
       const pageObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
@@ -225,8 +233,7 @@
         setActiveBrandPage(Math.min(brandPages.length - 1, Math.round(brandPager.scrollLeft / pageWidth)));
       }, { passive: true });
     }
-  }
-
+  });
 
   // Dependent facets: one parallel base prefetch and contextual, cached recalculations.
   const filterSheet = document.querySelector('[data-cr-filter-sheet]');

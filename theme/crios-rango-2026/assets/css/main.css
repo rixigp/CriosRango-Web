@@ -3219,3 +3219,58 @@ body.search .cr-search-form__submit.is-loading::before,
     height: calc(100vh - var(--cr-admin-bar-offset, 0px));
   }
 }
+
+
+/* Home desktop brands: two fixed pages of ten cards (5 columns x 2 rows). */
+.cr-home-brand-pager--desktop,
+.cr-home-brand-dots--desktop { display: none; }
+.cr-home-brand__fallback {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  padding: 0 4px;
+  color: #183b35;
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 300;
+  text-align: center;
+}
+.cr-home-brand__fallback[hidden] { display: none !important; }
+@media (min-width: 1280px) {
+  .cr-home-brand-pager--mobile,
+  .cr-home-brand-dots--mobile { display: none !important; }
+  .cr-home-brand-pager--desktop { display: flex; }
+  .cr-home-brand-dots--desktop { display: flex; }
+  .cr-home-brands .cr-home-brand-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-auto-rows: 64px;
+    gap: 12px;
+  }
+  .cr-home-brands .cr-home-brand-page {
+    min-width: 100%;
+    flex-basis: 100%;
+    padding-inline: 20px;
+  }
+  .cr-home-brands .cr-home-brand {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: 64px;
+    padding: 4px 8px;
+    overflow: hidden;
+  }
+  .cr-home-brands .cr-home-brand img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+  .cr-home-brands .cr-home-brand-dots--desktop {
+    justify-content: center;
+    gap: 9px;
+  }
+}

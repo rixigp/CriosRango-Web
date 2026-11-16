@@ -280,6 +280,54 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
   if (!pass) throw new Error(label + '_DESKTOP_SHELL_FAILED at ' + viewport);
 }
 
+async function homeDesktopBrands(page, viewport) {
+  const state = await page.evaluate(() => {
+    const section=document.querySelector('.cr-home-brands');
+    const desktop=section&&section.querySelector('.cr-home-brand-pager--desktop');
+    const mobile=section&&section.querySelector('.cr-home-brand-pager--mobile');
+    if(!section||!desktop||!mobile)return {found:false};
+    const names=pager=>Array.from(pager.querySelectorAll('.cr-home-brand-page')).map(pg=>
+      Array.from(pg.querySelectorAll('.cr-home-brand')).map(card=>card.querySelector('img')?.alt||(card.textContent||'').trim()));
+    const grids=Array.from(desktop.querySelectorAll('.cr-home-brand-grid'));
+    const geometry=Array.from(desktop.querySelectorAll('.cr-home-brand')).map(card=>{
+      const cr=card.getBoundingClientRect(),img=card.querySelector('img'),ir=img&&!img.hidden?img.getBoundingClientRect():null;
+      return {card:{left:cr.left,right:cr.right,top:cr.top,bottom:cr.bottom},image:ir?{left:ir.left,right:ir.right,top:ir.top,bottom:ir.bottom,fit:getComputedStyle(img).objectFit}:null};
+    });
+    return {desktopDisplay:getComputedStyle(desktop).display,mobileDisplay:getComputedStyle(mobile).display,
+      desktopPages:names(desktop),mobilePages:names(mobile),
+      dots:section.querySelectorAll('.cr-home-brand-dots--desktop [data-cr-brand-dot]').length,
+      columns:grids[0]?getComputedStyle(grids[0]).gridTemplateColumns.split(' ').length:0,
+      rows:grids[0]?getComputedStyle(grids[0]).gridTemplateRows.split(' ').length:0,
+      clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,geometry};
+  });
+  if(!state.found)throw new Error('HOME_BRANDS_MARKUP_MISSING_'+viewport);
+  if(viewport<1280){
+    const pass=state.desktopDisplay==='none'&&state.mobileDisplay!=='none'&&state.mobilePages.flat().length===16;
+    log('HOME_BRANDS_MOBILE_TABLET_UNCHANGED_'+viewport,pass?'PASS':'FAIL');
+    if(!pass)throw new Error('HOME_BRANDS_MOBILE_TABLET_REGRESSION_'+viewport);
+    return;
+  }
+  const counts=state.desktopPages.map(a=>a.length);
+  const noClip=state.geometry.every(v=>v.card.left>=0&&v.card.right<=state.clientWidth+1&&(!v.image||
+    (v.image.left>=v.card.left-1&&v.image.right<=v.card.right+1&&v.image.top>=v.card.top-1&&v.image.bottom<=v.card.bottom+1&&v.image.fit==='contain')));
+  const noOverflow=state.scrollWidth<=state.clientWidth+1;
+  const pass=state.desktopDisplay!=='none'&&state.mobileDisplay==='none'&&state.desktopPages.length===2&&counts.every(n=>n===10)&&state.dots===2&&state.columns===5&&state.rows===2&&noClip&&noOverflow;
+  log('HOME_DESKTOP_BRANDS_TOTAL_'+viewport,state.desktopPages.flat().length);
+  log('HOME_DESKTOP_BRANDS_PAGE_1_'+viewport,JSON.stringify(state.desktopPages[0]));
+  log('HOME_DESKTOP_BRANDS_PAGE_2_'+viewport,JSON.stringify(state.desktopPages[1]));
+  log('HOME_DESKTOP_BRANDS_NO_CLIPPING_'+viewport,noClip?'PASS':'FAIL');
+  log('HOME_DESKTOP_BRANDS_NO_OVERFLOW_'+viewport,noOverflow?'PASS':'FAIL');
+  log('HOME_DESKTOP_BRANDS_GRID_'+viewport,JSON.stringify({counts,columns:state.columns,rows:state.rows,dots:state.dots}));
+  if(!pass)throw new Error('HOME_DESKTOP_BRANDS_LAYOUT_FAILED_'+viewport);
+  await page.locator('.cr-home-brand-dots--desktop [data-cr-brand-dot="1"]').click();
+  await page.waitForTimeout(650);
+  const active=await page.locator('.cr-home-brand-dots--desktop [data-cr-brand-dot="1"]').getAttribute('aria-current');
+  log('HOME_DESKTOP_BRANDS_DOTS_SYNC_'+viewport,active==='true'?'PASS':'FAIL');
+  if(active!=='true')throw new Error('HOME_DESKTOP_BRANDS_DOTS_NOT_SYNCED_'+viewport);
+  await page.locator('.cr-home-brand-dots--desktop [data-cr-brand-dot="0"]').click();
+  await page.waitForTimeout(650);
+}
+
 async function productStackedLayout(page, viewport) {
   const state = await page.evaluate(() => {
     const product = document.querySelector('body.cr-product-detail-app .cr-main--woocommerce div.product');
@@ -534,6 +582,7 @@ async function loginForAuthenticatedAccount(page) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
       await desktopShellLayout(page, 'HOME', viewport, true);
+      await homeDesktopBrands(page, viewport);
     }
 
     const navDestinations = await page.evaluate(() => {

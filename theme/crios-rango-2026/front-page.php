@@ -88,8 +88,9 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
     $summer_url    = ( $summer_term && ! is_wp_error( $summer_term ) ) ? get_term_link( $summer_term ) : $outlet_url;
     $winter_image  = cr2026_home_outlet_image_url( 'winter' );
     $summer_image  = cr2026_home_outlet_image_url( 'summer' );
-    $home_brands   = cr2026_home_brands();
-    $brand_pages   = array_chunk( $home_brands, 8 );
+    $home_brands         = cr2026_home_brands();
+    $desktop_brand_pages = array_chunk( $home_brands, 10 );
+    $mobile_brand_pages  = array_chunk( array_slice( $home_brands, 0, 16 ), 8 );
     ?>
 
     <section class="cr-home-section cr-home-novedades" aria-labelledby="cr-home-novedades-title">
@@ -157,40 +158,50 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
             <h2 id="cr-home-brands-title">Marcas</h2>
             <a href="<?php echo esc_url( cr2026_home_brands_url() ); ?>">Ver todas</a>
         </div>
-        <?php if ( ! empty( $brand_pages ) ) : ?>
-            <div class="cr-home-brand-pager" data-cr-brand-pager>
-                <?php foreach ( $brand_pages as $page_index => $page_brands ) : ?>
-                    <div class="cr-home-brand-page" data-cr-brand-page aria-label="<?php echo esc_attr( sprintf( 'Página %d de %d', $page_index + 1, count( $brand_pages ) ) ); ?>">
-                        <div class="cr-home-brand-grid">
-                            <?php foreach ( $page_brands as $brand ) : ?>
-                                <?php
-                                $brand_url   = get_term_link( $brand );
-                                $brand_image = cr2026_home_brand_image_url( $brand );
-                                if ( is_wp_error( $brand_url ) ) {
-                                    continue;
-                                }
-                                ?>
-                                <a class="cr-home-brand" href="<?php echo esc_url( $brand_url ); ?>">
-                                    <?php if ( $brand_image ) : ?>
-                                        <img src="<?php echo esc_url( $brand_image ); ?>" alt="<?php echo esc_attr( $brand->name ); ?>" loading="lazy" decoding="async">
-                                    <?php else : ?>
-                                        <span><?php echo esc_html( $brand->name ); ?></span>
-                                    <?php endif; ?>
-                                </a>
-                            <?php endforeach; ?>
+        <?php if ( ! empty( $home_brands ) ) : ?>
+            <?php
+            $render_brand_pager = static function ( $brand_pages, $variant ) {
+                if ( empty( $brand_pages ) ) {
+                    return;
+                }
+                $pager_class = 'desktop' === $variant ? 'cr-home-brand-pager--desktop' : 'cr-home-brand-pager--mobile';
+                $dots_class  = 'desktop' === $variant ? 'cr-home-brand-dots--desktop' : 'cr-home-brand-dots--mobile';
+                ?>
+                <div class="cr-home-brand-pager <?php echo esc_attr( $pager_class ); ?>" data-cr-brand-pager data-cr-brand-pager-variant="<?php echo esc_attr( $variant ); ?>">
+                    <?php foreach ( $brand_pages as $page_index => $page_brands ) : ?>
+                        <div class="cr-home-brand-page" data-cr-brand-page aria-label="<?php echo esc_attr( sprintf( 'Página %d de %d', $page_index + 1, count( $brand_pages ) ) ); ?>">
+                            <div class="cr-home-brand-grid">
+                                <?php foreach ( $page_brands as $brand ) : ?>
+                                    <?php
+                                    $brand_url = get_term_link( $brand );
+                                    $brand_image = cr2026_home_brand_image_url( $brand );
+                                    if ( is_wp_error( $brand_url ) ) continue;
+                                    ?>
+                                    <a class="cr-home-brand" href="<?php echo esc_url( $brand_url ); ?>">
+                                        <?php if ( $brand_image ) : ?>
+                                            <img src="<?php echo esc_url( $brand_image ); ?>" alt="<?php echo esc_attr( $brand->name ); ?>" loading="lazy" decoding="async">
+                                            <span class="cr-home-brand__fallback" hidden><?php echo esc_html( $brand->name ); ?></span>
+                                        <?php else : ?>
+                                            <span class="cr-home-brand__fallback"><?php echo esc_html( $brand->name ); ?></span>
+                                        <?php endif; ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            <?php if ( count( $brand_pages ) > 1 ) : ?>
-                <div class="cr-home-brand-dots" data-cr-brand-dots aria-label="Páginas de marcas">
-                    <?php foreach ( $brand_pages as $page_index => $unused_page ) : ?>
-                        <button type="button" class="cr-home-brand-dot<?php echo 0 === $page_index ? ' is-active' : ''; ?>" data-cr-brand-dot="<?php echo esc_attr( $page_index ); ?>" aria-label="<?php echo esc_attr( sprintf( 'Ir a página %d', $page_index + 1 ) ); ?>" aria-current="<?php echo 0 === $page_index ? 'true' : 'false'; ?>"></button>
                     <?php endforeach; ?>
                 </div>
-            <?php endif; ?>
-        <?php else : ?>
-            <p class="cr-home-section__empty">No hay marcas disponibles.</p>
+                <?php if ( count( $brand_pages ) > 1 ) : ?>
+                    <div class="cr-home-brand-dots <?php echo esc_attr( $dots_class ); ?>" data-cr-brand-dots aria-label="Páginas de marcas">
+                        <?php foreach ( $brand_pages as $page_index => $unused_page ) : ?>
+                            <button type="button" class="cr-home-brand-dot<?php echo 0 === $page_index ? ' is-active' : ''; ?>" data-cr-brand-dot="<?php echo esc_attr( $page_index ); ?>" aria-label="<?php echo esc_attr( sprintf( 'Ir a página %d', $page_index + 1 ) ); ?>" aria-current="<?php echo 0 === $page_index ? 'true' : 'false'; ?>"></button>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+                <?php
+            };
+            $render_brand_pager( $desktop_brand_pages, 'desktop' );
+            $render_brand_pager( $mobile_brand_pages, 'mobile' );
+            ?>
         <?php endif; ?>
     </section>
 

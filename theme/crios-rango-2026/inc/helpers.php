@@ -761,7 +761,8 @@ function cr2026_home_outlet_term( $season ) {
 }
 
 /**
- * Return up to 16 populated product brands in the app's stable ordering.
+ * Return the 20 most populated real WooCommerce product brands for desktop Home.
+ * product_brand term counts are maintained by the taxonomy's WooCommerce count callback.
  */
 function cr2026_home_brands() {
     if ( ! taxonomy_exists( 'product_brand' ) ) {
@@ -798,11 +799,12 @@ function cr2026_home_brands() {
             if ( (int) $left->count !== (int) $right->count ) {
                 return (int) $right->count <=> (int) $left->count;
             }
-            return strcasecmp( trim( $left->name ), trim( $right->name ) );
+            $name_order = strcasecmp( trim( $left->name ), trim( $right->name ) );
+            return 0 !== $name_order ? $name_order : strcmp( trim( $left->name ), trim( $right->name ) );
         }
     );
 
-    return array_slice( $terms, 0, 16 );
+    return array_slice( $terms, 0, 20 );
 }
 
 
@@ -837,7 +839,7 @@ function cr2026_home_brand_image_url( $term ) {
 
     foreach ( array( 'thumbnail_id', 'image_id' ) as $meta_key ) {
         $image_id = absint( get_term_meta( $term->term_id, $meta_key, true ) );
-        if ( $image_id ) {
+        if ( $image_id && wp_attachment_is_image( $image_id ) ) {
             $image_url = cr2026_attachment_public_url( $image_id );
             if ( $image_url ) {
                 return $image_url;

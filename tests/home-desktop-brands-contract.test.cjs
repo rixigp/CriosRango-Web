@@ -1,0 +1,31 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {test}=require('node:test');
+const theme=path.join(__dirname,'..','theme','crios-rango-2026');
+const helpers=fs.readFileSync(path.join(theme,'inc/helpers.php'),'utf8');
+const home=fs.readFileSync(path.join(theme,'front-page.php'),'utf8');
+const css=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
+const js=fs.readFileSync(path.join(theme,'assets/js/main.js'),'utf8');
+const start=helpers.indexOf('function cr2026_home_brands()'),end=helpers.indexOf('\n}\n',start),query=helpers.slice(start,end+3);
+test('HOME_BRANDS_SOURCE_AND_PUBLISHED_COUNT_ORDER=PASS',()=>{
+ assert.match(query,/taxonomy'\s*=>\s*'product_brand'/);assert.match(query,/hide_empty'\s*=>\s*true/);
+ assert.match(query,/number'\s*=>\s*0/);assert.match(query,/\$term->count\s*>\s*0/);
+ assert.match(query,/\(int\)\s*\$right->count\s*<=>\s*\(int\)\s*\$left->count/);
+ assert.match(query,/strcasecmp\(\s*trim\(\s*\$left->name/);assert.match(query,/strcmp\(\s*trim\(\s*\$left->name/);
+ assert.match(query,/array_slice\(\s*\$terms,\s*0,\s*20\s*\)/);
+ assert.doesNotMatch(query,/orderby'\s*=>\s*'date|menu_order|hard.?cod/i);
+});
+test('HOME_DESKTOP_20_IN_TWO_PAGES_OF_10_AND_MOBILE_16_OF_8=PASS',()=>{
+ assert.match(home,/\$desktop_brand_pages\s*=\s*array_chunk\(\s*\$home_brands,\s*10\s*\)/);
+ assert.match(home,/\$mobile_brand_pages\s*=\s*array_chunk\(\s*array_slice\(\s*\$home_brands,\s*0,\s*16\s*\),\s*8\s*\)/);
+ assert.match(home,/\$render_brand_pager\(\s*\$desktop_brand_pages,\s*'desktop'\s*\)/);
+ assert.match(home,/\$render_brand_pager\(\s*\$mobile_brand_pages,\s*'mobile'\s*\)/);
+ assert.match(home,/Ver todas/);assert.match(home,/cr-home-brand__fallback/);
+ assert.match(helpers,/wp_attachment_is_image\(\s*\$image_id\s*\)/);
+});
+test('HOME_DESKTOP_BRANDS_GRID_AND_PAGINATION_ARE_BREAKPOINT_SCOPED=PASS',()=>{
+ assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
+ assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-auto-rows:\s*64px/);
+ assert.match(css,/\.cr-home-brand-pager--mobile,[\s\S]*?\.cr-home-brand-dots--mobile\s*\{\s*display:\s*none\s*!important/);
+ assert.match(js,/querySelectorAll\('\[data-cr-brand-pager\]'\)/);assert.match(js,/IntersectionObserver/);assert.match(js,/aria-current/);
+});
