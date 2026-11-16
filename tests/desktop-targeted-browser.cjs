@@ -3,7 +3,8 @@
 const { chromium } = require('playwright');
 
 const BASE_URL = (process.env.STAGING_BASE_URL || 'https://criosrango.es/prueba').replace(/\/+$/, '');
-const RESPONSIVE_VIEWPORTS = [390, 768, 980, 1279, 1280, 1440, 1920];
+const RESPONSIVE_VIEWPORTS = [390, 768, 980, 1100, 1279, 1280, 1440, 1920];
+const BOTTOM_NAV_VIEWPORTS = [390, 768, 980, 1100, 1279, 1280];
 const VIEWPORTS = [1280, 1440, 1920];
 const accountUrl = new URL('mi-cuenta/', BASE_URL + '/').toString();
 const EXPECTED_INFORMATION_LABELS = [
@@ -86,6 +87,87 @@ async function checkOverflow(page, label, viewport) {
   }
   return state.overflow;
 }
+
+async function canonicalBottomNavigation(page, label, viewport) {
+  const state = await page.evaluate(() => {
+    const bottoms = Array.from(document.querySelectorAll('nav.cr-mobile-bottom-nav.cr-app-bottom-nav'));
+    const rails = Array.from(document.querySelectorAll('nav.cr-desktop-rail'));
+    const nav = bottoms[0];
+    const links = nav ? Array.from(nav.querySelectorAll(':scope > .cr-mobile-bottom-nav__inner > a')) : [];
+    const icon = links[0] && links[0].querySelector('.cr-icon');
+    const badge = nav && nav.querySelector('[data-cr-cart-count]');
+    const navStyle = nav && getComputedStyle(nav);
+    const innerStyle = nav && getComputedStyle(nav.querySelector('.cr-mobile-bottom-nav__inner'));
+    const linkStyle = links[0] && getComputedStyle(links[0]);
+    const iconStyle = icon && getComputedStyle(icon);
+    const badgeStyle = badge && getComputedStyle(badge);
+    const activeLinks = links.filter(link => link.classList.contains('is-active'));
+    const currentLinks = links.filter(link => link.getAttribute('aria-current') === 'page');
+    let badgeStates = { count: badge ? badge.dataset.count : null, display: badgeStyle ? badgeStyle.display : 'MISSING' };
+    if (badge) {
+      const originalCount = badge.dataset.count;
+      const originalClass = badge.className;
+      badgeStates = {};
+      for (const count of ['0', '1', '2']) {
+        badge.dataset.count = count;
+        badge.classList.toggle('is-empty', count === '0');
+        badgeStates[count] = {
+          display: getComputedStyle(badge).display,
+          position: getComputedStyle(badge).position,
+          sameNode: badge === nav.querySelector('[data-cr-cart-count]')
+        };
+      }
+      badge.dataset.count = originalCount;
+      badge.className = originalClass;
+    }
+    return {
+      bottomCount: bottoms.length,
+      railCount: rails.length,
+      bottomDisplay: navStyle ? navStyle.display : 'MISSING',
+      bottomPosition: navStyle ? navStyle.position : 'MISSING',
+      bottomBottom: navStyle ? navStyle.bottom : 'MISSING',
+      bottomMinHeight: navStyle ? navStyle.minHeight : 'MISSING',
+      innerDisplay: innerStyle ? innerStyle.display : 'MISSING',
+      innerColumns: innerStyle ? innerStyle.gridTemplateColumns.split(' ').length : 0,
+      linkCount: links.length,
+      linkDisplay: linkStyle ? linkStyle.display : 'MISSING',
+      linkDirection: linkStyle ? linkStyle.flexDirection : 'MISSING',
+      linkTextDecoration: linkStyle ? linkStyle.textDecorationLine : 'MISSING',
+      linkFontSize: linkStyle ? linkStyle.fontSize : 'MISSING',
+      linkGap: linkStyle ? linkStyle.gap : 'MISSING',
+      iconWidth: iconStyle ? iconStyle.width : 'MISSING',
+      iconHeight: iconStyle ? iconStyle.height : 'MISSING',
+      activeCount: activeLinks.length,
+      currentCount: currentLinks.length,
+      activeMatchesCurrent: activeLinks.length === currentLinks.length
+        && activeLinks.every(link => link.getAttribute('aria-current') === 'page'),
+      badgeCount: nav ? nav.querySelectorAll('[data-cr-cart-count]').length : 0,
+      badgeStates
+    };
+  });
+  let pass;
+  if (viewport < 1280) {
+    pass = state.bottomCount === 1 && state.railCount === 1
+      && state.bottomDisplay !== 'none' && state.bottomPosition === 'fixed'
+      && state.bottomBottom === '0px' && state.innerDisplay === 'grid'
+      && state.innerColumns === 5 && state.linkCount === 5
+      && state.linkDisplay === 'flex' && state.linkDirection === 'column'
+      && state.linkTextDecoration === 'none' && state.linkFontSize === '10.88px'
+      && state.linkGap === '3px' && state.iconWidth === '22px' && state.iconHeight === '22px'
+      && state.activeMatchesCurrent && state.badgeCount === 1
+      && state.badgeStates['0'].display === 'none'
+      && state.badgeStates['1'].display !== 'none'
+      && state.badgeStates['2'].display !== 'none'
+      && state.badgeStates['0'].sameNode && state.badgeStates['1'].sameNode && state.badgeStates['2'].sameNode;
+  } else {
+    pass = state.bottomCount === 1 && state.railCount === 1
+      && state.bottomDisplay === 'none' && state.railCount === 1;
+  }
+  log(label + '_CANONICAL_BOTTOM_NAV_' + viewport, pass ? 'PASS' : 'FAIL');
+  log(label + '_BOTTOM_NAV_STATE_' + viewport, JSON.stringify(state));
+  if (!pass) throw new Error(label + '_CANONICAL_BOTTOM_NAV_FAILED at ' + viewport);
+}
+
 
 async function productStackedLayout(page, viewport) {
   const state = await page.evaluate(() => {
@@ -338,6 +420,12 @@ async function loginForAuthenticatedAccount(page) {
     if (!productUrl) throw new Error('STAGING_PRODUCT_LINK_NOT_FOUND_FROM_HOME');
     log('PRODUCT_TEST_URL', productUrl);
 
+    for (const viewport of BOTTOM_NAV_VIEWPORTS) {
+      await page.setViewportSize({ width: viewport, height: 900 });
+      await page.waitForTimeout(250);
+      await canonicalBottomNavigation(page, 'HOME', viewport);
+      overflowResults.push(await checkOverflow(page, 'HOME', viewport));
+    }
     for (const viewport of VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
@@ -350,6 +438,7 @@ async function loginForAuthenticatedAccount(page) {
       await page.waitForTimeout(250);
       if (viewport >= 1280) await productLayout(page, viewport);
       else await productStackedLayout(page, viewport);
+      if (BOTTOM_NAV_VIEWPORTS.includes(viewport)) await canonicalBottomNavigation(page, 'PRODUCT', viewport);
       overflowResults.push(await checkOverflow(page, 'PRODUCT', viewport));
     }
 
@@ -381,6 +470,7 @@ async function loginForAuthenticatedAccount(page) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
       const links = await accountInformationLinks(page, 'GUEST', viewport);
+      if (BOTTOM_NAV_VIEWPORTS.includes(viewport)) await canonicalBottomNavigation(page, 'ACCOUNT_GUEST', viewport);
       if (!guestInformationLinks) guestInformationLinks = links;
       else if (JSON.stringify(links) !== JSON.stringify(guestInformationLinks)) {
         throw new Error('GUEST_INFORMATION_LINKS_VARY_BY_VIEWPORT');
@@ -401,6 +491,9 @@ async function loginForAuthenticatedAccount(page) {
         await page.setViewportSize({ width: viewport, height: 900 });
         await page.waitForTimeout(150);
         await canonicalPageHeader(page, 'LEGAL_' + link.label.replace(/[^A-Za-z0-9]+/g, '_').toUpperCase(), viewport);
+        if (link.label === 'Cambios y devoluciones' && BOTTOM_NAV_VIEWPORTS.includes(viewport)) {
+          await canonicalBottomNavigation(page, 'CHANGES_RETURNS', viewport);
+        }
         overflowResults.push(await checkOverflow(page, 'LEGAL', viewport));
       }
     }
