@@ -280,6 +280,63 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
   if (!pass) throw new Error(label + '_DESKTOP_SHELL_FAILED at ' + viewport);
 }
 
+
+
+async function desktopShellSnapshot(page) {
+  return page.evaluate(() => {
+    const shell=document.querySelector('[data-cr-desktop-shell]');
+    const rail=shell&&shell.querySelector(':scope > .cr-desktop-rail');
+    const logo=rail&&rail.querySelector('.cr-desktop-rail__brand img');
+    const header=shell&&shell.querySelector(':scope > .cr-app-header');
+    const search=header&&header.querySelector('[data-cr-header-search-toggle]');
+    const cart=header&&header.querySelector('a.cr-cart-link');
+    const primary=shell&&shell.querySelector(':scope > #primary');
+    const rect=el=>{if(!el)return null;const r=el.getBoundingClientRect();return {left:+r.left.toFixed(2),top:+r.top.toFixed(2),width:+r.width.toFixed(2),height:+r.height.toFixed(2)}};
+    if(!rail||!logo||!header||!search||!cart||!primary)return {found:false};
+    return {found:true,sidebar:rect(rail),logo:rect(logo),header:rect(header),search:rect(search),cart:rect(cart),primary:rect(primary)};
+  });
+}
+function shellGeometryMatches(a,b){
+  if(!a||!b||!a.found||!b.found)return false;
+  const fields=[['sidebar','left'],['sidebar','top'],['sidebar','width'],['sidebar','height'],['logo','left'],['logo','top'],['logo','width'],['logo','height'],['header','left'],['header','top'],['header','width'],['search','left'],['search','top'],['cart','left'],['cart','top'],['primary','left'],['primary','top'],['primary','width']];
+  return fields.every(([g,k])=>Math.abs(a[g][k]-b[g][k])<=1);
+}
+async function categoryDesktopContainment(page,viewport){
+  const state=await page.evaluate(()=>{
+    const primary=document.querySelector('[data-cr-desktop-shell] > #primary');
+    const canvas=primary&&primary.querySelector('.cr-parent-category__canvas');
+    const grid=canvas&&canvas.querySelector('.cr-parent-category__grid');
+    if(!primary||!canvas||!grid)return {found:false};
+    const box=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}};
+    const p=box(primary),c=box(canvas),g=box(grid),cards=Array.from(grid.children).map(box);
+    const inside=(x,y)=>x.left>=y.left-1&&x.right<=y.right+1;
+    return {found:true,primary:p,canvas:c,grid:g,cards,contentInsidePrimary:inside(c,p)&&inside(g,p),
+      noHorizontalOverflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1&&primary.scrollWidth<=primary.clientWidth+1&&canvas.scrollWidth<=canvas.clientWidth+1,
+      gridNotClipped:grid.scrollWidth<=grid.clientWidth+1&&cards.every(card=>inside(card,g))};
+  });
+  const inside=state.found&&state.contentInsidePrimary,overflow=state.found&&state.noHorizontalOverflow,clip=state.found&&state.gridNotClipped;
+  log('CATEGORY_CONTENT_INSIDE_PRIMARY_'+viewport,inside?'PASS':'FAIL');
+  log('CATEGORY_NO_HORIZONTAL_OVERFLOW_'+viewport,overflow?'PASS':'FAIL');
+  log('CATEGORY_NO_OVERFLOW_'+viewport,overflow?'PASS':'FAIL');
+  log('CATEGORY_GRID_NOT_CLIPPED_'+viewport,clip?'PASS':'FAIL');
+  log('CATEGORY_NO_CLIPPING_'+viewport,clip?'PASS':'FAIL');
+  log('CATEGORY_CONTENT_GEOMETRY_'+viewport,JSON.stringify(state));
+  if(!inside||!overflow||!clip)throw new Error('CATEGORY_PRIMARY_CONTAINMENT_FAILED_'+viewport+':'+JSON.stringify(state));
+}
+async function sixRouteDesktopShell(page,routes,viewport){
+  const home=await desktopShellSnapshot(page);
+  if(!home.found)throw new Error('HOME_CANONICAL_SHELL_SNAPSHOT_MISSING_'+viewport);
+  log('HOME_BBOX_'+viewport,JSON.stringify(home));
+  for(const route of routes){
+    await visit(page,route.url);
+    const actual=await desktopShellSnapshot(page),pass=shellGeometryMatches(home,actual);
+    log(route.key+'_BBOX_'+viewport,JSON.stringify(actual));
+    log(route.key+'_SHELL_MATCH_HOME_'+viewport,pass?'PASS':'FAIL');
+    if(!pass)throw new Error('DESKTOP_SHELL_MISMATCH_'+route.key+'_'+viewport+':HOME='+JSON.stringify(home)+' ACTUAL='+JSON.stringify(actual));
+    if(route.key==='CATEGORY')await categoryDesktopContainment(page,viewport);
+  }
+}
+
 async function homeDesktopBrands(page, viewport) {
   const state = await page.evaluate(() => {
     const section=document.querySelector('.cr-home-brands');
@@ -627,6 +684,22 @@ async function loginForAuthenticatedAccount(page) {
         .map(link => ({ label: (link.querySelector(':scope > span:not(.cr-cart-count):not(.cr-icon)')?.textContent || '').trim().replace(/\s+/g, ' '), href: link.href })) : [];
     });
     if (navDestinations.length !== 5) throw new Error('BOTTOM_NAV_DESTINATIONS_NOT_FIVE');
+    const categoryRoute=navDestinations.find(item=>item.label==='Categorías');
+    const cartRoute=navDestinations.find(item=>item.label==='Carrito');
+    if(!categoryRoute||!cartRoute)throw new Error('SHELL_ROUTE_LINKS_MISSING');
+    await visit(page,accountUrl);
+    const legalRoutes=await accountInformationLinks(page,'SHELL_LEGAL',1280);
+    if(!legalRoutes.length)throw new Error('SHELL_LEGAL_ROUTE_MISSING');
+    const shellRoutes=[
+      {key:'CATEGORY',url:categoryRoute.href},{key:'PRODUCT',url:productUrl},
+      {key:'CART',url:cartRoute.href},{key:'ACCOUNT',url:accountUrl},{key:'LEGAL',url:legalRoutes[0].href}
+    ];
+    for(const viewport of [1280,1440,1920]){
+      await page.setViewportSize({width:viewport,height:900});
+      await visit(page,homeUrl);
+      await sixRouteDesktopShell(page,shellRoutes,viewport);
+    }
+    await visit(page,homeUrl);
 
     for (const viewport of BOTTOM_NAV_VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });

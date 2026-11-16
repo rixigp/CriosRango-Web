@@ -108,3 +108,28 @@ test('ACCOUNT_AUTH_DESKTOP_EXPLICIT_TWO_COLUMN_GRID=PASS — WooCommerce floats 
   assert.match(layer, /cr-account-home__identity strong[\s\S]*?word-break: normal/);
   assert.doesNotMatch(layer, /flex-wrap:\s*wrap|transform:\s*scale|\bzoom\s*:/);
 });
+
+
+test('DESKTOP_SINGLE_OUTER_GEOMETRY=PASS — canonical selectors own desktop shell geometry', () => {
+  const layer = desktop('main.css');
+  assert.match(layer, /\.cr-desktop-shell \{[\s\S]*?display: grid/);
+  assert.match(layer, /\.cr-desktop-shell > \.cr-desktop-rail \{[\s\S]*?position: sticky !important/);
+  assert.match(layer, /\.cr-desktop-shell > \.cr-app-header \{[\s\S]*?position: absolute !important/);
+  assert.match(layer, /\.cr-desktop-shell > #primary \{[\s\S]*?width: 100% !important[\s\S]*?min-width: 0/);
+  assert.doesNotMatch(layer, /100vw[\s\S]{0,260}cr-parent-category__canvas|cr-parent-category__canvas[\s\S]{0,260}100vw/);
+  assert.doesNotMatch(layer, /body\.(?:home|cr-parent-category-view|cr-app-nav-shell|cr-product-listing-view)\s+\.cr-app-header\s*\{[^}]*\bleft\s*:/);
+  assert.doesNotMatch(layer, /body\.(?:home|cr-parent-category-view|cr-app-nav-shell)\s+\.cr-desktop-rail\s*\{/);
+});
+
+test('CATEGORY_CONTENT_USES_PRIMARY_WIDTH=PASS — canvas uses available primary width', () => {
+  const layer = desktop('main.css');
+  assert.match(layer, /\.cr-desktop-shell > #primary \.cr-parent-category__canvas \{[\s\S]*?width: 100% !important;[\s\S]*?min-width: 0 !important;[\s\S]*?margin: 0 !important;/);
+  assert.doesNotMatch(layer, /cr-parent-category__canvas[\s\S]{0,420}100vw/);
+});
+
+test('PRODUCT_HEADER_USES_CANONICAL_DESKTOP_HEADER=PASS — sticky override is tablet-only', () => {
+  const source = css('product-detail-skin.css');
+  const blocks = mediaBlocks(source, '@media (min-width: 1280px)').join('\n');
+  assert.doesNotMatch(blocks, /cr-app-header[\s\S]{0,120}position:\s*sticky/);
+  assert.match(source, /@media \(max-width: 1279px\) \{\s*body\.cr-product-detail-app \.cr-app-header/);
+});
