@@ -3,6 +3,7 @@
 const { chromium } = require('playwright');
 
 const BASE_URL = (process.env.STAGING_BASE_URL || 'https://criosrango.es/prueba').replace(/\/+$/, '');
+const RESPONSIVE_VIEWPORTS = [390, 768, 980, 1279, 1280, 1440, 1920];
 const VIEWPORTS = [1280, 1440, 1920];
 const accountUrl = new URL('mi-cuenta/', BASE_URL + '/').toString();
 const EXPECTED_INFORMATION_LABELS = [
@@ -86,6 +87,68 @@ async function checkOverflow(page, label, viewport) {
   return state.overflow;
 }
 
+async function productStackedLayout(page, viewport) {
+  const state = await page.evaluate(() => {
+    const product = document.querySelector('body.cr-product-detail-app .cr-main--woocommerce div.product');
+    if (!product) return { found: false };
+    const gallery = product.querySelector(':scope > .woocommerce-product-gallery');
+    const summary = product.querySelector(':scope > .summary');
+    const summaryContent = summary && (summary.querySelector(':scope > .cr-product-title-brand-row') || summary.firstElementChild);
+    const productRect = product.getBoundingClientRect();
+    const galleryRect = gallery && gallery.getBoundingClientRect();
+    const summaryRect = summaryContent && summaryContent.getBoundingClientRect();
+    return {
+      found: Boolean(galleryRect && summaryRect),
+      display: getComputedStyle(product).display,
+      summaryDisplay: summary ? getComputedStyle(summary).display : 'MISSING',
+      productWidth: productRect.width,
+      galleryWidth: galleryRect && galleryRect.width,
+      galleryTop: galleryRect && galleryRect.top,
+      summaryTop: summaryRect && summaryRect.top
+    };
+  });
+  const pass = state.found && state.display === 'flex' && state.summaryDisplay !== 'contents'
+    && state.galleryWidth >= state.productWidth - 2 && state.galleryTop <= state.summaryTop;
+  log('PRODUCT_TABLET_STACKED_' + viewport, pass ? 'PASS' : 'FAIL');
+  log('PRODUCT_TABLET_GEOMETRY_' + viewport, JSON.stringify(state));
+  if (!pass) throw new Error('PRODUCT_TABLET_LAYOUT_FAILED at ' + viewport);
+}
+
+async function accountTileGridLayout(page, viewport) {
+  const state = await page.evaluate(() => {
+    const grid = document.querySelector('body.woocommerce-account .cr-account-home__grid');
+    if (!grid) return { found: false };
+    const template = getComputedStyle(grid).gridTemplateColumns;
+    return { found: true, template, columns: template.split(' ').filter(Boolean).length };
+  });
+  const expected = viewport >= 900 ? 4 : 2;
+  const pass = state.found && state.columns === expected;
+  log('ACCOUNT_TILES_' + viewport + '_COLUMNS', state.columns || 'MISSING');
+  log('ACCOUNT_TILES_GRID_' + viewport, pass ? 'PASS' : 'FAIL');
+  if (!pass) throw new Error('ACCOUNT_TILE_GRID_FAILED at ' + viewport + ': ' + JSON.stringify(state));
+}
+
+async function canonicalPageHeader(page, label, viewport) {
+  const state = await page.evaluate(() => {
+    const toolbars = Array.from(document.querySelectorAll('.cr-parent-category__toolbar'));
+    const toolbar = toolbars.find(item => item.querySelector('.cr-parent-category__title'));
+    if (!toolbar) return { found: false, count: toolbars.length };
+    const title = toolbar.querySelector('.cr-parent-category__title');
+    const back = toolbar.querySelector('.cr-parent-category__back');
+    return {
+      found: true,
+      count: toolbars.length,
+      title: (title.textContent || '').trim(),
+      backHref: back ? back.href : '',
+      backCount: back ? 1 : 0
+    };
+  });
+  const pass = state.found && state.count === 1 && state.title.length > 0 && state.backCount === 1;
+  log(label + '_CANONICAL_PAGE_HEADER_' + viewport, pass ? 'PASS' : 'FAIL');
+  log(label + '_PAGE_HEADER_STATE_' + viewport, JSON.stringify(state));
+  if (!pass) throw new Error(label + '_CANONICAL_PAGE_HEADER_FAILED at ' + viewport);
+}
+
 async function productLayout(page, viewport) {
   const state = await page.evaluate(() => {
     const product = document.querySelector('body.cr-product-detail-app .cr-main--woocommerce div.product');
@@ -154,7 +217,7 @@ async function accountHomeLayout(page, viewport) {
     };
   });
   if (!state.found) throw new Error('ACCOUNT_HOME_MARKUP_MISSING at ' + viewport);
-  const pass = state.homeRatio >= 0.98 && state.homeMaxWidth === 'none';
+  const pass = state.homeRatio >= 0.98 && (viewport < 1280 || state.homeMaxWidth === 'none');
   log('ACCOUNT_HOME_USES_DESKTOP_WIDTH_' + viewport, pass ? 'PASS' : 'FAIL');
   log('ACCOUNT_HOME_GEOMETRY_' + viewport, JSON.stringify(state));
   if (!pass) throw new Error('ACCOUNT_HOME_DESKTOP_WIDTH_FAILED at ' + viewport);
@@ -258,10 +321,11 @@ async function loginForAuthenticatedAccount(page) {
     }
 
     await visit(page, productUrl);
-    for (const viewport of VIEWPORTS) {
+    for (const viewport of RESPONSIVE_VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
-      await productLayout(page, viewport);
+      if (viewport >= 1280) await productLayout(page, viewport);
+      else await productStackedLayout(page, viewport);
       overflowResults.push(await checkOverflow(page, 'PRODUCT', viewport));
     }
 
@@ -289,7 +353,7 @@ async function loginForAuthenticatedAccount(page) {
 
     await visit(page, accountUrl);
     let guestInformationLinks = null;
-    for (const viewport of [390, 768, 1280]) {
+    for (const viewport of RESPONSIVE_VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
       const links = await accountInformationLinks(page, 'GUEST', viewport);
@@ -308,13 +372,22 @@ async function loginForAuthenticatedAccount(page) {
         throw new Error('INFORMATION_DESTINATION_NOT_PUBLIC=' + link.label + ' URL=' + link.href + ' STATUS=' + response.status() + ' FINAL=' + finalUrl);
       }
       log('INFORMATION_PUBLIC_DESTINATION_' + link.label.replace(/[^A-Za-z0-9]+/g, '_').toUpperCase(), 'PASS');
+      await visit(page, link.href);
+      for (const viewport of RESPONSIVE_VIEWPORTS) {
+        await page.setViewportSize({ width: viewport, height: 900 });
+        await page.waitForTimeout(150);
+        await canonicalPageHeader(page, 'LEGAL_' + link.label.replace(/[^A-Za-z0-9]+/g, '_').toUpperCase(), viewport);
+        overflowResults.push(await checkOverflow(page, 'LEGAL', viewport));
+      }
     }
     log('INFORMATION_DESTINATIONS_PUBLIC', 'PASS');
 
-    for (const viewport of VIEWPORTS) {
+    await visit(page, accountUrl);
+    for (const viewport of RESPONSIVE_VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
       await accountHomeLayout(page, viewport);
+      await accountTileGridLayout(page, viewport);
       overflowResults.push(await checkOverflow(page, 'ACCOUNT_HOME', viewport));
     }
 
