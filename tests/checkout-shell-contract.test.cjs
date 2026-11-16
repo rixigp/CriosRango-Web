@@ -86,7 +86,9 @@ function cssLastRuleBody(css, selector) {
 
 test('checkout adds no page-specific header-to-toolbar or shell reservation',()=>{
  const globalHeader=cssRuleBody(mainCss,'body.cr-global-app-header:not(.home)');
- assert.ok(globalHeader.includes('padding-top: var(--cr-app-topbar-height)'));
+ assert.ok(globalHeader.includes('--cr-app-topbar-height: 64px'));
+ assert.doesNotMatch(globalHeader,/padding-top:/);
+ assert.match(mainCss,/@media \(max-width: 1279px\)[\s\S]*?body\.cr-global-app-header:not\(\.home\)[\s\S]*?padding-top: var\(--cr-app-topbar-height\)/);
  assert.equal(checkoutCss.includes('padding-block-start'),false);
  assert.equal(checkoutCss.includes('margin-block-start'),false);
  assert.equal(checkoutCss.includes('.cr-main > .cr-shell.cr-page-shell'),false);
