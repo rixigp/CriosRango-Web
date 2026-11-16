@@ -394,7 +394,7 @@ async function loginForAuthenticatedAccount(page) {
     if (process.env.STAGING_ACCOUNT_EMAIL && process.env.STAGING_ACCOUNT_PASSWORD) {
       await loginForAuthenticatedAccount(page);
       let authenticatedInformationLinks = null;
-      for (const viewport of [390, 768, 1280]) {
+      for (const viewport of RESPONSIVE_VIEWPORTS) {
         await page.setViewportSize({ width: viewport, height: 900 });
         await page.waitForTimeout(250);
         const links = await accountInformationLinks(page, 'AUTH', viewport);
