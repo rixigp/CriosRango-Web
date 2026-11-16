@@ -270,7 +270,7 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
       && state.mainPaddingLeft === '20px'
       && state.headerMarkDisplay === 'none'
       && state.sidebarLogoDisplay !== 'none'
-      && /home_logo\\.png/.test(state.sidebarLogoSrc || '')
+      && /home_logo\.png/.test(state.sidebarLogoSrc || '')
       && state.actionsLeft >= state.mainLeft - 1
       && state.actionsRight <= state.shellRight + 1
       && state.bottomDisplay === 'none';
