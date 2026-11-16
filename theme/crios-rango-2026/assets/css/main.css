@@ -3242,8 +3242,8 @@ body.search .cr-search-form__submit.is-loading::before,
   .cr-home-brand-dots--mobile { display: none !important; }
   .cr-home-brand-pager--desktop { display: flex; }
   .cr-home-brand-dots--desktop { display: flex; }
-  .cr-home-brands .cr-home-brand-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+  body.home .cr-home-brands .cr-home-brand-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     grid-template-rows: repeat(2, 96px);
     grid-auto-rows: 96px;
     column-gap: 12px;

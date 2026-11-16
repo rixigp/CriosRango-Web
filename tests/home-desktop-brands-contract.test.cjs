@@ -39,6 +39,7 @@ test('HOME_DESKTOP_BRANDS_GRID_AND_PAGINATION_ARE_BREAKPOINT_SCOPED=PASS',()=>{
  assert.match(css,/height:\s*auto\s*!important/);
  assert.match(css,/object-fit:\s*contain/);
  assert.doesNotMatch(css,/cr-home-brand[^}]*transform:\s*scale/i);
+ assert.match(css,/body\.home \.cr-home-brands \.cr-home-brand-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)\s*!important/);
  assert.match(css,/\.cr-home-brand-pager--mobile,[\s\S]*?\.cr-home-brand-dots--mobile\s*\{\s*display:\s*none\s*!important/);
  assert.match(js,/querySelectorAll\('\[data-cr-brand-pager\]'\)/);assert.match(js,/IntersectionObserver/);assert.match(js,/aria-current/);
 });
