@@ -1,6 +1,6 @@
 <?php
 get_header();
-$is_cart_page = function_exists( 'is_cart' ) && is_cart();
+$is_non_cart_page = ! function_exists( 'is_cart' ) || ! is_cart();
 $is_checkout_form = function_exists( 'is_checkout' ) && is_checkout()
     && ( ! function_exists( 'is_order_received_page' ) || ! is_order_received_page() );
 $is_account_information = function_exists( 'cr2026_is_account_information_page' )
@@ -12,7 +12,7 @@ if ( ! $account_url ) { $account_url = home_url( '/mi-cuenta/' ); }
     <div class="cr-shell cr-page-shell">
         <?php while ( have_posts() ) : the_post(); ?>
             <article <?php post_class( 'cr-page' ); ?>>
-                <?php if ( ! $is_cart_page && ! $is_checkout_form ) : ?>
+                <?php if ( $is_non_cart_page && ! $is_checkout_form ) : ?>
                     <?php
                     if ( $is_account_information ) {
                         $page_back_url = $account_url;
