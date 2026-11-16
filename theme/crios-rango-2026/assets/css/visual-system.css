@@ -34,21 +34,31 @@
 .cr-parent-category__toolbar,
 .cr-page__header {
   box-sizing: border-box;
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
-  margin: 0 0 18px;
+  align-items: center;
 }
 .cr-parent-category__toolbar {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  column-gap: 10px;
+  min-height: 64px;
+  margin: 0 0 14px;
   padding-block: 0;
+}
+.cr-parent-category__toolbar--no-back {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.cr-page__header {
+  min-height: 52px;
+  display: flex;
+  gap: 10px;
+  margin: 0 0 18px;
 }
 .cr-parent-category__back {
   box-sizing: border-box;
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
