@@ -43,8 +43,8 @@ test('GLOBAL_SHELL_PRESENT_FOR_ALL_NORMAL_PUBLIC_REQUESTS=PASS', () => {
 test('GLOBAL_PRIMARY_NAV_EXACTLY_ONE_MODE_AT_1280=PASS', () => {
   assert.match(tablet, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s*\{[^}]*display:\s*block\s*!important/s);
   assert.match(tablet, /\.cr-desktop-rail\s*\{[^}]*display:\s*none\s*!important/s);
-  assert.match(css, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s*\{[^}]*display:\s*none\s*!important/s);
-  assert.match(css, /\.cr-desktop-rail\s*\{[^}]*display:\s*flex\s*!important/s);
+  assert.match(css, /@media \(min-width: 1280px\)[\s\S]*?\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s*\{[^}]*display:\s*none\s*!important/s);
+  assert.match(css, /@media \(min-width: 1280px\)[\s\S]*?\.cr-desktop-rail\s*\{[^}]*display:\s*flex\s*!important/s);
 });
 
 test('GLOBAL_VIEWPORT_MATRIX=390,768,980,1100,1279,1280,1440,1920', () => {
