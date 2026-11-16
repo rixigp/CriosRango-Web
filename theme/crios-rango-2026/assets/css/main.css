@@ -3100,7 +3100,7 @@ body.search .cr-search-form__submit.is-loading::before,
     padding-top: var(--cr-desktop-content-top-gap) !important;
   }
 
-  .cr-desktop-shell > #primary .cr-shell {
+  .cr-desktop-shell > #primary :is(.cr-shell) {
     box-sizing: border-box;
     width: 100% !important;
     max-width: none !important;
