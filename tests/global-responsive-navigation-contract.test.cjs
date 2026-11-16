@@ -115,7 +115,8 @@ test('DESKTOP_SIDEBAR_AND_CONTENT_SHARE_ONE_CENTERED_SHELL=PASS', () => {
   assert.match(css, /column-gap:\s*0/);
   assert.match(css, /width:\s*min\(calc\(100vw - 2 \* var\(--cr-desktop-shell-outer\)\),\s*var\(--cr-desktop-shell-max\)\)/);
   assert.match(css, /\.cr-desktop-shell > #primary\s*\{[\s\S]*?grid-column:\s*2[\s\S]*?padding-left:\s*var\(--cr-desktop-content-padding\)/);
-  assert.match(css, /\.cr-desktop-shell > \.cr-desktop-rail\s*\{[\s\S]*?grid-column:\s*1[\s\S]*?position:\s*sticky/);
+  assert.match(css, /\.cr-desktop-shell > \.cr-desktop-rail\s*\{[^}]*grid-column:\s*1/);
+  assert.match(css, /\.cr-desktop-shell > \.cr-desktop-rail\s*\{[^}]*position:\s*sticky/);
   assert.match(css, /--cr-desktop-content-padding:\s*20px/);
 });
 
