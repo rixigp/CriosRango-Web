@@ -3044,7 +3044,7 @@ body.search .cr-search-form__submit.is-loading::before,
   .cr-desktop-shell { display: contents; }
 }
 
-@media (min-width: 1280px) {
+@media screen and (min-width: 1280px) {
   :root {
     --cr-desktop-sidebar: 112px;
     --cr-desktop-shell-max: calc(var(--cr-desktop-sidebar) + var(--cr-desktop-content-max));
