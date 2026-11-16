@@ -304,8 +304,11 @@ function shellGeometryMatches(a,b){
 async function categoryDesktopContainment(page,viewport){
   const state=await page.evaluate(()=>{
     const primary=document.querySelector('[data-cr-desktop-shell] > #primary');
-    const canvas=primary&&(primary.matches('.cr-parent-category__canvas')?primary:primary.querySelector('.cr-parent-category__canvas'));
-    const grid=canvas&&canvas.querySelector('.cr-parent-category__grid');
+    const canvas=primary&&(
+      primary.matches('.cr-parent-category__canvas,.cr-category-hub')?primary:
+      primary.querySelector('.cr-parent-category__canvas,.cr-category-hub')
+    );
+    const grid=canvas&&canvas.querySelector('.cr-parent-category__grid,.cr-category-hub__grid');
     if(!primary||!canvas||!grid)return {found:false};
     const box=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}};
     const p=box(primary),c=box(canvas),g=box(grid),cards=Array.from(grid.children).map(box);
