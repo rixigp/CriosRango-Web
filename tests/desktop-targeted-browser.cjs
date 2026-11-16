@@ -213,6 +213,73 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
 }
 
 
+async function desktopShellLayout(page, label, viewport, isHome = false) {
+  const state = await page.evaluate(() => {
+    const shell = document.querySelector('[data-cr-desktop-shell]');
+    const main = shell && shell.querySelector(':scope > #primary');
+    const header = shell && shell.querySelector(':scope > .cr-app-header');
+    const rail = shell && shell.querySelector(':scope > .cr-desktop-rail');
+    const bottom = document.querySelector('nav.cr-mobile-bottom-nav.cr-app-bottom-nav');
+    const mark = header && header.querySelector('.cr-home-mark');
+    const brand = rail && rail.querySelector('.cr-desktop-rail__brand img');
+    const actions = header && header.querySelector('.cr-home-topbar__actions');
+    if (!shell || !main || !header || !rail) return { found: false };
+    const sr = shell.getBoundingClientRect();
+    const mr = main.getBoundingClientRect();
+    const rr = rail.getBoundingClientRect();
+    const ar = actions && actions.getBoundingClientRect();
+    const ss = getComputedStyle(shell);
+    return {
+      found: true,
+      shellDisplay: ss.display,
+      shellLeft: sr.left,
+      shellRight: sr.right,
+      shellWidth: sr.width,
+      shellGap: ss.columnGap,
+      mainLeft: mr.left,
+      mainWidth: mr.width,
+      mainPaddingLeft: getComputedStyle(main).paddingLeft,
+      railDisplay: getComputedStyle(rail).display,
+      railLeft: rr.left,
+      railRight: rr.right,
+      railWidth: rr.width,
+      railPosition: getComputedStyle(rail).position,
+      bottomDisplay: bottom && getComputedStyle(bottom).display,
+      headerMarkDisplay: mark && getComputedStyle(mark).display,
+      sidebarLogoDisplay: brand && getComputedStyle(brand).display,
+      sidebarLogoSrc: brand && brand.getAttribute('src'),
+      actionsLeft: ar && ar.left,
+      actionsRight: ar && ar.right
+    };
+  });
+  let pass;
+  if (viewport < 1280) {
+    pass = state.found
+      && state.shellDisplay === 'contents'
+      && state.railDisplay === 'none'
+      && state.bottomDisplay !== 'none'
+      && (!isHome || state.headerMarkDisplay !== 'none');
+  } else {
+    pass = state.found
+      && state.shellDisplay === 'grid'
+      && state.shellGap === '0px'
+      && state.railDisplay !== 'none'
+      && Math.abs(state.railLeft - state.shellLeft) <= 1
+      && Math.abs(state.mainLeft - state.railRight) <= 1
+      && Math.abs(state.railWidth - 112) <= 1
+      && state.mainPaddingLeft === '20px'
+      && state.headerMarkDisplay === 'none'
+      && state.sidebarLogoDisplay !== 'none'
+      && /home_logo\\.png/.test(state.sidebarLogoSrc || '')
+      && state.actionsLeft >= state.mainLeft - 1
+      && state.actionsRight <= state.shellRight + 1
+      && state.bottomDisplay === 'none';
+  }
+  log(label + '_DESKTOP_SHELL_' + viewport, pass ? 'PASS' : 'FAIL');
+  log(label + '_DESKTOP_SHELL_GEOMETRY_' + viewport, JSON.stringify(state));
+  if (!pass) throw new Error(label + '_DESKTOP_SHELL_FAILED at ' + viewport);
+}
+
 async function productStackedLayout(page, viewport) {
   const state = await page.evaluate(() => {
     const product = document.querySelector('body.cr-product-detail-app .cr-main--woocommerce div.product');
@@ -463,6 +530,12 @@ async function loginForAuthenticatedAccount(page) {
     });
     if (!productUrl) throw new Error('STAGING_PRODUCT_LINK_NOT_FOUND_FROM_HOME');
     log('PRODUCT_TEST_URL', productUrl);
+    for (const viewport of [1279, 1280, 1440, 1920]) {
+      await page.setViewportSize({ width: viewport, height: 900 });
+      await page.waitForTimeout(250);
+      await desktopShellLayout(page, 'HOME', viewport, true);
+    }
+
     const navDestinations = await page.evaluate(() => {
       const nav = document.querySelector('nav.cr-mobile-bottom-nav.cr-app-bottom-nav');
       return nav ? Array.from(nav.querySelectorAll(':scope > .cr-mobile-bottom-nav__inner > a'))
@@ -497,6 +570,7 @@ async function loginForAuthenticatedAccount(page) {
     for (const viewport of RESPONSIVE_VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
+      await desktopShellLayout(page, 'PRODUCT', viewport, false);
       if (viewport >= 1280) await productLayout(page, viewport);
       else await productStackedLayout(page, viewport);
       if (BOTTOM_NAV_VIEWPORTS.includes(viewport)) await canonicalBottomNavigation(page, 'PRODUCT', viewport);
@@ -530,6 +604,7 @@ async function loginForAuthenticatedAccount(page) {
     for (const viewport of RESPONSIVE_VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
+      await desktopShellLayout(page, 'ACCOUNT_GUEST', viewport, false);
       const links = await accountInformationLinks(page, 'GUEST', viewport);
       if (BOTTOM_NAV_VIEWPORTS.includes(viewport)) await canonicalBottomNavigation(page, 'ACCOUNT_GUEST', viewport, 'Cuenta');
       if (!guestInformationLinks) guestInformationLinks = links;
