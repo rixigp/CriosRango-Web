@@ -399,6 +399,8 @@ jobs:
         run: node --test tests/catalog-contract.test.cjs
       - name: Run desktop geometry contracts
         run: node --test tests/desktop-geometry-contract.test.cjs
+      - name: Run Home desktop brands contract tests
+        run: node --test tests/home-desktop-brands-contract.test.cjs
 
       - name: Run global responsive navigation contracts
         run: node --test tests/global-responsive-navigation-contract.test.cjs
