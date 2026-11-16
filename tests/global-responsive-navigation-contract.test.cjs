@@ -51,6 +51,18 @@ test('GLOBAL_VIEWPORT_MATRIX=390,768,980,1100,1279,1280,1440,1920', () => {
     assert.notEqual(bottom, sidebar, width + 'px must expose exactly one primary nav');
   }
 });
+test('ONE_CANONICAL_BOTTOM_NAV_COMPONENT_AND_SHARED_MOBILE_STYLES=PASS', () => {
+  assert.equal((footer.match(/<nav class="cr-mobile-bottom-nav cr-app-bottom-nav"/g) || []).length, 1);
+  assert.equal((footer.match(/class="cr-mobile-bottom-nav__inner"/g) || []).length, 1);
+  assert.equal((footer.match(/data-cr-cart-count/g) || []).length, 2, 'one badge in bottom nav and one in desktop rail');
+  assert.match(tablet, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s*>\s*\.cr-mobile-bottom-nav__inner\s*>\s*a\s*\{[^}]*flex-direction:\s*column/s);
+  assert.match(tablet, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s*>\s*\.cr-mobile-bottom-nav__inner\s*>\s*a\s*\{[^}]*text-decoration:\s*none\s*!important/s);
+  assert.match(tablet, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s+\.cr-icon\s*\{[^}]*width:\s*22px[^}]*height:\s*22px/s);
+  assert.match(tablet, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s+\.cr-cart-count\s*\{[^}]*top:\s*4px[^}]*right:\s*calc\(50%\s*-\s*25px\)/s);
+  assert.match(tablet, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s+\.is-active\s*\{[^}]*color:\s*#111\s*!important/s);
+  assert.doesNotMatch(css, /@media\s*\(max-width:\s*767px\)[\s\S]{0,1400}\.cr-mobile-bottom-nav\s+a\s*\{/);
+});
+
 
 test('ACCOUNT_INTERNAL_DESKTOP_NAV_STARTS_AT_1280=PASS', () => {
   assert.match(account, /@media\s*\(max-width:\s*1279px\)\s*\{[\s\S]*?woocommerce-MyAccount-navigation\s*\{\s*display:\s*none\s*!important/s);
