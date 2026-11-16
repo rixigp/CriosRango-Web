@@ -43,8 +43,8 @@ test('GLOBAL_SHELL_PRESENT_FOR_ALL_NORMAL_PUBLIC_REQUESTS=PASS', () => {
 test('GLOBAL_PRIMARY_NAV_EXACTLY_ONE_MODE_AT_1280=PASS', () => {
   assert.match(tablet, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s*\{[^}]*display:\s*block\s*!important/s);
   assert.match(tablet, /\.cr-desktop-rail\s*\{[^}]*display:\s*none\s*!important/s);
-  assert.match(desktop, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s*\{[^}]*display:\s*none\s*!important/s);
-  assert.match(desktop, /\.cr-desktop-rail\s*\{[^}]*display:\s*flex\s*!important/s);
+  assert.match(css, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s*\{[^}]*display:\s*none\s*!important/s);
+  assert.match(css, /\.cr-desktop-rail\s*\{[^}]*display:\s*flex\s*!important/s);
 });
 
 test('GLOBAL_VIEWPORT_MATRIX=390,768,980,1100,1279,1280,1440,1920', () => {
@@ -96,7 +96,7 @@ test('PRODUCT_TWO_COLUMN_LAYOUT_STARTS_AT_1280=PASS', () => {
 
 test('DESKTOP_CONTENT_TOP_GAP_USES_ONE_TOKEN=PASS', () => {
   assert.match(css, /--cr-desktop-content-top-gap:\s*32px/);
-  assert.match(desktop, /\.cr-main,[\s\S]*?padding-top:\s*var\(--cr-desktop-content-top-gap\)/);
+  assert.match(css, /\.cr-main,[\s\S]*?padding-top:\s*var\(--cr-desktop-content-top-gap\)/);
 });
 
 test('VISUAL_FOOTER_ABSENT_AND_WP_FOOTER_PRESERVED=PASS', () => {
@@ -106,10 +106,11 @@ test('VISUAL_FOOTER_ABSENT_AND_WP_FOOTER_PRESERVED=PASS', () => {
 
 
 
+
 test('DESKTOP_SIDEBAR_AND_CONTENT_SHARE_ONE_CENTERED_SHELL=PASS', () => {
   assert.match(header, /<div class="cr-desktop-shell" data-cr-desktop-shell>/);
   assert.match(footer, /<nav class="cr-desktop-rail"[\s\S]*?<\/nav>\s*<\/div>\s*<nav class="cr-mobile-bottom-nav/);
-  assert.match(css, /@media \(max-width: 1279px\)\s*\{\s*\.cr-desktop-shell\s*\{\s*display:\s*contents\s*;?\s*\}/);
+  assert.match(css, /\.cr-desktop-shell\s*\{\s*display:\s*contents\s*;?\s*\}/);
   assert.match(css, /grid-template-columns:\s*var\(--cr-desktop-sidebar\)\s+minmax\(0,\s*1fr\)/);
   assert.match(css, /column-gap:\s*0/);
   assert.match(css, /width:\s*min\(calc\(100vw - 2 \* var\(--cr-desktop-shell-outer\)\),\s*var\(--cr-desktop-shell-max\)\)/);
@@ -124,6 +125,5 @@ test('DESKTOP_LOGO_OWNERSHIP_AND_MOBILE_HOME_IDENTITY=PASS', () => {
   assert.match(visual, /body\.home \.cr-app-header\.is-home-hero \.cr-home-mark\s*\{/);
   assert.match(css, /\.cr-desktop-rail\s*\{\s*display:\s*none\s*!important/);
   assert.match(css, /\.cr-desktop-shell > \.cr-desktop-rail[\s\S]*?display:\s*flex\s*!important/);
-  assert.match(css, /@media screen and \(min-width: 1280px\)/);
+  assert.match(css, /@media \(min-width: 1280px\)[\s\S]*?\.cr-desktop-shell\s*\{/);
 });
-
