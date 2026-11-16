@@ -281,11 +281,26 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
 }
 
 async function homeDesktopBrands(page, viewport) {
-  const state = await page.evaluate(() => {
+  const state = await page.evaluate(async () => {
     const section=document.querySelector('.cr-home-brands');
     const desktop=section&&section.querySelector('.cr-home-brand-pager--desktop');
     const mobile=section&&section.querySelector('.cr-home-brand-pager--mobile');
-    if(!section||!desktop||!mobile)return {found:false};
+    let indexBrands=[],indexStatus='NOT_REQUESTED';
+    try {
+      const response=await fetch(new URL('marcas/',window.location.href),{credentials:'same-origin',cache:'no-store'});
+      indexStatus=String(response.status);
+      const html=await response.text();
+      const parsed=new DOMParser().parseFromString(html,'text/html');
+      indexBrands=Array.from(parsed.querySelectorAll('[data-brand-term-id]')).map(card=>({
+        id:card.getAttribute('data-brand-term-id'),name:card.getAttribute('data-brand-term-name')
+      }));
+    } catch(error) { indexStatus='ERROR:'+String(error&&error.message||error); }
+    if(!section||!desktop||!mobile)return {
+      found:false,sectionFound:Boolean(section),desktopPagerFound:Boolean(desktop),mobilePagerFound:Boolean(mobile),
+      bodyClass:document.body.className,primaryClass:document.querySelector('#primary')?.className||'',
+      homeHeading:Array.from(document.querySelectorAll('h1,h2')).map(node=>(node.textContent||'').trim()).slice(0,12),
+      brandsIndexStatus:indexStatus,brandsIndexCount:indexBrands.length,brandsIndex:indexBrands
+    };
     const names=pager=>Array.from(pager.querySelectorAll('.cr-home-brand-page')).map(pg=>
       Array.from(pg.querySelectorAll('.cr-home-brand')).map(card=>card.querySelector('img')?.alt||(card.textContent||'').trim()));
     const grids=Array.from(desktop.querySelectorAll('.cr-home-brand-grid'));
@@ -300,7 +315,7 @@ async function homeDesktopBrands(page, viewport) {
       rows:grids[0]?getComputedStyle(grids[0]).gridTemplateRows.split(' ').length:0,
       clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,geometry};
   });
-  if(!state.found)throw new Error('HOME_BRANDS_MARKUP_MISSING_'+viewport);
+  if(!state.found){log('HOME_BRANDS_SOURCE_DIAGNOSTIC_'+viewport,JSON.stringify(state));throw new Error('HOME_BRANDS_MARKUP_MISSING_'+viewport);}
   if(viewport<1280){
     const pass=state.desktopDisplay==='none'&&state.mobileDisplay!=='none'&&state.mobilePages.flat().length===16;
     log('HOME_BRANDS_MOBILE_TABLET_UNCHANGED_'+viewport,pass?'PASS':'FAIL');
