@@ -329,7 +329,6 @@ body.home .cr-app-header.is-home-hero .cr-home-mark__logo {
 .woocommerce div.product form.cart .button,
 body.woocommerce-account .woocommerce-form-login__submit {
   font-family: "Roboto", Arial, sans-serif;
-  font-weight: 400;
 }
 .woocommerce table.shop_table,
 .woocommerce-cart .cart-collaterals .cart_totals,
