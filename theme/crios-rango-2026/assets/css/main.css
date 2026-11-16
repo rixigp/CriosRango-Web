@@ -3039,12 +3039,11 @@ body.search .cr-search-form__submit.is-loading::before,
 
 
 /* Canonical desktop shell: the rail and page content share one centered grid.
-   Tablet/mobile remains display-contents and keeps its existing bottom-nav shell. */
-@media (max-width: 1279px) {
-  .cr-desktop-shell { display: contents; }
-}
+   display:contents preserves the existing mobile/tablet DOM flow. */
+.cr-desktop-shell { display: contents; }
 
-@media screen and (min-width: 1280px) {
+@media (min-width: 1280px) {
+  .cr-desktop-shell {
   :root {
     --cr-desktop-sidebar: 112px;
     --cr-desktop-shell-max: calc(var(--cr-desktop-sidebar) + var(--cr-desktop-content-max));
