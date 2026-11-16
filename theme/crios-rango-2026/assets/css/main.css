@@ -3036,3 +3036,188 @@ body.search .cr-search-form__submit.is-loading::before,
     font-size: 12px;
   }
 }
+
+
+/* Canonical desktop shell: the rail and page content share one centered grid.
+   Tablet/mobile remains display-contents and keeps its existing bottom-nav shell. */
+@media (max-width: 1279px) {
+  .cr-desktop-shell { display: contents; }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --cr-desktop-sidebar: 112px;
+    --cr-desktop-shell-max: calc(var(--cr-desktop-sidebar) + var(--cr-desktop-content-max));
+    --cr-desktop-shell-outer: 24px;
+    --cr-desktop-content-padding: 20px;
+  }
+
+  .cr-desktop-shell {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--cr-desktop-sidebar) minmax(0, 1fr);
+    column-gap: 0;
+    align-items: start;
+    width: min(calc(100vw - 2 * var(--cr-desktop-shell-outer)), var(--cr-desktop-shell-max));
+    min-height: 100vh;
+    margin-inline: auto;
+  }
+
+  .cr-desktop-shell > .cr-app-header {
+    position: absolute !important;
+    inset: 0 0 auto var(--cr-desktop-sidebar) !important;
+    z-index: 1150;
+    grid-column: 2;
+    grid-row: 1;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    background: transparent;
+  }
+
+  .cr-desktop-shell > .cr-app-header .cr-home-mark {
+    display: none !important;
+  }
+
+  .cr-desktop-shell > .cr-app-header .cr-home-topbar {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 88px;
+    margin: 0 !important;
+    padding-inline: var(--cr-desktop-content-padding);
+    justify-content: flex-end;
+  }
+
+  .cr-desktop-shell > #primary {
+    grid-column: 2;
+    grid-row: 1;
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+    padding-right: var(--cr-desktop-content-padding) !important;
+    padding-left: var(--cr-desktop-content-padding) !important;
+    padding-top: var(--cr-desktop-content-top-gap) !important;
+  }
+
+  .cr-desktop-shell > #primary .cr-shell {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+  }
+
+  .cr-desktop-shell > #primary.cr-brands-index,
+  .cr-desktop-shell > #primary .cr-parent-category__canvas {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+  }
+
+  /* Home content occupies the content rail; no secondary viewport gutter. */
+  .cr-desktop-shell > #primary.cr-home--app {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .cr-desktop-shell > #primary.cr-home--app .cr-app-hero,
+  .cr-desktop-shell > #primary.cr-home--app .cr-home-section,
+  .cr-desktop-shell > #primary.cr-home--app .cr-app-shell {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* The desktop rail is a real first column of this shell, not a viewport-fixed island. */
+  .cr-desktop-shell > .cr-desktop-rail {
+    position: sticky !important;
+    inset: auto !important;
+    top: 0 !important;
+    z-index: 1200;
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px !important;
+    width: var(--cr-desktop-sidebar) !important;
+    height: 100vh;
+    min-height: 100vh;
+    margin: 0 !important;
+    padding: 18px 10px !important;
+    background: #FCFAF7;
+    border-right: 1px solid rgba(28, 27, 26, .08);
+  }
+
+  .cr-desktop-shell > .cr-desktop-rail .cr-desktop-rail__brand {
+    display: grid !important;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 92px !important;
+    height: 64px !important;
+  }
+
+  .cr-desktop-shell > .cr-desktop-rail .cr-desktop-rail__brand img {
+    display: block;
+    width: 50px !important;
+    height: 50px !important;
+    object-fit: contain;
+  }
+
+  .cr-desktop-shell > .cr-desktop-rail .cr-desktop-rail__destinations {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px !important;
+    width: 92px !important;
+  }
+
+  .cr-desktop-shell > .cr-desktop-rail .cr-desktop-rail__destination {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    box-sizing: border-box;
+    width: 92px !important;
+    min-height: 74px;
+    padding: 9px 4px;
+    border-radius: 16px;
+    color: #777277;
+    font: 300 13px/17px "Roboto", Arial, sans-serif !important;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .cr-desktop-shell > .cr-desktop-rail .cr-desktop-rail__destination .cr-icon {
+    width: 27px !important;
+    height: 27px !important;
+  }
+
+  .cr-desktop-shell > .cr-desktop-rail .cr-desktop-rail__destination.is-active {
+    min-height: 74px;
+    background: #E3EFEB;
+    color: #183B35;
+    font-weight: 400 !important;
+  }
+
+  .cr-desktop-shell > .cr-desktop-rail .cr-desktop-rail__destination .cr-cart-count {
+    top: 4px;
+    right: 12px;
+  }
+
+  body.admin-bar .cr-desktop-shell > .cr-desktop-rail {
+    top: var(--cr-admin-bar-offset, 0px) !important;
+    height: calc(100vh - var(--cr-admin-bar-offset, 0px));
+  }
+}
