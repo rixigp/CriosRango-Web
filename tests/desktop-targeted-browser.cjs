@@ -105,7 +105,7 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
     const activeLinks = links.filter(link => link.classList.contains('is-active'));
     const currentLinks = links.filter(link => link.getAttribute('aria-current') === 'page');
     const desktopActiveLabels = rails[0]
-      ? Array.from(rails[0].querySelectorAll('a.is-active')).map(link => (link.textContent || '').trim().replace(/\s+/g, ' '))
+      ? Array.from(rails[0].querySelectorAll('a.is-active')).map(link => (link.querySelector(':scope > span:not(.cr-cart-count)')?.textContent || '').trim().replace(/\s+/g, ' '))
       : [];
     let badgeStates = { count: badge ? badge.dataset.count : null, display: badgeStyle ? badgeStyle.display : 'MISSING' };
     if (badge) {
@@ -144,7 +144,7 @@ async function canonicalBottomNavigation(page, label, viewport, expectedActiveLa
       iconWidth: iconStyle ? iconStyle.width : 'MISSING',
       iconHeight: iconStyle ? iconStyle.height : 'MISSING',
       activeCount: activeLinks.length,
-      activeLabels: activeLinks.map(link => (link.textContent || '').trim().replace(/\s+/g, ' ')),
+      activeLabels: activeLinks.map(link => (link.querySelector(':scope > span:not(.cr-cart-count)')?.textContent || '').trim().replace(/\s+/g, ' ')),
       desktopActiveLabels,
       currentCount: currentLinks.length,
       activeMatchesCurrent: activeLinks.length === currentLinks.length
@@ -436,7 +436,7 @@ async function loginForAuthenticatedAccount(page) {
     const navDestinations = await page.evaluate(() => {
       const nav = document.querySelector('nav.cr-mobile-bottom-nav.cr-app-bottom-nav');
       return nav ? Array.from(nav.querySelectorAll(':scope > .cr-mobile-bottom-nav__inner > a'))
-        .map(link => ({ label: (link.textContent || '').trim().replace(/\s+/g, ' '), href: link.href })) : [];
+        .map(link => ({ label: (link.querySelector(':scope > span:not(.cr-cart-count)')?.textContent || '').trim().replace(/\s+/g, ' '), href: link.href })) : [];
     });
     if (navDestinations.length !== 5) throw new Error('BOTTOM_NAV_DESTINATIONS_NOT_FIVE');
 
