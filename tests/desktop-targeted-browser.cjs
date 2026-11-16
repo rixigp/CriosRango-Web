@@ -290,15 +290,16 @@ async function homeDesktopBrands(page, viewport) {
       Array.from(pg.querySelectorAll('.cr-home-brand')).map(card=>card.querySelector('img')?.alt||(card.textContent||'').trim()));
     const grids=Array.from(desktop.querySelectorAll('.cr-home-brand-grid'));
     const geometry=Array.from(desktop.querySelectorAll('.cr-home-brand')).map(card=>{
-      const cr=card.getBoundingClientRect(),img=card.querySelector('img'),ir=img&&!img.hidden?img.getBoundingClientRect():null;
-      return {card:{left:cr.left,right:cr.right,top:cr.top,bottom:cr.bottom},image:ir?{left:ir.left,right:ir.right,top:ir.top,bottom:ir.bottom,fit:getComputedStyle(img).objectFit}:null};
+      const cr=card.getBoundingClientRect(),pr=card.closest('.cr-home-brand-page').getBoundingClientRect(),img=card.querySelector('img'),ir=img&&!img.hidden?img.getBoundingClientRect():null;
+      return {page:{left:pr.left,right:pr.right,width:pr.width},card:{left:cr.left,right:cr.right,top:cr.top,bottom:cr.bottom},image:ir?{left:ir.left,right:ir.right,top:ir.top,bottom:ir.bottom,fit:getComputedStyle(img).objectFit}:null};
     });
     return {found:true,desktopDisplay:getComputedStyle(desktop).display,mobileDisplay:getComputedStyle(mobile).display,
       desktopPages:names(desktop),mobilePages:names(mobile),
       dots:section.querySelectorAll('.cr-home-brand-dots--desktop [data-cr-brand-dot]').length,
       columns:grids[0]?getComputedStyle(grids[0]).gridTemplateColumns.split(' ').length:0,
       rows:grids[0]?getComputedStyle(grids[0]).gridTemplateRows.split(' ').length:0,
-      clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,geometry};
+      clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,
+      pagerClientWidth:desktop.clientWidth,pagerScrollWidth:desktop.scrollWidth,geometry};
   });
   if(!state.found)throw new Error('HOME_BRANDS_MARKUP_MISSING_'+viewport);
   if(viewport<1280){
@@ -308,16 +309,17 @@ async function homeDesktopBrands(page, viewport) {
     return;
   }
   const counts=state.desktopPages.map(a=>a.length);
-  const noClip=state.geometry.every(v=>v.card.left>=0&&v.card.right<=state.clientWidth+1&&(!v.image||
+  const noClip=state.geometry.every(v=>v.card.left>=v.page.left-1&&v.card.right<=v.page.right+1&&(!v.image||
     (v.image.left>=v.card.left-1&&v.image.right<=v.card.right+1&&v.image.top>=v.card.top-1&&v.image.bottom<=v.card.bottom+1&&v.image.fit==='contain')));
-  const noOverflow=state.scrollWidth<=state.clientWidth+1;
+  const noOverflow=state.scrollWidth<=state.clientWidth+1&&state.pagerScrollWidth<=state.pagerClientWidth*2+1;
   const pass=state.desktopDisplay!=='none'&&state.mobileDisplay==='none'&&state.desktopPages.length===2&&counts.every(n=>n===10)&&state.dots===2&&state.columns===5&&state.rows===2&&noClip&&noOverflow;
   log('HOME_DESKTOP_BRANDS_TOTAL_'+viewport,state.desktopPages.flat().length);
   log('HOME_DESKTOP_BRANDS_PAGE_1_'+viewport,JSON.stringify(state.desktopPages[0]));
   log('HOME_DESKTOP_BRANDS_PAGE_2_'+viewport,JSON.stringify(state.desktopPages[1]));
   log('HOME_DESKTOP_BRANDS_NO_CLIPPING_'+viewport,noClip?'PASS':'FAIL');
   log('HOME_DESKTOP_BRANDS_NO_OVERFLOW_'+viewport,noOverflow?'PASS':'FAIL');
-  log('HOME_DESKTOP_BRANDS_GRID_'+viewport,JSON.stringify({counts,columns:state.columns,rows:state.rows,dots:state.dots}));
+  log('HOME_DESKTOP_BRANDS_GRID_'+viewport,JSON.stringify({counts,columns:state.columns,rows:state.rows,dots:state.dots,pagerClientWidth:state.pagerClientWidth,pagerScrollWidth:state.pagerScrollWidth}));
+  log('HOME_DESKTOP_BRANDS_GEOMETRY_'+viewport,JSON.stringify(state.geometry));
   if(!pass)throw new Error('HOME_DESKTOP_BRANDS_LAYOUT_FAILED_'+viewport);
   await page.locator('.cr-home-brand-dots--desktop [data-cr-brand-dot="1"]').click();
   await page.waitForTimeout(650);
