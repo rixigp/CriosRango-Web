@@ -2994,3 +2994,45 @@ body.search .cr-search-form__submit.is-loading::before,
     display: flex !important;
   }
 }
+
+/* Intermediate viewport scale: keep the canonical bottom-nav component and
+   increase only its visual weight between mobile and the desktop rail. */
+@media (min-width: 768px) and (max-width: 1279px) {
+  :root {
+    --cr-bottom-nav: 88px;
+  }
+
+  body {
+    padding-bottom: calc(var(--cr-bottom-nav) + env(safe-area-inset-bottom)) !important;
+  }
+
+  .cr-mobile-bottom-nav.cr-app-bottom-nav {
+    min-height: calc(var(--cr-bottom-nav) + env(safe-area-inset-bottom));
+    padding: 8px 8px env(safe-area-inset-bottom);
+  }
+
+  .cr-mobile-bottom-nav.cr-app-bottom-nav > .cr-mobile-bottom-nav__inner {
+    column-gap: 8px;
+  }
+
+  .cr-mobile-bottom-nav.cr-app-bottom-nav > .cr-mobile-bottom-nav__inner > a {
+    min-height: 68px;
+    gap: 5px;
+    font-size: 13px;
+    line-height: 16px;
+  }
+
+  .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-cart-count {
+    min-width: 22px;
+    height: 22px;
+    padding-inline: 5px;
+    top: 2px;
+    right: calc(50% - 32px);
+    font-size: 12px;
+  }
+}
