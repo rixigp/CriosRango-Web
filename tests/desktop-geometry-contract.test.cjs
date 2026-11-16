@@ -91,3 +91,20 @@ test('DESKTOP_GUEST_ACCOUNT_HOME_USES_CANONICAL_RAIL=PASS — guest landing has 
   assert.match(layer, /body\.woocommerce-account:not\(\.logged-in\):has\(\.cr-account-home\)\s+\.cr-account-home[\s\S]*?width:\s*100%\s*!important;[\s\S]*?max-width:\s*none\s*!important/);
   assert.match(layer, /body\.woocommerce-account\.logged-in\s+\.woocommerce[\s\S]*?grid-template-columns:\s*minmax\(220px,\s*250px\)\s+minmax\(0,\s*1fr\)/);
 });
+
+
+test('ACCOUNT_AUTH_DESKTOP_EXPLICIT_TWO_COLUMN_GRID=PASS — WooCommerce floats cannot collapse authenticated content', () => {
+  const account = css('account.css');
+  const marker = '/* Desktop authenticated Account: replace WooCommerce';
+  const start = account.lastIndexOf(marker);
+  assert.ok(start >= 0, 'authenticated desktop account grid layer exists');
+  const layer = account.slice(start);
+  assert.match(layer, /@media \(min-width: 1280px\)/);
+  assert.match(layer, /body\.woocommerce-account\.logged-in \.woocommerce[\s\S]*?display: grid !important/);
+  assert.match(layer, /grid-template-columns: minmax\(220px, 250px\) minmax\(0, 1fr\)/);
+  assert.match(layer, /woocommerce-MyAccount-navigation[\s\S]*?float: none !important[\s\S]*?width: 100% !important/);
+  assert.match(layer, /woocommerce-MyAccount-content[\s\S]*?grid-column: 2[\s\S]*?float: none !important[\s\S]*?min-width: 0/);
+  assert.match(layer, /cr-account-home__grid[\s\S]*?repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(layer, /cr-account-home__identity strong[\s\S]*?word-break: normal/);
+  assert.doesNotMatch(layer, /flex-wrap:\s*wrap|transform:\s*scale|\bzoom\s*:/);
+});
