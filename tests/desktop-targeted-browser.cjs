@@ -88,7 +88,7 @@ async function checkOverflow(page, label, viewport) {
   return state.overflow;
 }
 
-async function canonicalBottomNavigation(page, label, viewport) {
+async function canonicalBottomNavigation(page, label, viewport, expectedActiveLabel) {
   const state = await page.evaluate(() => {
     const bottoms = Array.from(document.querySelectorAll('nav.cr-mobile-bottom-nav.cr-app-bottom-nav'));
     const rails = Array.from(document.querySelectorAll('nav.cr-desktop-rail'));
@@ -103,6 +103,9 @@ async function canonicalBottomNavigation(page, label, viewport) {
     const badgeStyle = badge && getComputedStyle(badge);
     const activeLinks = links.filter(link => link.classList.contains('is-active'));
     const currentLinks = links.filter(link => link.getAttribute('aria-current') === 'page');
+    const desktopActiveLabels = rails[0]
+      ? Array.from(rails[0].querySelectorAll('a.is-active')).map(link => (link.textContent || '').trim().replace(/\\s+/g, ' '))
+      : [];
     let badgeStates = { count: badge ? badge.dataset.count : null, display: badgeStyle ? badgeStyle.display : 'MISSING' };
     if (badge) {
       const originalCount = badge.dataset.count;
@@ -138,6 +141,8 @@ async function canonicalBottomNavigation(page, label, viewport) {
       iconWidth: iconStyle ? iconStyle.width : 'MISSING',
       iconHeight: iconStyle ? iconStyle.height : 'MISSING',
       activeCount: activeLinks.length,
+      activeLabels: activeLinks.map(link => (link.textContent || '').trim().replace(/\\s+/g, ' ')),
+      desktopActiveLabels,
       currentCount: currentLinks.length,
       activeMatchesCurrent: activeLinks.length === currentLinks.length
         && activeLinks.every(link => link.getAttribute('aria-current') === 'page'),
@@ -159,11 +164,16 @@ async function canonicalBottomNavigation(page, label, viewport) {
       && state.badgeStates['1'].display !== 'none'
       && state.badgeStates['2'].display !== 'none'
       && state.badgeStates['0'].sameNode && state.badgeStates['1'].sameNode && state.badgeStates['2'].sameNode;
+    if (expectedActiveLabel) pass = pass && state.activeLabels.length === 1
+      && state.activeLabels[0] === expectedActiveLabel;
   } else {
     pass = state.bottomCount === 1 && state.railCount === 1
       && state.bottomDisplay === 'none' && state.railCount === 1;
+    if (expectedActiveLabel) pass = pass && state.desktopActiveLabels.length === 1
+      && state.desktopActiveLabels[0] === expectedActiveLabel;
   }
   log(label + '_CANONICAL_BOTTOM_NAV_' + viewport, pass ? 'PASS' : 'FAIL');
+  if (expectedActiveLabel) log(label + '_ACTIVE_' + expectedActiveLabel + '_' + viewport, pass ? 'PASS' : 'FAIL');
   log(label + '_BOTTOM_NAV_STATE_' + viewport, JSON.stringify(state));
   if (!pass) throw new Error(label + '_CANONICAL_BOTTOM_NAV_FAILED at ' + viewport);
 }
@@ -419,17 +429,34 @@ async function loginForAuthenticatedAccount(page) {
     });
     if (!productUrl) throw new Error('STAGING_PRODUCT_LINK_NOT_FOUND_FROM_HOME');
     log('PRODUCT_TEST_URL', productUrl);
+    const navDestinations = await page.evaluate(() => {
+      const nav = document.querySelector('nav.cr-mobile-bottom-nav.cr-app-bottom-nav');
+      return nav ? Array.from(nav.querySelectorAll(':scope > .cr-mobile-bottom-nav__inner > a'))
+        .map(link => ({ label: (link.textContent || '').trim().replace(/\\s+/g, ' '), href: link.href })) : [];
+    });
+    if (navDestinations.length !== 5) throw new Error('BOTTOM_NAV_DESTINATIONS_NOT_FIVE');
 
     for (const viewport of BOTTOM_NAV_VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
-      await canonicalBottomNavigation(page, 'HOME', viewport);
+      await canonicalBottomNavigation(page, 'HOME', viewport, 'Inicio');
       overflowResults.push(await checkOverflow(page, 'HOME', viewport));
     }
     for (const viewport of VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
       overflowResults.push(await checkOverflow(page, 'HOME', viewport));
+    }
+
+    for (const destinationLabel of ['Categorías', 'Outlet', 'Carrito']) {
+      const destination = navDestinations.find(item => item.label === destinationLabel);
+      if (!destination || !destination.href) throw new Error('BOTTOM_NAV_DESTINATION_MISSING=' + destinationLabel);
+      await visit(page, destination.href);
+      for (const viewport of BOTTOM_NAV_VIEWPORTS) {
+        await page.setViewportSize({ width: viewport, height: 900 });
+        await page.waitForTimeout(200);
+        await canonicalBottomNavigation(page, 'DESTINATION_' + destinationLabel.replace(/[^A-Za-z0-9]+/g, '_').toUpperCase(), viewport, destinationLabel);
+      }
     }
 
     await visit(page, productUrl);
@@ -470,7 +497,7 @@ async function loginForAuthenticatedAccount(page) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
       const links = await accountInformationLinks(page, 'GUEST', viewport);
-      if (BOTTOM_NAV_VIEWPORTS.includes(viewport)) await canonicalBottomNavigation(page, 'ACCOUNT_GUEST', viewport);
+      if (BOTTOM_NAV_VIEWPORTS.includes(viewport)) await canonicalBottomNavigation(page, 'ACCOUNT_GUEST', viewport, 'Cuenta');
       if (!guestInformationLinks) guestInformationLinks = links;
       else if (JSON.stringify(links) !== JSON.stringify(guestInformationLinks)) {
         throw new Error('GUEST_INFORMATION_LINKS_VARY_BY_VIEWPORT');
