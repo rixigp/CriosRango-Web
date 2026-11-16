@@ -29,7 +29,16 @@ test('HOME_DESKTOP_20_IN_TWO_PAGES_OF_10_AND_MOBILE_16_OF_8=PASS',()=>{
 });
 test('HOME_DESKTOP_BRANDS_GRID_AND_PAGINATION_ARE_BREAKPOINT_SCOPED=PASS',()=>{
  assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
- assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-auto-rows:\s*64px/);
+ assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-template-rows:\s*repeat\(2,\s*96px\)/);
+ assert.match(css,/row-gap:\s*20px/);
+ assert.match(css,/height:\s*96px\s*!important/);
+ assert.match(css,/height:\s*64px/);
+ assert.match(css,/max-height:\s*64px/);
+ assert.match(home,/cr-home-brand__logo-box/);
+ assert.match(css,/width:\s*auto\s*!important/);
+ assert.match(css,/height:\s*auto\s*!important/);
+ assert.match(css,/object-fit:\s*contain/);
+ assert.doesNotMatch(css,/cr-home-brand[^}]*transform:\s*scale/i);
  assert.match(css,/\.cr-home-brand-pager--mobile,[\s\S]*?\.cr-home-brand-dots--mobile\s*\{\s*display:\s*none\s*!important/);
  assert.match(js,/querySelectorAll\('\[data-cr-brand-pager\]'\)/);assert.match(js,/IntersectionObserver/);assert.match(js,/aria-current/);
 });

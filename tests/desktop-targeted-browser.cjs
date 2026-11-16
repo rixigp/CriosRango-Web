@@ -289,9 +289,25 @@ async function homeDesktopBrands(page, viewport) {
     const names=pager=>Array.from(pager.querySelectorAll('.cr-home-brand-page')).map(pg=>
       Array.from(pg.querySelectorAll('.cr-home-brand')).map(card=>card.querySelector('img')?.alt||(card.textContent||'').trim()));
     const grids=Array.from(desktop.querySelectorAll('.cr-home-brand-grid'));
-    const geometry=Array.from(desktop.querySelectorAll('.cr-home-brand')).map(card=>{
-      const cr=card.getBoundingClientRect(),pr=card.closest('.cr-home-brand-page').getBoundingClientRect(),img=card.querySelector('img'),ir=img&&!img.hidden?img.getBoundingClientRect():null;
-      return {page:{left:pr.left,right:pr.right,width:pr.width},card:{left:cr.left,right:cr.right,top:cr.top,bottom:cr.bottom},image:ir?{left:ir.left,right:ir.right,top:ir.top,bottom:ir.bottom,fit:getComputedStyle(img).objectFit}:null};
+    const pagesGeometry=grids.map(grid=>{
+      const cards=Array.from(grid.querySelectorAll('.cr-home-brand'));
+      const rects=cards.map(card=>card.getBoundingClientRect());
+      const logoBoxes=cards.map(card=>card.querySelector('.cr-home-brand__logo-box')?.getBoundingClientRect()||null);
+      const images=cards.map(card=>{
+        const img=card.querySelector('img'),box=card.querySelector('.cr-home-brand__logo-box');
+        if(!img||img.hidden||!box)return null;
+        const ir=img.getBoundingClientRect(),br=box.getBoundingClientRect();
+        return {left:ir.left,right:ir.right,top:ir.top,bottom:ir.bottom,boxLeft:br.left,boxRight:br.right,boxTop:br.top,boxBottom:br.bottom,fit:getComputedStyle(img).objectFit};
+      });
+      const row1Bottom=Math.max(...rects.slice(0,5).map(r=>r.bottom));
+      const row2Top=Math.min(...rects.slice(5,10).map(r=>r.top));
+      const cardHeights=rects.map(r=>r.height),logoHeights=logoBoxes.filter(Boolean).map(r=>r.height);
+      const cardHeightShared=cardHeights.every(h=>Math.abs(h-96)<1);
+      const logoBoxHeightShared=logoHeights.length===10&&logoHeights.every(h=>Math.abs(h-64)<1);
+      const rowOverlap=row2Top<row1Bottom+19;
+      const noLogoOverflow=images.every(v=>!v||(v.left>=v.boxLeft-1&&v.right<=v.boxRight+1&&v.top>=v.boxTop-1&&v.bottom<=v.boxBottom+1&&v.fit==='contain'));
+      return {cardHeightShared,logoBoxHeightShared,rowOverlap,noLogoOverflow,rowGap:getComputedStyle(grid).rowGap,
+        row1Bottom,row2Top,cards:rects.map(r=>({left:r.left,right:r.right,top:r.top,bottom:r.bottom,height:r.height})),images};
     });
     return {found:true,desktopDisplay:getComputedStyle(desktop).display,mobileDisplay:getComputedStyle(mobile).display,
       desktopPages:names(desktop),mobilePages:names(mobile),
@@ -299,7 +315,7 @@ async function homeDesktopBrands(page, viewport) {
       columns:grids[0]?getComputedStyle(grids[0]).gridTemplateColumns.split(' ').length:0,
       rows:grids[0]?getComputedStyle(grids[0]).gridTemplateRows.split(' ').length:0,
       clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,
-      pagerClientWidth:desktop.clientWidth,pagerScrollWidth:desktop.scrollWidth,geometry};
+      pagerClientWidth:desktop.clientWidth,pagerScrollWidth:desktop.scrollWidth,pagesGeometry};
   });
   if(!state.found)throw new Error('HOME_BRANDS_MARKUP_MISSING_'+viewport);
   if(viewport<1280){
@@ -309,17 +325,25 @@ async function homeDesktopBrands(page, viewport) {
     return;
   }
   const counts=state.desktopPages.map(a=>a.length);
-  const noClip=state.geometry.every(v=>v.card.left>=v.page.left-1&&v.card.right<=v.page.right+1&&(!v.image||
-    (v.image.left>=v.card.left-1&&v.image.right<=v.card.right+1&&v.image.top>=v.card.top-1&&v.image.bottom<=v.card.bottom+1&&v.image.fit==='contain')));
+  const noClip=state.pagesGeometry.every(p=>p.noLogoOverflow);
+  const rowsDoNotOverlap=state.pagesGeometry.length===2&&state.pagesGeometry.every(p=>!p.rowOverlap);
+  const cardHeightsShared=state.pagesGeometry.length===2&&state.pagesGeometry.every(p=>p.cardHeightShared);
+  const logoBoxHeightsShared=state.pagesGeometry.length===2&&state.pagesGeometry.every(p=>p.logoBoxHeightShared);
   const noOverflow=state.scrollWidth<=state.clientWidth+1&&state.pagerScrollWidth<=state.pagerClientWidth*2+1;
-  const pass=state.desktopDisplay!=='none'&&state.mobileDisplay==='none'&&state.desktopPages.length===2&&counts.every(n=>n===10)&&state.dots===2&&state.columns===5&&state.rows===2&&noClip&&noOverflow;
+  const pass=state.desktopDisplay!=='none'&&state.mobileDisplay==='none'&&state.desktopPages.length===2&&counts.every(n=>n===10)&&state.dots===2&&state.columns===5&&state.rows===2&&rowsDoNotOverlap&&cardHeightsShared&&logoBoxHeightsShared&&noClip&&noOverflow;
   log('HOME_DESKTOP_BRANDS_TOTAL_'+viewport,state.desktopPages.flat().length);
   log('HOME_DESKTOP_BRANDS_PAGE_1_'+viewport,JSON.stringify(state.desktopPages[0]));
   log('HOME_DESKTOP_BRANDS_PAGE_2_'+viewport,JSON.stringify(state.desktopPages[1]));
+  log('HOME_DESKTOP_BRANDS_PAGE_1_ROWS_'+viewport,state.pagesGeometry[0]?.rowOverlap===false?'2':'FAIL');
+  log('HOME_DESKTOP_BRANDS_PAGE_2_ROWS_'+viewport,state.pagesGeometry[1]?.rowOverlap===false?'2':'FAIL');
+  log('HOME_DESKTOP_BRANDS_ROW_OVERLAP_'+viewport,rowsDoNotOverlap?'NO':'YES');
+  log('HOME_DESKTOP_BRANDS_CARD_HEIGHT_SHARED_'+viewport,cardHeightsShared?'PASS':'FAIL');
+  log('HOME_DESKTOP_BRANDS_LOGO_BOX_HEIGHT_SHARED_'+viewport,logoBoxHeightsShared?'PASS':'FAIL');
+  log('HOME_DESKTOP_BRANDS_NO_LOGO_OVERFLOW_'+viewport,noClip?'PASS':'FAIL');
   log('HOME_DESKTOP_BRANDS_NO_CLIPPING_'+viewport,noClip?'PASS':'FAIL');
   log('HOME_DESKTOP_BRANDS_NO_OVERFLOW_'+viewport,noOverflow?'PASS':'FAIL');
   log('HOME_DESKTOP_BRANDS_GRID_'+viewport,JSON.stringify({counts,columns:state.columns,rows:state.rows,dots:state.dots,pagerClientWidth:state.pagerClientWidth,pagerScrollWidth:state.pagerScrollWidth}));
-  log('HOME_DESKTOP_BRANDS_GEOMETRY_'+viewport,JSON.stringify(state.geometry));
+  log('HOME_DESKTOP_BRANDS_GEOMETRY_'+viewport,JSON.stringify(state.pagesGeometry));
   if(!pass)throw new Error('HOME_DESKTOP_BRANDS_LAYOUT_FAILED_'+viewport);
   await page.locator('.cr-home-brand-dots--desktop [data-cr-brand-dot="1"]').click();
   await page.waitForTimeout(650);

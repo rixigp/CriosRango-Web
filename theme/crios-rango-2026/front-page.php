@@ -178,12 +178,14 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
                                     if ( is_wp_error( $brand_url ) ) continue;
                                     ?>
                                     <a class="cr-home-brand" href="<?php echo esc_url( $brand_url ); ?>">
-                                        <?php if ( $brand_image ) : ?>
-                                            <img src="<?php echo esc_url( $brand_image ); ?>" alt="<?php echo esc_attr( $brand->name ); ?>" loading="lazy" decoding="async">
-                                            <span class="cr-home-brand__fallback" hidden><?php echo esc_html( $brand->name ); ?></span>
-                                        <?php else : ?>
-                                            <span class="cr-home-brand__fallback"><?php echo esc_html( $brand->name ); ?></span>
-                                        <?php endif; ?>
+                                        <span class="cr-home-brand__logo-box">
+                                            <?php if ( $brand_image ) : ?>
+                                                <img src="<?php echo esc_url( $brand_image ); ?>" alt="<?php echo esc_attr( $brand->name ); ?>" loading="lazy" decoding="async">
+                                                <span class="cr-home-brand__fallback" hidden><?php echo esc_html( $brand->name ); ?></span>
+                                            <?php else : ?>
+                                                <span class="cr-home-brand__fallback"><?php echo esc_html( $brand->name ); ?></span>
+                                            <?php endif; ?>
+                                        </span>
                                     </a>
                                 <?php endforeach; ?>
                             </div>
