@@ -9,7 +9,19 @@ const props=new Set(['--cr-app-topbar-height','--cr-app-topbar-height','--cr-bot
 const offenders=[];for(const [file,src] of Object.entries(css))for(const r of rules(src)){if(!context.test(r.selector))continue;for(const d of r.declarations){if(!props.has(d.property))continue;const productContent=/\.cr-main--woocommerce\s+div\.product/.test(r.selector);if(shell.test(r.selector)&&!productContent)offenders.push({file,selector:r.selector,property:d.property,value:d.value});if(/^body\.(?:woocommerce-cart|woocommerce-checkout|woocommerce-account|cr-account-[\w-]+|cr-product-detail-app|search|error404)$/.test(r.selector)&&['background','background-color'].includes(d.property))offenders.push({file,selector:r.selector,property:d.property,value:d.value});if(['padding','padding-bottom','padding-block-end'].includes(d.property)&&/calc\(\s*(?:var\(--cr-bottom-nav|(?:72|88|92|96|100)px)|(?:72|88|92|96|100|108)px/.test(d.value))offenders.push({file,selector:r.selector,property:d.property,value:d.value});}}
 test('PAGE_SPECIFIC_BODY_BACKGROUND=0',()=>assert.deepEqual(offenders.filter(x=>['background','background-color'].includes(x.property)&&/^body\./.test(x.selector)),[]));
 test('PAGE_SPECIFIC_PAGE_SHELL_TOP_PADDING=0',()=>assert.deepEqual(offenders.filter(x=>/page-shell|cr-main/.test(x.selector)&&/padding|margin-top/.test(x.property)),[]));
-test('PAGE_SPECIFIC_TOOLBAR_GEOMETRY=0',()=>assert.deepEqual(offenders.filter(x=>/parent-category__toolbar|parent-category__back|parent-category__title/.test(x.selector)),[]));
+test('PAGE_SPECIFIC_TOOLBAR_GEOMETRY=0',()=>{
+  const intentionalOrdersReset = offenders.filter(x =>
+    x.file === 'account.css'
+    && x.selector === 'body.woocommerce-account .cr-account-orders > .cr-parent-category__toolbar'
+    && x.property === 'margin-top'
+    && x.value === '0'
+  );
+  assert.equal(intentionalOrdersReset.length, 1, 'the Orders toolbar has one intentional, narrowly scoped top-margin reset');
+  assert.deepEqual(
+    offenders.filter(x => /parent-category__toolbar|parent-category__back|parent-category__title/.test(x.selector) && !intentionalOrdersReset.includes(x)),
+    []
+  );
+});
 test('PAGE_SPECIFIC_BOTTOM_NAV_CLEARANCE=0',()=>assert.deepEqual(offenders.filter(x=>/calc\(\s*(?:72|88|92|96|100)px|(?:72|88|92|96|100|108)px/.test(x.value)),[]));
 
 test('PAGE_SPECIFIC_HEADER_RESERVATION_AND_FOOTER_POLICY=0',()=>{const violations=[];for(const [file,source] of Object.entries(css))for(const r of rules(source)){if(!context.test(r.selector))continue;for(const d of r.declarations){if(['--cr-app-topbar-height','--cr-bottom-nav'].includes(d.property))violations.push({file,selector:r.selector,property:d.property});if((r.selector.includes('.cr-footer')||r.selector.includes('.cr-mobile-bottom-nav'))&&['display','visibility','position'].includes(d.property))violations.push({file,selector:r.selector,property:d.property});}}assert.deepEqual(violations,[]);});

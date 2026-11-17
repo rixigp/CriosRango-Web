@@ -33,12 +33,11 @@ function desktop(file) {
 
 test('MOBILE_RULES_UNCHANGED=PASS — appended desktop layers are strictly gated at 1280px', () => {
   for (const file of ['main.css', 'account.css', 'controls.css', 'checkout.css']) {
-    const source = css(file);
-    const lastDesktop = source.lastIndexOf('@media (min-width: 1280px) {');
-    assert.ok(lastDesktop >= 0, file + ' has desktop media layer');
-    const appended = source.slice(lastDesktop);
-    assert.match(appended, /^@media \(min-width: 1280px\) \{/);
-    assert.doesNotMatch(appended, /@media\s*\(max-width\s*:/);
+    const blocks = mediaBlocks(css(file), '@media (min-width: 1280px)');
+    assert.ok(blocks.length, file + ' has desktop media layer');
+    for (const block of blocks) {
+      assert.doesNotMatch(block, /@media\s*\(max-width\s*:/);
+    }
   }
 });
 

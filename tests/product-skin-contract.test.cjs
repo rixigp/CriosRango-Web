@@ -1638,9 +1638,10 @@ test('DESKTOP_PRODUCT_DETAIL_TWO_COLUMN_RAIL=PASS — grid geometry is desktop-o
   const layer = skinCss.slice(start);
   assert.match(layer, /div\.product\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*minmax\(0,\s*\.92fr\)\s+minmax\(0,\s*1\.08fr\)/);
   assert.match(layer, /\.woocommerce-product-gallery\s*\{[\s\S]*?grid-column:\s*1;[\s\S]*?grid-row:\s*1;/);
-  assert.match(layer, /\.summary\s*>\s*\.cr-product-title-brand-row\s*\{[\s\S]*?grid-row:\s*1;/);
-  assert.match(layer, /div\.product\s*>\s*\.summary\s*\{\s*display:\s*contents;/);
-  assert.match(layer, /\.summary\s*>\s*\.cr-product-description\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;[\s\S]*?order:\s*90;/);
+  assert.match(layer, /div\.product\s*>\s*\.summary\s*\{[\s\S]*?display:\s*flex;[\s\S]*?flex-direction:\s*column;[\s\S]*?gap:\s*16px;[\s\S]*?grid-column:\s*2;[\s\S]*?grid-row:\s*1;/);
+  assert.doesNotMatch(layer, /div\.product\s*>\s*\.summary\s*\{\s*display:\s*contents;/);
+  assert.match(layer, /div\.product\s*>\s*\.summary\s*>\s*\*\s*\{[\s\S]*?margin:\s*0 !important;/);
+  assert.match(layer, /div\.product\s*>\s*\.cr-product-description\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;[\s\S]*?order:\s*90;/);
   assert.match(layer, /div\.product\s*>\s*\.woocommerce-tabs\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;/);
   assert.match(layer, /div\.product\s*>\s*\.cr-product-actions\s*\{\s*grid-column:\s*1;/);
   assert.doesNotMatch(layer, /transform:\s*|\bzoom\s*:/);
