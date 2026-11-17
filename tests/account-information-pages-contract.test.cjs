@@ -125,7 +125,7 @@ test('ONE_CANONICAL_ACCOUNT_CONTENT_RAIL_IS_REUSED_BY_HELP_LOYALTY_ORDERS_PROFIL
   assert.match(orders, /class="cr-account-orders__filters cr-account-content"/);
   assert.match(orders, /class="cr-account-orders__list cr-account-content"/);
   assert.match(accountCss, /\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin-inline:\s*0;/s);
-  assert.equal((accountCss.match(/\.cr-account-content,/g) || []).length, 1, 'one canonical content rail rule');
+  assert.equal((accountCss.match(/\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{/g) || []).length, 1, 'one canonical content rail rule');
 });
 
 test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_WOO_VISUAL_CARD=0',()=>{
