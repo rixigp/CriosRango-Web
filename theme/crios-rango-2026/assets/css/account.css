@@ -445,7 +445,7 @@
 
 
 /* Split views keep one native WooCommerce form and only change its mobile presentation. */
-@media (max-width: 767px) {
+@media (min-width: 0px) {
  body.woocommerce-account.cr-account-profile-view-home .woocommerce-EditAccountForm { display: none !important; }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm > fieldset:not(.cr-control-shell) { display: none !important; }
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm p:has(#account_first_name),
@@ -478,7 +478,7 @@
 
 
 /* Personal data app subview: preserve the native edit-account form and POST. */
-@media (max-width: 767px) {
+@media (min-width: 0px) {
  body.woocommerce-account.cr-account-profile-view-personal .cr-page,
  body.woocommerce-account.cr-account-profile-view-personal .cr-page .cr-prose,
  body.woocommerce-account.cr-account-profile-view-password .cr-page,
@@ -913,7 +913,7 @@
 
 
 /* App-style mobile order detail; uses the same shell rail as account pages. */
-@media (max-width: 767px) {
+@media (min-width: 0px) {
  body.woocommerce-account .cr-order-detail { box-sizing:border-box; width:100%; max-width:none; margin:0; padding:0; display:grid; gap:12px; color:#20241f; font:300 12px/17px "Roboto",Arial,sans-serif; }
  body.woocommerce-account .cr-order-detail__card { box-sizing:border-box; width:100%; max-width:none; min-width:0; margin-inline:0; padding:16px; border:1px solid rgba(24,59,53,.09); border-radius:16px; background:#fff; box-shadow:0 2px 8px rgba(24,59,53,.045); }
  body.woocommerce-account .cr-order-detail__heading { margin:0 0 12px; display:flex; align-items:center; gap:9px; color:#183b35; font:400 15px/21px "Roboto",Arial,sans-serif; }
@@ -945,7 +945,7 @@
 
 
 /* Mobile Account: app presentation for the loyalty rewards endpoint only. */
-@media (max-width: 767px) {
+@media (min-width: 0px) {
   body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty {
     margin-block: 0;
     padding: 0;
@@ -1147,7 +1147,7 @@
 }
 
 /* Loyalty rewards palette parity with the approved cart wallet — endpoint only. */
-@media (max-width: 767px) {
+@media (min-width: 0px) {
   body.woocommerce-account.cr-account-loyalty-reward .cr-account-loyalty__reward-icon {
     background: #D7E8E1;
     color: #0F5C4D;
@@ -1635,3 +1635,74 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
     min-width: 0;
   }
 }
+
+/* Universal Account composition: viewport changes layout only, never the renderer. */
+body.woocommerce-account .woocommerce-MyAccount-navigation { display:none!important; }
+body.woocommerce-account .cr-account-shell { box-sizing:border-box; width:100%; max-width:1280px; min-width:0; margin:0 auto; padding:0; }
+body.woocommerce-account .cr-account-shell > .woocommerce,
+body.woocommerce-account .cr-account-shell .woocommerce { display:block!important; box-sizing:border-box; width:100%!important; max-width:none!important; min-width:0; margin:0!important; }
+body.woocommerce-account .woocommerce-MyAccount-content,
+body.woocommerce-account .cr-account-shell__content { display:block; box-sizing:border-box; float:none!important; grid-column:auto!important; grid-row:auto!important; width:100%!important; max-width:none!important; min-width:0; margin:0!important; padding:0!important; border:0!important; border-radius:0!important; background:transparent!important; }
+body.woocommerce-account .cr-account-shell__content > .cr-parent-category__toolbar { margin-bottom:18px; }
+body.woocommerce-account .cr-account-home { box-sizing:border-box; width:100%!important; max-width:none!important; margin:0!important; padding:0!important; }
+body.woocommerce-account .cr-account-home__grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+@media (min-width:980px) {
+ body.woocommerce-account .cr-account-home__grid { grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; }
+ body.woocommerce-account .cr-account-home__tile { min-height:170px; padding:20px; }
+}
+@media (min-width:768px) {
+ body.woocommerce-account .cr-account-shell__content > .cr-parent-category__toolbar { margin-bottom:24px; }
+ body.woocommerce-account .cr-order-detail { grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+ body.woocommerce-account .cr-order-detail__card--header,
+ body.woocommerce-account .cr-order-detail__card--products { grid-column:1/-1; }
+ body.woocommerce-account .cr-order-detail__card { padding:20px; }
+ body.woocommerce-account .cr-order-detail__heading { font-size:16px; line-height:22px; }
+ body.woocommerce-account .cr-order-detail__number { font-size:18px; line-height:25px; }
+ body.woocommerce-account .cr-order-detail__product-name { font-size:14px; line-height:20px; }
+ body.woocommerce-account .cr-order-detail__meta,
+ body.woocommerce-account .cr-order-detail__address { font-size:13px; line-height:19px; }
+ body.woocommerce-account .cr-account-loyalty__promotions-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+}
+@media (min-width:1280px) {
+ body.woocommerce-account .cr-order-detail { gap:20px; }
+ body.woocommerce-account .cr-order-detail__card--products { grid-column:1/-1; }
+ body.woocommerce-account .cr-order-detail__product { gap:16px; padding:14px 0; }
+ body.woocommerce-account .cr-order-detail__image { width:84px; height:84px; flex-basis:84px; }
+ body.woocommerce-account .cr-account-loyalty__wallet-card { padding:22px; border-radius:20px; }
+ body.woocommerce-account .cr-account-loyalty__wallet-value { font-size:24px; line-height:32px; }
+ body.woocommerce-account .cr-account-loyalty__promotions-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+body.woocommerce-account .cr-order-detail__pay { display:inline-flex; align-items:center; justify-content:center; min-height:42px; margin-top:12px; padding:0 18px; border-radius:999px; background:#183b35; color:#fff; text-decoration:none; font:400 13px/18px "Roboto",Arial,sans-serif; }
+body.woocommerce-account .woocommerce-EditAccountForm,
+body.woocommerce-account .woocommerce-address-fields,
+body.woocommerce-account .woocommerce-form-login.login,
+body.woocommerce-account .wpfda-delete-account-container { box-sizing:border-box; width:100%; max-width:760px; margin-inline:auto; }
+body.woocommerce-account .woocommerce-EditAccountForm,
+body.woocommerce-account .woocommerce-address-fields { padding:0!important; border:0!important; background:transparent!important; box-shadow:none!important; }
+body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_first_name),
+body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_last_name),
+body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-first,
+body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-last { box-sizing:border-box; width:calc(50% - 8px); }
+body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_first_name),
+body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-first { float:left; }
+body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_last_name),
+body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-last { float:right; }
+body.woocommerce-account .woocommerce-EditAccountForm .cr-control-shell,
+body.woocommerce-account .woocommerce-address-fields .cr-control-shell { width:100%; }
+body.woocommerce-account .woocommerce-EditAccountForm fieldset:not(.cr-control-shell) { width:100%; }
+body.woocommerce-account .woocommerce-form-login.login h2,
+body.woocommerce-account .woocommerce-form-register.register h2 { display:none!important; }
+body.woocommerce-account .cr-account-addresses { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; width:100%; }
+body.woocommerce-account .cr-account-address-card { box-sizing:border-box; min-width:0; padding:18px; border:1px solid rgba(24,59,53,.08); border-radius:18px; background:#fff; color:#303630; }
+body.woocommerce-account .cr-account-address-card__header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+body.woocommerce-account .cr-account-address-card h2 { margin:0; color:#183b35; font:400 16px/22px "Roboto",Arial,sans-serif; }
+body.woocommerce-account .cr-account-address-card__edit { color:#183b35; font:400 13px/18px "Roboto",Arial,sans-serif; text-decoration:underline; text-underline-offset:3px; }
+body.woocommerce-account .cr-account-address-card address { color:#59635d; font:300 13px/20px "Roboto",Arial,sans-serif; font-style:normal; overflow-wrap:anywhere; }
+@media (min-width:768px) { body.woocommerce-account .cr-account-addresses { grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; } }
+body.woocommerce-account .cr-account-downloads { display:grid; gap:12px; width:100%; max-width:900px; }
+body.woocommerce-account .cr-account-download { display:flex; align-items:center; gap:14px; padding:16px; border:1px solid rgba(24,59,53,.08); border-radius:16px; background:#fff; }
+body.woocommerce-account .cr-account-download__copy { flex:1 1 auto; min-width:0; display:grid; gap:4px; }
+body.woocommerce-account .cr-account-download__copy strong { color:#183b35; font:400 14px/20px "Roboto",Arial,sans-serif; }
+body.woocommerce-account .cr-account-download__copy span { color:#707a73; font:300 12px/17px "Roboto",Arial,sans-serif; }
+body.woocommerce-account .cr-account-download__link { flex:0 0 auto; color:#183b35; font:400 13px/18px "Roboto",Arial,sans-serif; }
+body.woocommerce-account .cr-account-empty-state { padding:24px 18px; border:1px solid rgba(24,59,53,.08); border-radius:18px; background:#fff; color:#66716a; font:300 13px/20px "Roboto",Arial,sans-serif; }
