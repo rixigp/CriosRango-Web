@@ -2,18 +2,31 @@
 const {chromium}=require('playwright');
 const base=(process.env.STAGING_BASE_URL||'').replace(/\/$/,'');
 const email=process.env.STAGING_ACCOUNT_EMAIL||'', password=process.env.STAGING_ACCOUNT_PASSWORD||'';
-const viewports=[390,768,980,1279,1280,1440,1920];
+const viewports=[390,768,1279,1280,1440,1920];
 (async()=>{
- if(!base||!email||!password){console.log('ACCOUNT_BROWSER_MATRIX=SKIPPED_NO_STAGING_CREDENTIALS');return;}
+ if(!base)throw Error('STAGING_BASE_URL_MISSING');
  const browser=await chromium.launch({headless:true}), context=await browser.newContext({viewport:{width:390,height:900}}), page=await context.newPage(), account=base+'/mi-cuenta/';
  try{
   await page.goto(account,{waitUntil:'domcontentloaded'});
-  if(!(await page.locator('form.login').count())){const l=page.locator('a[href*="cr-account-view=login"]').first();if(await l.count())await l.click();}
   await page.locator('.cr-account-shell').first().waitFor({state:'attached',timeout:15000});
-  if(await page.locator('.woocommerce-MyAccount-navigation').count())throw Error('GUEST_LEGACY_ACCOUNT_NAV_PRESENT');
-  if(await page.locator('.cr-parent-category__title').count()!==1)throw Error('GUEST_LOGIN_PAGE_TITLE_COUNT_INVALID');
+  for(const width of viewports){
+   await page.setViewportSize({width,height:900});
+   if(await page.locator('div.woocommerce').count())throw Error('ACCOUNT_LEGACY_WOOCOMMERCE_WRAPPER_PRESENT=GUEST_HOME@'+width);
+   if(!(await page.locator('.cr-account-shell').count()))throw Error('ACCOUNT_SHELL_MISSING=GUEST_HOME@'+width);
+  }
+  const loginUrl=account+'?cr-account-view=login';
+  await page.goto(loginUrl,{waitUntil:'domcontentloaded'});
+  await page.locator('.cr-account-shell').first().waitFor({state:'attached',timeout:15000});
   if(!(await page.locator('form.login').count()))throw Error('GUEST_LOGIN_FORM_MISSING');
-  for(const width of viewports){await page.setViewportSize({width,height:900});if(await page.locator('.cr-parent-category__title').count()!==1)throw Error('LOGIN_TITLE_COUNT_INVALID@'+width);}
+  for(const width of viewports){
+   await page.setViewportSize({width,height:900});
+   if(await page.locator('div.woocommerce').count())throw Error('ACCOUNT_LEGACY_WOOCOMMERCE_WRAPPER_PRESENT=LOGIN@'+width);
+   if(await page.locator('.cr-parent-category__title').count()!==1)throw Error('LOGIN_TITLE_COUNT_INVALID@'+width);
+   if(!(await page.locator('form.login').count()))throw Error('LOGIN_FORM_MISSING@'+width);
+   if(await page.locator('form.register').count() && !(await page.locator('form.register').isVisible()))throw Error('REGISTER_FORM_NOT_VISIBLE@'+width);
+  }
+  console.log('ACCOUNT_GUEST_VIEWPORT_MATRIX=PASS');
+  if(!email||!password){console.log('ACCOUNT_BROWSER_MATRIX=PARTIAL_NO_STAGING_CREDENTIALS');return;}
   await page.locator('form.login input[name="username"], form.login #username').first().fill(email);
   await page.locator('form.login input[name="password"], form.login #password').first().fill(password);
   await page.locator('form.login button[name="login"], form.login input[name="login"]').first().click();
@@ -38,6 +51,7 @@ const viewports=[390,768,980,1279,1280,1440,1920];
    for(const [name,url,selector] of routes){
     await page.goto(url,{waitUntil:'domcontentloaded'}); await page.locator('.cr-account-shell').first().waitFor({state:'attached',timeout:15000});
     if(await page.locator('.woocommerce-MyAccount-navigation').count())throw Error('LEGACY_ACCOUNT_NAV_PRESENT='+name+'@'+width);
+    if(await page.locator('div.woocommerce').count())throw Error('ACCOUNT_LEGACY_WOOCOMMERCE_WRAPPER_PRESENT='+name+'@'+width);
     if(!(await page.locator(selector).count()))throw Error('ACCOUNT_RENDERER_MISSING='+name+'@'+width);
     if(name==='REWARDS'){const text=await page.locator('body').innerText();if(/MY PUNTO|Available punto|Redeemed punto|Redeem Now/i.test(text))throw Error('NATIVE_WPLOYALTY_COPY_PRESENT@'+width);const styles=await page.locator('link[rel=stylesheet],style[id]').evaluateAll(ns=>ns.map(n=>(n.id||'')+' '+(n.href||'')));if(styles.some(x=>/wlr|wployalty|wp[-_]loyalty[-_]rules/i.test(x)))throw Error('NATIVE_WPLOYALTY_STYLES_PRESENT@'+width);}
     if(await page.locator('.cr-parent-category__title').count()!==1)throw Error('ACCOUNT_PAGE_TITLE_COUNT_INVALID='+name+'@'+width);

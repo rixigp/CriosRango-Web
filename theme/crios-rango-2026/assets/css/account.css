@@ -58,8 +58,8 @@
 }
 @media (max-width: 1279px) {
   body.woocommerce-account .woocommerce-MyAccount-navigation { display: none !important; }
-  body.woocommerce-account .woocommerce-MyAccount-content { float: none !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; }
-  body.woocommerce-account .woocommerce { display: block; }
+  body.woocommerce-account .cr-account-content { float: none !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; }
+  body.woocommerce-account .cr-account-shell { display: block; }
 }
 @media (min-width: 1280px) {
   .cr-account-home { width: min(100% - 48px, 900px); padding-block: 30px 50px; }
@@ -78,14 +78,14 @@
     background: transparent;
   }
 
-  body.woocommerce-account .woocommerce {
+  body.woocommerce-account .cr-account-shell {
     width: 100%;
     margin: 0;
   }
 
   /* The page toolbar owns the global 20px rail. Keep the Account outer
      content full-bleed; inner forms retain their independent content rail. */
-  body.woocommerce-account .woocommerce-MyAccount-content {
+  body.woocommerce-account .cr-account-content {
     float: none !important;
     width: 100% !important;
     max-width: none !important;
@@ -103,7 +103,7 @@
     margin-inline: 0;
   }
 
-  body.woocommerce-account:has(.cr-account-home) .woocommerce-MyAccount-content {
+  body.woocommerce-account:has(.cr-account-home) .cr-account-content {
     width: 100% !important;
     max-width: none;
     margin: 0 !important;
@@ -434,7 +434,7 @@
 .cr-account-profile-home__action--logout .cr-account-profile-home__chevron,
 .cr-account-profile-home__action--logout > span:nth-child(2) { color: #925757; }
 @media (max-width: 767px) {
- body.woocommerce-account:has(.cr-account-profile-home) .woocommerce-MyAccount-content {
+ body.woocommerce-account:has(.cr-account-profile-home) .cr-account-content {
    width: 100% !important;
    max-width: none;
    margin: 0 !important;
@@ -465,8 +465,8 @@
  }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm > h2,
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm > h2,
- body.woocommerce-account.cr-account-profile-view-personal .woocommerce-MyAccount-content > h2,
- body.woocommerce-account.cr-account-profile-view-password .woocommerce-MyAccount-content > h2 { display: none !important; }
+ body.woocommerce-account.cr-account-profile-view-personal .cr-account-content > h2,
+ body.woocommerce-account.cr-account-profile-view-password .cr-account-content > h2 { display: none !important; }
  body.woocommerce-account .wpfda-delete-account-container {
    box-sizing: border-box; width: 100%; margin: 0; padding: 18px; border: 1px solid rgba(24,59,53,.08);
    border-radius: 18px; background: #fff; color: #303630; font-family: "Roboto", Arial, sans-serif;
@@ -485,8 +485,8 @@
  body.woocommerce-account.cr-account-profile-view-password .cr-page .cr-prose {
    width: 100%; max-width: none; margin: 0; background: transparent;
  }
- body.woocommerce-account.cr-account-profile-view-personal .woocommerce-MyAccount-content,
- body.woocommerce-account.cr-account-profile-view-password .woocommerce-MyAccount-content {
+ body.woocommerce-account.cr-account-profile-view-personal .cr-account-content,
+ body.woocommerce-account.cr-account-profile-view-password .cr-account-content {
    box-sizing: border-box; width: 100% !important; max-width: none; margin: 0 !important; padding: 0;
  }
  body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm,
@@ -528,10 +528,10 @@
  body.woocommerce-account.woocommerce-edit-address .cr-page .cr-prose {
    width: 100%; max-width: none; margin: 0; background: transparent;
  }
- body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content {
+ body.woocommerce-account.woocommerce-edit-address .cr-account-content {
    box-sizing: border-box; width: 100% !important; max-width: none; margin: 0 !important; padding: 0;
  }
- body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content > h2,
+ body.woocommerce-account.woocommerce-edit-address .cr-account-content > h2,
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields > h2,
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields > h3 { display: none !important; }
  body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields {
@@ -619,14 +619,14 @@
     clip-path: none !important;
     margin: 0 0 16px !important;
   }
-  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content > h1,
-  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content > h2,
-  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content > h3,
-  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content .woocommerce-Address-title,
-  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content .woocommerce-column__title,
-  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content .woocommerce-address-fields > h1,
-  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content .woocommerce-address-fields > h2,
-  body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content .woocommerce-address-fields > h3 {
+  body.woocommerce-account.woocommerce-edit-address .cr-account-content > h1,
+  body.woocommerce-account.woocommerce-edit-address .cr-account-content > h2,
+  body.woocommerce-account.woocommerce-edit-address .cr-account-content > h3,
+  body.woocommerce-account.woocommerce-edit-address .cr-account-content .woocommerce-Address-title,
+  body.woocommerce-account.woocommerce-edit-address .cr-account-content .woocommerce-column__title,
+  body.woocommerce-account.woocommerce-edit-address .cr-account-content .woocommerce-address-fields > h1,
+  body.woocommerce-account.woocommerce-edit-address .cr-account-content .woocommerce-address-fields > h2,
+  body.woocommerce-account.woocommerce-edit-address .cr-account-content .woocommerce-address-fields > h3 {
     display: none !important;
   }
 }
@@ -1271,8 +1271,8 @@
 /* Logged-out /mi-cuenta/: use the canonical Account shell without Woo's legacy login card. */
 body.woocommerce-account:not(.logged-in) .cr-page,
 body.woocommerce-account:not(.logged-in) .cr-page .cr-prose,
-body.woocommerce-account:not(.logged-in) .woocommerce,
-body.woocommerce-account:not(.logged-in) .woocommerce-MyAccount-content,
+body.woocommerce-account:not(.logged-in) .cr-account-shell,
+body.woocommerce-account:not(.logged-in) .cr-account-content,
 body.woocommerce-account:not(.logged-in) .u-columns,
 body.woocommerce-account:not(.logged-in) .u-column1 {
   box-sizing:border-box;
@@ -1394,7 +1394,7 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
 @media (min-width: 1280px) {
   body.woocommerce-account.logged-in .cr-page,
   body.woocommerce-account.logged-in .cr-page .cr-prose,
-  body.woocommerce-account.logged-in .woocommerce {
+  body.woocommerce-account.logged-in .cr-account-shell {
     box-sizing: border-box;
     width: 100% !important;
     max-width: none !important;
@@ -1403,13 +1403,6 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
   }
 
   body.woocommerce-account.logged-in .cr-page .cr-prose { padding: 0 !important; }
-
-  body.woocommerce-account.logged-in .woocommerce {
-    display: grid !important;
-    grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
-    align-items: start;
-    gap: clamp(28px, 2.5vw, 40px);
-  }
 
   body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation {
     box-sizing: border-box;
@@ -1429,7 +1422,7 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
     line-height: 1.4;
   }
 
-  body.woocommerce-account.logged-in .woocommerce-MyAccount-content {
+  body.woocommerce-account.logged-in .cr-account-content {
     box-sizing: border-box;
     float: none !important;
     width: 100% !important;
@@ -1467,16 +1460,16 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
   /* Shared endpoint content: readable forms and flexible order/reward surfaces. */
   body.woocommerce-account.logged-in .woocommerce-EditAccountForm,
   body.woocommerce-account.logged-in .woocommerce-address-fields,
-  body.woocommerce-account.logged-in .woocommerce-MyAccount-content > form {
+  body.woocommerce-account.logged-in .cr-account-content > form {
     width: 100%;
     max-width: 1040px;
     min-width: 0;
   }
   body.woocommerce-account.logged-in .woocommerce-EditAccountForm .form-row,
   body.woocommerce-account.logged-in .woocommerce-address-fields .form-row { margin-bottom: 18px !important; }
-  body.woocommerce-account.logged-in .woocommerce-MyAccount-content table.shop_table { width: 100%; max-width: none; font-size: 15px; }
-  body.woocommerce-account.logged-in .woocommerce-MyAccount-content table.shop_table th,
-  body.woocommerce-account.logged-in .woocommerce-MyAccount-content table.shop_table td { padding: 16px 18px; }
+  body.woocommerce-account.logged-in .cr-account-content table.shop_table { width: 100%; max-width: none; font-size: 15px; }
+  body.woocommerce-account.logged-in .cr-account-content table.shop_table th,
+  body.woocommerce-account.logged-in .cr-account-content table.shop_table td { padding: 16px 18px; }
   body.woocommerce-account.logged-in .cr-account-orders,
   body.woocommerce-account.logged-in .cr-account-order-detail,
   body.woocommerce-account.logged-in .cr-account-loyalty,
@@ -1485,8 +1478,8 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
 
 /* Logged-out login is a deliberate reading/form measure, centered within the desktop rail. */
 @media (min-width: 1280px) {
-  body.woocommerce-account:not(.logged-in) .woocommerce,
-  body.woocommerce-account:not(.logged-in) .woocommerce-MyAccount-content {
+  body.woocommerce-account:not(.logged-in) .cr-account-shell,
+  body.woocommerce-account:not(.logged-in) .cr-account-content {
     width: 100% !important;
     max-width: none !important;
     margin-inline: 0 !important;
@@ -1503,8 +1496,8 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
 
 /* Guest Account landing consumes the same desktop rail; only the login form stays measured. */
 @media (min-width: 1280px) {
-  body.woocommerce-account:not(.logged-in):has(.cr-account-home) .woocommerce,
-  body.woocommerce-account:not(.logged-in):has(.cr-account-home) .woocommerce-MyAccount-content {
+  body.woocommerce-account:not(.logged-in):has(.cr-account-home) .cr-account-shell,
+  body.woocommerce-account:not(.logged-in):has(.cr-account-home) .cr-account-content {
     box-sizing: border-box;
     width: 100% !important;
     max-width: none !important;
@@ -1523,22 +1516,8 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
 }
 
 
-/* Desktop authenticated Account: replace WooCommerce's legacy floated columns
-   with one explicit navigation/content grid inside the canonical main rail. */
+/* The Account shell now owns a single content rail; no legacy navigation column. */
 @media (min-width: 1280px) {
-  body.woocommerce-account.logged-in .cr-page .cr-prose > .woocommerce,
-  body.woocommerce-account.logged-in .woocommerce {
-    display: grid !important;
-    grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
-    align-items: start;
-    column-gap: clamp(24px, 2vw, 36px);
-    row-gap: 0;
-    width: 100% !important;
-    max-width: none !important;
-    min-width: 0;
-    margin: 0 !important;
-  }
-
   body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation {
     grid-column: 1;
     grid-row: 1;
@@ -1577,7 +1556,7 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
     word-break: normal;
   }
 
-  body.woocommerce-account.logged-in .woocommerce-MyAccount-content {
+  body.woocommerce-account.logged-in .cr-account-content {
     grid-column: 2;
     grid-row: 1;
     box-sizing: border-box;
@@ -1639,9 +1618,7 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
 /* Universal Account composition: viewport changes layout only, never the renderer. */
 body.woocommerce-account .woocommerce-MyAccount-navigation { display:none!important; }
 body.woocommerce-account .cr-account-shell { box-sizing:border-box; width:100%; max-width:1280px; min-width:0; margin:0 auto; padding:0; }
-body.woocommerce-account .cr-account-shell > .woocommerce,
-body.woocommerce-account .cr-account-shell .woocommerce { display:block!important; box-sizing:border-box; width:100%!important; max-width:none!important; min-width:0; margin:0!important; }
-body.woocommerce-account .woocommerce-MyAccount-content,
+body.woocommerce-account .cr-account-content,
 body.woocommerce-account .cr-account-shell__content { display:block; box-sizing:border-box; float:none!important; grid-column:auto!important; grid-row:auto!important; width:100%!important; max-width:none!important; min-width:0; margin:0!important; padding:0!important; border:0!important; border-radius:0!important; background:transparent!important; }
 body.woocommerce-account .cr-account-shell__content > .cr-parent-category__toolbar { margin-bottom:18px; }
 body.woocommerce-account .cr-account-home { box-sizing:border-box; width:100%!important; max-width:none!important; margin:0!important; padding:0!important; }

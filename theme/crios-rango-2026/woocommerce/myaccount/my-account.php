@@ -8,11 +8,9 @@
 defined( 'ABSPATH' ) || exit;
 ?>
 <div class="cr-account-shell">
-    <div class="woocommerce">
-        <?php do_action( 'woocommerce_before_my_account' ); ?>
-        <div class="woocommerce-MyAccount-content cr-account-shell__content">
-            <?php do_action( 'woocommerce_account_content' ); ?>
-        </div>
-        <?php do_action( 'woocommerce_after_my_account' ); ?>
+    <?php do_action( 'woocommerce_before_my_account' ); ?>
+    <div class="cr-account-content cr-account-shell__content">
+        <?php do_action( 'woocommerce_account_content' ); ?>
     </div>
+    <?php do_action( 'woocommerce_after_my_account' ); ?>
 </div>

@@ -855,6 +855,26 @@ function cr2026_account_downloads_endpoint_toolbar() {
 }
 add_action( 'woocommerce_account_downloads_endpoint', 'cr2026_account_downloads_endpoint_toolbar', 1 );
 
+/**
+ * WooCommerce's [woocommerce_my_account] shortcode adds a generic .woocommerce
+ * wrapper around its template output. Remove only that shortcode-owned outer
+ * wrapper on the Account page; notices, forms and endpoint markup stay intact.
+ */
+function cr2026_account_unwrap_shortcode_container( $output, $tag, $attr = array(), $match = array() ) {
+    if ( 'woocommerce_my_account' !== $tag
+        || ! function_exists( 'is_account_page' ) || ! is_account_page()
+        || ! is_string( $output ) ) {
+        return $output;
+    }
+
+    if ( preg_match( '/\\A\\s*<div class="woocommerce">\\s*(.*)\\s*<\\/div>\\s*\\z/s', $output, $matches ) ) {
+        return $matches[1];
+    }
+
+    return $output;
+}
+add_filter( 'do_shortcode_tag', 'cr2026_account_unwrap_shortcode_container', 10, 4 );
+
 function cr2026_account_guest_login_shell_open() {
     echo '<div class="cr-account-shell cr-account-shell--guest"><div class="cr-account-shell__content">';
 }

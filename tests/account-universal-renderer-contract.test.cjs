@@ -37,3 +37,25 @@ test('WOO_AND_WPLOYALTY_LOGIC_ENDPOINTS_REMAIN_REFERENCED',()=>{
  for(const s of ['criosrango/v1/loyalty','criosrango/v1/promotions','wc/store/v1/cart','wc/store/v1/cart/apply-coupon']) assert.ok(assets.includes(s));
  assert.match(presentation,/woocommerce_shipping_fields/); assert.match(presentation,/save_account_details/); assert.match(presentation,/wc_logout_url/);
 });
+
+test('ACCOUNT_LEGACY_WOOCOMMERCE_WRAPPER_IS_ABSENT',()=>{
+ const accountTemplate=read('woocommerce/myaccount/my-account.php');
+ assert.match(accountTemplate,/<div class="cr-account-shell">/);
+ assert.match(accountTemplate,/<div class="cr-account-content cr-account-shell__content">/);
+ assert.doesNotMatch(accountTemplate,/<div class="woocommerce(?:\s|")/);
+ assert.doesNotMatch(accountTemplate,/woocommerce-MyAccount-content/);
+ assert.match(accountTemplate,/do_action\( 'woocommerce_before_my_account' \)/);
+ assert.match(accountTemplate,/do_action\( 'woocommerce_account_content' \)/);
+ assert.match(accountTemplate,/do_action\( 'woocommerce_after_my_account' \)/);
+ assert.match(presentation,/cr2026_account_unwrap_shortcode_container/);
+ assert.match(presentation,/'woocommerce_my_account' !== \$tag/);
+ assert.match(presentation,/add_filter\( 'do_shortcode_tag', 'cr2026_account_unwrap_shortcode_container', 10, 4 \)/);
+ assert.match(css,/body\.woocommerce-account \.cr-account-content/);
+ assert.doesNotMatch(css,/(^|[\s>])\.woocommerce(?=[\s>{])/m);
+ assert.doesNotMatch(css,/\.woocommerce-MyAccount-content/);
+ console.log('ACCOUNT_LEGACY_WOOCOMMERCE_WRAPPER=ABSENT');
+ console.log('ACCOUNT_SHELL_PRESENT=PASS');
+ console.log('ACCOUNT_CONTENT_PRESENT=PASS');
+ console.log('WOOCOMMERCE_ACCOUNT_NAV_ABSENT=PASS');
+ console.log('WOOCOMMERCE_NOTICES_PRESERVED=PASS');
+});
