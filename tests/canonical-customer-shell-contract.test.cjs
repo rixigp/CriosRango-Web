@@ -107,3 +107,13 @@ test('ROOT_SCROLLBAR_GUTTER_STABLE=YES; FALLBACK=OVERFLOW_Y_SCROLL_ONLY_WHEN_UNS
  assert.ok(fallback,'unsupported browsers receive a mutually exclusive fallback');
  assert.match(fallback[1],/overflow-y:\s*scroll\s*;/);
 });
+
+test('DESKTOP_CANONICAL_SHELL_MAX=1232px; PRIMARY_MAX=1120px; SIDEBAR=112px',()=>{
+ const desktop=main.match(/\/\* DESKTOP CONTENT SCALE \+ HOME HERO[\s\S]*?@media \(min-width: 1280px\) \{([\s\S]*?)\n\s*\}/);
+ assert.ok(desktop,'canonical desktop content scale block exists');
+ assert.match(desktop[1],/--cr-desktop-content-max:\s*1120px\s*;/);
+ assert.match(desktop[1],/--cr-desktop-shell-max:\s*calc\(var\(--cr-desktop-sidebar\)\s*\+\s*var\(--cr-desktop-content-max\)\)\s*;/);
+ assert.match(main,/--cr-desktop-sidebar:\s*112px\s*;/);
+ assert.match(main,/--cr-desktop-content-inset:\s*20px\s*;/);
+ assert.match(main,/\.cr-desktop-shell\s*\{[\s\S]*?width:\s*min\(calc\(100vw\s*-\s*2\s*\*\s*var\(--cr-desktop-shell-outer\)\),\s*var\(--cr-desktop-shell-max\)\)/);
+});

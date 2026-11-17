@@ -3159,7 +3159,7 @@ body.cr-parent-category-view .cr-parent-category__grid,
 /* DESKTOP CONTENT SCALE + HOME HERO — shared shell only; tablet/mobile stay untouched. */
 @media (min-width: 1280px) {
   :root {
-    --cr-desktop-content-max: 1280px;
+    --cr-desktop-content-max: 1120px;
     --cr-desktop-shell-max: calc(var(--cr-desktop-sidebar) + var(--cr-desktop-content-max));
     --cr-shell: var(--cr-desktop-content-max);
   }

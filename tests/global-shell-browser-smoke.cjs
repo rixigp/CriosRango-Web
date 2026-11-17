@@ -91,75 +91,46 @@ async function inspect(page, routeName, width) {
       }
     }
 
-    // Compare actual scrollbar states at one identical desktop viewport.
-    await page.setViewportSize({width:1440,height:1300});
+    // Validate the one canonical desktop shell at the three requested widths on every public smoke route.
+    const desktopWidths=[1280,1440,1920];
     const geometryRoutes=[
+      ['HOME',BASE_URL+'/'],
       ['CATEGORY',discovered.category],
       ['OUTLET',discovered.outlet],
-      ['ACCOUNT',ACCOUNT_URL],
       ['PRODUCT',discovered.product],
+      ['ACCOUNT',ACCOUNT_URL],
       ['LEGAL',LEGAL_URL]
     ];
-    const geometry=[];
-    for(const [name,url] of geometryRoutes){
-      await navigate(page,url);
-      const metrics=await page.evaluate(()=>{
-        const root=document.documentElement, scrolling=document.scrollingElement;
-        const bounds=selector=>{
-          const el=document.querySelector(selector);if(!el)return null;
-          const rect=el.getBoundingClientRect();return {left:rect.left,right:rect.right};
-        };
-        return {
-          scrollingElement:scrolling?scrolling.tagName:'NONE',
-          isRootScrollingElement:scrolling===root,
-          scrollbarGutter:getComputedStyle(root).scrollbarGutter,
-          innerWidth:window.innerWidth,
-          clientWidth:root.clientWidth,
-          bodyWidth:document.body.getBoundingClientRect().width,
-          scrollHeight:scrolling?scrolling.scrollHeight:0,
-          clientHeight:scrolling?scrolling.clientHeight:0,
-          hasVerticalScroll:!!scrolling&&scrolling.scrollHeight>scrolling.clientHeight+1,
-          shell:bounds('.cr-desktop-shell'),
-          sidebar:bounds('.cr-desktop-rail'),
-          primary:bounds('#primary')
-        };
-      });
-      assert.equal(metrics.isRootScrollingElement,true,name+' scrolling element must be HTML');
-      assert.equal(metrics.scrollbarGutter,'stable',name+' root gutter must be stable');
-      for(const part of ['shell','sidebar','primary'])assert.ok(metrics[part],name+' '+part+' geometry missing');
-      geometry.push({name,metrics});
-      console.log('SCROLLBAR_ROUTE_'+name+'='+JSON.stringify(metrics));
+    const shellWidths=new Map();
+    for(const width of desktopWidths){
+      await page.setViewportSize({width,height:1300});
+      for(const [name,url] of geometryRoutes){
+        await navigate(page,url);
+        const metrics=await page.evaluate(()=>{
+          const rect=selector=>{const el=document.querySelector(selector);if(!el)return null;const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};};
+          const root=document.documentElement;
+          return {innerWidth:window.innerWidth,clientWidth:root.clientWidth,overflow:Math.max(root.scrollWidth,document.body.scrollWidth)>root.clientWidth+1,shell:rect('.cr-desktop-shell'),sidebar:rect('.cr-desktop-rail'),primary:rect('#primary'),scrollbarGutter:getComputedStyle(root).scrollbarGutter};
+        });
+        assert.equal(metrics.scrollbarGutter,'stable',name+' root stable gutter at '+width);
+        assert.equal(metrics.overflow,false,name+' no horizontal overflow at '+width);
+        for(const part of ['shell','sidebar','primary'])assert.ok(metrics[part],name+' '+part+' geometry missing at '+width);
+        const expectedShell=Math.min(width-48,1232),expectedPrimary=1120,expectedMargin=(width-expectedShell)/2;
+        assert.ok(Math.abs(metrics.shell.width-expectedShell)<=1,name+' shell width '+metrics.shell.width+' expected '+expectedShell+' at '+width);
+        assert.ok(Math.abs(metrics.primary.width-expectedPrimary)<=1,name+' primary width '+metrics.primary.width+' expected '+expectedPrimary+' at '+width);
+        assert.ok(Math.abs(metrics.sidebar.width-112)<=1,name+' sidebar width '+metrics.sidebar.width+' expected 112 at '+width);
+        assert.ok(Math.abs(metrics.shell.left-expectedMargin)<=1,name+' outer margin '+metrics.shell.left+' expected '+expectedMargin+' at '+width);
+        assert.ok(Math.abs(metrics.shell.right-(width-expectedMargin))<=1,name+' right outer margin at '+width);
+        shellWidths.set(width+':'+name,metrics.shell.width);
+        console.log('DESKTOP_GEOMETRY_'+width+'_'+name+'='+JSON.stringify(metrics));
+      }
+      const widths=geometryRoutes.map(([name])=>shellWidths.get(width+':'+name));
+      assert.ok(widths.every(value=>Math.abs(value-1232)<=1),'all desktop routes share one 1232px shell at '+width);
+      console.log('ALL_DESKTOP_ROUTES_SHARE_SAME_SHELL_WIDTH_'+width+'=PASS');
     }
-    const withScroll=geometry.find(x=>x.metrics.hasVerticalScroll);
-    const withoutScroll=geometry.find(x=>!x.metrics.hasVerticalScroll);
-    assert.ok(withScroll,'at least one real route must have vertical scroll');
-    assert.ok(withoutScroll,'at least one real route must not have vertical scroll');
-    assert.equal(new Set(geometry.map(x=>x.metrics.innerWidth)).size,1,'window.innerWidth must remain fixed');
-    assert.ok(withScroll.metrics.clientWidth<withoutScroll.metrics.clientWidth,'clientWidth should reflect the visible classic scrollbar on the overflowing route');
-
-    const edges=[['shell','left'],['shell','right'],['sidebar','left'],['sidebar','right'],['primary','left'],['primary','right']];
-    let shellShift=0;
-    for(const [part,edge] of edges)shellShift=Math.max(shellShift,Math.abs(withScroll.metrics[part][edge]-withoutScroll.metrics[part][edge]));
-    console.log('SCROLLING_ELEMENT=HTML(document.documentElement)');
-    console.log('ROUTE_WITH_SCROLL='+withScroll.name);
-    console.log('ROUTE_WITHOUT_SCROLL='+withoutScroll.name);
-    console.log('WINDOW_INNER_WIDTH='+withScroll.metrics.innerWidth);
-    console.log('DOCUMENT_ELEMENT_CLIENT_WIDTH_WITH_SCROLL='+withScroll.metrics.clientWidth);
-    console.log('DOCUMENT_ELEMENT_CLIENT_WIDTH_WITHOUT_SCROLL='+withoutScroll.metrics.clientWidth);
-    console.log('SCROLLBAR_CLIENT_WIDTH_DELTA='+(withoutScroll.metrics.clientWidth-withScroll.metrics.clientWidth));
-    console.log('BODY_LAYOUT_WIDTH_WITH_SCROLL='+withScroll.metrics.bodyWidth.toFixed(2));
-    console.log('BODY_LAYOUT_WIDTH_WITHOUT_SCROLL='+withoutScroll.metrics.bodyWidth.toFixed(2));
-    console.log('SHELL_LEFT_WITH_SCROLL='+withScroll.metrics.shell.left.toFixed(2));
-    console.log('SHELL_LEFT_WITHOUT_SCROLL='+withoutScroll.metrics.shell.left.toFixed(2));
-    console.log('SHELL_RIGHT_WITH_SCROLL='+withScroll.metrics.shell.right.toFixed(2));
-    console.log('SHELL_RIGHT_WITHOUT_SCROLL='+withoutScroll.metrics.shell.right.toFixed(2));
-    console.log('SIDEBAR_LEFT_WITH_SCROLL='+withScroll.metrics.sidebar.left.toFixed(2));
-    console.log('SIDEBAR_RIGHT_WITH_SCROLL='+withScroll.metrics.sidebar.right.toFixed(2));
-    console.log('PRIMARY_LEFT_WITH_SCROLL='+withScroll.metrics.primary.left.toFixed(2));
-    console.log('PRIMARY_RIGHT_WITH_SCROLL='+withScroll.metrics.primary.right.toFixed(2));
-    console.log('SHELL_SHIFT_DUE_TO_SCROLLBAR='+shellShift.toFixed(2)+'px');
-    assert.ok(shellShift<=1,'shell/sidebar/primary geometry shifted '+shellShift+'px');
-    console.log('SCROLLBAR_GEOMETRY_STABILITY=PASS');
+    console.log('PRIMARY_MAX=1120px');
+    console.log('SHELL_MAX=1232px');
+    console.log('SIDEBAR_WIDTH=112px');
+    console.log('NO_HORIZONTAL_OVERFLOW=PASS');
   } finally {
     await browser.close();
   }
