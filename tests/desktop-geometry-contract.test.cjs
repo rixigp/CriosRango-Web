@@ -42,11 +42,11 @@ test('MOBILE_RULES_UNCHANGED=PASS — appended desktop layers are strictly gated
   }
 });
 
-test('DESKTOP_MAIN_RAIL_NOT_NARROW=PASS — one viewport-derived rail with 1440px cap', () => {
+test('DESKTOP_MAIN_RAIL_NOT_NARROW=PASS — one viewport-derived rail with 1120px cap', () => {
   const layer = desktop('main.css');
   assert.match(layer, /--cr-desktop-sidebar:\s*112px/);
   assert.match(layer, /--cr-desktop-gutter:\s*clamp\(32px,\s*3vw,\s*64px\)/);
-  assert.match(layer, /--cr-desktop-content-max:\s*1280px/);
+  assert.match(layer, /--cr-desktop-content-max:\s*1120px/);
   assert.match(layer, /width:\s*min\(calc\(100vw - var\(--cr-desktop-sidebar\) - 2 \* var\(--cr-desktop-gutter\)\), var\(--cr-desktop-content-max\)\)/);
   assert.doesNotMatch(layer, /transform:\s*scale|\bzoom\s*:/);
 });
