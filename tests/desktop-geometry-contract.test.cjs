@@ -160,3 +160,17 @@ test('DESKTOP_BODY_HAS_NO_GLOBAL_HEADER_OFFSET=PASS — non-Home pages do not pu
   assert.doesNotMatch(layer, /body\.cr-global-app-header:not\(\.home\)\s*\{[^}]*padding-top:/);
   assert.match(css('main.css'), /@media \(max-width: 1279px\)[\s\S]*?body\.cr-global-app-header:not\(\.home\)[\s\S]*?padding-top:/);
 });
+
+
+test('CANONICAL_PAGE_HEADER_RAIL_AND_TYPOGRAPHY=PASS — shared headers use the primary inset and one title contract', () => {
+  const main = css('main.css');
+  const account = css('account.css');
+  const layer = desktop('main.css');
+  const accountLayer = desktop('account.css');
+  assert.match(layer, /--cr-desktop-content-inset:\s*20px/);
+  assert.match(layer, /\.cr-desktop-shell > #primary\s*\{[^}]*padding-left:\s*var\(--cr-desktop-content-inset\)\s*!important/s);
+  assert.match(main, /\.cr-parent-category__toolbar \.cr-parent-category__title\s*\{[^}]*color:\s*#183B35;[^}]*font:\s*300 21px\/28px "Roboto", Arial, sans-serif;[^}]*letter-spacing:\s*0/s);
+  assert.match(accountLayer, /body\.woocommerce-account\.logged-in \.cr-account-content\s*\{[^}]*padding:\s*0\s*!important/s);
+  assert.doesNotMatch(accountLayer, /body\.woocommerce-account\.logged-in \.cr-account-content\s*\{[^}]*padding:\s*clamp\(24px,\s*2vw,\s*36px\)/s);
+  assert.match(account, /body\.woocommerce-account \.cr-account-shell__content[\s\S]*?padding:0!important/);
+});

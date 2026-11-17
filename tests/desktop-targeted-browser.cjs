@@ -816,7 +816,7 @@ async function loginForAuthenticatedAccount(page) {
     if(!legalRoutes.length)throw new Error('SHELL_LEGAL_ROUTE_MISSING');
     const shellRoutes=[
       {key:'CATEGORY',url:categoryRoute.href},{key:'PRODUCT',url:productUrl},
-      {key:'CART',url:cartRoute.href},{key:'ACCOUNT',url:accountUrl},{key:'LEGAL',url:legalRoutes[0].href}
+      {key:'CART',url:cartRoute.href},{key:'ACCOUNT',url:accountUrl},{key:'LOGIN',url:accountUrl+'?cr-account-view=login'},{key:'LEGAL',url:legalRoutes[0].href}
     ];
     for(const viewport of [1280,1440,1920]){
       await page.setViewportSize({width:viewport,height:900});

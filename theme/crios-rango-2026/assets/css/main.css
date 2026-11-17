@@ -1617,7 +1617,8 @@ body.cr-parent-category-view .cr-parent-category__canvas { flex: 1 0 auto; paddi
   height: 24px;
   transform: rotate(180deg);
 }
-.cr-parent-category__title {
+/* The shared page-header component owns its typography in every context. */
+.cr-parent-category__toolbar .cr-parent-category__title {
   min-width: 0;
   margin: 0;
   color: #183B35;
