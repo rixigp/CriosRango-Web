@@ -26,6 +26,7 @@ function cr2026_cart_empty_action_markup() {
  * The staging Cart page is rendered with WooCommerce's Cart block, which
  * bypasses woocommerce/cart/cart.php. Add the same contextual toolbar only
  * for that block and mobile requests; the classic template keeps its own.
+ * The matching browser contract checks the desktop-only 30px category margin separately.
  */
 function cr2026_cart_block_toolbar( $block_content, $block ) {
     if ( is_admin() || ! function_exists( 'is_cart' ) || ! is_cart()

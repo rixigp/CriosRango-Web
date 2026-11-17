@@ -630,9 +630,10 @@ async function categoryToolbarTopMargin(page, label, viewport) {
     const toolbar = document.querySelector('.cr-parent-category__toolbar');
     return toolbar ? { found: true, marginTop: getComputedStyle(toolbar).marginTop } : { found: false };
   });
-  const pass = state.found && state.marginTop === '30px';
-  log(label + '_TOOLBAR_TOP_MARGIN_' + viewport, pass ? '30px' : state.marginTop || 'MISSING');
-  if (!pass) throw new Error(label + '_TOOLBAR_TOP_MARGIN_FAILED at ' + viewport);
+  const expected = Number(viewport) >= 1280 ? '30px' : '0px';
+  const pass = state.found && state.marginTop === expected;
+  log(label + '_TOOLBAR_TOP_MARGIN_' + viewport, pass ? expected : state.marginTop || 'MISSING');
+  if (!pass) throw new Error(label + '_TOOLBAR_TOP_MARGIN_FAILED at ' + viewport + ': expected ' + expected);
 }
 
 async function productLayout(page, viewport) {
