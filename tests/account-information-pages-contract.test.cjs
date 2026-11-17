@@ -133,11 +133,14 @@ test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_
   const loginTemplate = read('woocommerce/myaccount/form-login.php');
   assert.match(presentation,/woocommerce_before_customer_login_form/);
   assert.match(presentation,/cr2026_account_guest_login_toolbar/);
-  assert.match(presentation,/cr2026_account_render_endpoint_toolbar\( __( 'Acceder'/);
+  assert.ok(presentation.includes("cr2026_account_render_endpoint_toolbar( __( 'Acceder'"));
   assert.match(loginTemplate,/woocommerce_before_customer_login_form/);
-  assert.doesNotMatch(loginTemplate,/<h2>\\s*<\\?php esc_html_e\\( 'Login'/);
+  const loginFormStart = loginTemplate.indexOf('<form class="woocommerce-form woocommerce-form-login login"');
+  assert.ok(loginFormStart > 0, 'native WooCommerce login form exists');
+  assert.doesNotMatch(loginTemplate.slice(0, loginFormStart), /<h2>/, 'no second visible Login heading before the form');
   assert.match(loginTemplate,/aria-label=.*Acceder/);
-  assert.match(presentation,/woocommerce_locate_template[\\s\\S]*?cr2026_account_guest_home_template/);
+  assert.ok(presentation.includes('woocommerce_locate_template'));
+  assert.ok(presentation.includes('cr2026_account_guest_home_template'));
   assert.match(presentation,/myaccount\/form-login\.php/);
   assert.match(presentation,/cr2026_account_guest_login_view\(\)/);
   assert.match(presentation,/woocommerce_login_redirect[\s\S]*?woocommerce_registration_redirect/);
