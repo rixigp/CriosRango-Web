@@ -89,7 +89,8 @@ test('catalog, cart, checkout and account canonical routes remain intact', () =>
 
 test('shipping address uses exactly one canonical delivery title', () => {
   assert.match(account, /function cr2026_account_address_endpoint_toolbar[\s\S]*?\$title = 'billing' === \$address_type[\s\S]*?__\( 'Dirección de envío'/);
-  assert.match(account, /cr2026_account_render_endpoint_toolbar\( \$title, wc_get_account_endpoint_url\( 'edit-account' \) \)/);
+  assert.match(account, /\$back_url = '' === \$address_type \? wc_get_page_permalink\( 'myaccount' \) : wc_get_account_endpoint_url\( 'edit-address' \)/);
+  assert.match(account, /cr2026_account_render_endpoint_toolbar\( \$title, \$back_url \)/);
   assert.match(account, /function cr2026_account_edit_address_title[\s\S]*?return '';/);
 });
 
