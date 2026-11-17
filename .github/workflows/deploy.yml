@@ -90,16 +90,16 @@ jobs:
               theme/crios-rango-2026/woocommerce/single-product/*|theme/crios-rango-2026/woocommerce/content-single-product.php|theme/crios-rango-2026/assets/css/product-detail*.css|theme/crios-rango-2026/assets/js/product-*.js|tests/product-*)
                 PRODUCT=true
                 ;;
+              theme/crios-rango-2026/woocommerce/archive-product.php|theme/crios-rango-2026/woocommerce/taxonomy-product_cat.php|theme/crios-rango-2026/woocommerce/content-product.php|theme/crios-rango-2026/inc/catalog-*|theme/crios-rango-2026/inc/product-query*|theme/crios-rango-2026/inc/*catalog*|theme/crios-rango-2026/assets/js/catalog*.js|theme/crios-rango-2026/assets/css/catalog*.css|theme/crios-rango-2026/woocommerce/loop/*|tests/catalog-*)
+                CATALOG=true
+                CATEGORY=true
+                PRODUCT=true
+                ;;
               theme/crios-rango-2026/woocommerce/taxonomy-product_cat.php|theme/crios-rango-2026/woocommerce/archive-product.php|theme/crios-rango-2026/assets/css/category*.css|theme/crios-rango-2026/assets/js/category*.js|tests/category-*)
                 CATEGORY=true
                 ;;
               theme/crios-rango-2026/woocommerce/cart/*|theme/crios-rango-2026/woocommerce/checkout/*|theme/crios-rango-2026/assets/css/checkout*.css|theme/crios-rango-2026/assets/js/checkout*.js|tests/checkout-*|tests/cart-promotions-contract.test.cjs)
                 CHECKOUT=true
-                ;;
-              theme/crios-rango-2026/inc/catalog-*|theme/crios-rango-2026/inc/product-query*|theme/crios-rango-2026/inc/*catalog*|theme/crios-rango-2026/assets/js/catalog*.js|theme/crios-rango-2026/assets/css/catalog*.css|theme/crios-rango-2026/woocommerce/loop/*|tests/catalog-*)
-                CATALOG=true
-                CATEGORY=true
-                PRODUCT=true
                 ;;
               theme/crios-rango-2026/*)
                 UNKNOWN=true
