@@ -94,7 +94,7 @@ test('shipping address uses exactly one canonical delivery title', () => {
 });
 
 test('Orders and order detail use the canonical title renderer', () => {
-  assert.match(orders, /cr2026_render_category_toolbar\(\s*__\( 'Pedidos'/);
+  assert.match(orders, /cr2026_account_render_endpoint_toolbar\(\s*__\( 'Pedidos'/);
   assert.ok(orders.includes('$account_url'), 'Orders toolbar receives the account back destination');
   assert.doesNotMatch(orders, /cr-account-orders__toolbar/);
   assert.match(account, /woocommerce_account_view-order_endpoint/);
