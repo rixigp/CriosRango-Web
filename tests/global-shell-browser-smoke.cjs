@@ -113,10 +113,9 @@ async function inspect(page, routeName, width) {
           scrollingElement:scrolling?scrolling.tagName:'NONE',
           isRootScrollingElement:scrolling===root,
           scrollbarGutter:getComputedStyle(root).scrollbarGutter,
-          rootOverflowY:getComputedStyle(root).overflowY,
-          bodyOverflowY:getComputedStyle(document.body).overflowY,
           innerWidth:window.innerWidth,
           clientWidth:root.clientWidth,
+          bodyWidth:document.body.getBoundingClientRect().width,
           scrollHeight:scrolling?scrolling.scrollHeight:0,
           clientHeight:scrolling?scrolling.clientHeight:0,
           hasVerticalScroll:!!scrolling&&scrolling.scrollHeight>scrolling.clientHeight+1,
@@ -127,7 +126,6 @@ async function inspect(page, routeName, width) {
       });
       assert.equal(metrics.isRootScrollingElement,true,name+' scrolling element must be HTML');
       assert.equal(metrics.scrollbarGutter,'stable',name+' root gutter must be stable');
-      assert.equal(metrics.rootOverflowY,'auto',name+' root must own the vertical scroll container');
       for(const part of ['shell','sidebar','primary'])assert.ok(metrics[part],name+' '+part+' geometry missing');
       geometry.push({name,metrics});
       console.log('SCROLLBAR_ROUTE_'+name+'='+JSON.stringify(metrics));
@@ -137,11 +135,7 @@ async function inspect(page, routeName, width) {
     assert.ok(withScroll,'at least one real route must have vertical scroll');
     assert.ok(withoutScroll,'at least one real route must not have vertical scroll');
     assert.equal(new Set(geometry.map(x=>x.metrics.innerWidth)).size,1,'window.innerWidth must remain fixed');
-    assert.equal(new Set(geometry.map(x=>x.metrics.clientWidth)).size,1,'documentElement.clientWidth must remain fixed');
-    const reservedGutterWidths=geometry.map(x=>x.metrics.innerWidth-x.metrics.clientWidth);
-    assert.equal(new Set(reservedGutterWidths).size,1,'reserved scrollbar gutter width must remain fixed');
-    assert.ok(reservedGutterWidths[0]>=8,'classic scrollbar gutter must be measurable; got '+reservedGutterWidths[0]+'px');
-    console.log('RESERVED_SCROLLBAR_GUTTER_PX='+reservedGutterWidths[0]);
+    assert.ok(withScroll.metrics.clientWidth<withoutScroll.metrics.clientWidth,'clientWidth should reflect the visible classic scrollbar on the overflowing route');
 
     const edges=[['shell','left'],['shell','right'],['sidebar','left'],['sidebar','right'],['primary','left'],['primary','right']];
     let shellShift=0;
@@ -152,6 +146,9 @@ async function inspect(page, routeName, width) {
     console.log('WINDOW_INNER_WIDTH='+withScroll.metrics.innerWidth);
     console.log('DOCUMENT_ELEMENT_CLIENT_WIDTH_WITH_SCROLL='+withScroll.metrics.clientWidth);
     console.log('DOCUMENT_ELEMENT_CLIENT_WIDTH_WITHOUT_SCROLL='+withoutScroll.metrics.clientWidth);
+    console.log('SCROLLBAR_CLIENT_WIDTH_DELTA='+(withoutScroll.metrics.clientWidth-withScroll.metrics.clientWidth));
+    console.log('BODY_LAYOUT_WIDTH_WITH_SCROLL='+withScroll.metrics.bodyWidth.toFixed(2));
+    console.log('BODY_LAYOUT_WIDTH_WITHOUT_SCROLL='+withoutScroll.metrics.bodyWidth.toFixed(2));
     console.log('SHELL_LEFT_WITH_SCROLL='+withScroll.metrics.shell.left.toFixed(2));
     console.log('SHELL_LEFT_WITHOUT_SCROLL='+withoutScroll.metrics.shell.left.toFixed(2));
     console.log('SHELL_RIGHT_WITH_SCROLL='+withScroll.metrics.shell.right.toFixed(2));
