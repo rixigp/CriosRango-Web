@@ -41,6 +41,13 @@ const viewports=[390,768,980,1279,1280,1440,1920];
     if(!(await page.locator(selector).count()))throw Error('ACCOUNT_RENDERER_MISSING='+name+'@'+width);
     if(name==='REWARDS'){const text=await page.locator('body').innerText();if(/MY PUNTO|Available punto|Redeemed punto|Redeem Now/i.test(text))throw Error('NATIVE_WPLOYALTY_COPY_PRESENT@'+width);const styles=await page.locator('link[rel=stylesheet],style[id]').evaluateAll(ns=>ns.map(n=>(n.id||'')+' '+(n.href||'')));if(styles.some(x=>/wlr|wployalty|wp[-_]loyalty[-_]rules/i.test(x)))throw Error('NATIVE_WPLOYALTY_STYLES_PRESENT@'+width);}
     if(await page.locator('.cr-parent-category__title').count()!==1)throw Error('ACCOUNT_PAGE_TITLE_COUNT_INVALID='+name+'@'+width);
+    const back=page.locator('.cr-parent-category__back').first();
+    if(!(await back.count()))throw Error('ACCOUNT_BACK_NAV_MISSING='+name+'@'+width);
+    const backHref=await back.getAttribute('href');
+    if(name==='ORDERS' && !backHref.includes('/mi-cuenta/'))throw Error('ORDERS_BACK_NAV_INVALID');
+    if(name==='ADDRESS_BILLING' || name==='ADDRESS_SHIPPING'){if(!backHref.includes('/edit-address/'))throw Error('ADDRESS_BACK_NAV_INVALID='+name);}
+    if(name==='PERSONAL' || name==='PASSWORD'){if(!backHref.includes('/edit-account/'))throw Error('PROFILE_BACK_NAV_INVALID='+name);}
+    if(name==='DOWNLOADS' && !backHref.includes('/edit-account/'))throw Error('DOWNLOADS_BACK_NAV_INVALID');
     checks++;
    }
    if(orderHref){await page.goto(orderHref,{waitUntil:'domcontentloaded'});await page.locator('.cr-order-detail').first().waitFor({state:'attached',timeout:15000});if(await page.locator('.woocommerce-order-details table, table.woocommerce-table--order-details').count())throw Error('NATIVE_ORDER_TABLE_PRESENT='+width);checks++;}

@@ -110,7 +110,8 @@ function cr2026_account_profile_endpoint_toolbar() {
     $view = cr2026_account_profile_view();
     $title = 'personal' === $view ? __( 'Datos personales', 'crios-rango-2026' )
         : ( 'password' === $view ? __( 'Contraseña', 'crios-rango-2026' ) : __( 'Perfil', 'crios-rango-2026' ) );
-    cr2026_account_render_endpoint_toolbar( $title, wc_get_account_endpoint_url( 'edit-account' ) );
+    $back_url = 'home' === $view ? wc_get_page_permalink( 'myaccount' ) : wc_get_account_endpoint_url( 'edit-account' );
+    cr2026_account_render_endpoint_toolbar( $title, $back_url );
 }
 add_action( 'woocommerce_account_edit-account_endpoint', 'cr2026_account_profile_endpoint_toolbar', 1 );
 
@@ -148,7 +149,8 @@ function cr2026_account_address_endpoint_toolbar( $endpoint_value = '' ) {
         ? __( 'Dirección de facturación', 'crios-rango-2026' )
         : ( 'shipping' === $address_type ? __( 'Dirección de envío', 'crios-rango-2026' ) : __( 'Dirección', 'crios-rango-2026' ) );
 
-    cr2026_account_render_endpoint_toolbar( $title, wc_get_account_endpoint_url( 'edit-account' ) );
+    $back_url = '' === $address_type ? wc_get_page_permalink( 'myaccount' ) : wc_get_account_endpoint_url( 'edit-address' );
+    cr2026_account_render_endpoint_toolbar( $title, $back_url );
 }
 add_action( 'woocommerce_account_edit-address_endpoint', 'cr2026_account_address_endpoint_toolbar', 1 );
 
@@ -849,7 +851,7 @@ function cr2026_account_remove_legacy_navigation() {
 add_action( 'wp', 'cr2026_account_remove_legacy_navigation', 1 );
 
 function cr2026_account_downloads_endpoint_toolbar() {
-    cr2026_account_render_endpoint_toolbar( __( 'Descargas', 'crios-rango-2026' ) );
+    cr2026_account_render_endpoint_toolbar( __( 'Descargas', 'crios-rango-2026' ), wc_get_account_endpoint_url( 'edit-account' ) );
 }
 add_action( 'woocommerce_account_downloads_endpoint', 'cr2026_account_downloads_endpoint_toolbar', 1 );
 
