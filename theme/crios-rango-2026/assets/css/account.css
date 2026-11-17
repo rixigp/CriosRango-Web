@@ -1524,6 +1524,8 @@ body.woocommerce-account .woocommerce-MyAccount-navigation { display:none!import
 body.woocommerce-account .cr-account-shell { box-sizing:border-box; width:100%; max-width:1280px; min-width:0; margin:0 auto; padding:0; }
 body.woocommerce-account .cr-account-content,
 body.woocommerce-account .cr-account-shell__content { display:block; box-sizing:border-box; float:none!important; grid-column:auto!important; grid-row:auto!important; width:100%!important; max-width:none!important; min-width:0; margin:0!important; padding:0!important; border:0!important; border-radius:0!important; background:transparent!important; }
+/* Orders are a card grid, not a generic block account-content wrapper. */
+body.woocommerce-account .cr-account-orders__list { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; }
 body.woocommerce-account .cr-account-shell__content > .cr-parent-category__toolbar { margin-bottom:18px; }
 body.woocommerce-account .cr-account-home { box-sizing:border-box; width:100%!important; max-width:none!important; margin:0!important; padding:0!important; }
 body.woocommerce-account .cr-account-home__grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -1648,7 +1650,6 @@ body.woocommerce-account .cr-account-profile-home { width:100%; max-width:760px;
 
 @media (max-width: 767px) {
   .cr-account-orders__filter-controls { margin-bottom: 16px; }
-  .cr-account-orders__list { gap: 12px; }
   .cr-account-order { padding: 14px; }
   .cr-account-order__top { gap: 11px; }
   .cr-account-order__bottom { margin-top: 12px; padding-top: 10px; }
@@ -1674,4 +1675,6 @@ body.woocommerce-account .cr-account-orders > .cr-parent-category__toolbar {
   margin-top: 0;
 }
 
-@media (max-width: 767px) { .cr-account-orders__list { gap: 8px; } }
+@media (max-width: 767px) {
+  body.woocommerce-account .cr-account-orders__list { gap: 10px; }
+}

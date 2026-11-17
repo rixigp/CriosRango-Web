@@ -80,7 +80,9 @@ test('ORDERS_FILTERS_AND_CARDS_REUSE_EXACT_PROFILE_MOBILE_RAIL_WITHOUT_MOVING_TO
   assert.match(css, /\.cr-account-home\s*\{[^}]*width:\s*100%;\s*max-width:\s*720px;\s*margin:\s*0;/);
   assert.match(php, /class="cr-account-orders__filters"/);
   assert.doesNotMatch(php, /cr-account-orders__filters cr-account-content/);
-  assert.match(php, /class="cr-account-orders__list cr-account-content"/);
+  assert.match(php, /class="cr-account-orders__list"/);
+  assert.doesNotMatch(php, /cr-account-orders__list[^\"]*cr-account-content/);
+  assert.match(css, /body\.woocommerce-account \.cr-account-orders__list\s*\{\s*display:\s*grid;\s*grid-template-columns:\s*minmax\(0,1fr\);\s*gap:\s*16px;/);
   assert.match(css, /\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin-inline:\s*0;/s);
   assert.match(css, /body\.woocommerce-account \.cr-account-orders__filters\s*\{[^}]*padding-inline:\s*0;/s);
   assert.match(css, /\.cr-account-orders__filters\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*overflow-x:\s*auto;/s);
@@ -113,7 +115,7 @@ test('ORDER_SPACING_AND_STATUS_BADGES_USE_MODERATE_DESKTOP_DENSITY', () => {
   assert.match(css, /\.cr-account-orders__list\s*\{[^}]*gap:\s*16px;/s);
   assert.match(css, /\.cr-account-order\s*\{[^}]*padding:\s*16px;/s);
   assert.match(css, /\.cr-account-order__status\s*\{[^}]*min-height:\s*24px;[^}]*padding:\s*4px 10px;[^}]*font:\s*300 11px\/16px/s);
-  assert.match(css, /@media \(max-width:\s*767px\)[\s\S]*?\.cr-account-orders__list\s*\{\s*gap:\s*8px;/);
+  assert.match(css, /@media \(max-width:\s*767px\)[\s\S]*?body\.woocommerce-account \.cr-account-orders__list\s*\{\s*gap:\s*10px;/);
 });
 
 test('ORDERS_TOOLBAR_USES_CANONICAL_TOP_SPACING_WITHOUT_GLOBAL_SHELL_CHANGES', () => {

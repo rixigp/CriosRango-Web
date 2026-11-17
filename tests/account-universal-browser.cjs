@@ -53,6 +53,35 @@ const viewports=[390,768,1279,1280,1440,1920];
     if(await page.locator('.woocommerce-MyAccount-navigation').count())throw Error('LEGACY_ACCOUNT_NAV_PRESENT='+name+'@'+width);
     if(await page.locator('div.woocommerce').count())throw Error('ACCOUNT_LEGACY_WOOCOMMERCE_WRAPPER_PRESENT='+name+'@'+width);
     if(!(await page.locator(selector).count()))throw Error('ACCOUNT_RENDERER_MISSING='+name+'@'+width);
+    if(name==='ORDERS' && width===390){
+      const metrics=await page.evaluate(()=>{
+        const list=document.querySelector('.cr-account-orders__list');
+        const cards=list?Array.from(list.querySelectorAll(':scope > .cr-account-order')).filter(card=>!card.hidden):[];
+        if(!list)return {error:'ORDER_LIST_MISSING',cardCount:0};
+        const style=getComputedStyle(list);
+        const rects=cards.slice(0,2).map(card=>{const r=card.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height};});
+        return {
+          computedDisplay:style.display,
+          computedGap:style.gap,
+          computedRowGap:style.rowGap,
+          computedColumnGap:style.columnGap,
+          cardCount:cards.length,
+          card1:rects[0]||null,
+          card2:rects[1]||null,
+          realVisualDistancePx:rects.length===2?Math.round((rects[1].top-rects[0].bottom)*100)/100:null,
+          listClass:list.className,
+          directChildCount:list.children.length,
+          directOrderCardCount:list.querySelectorAll(':scope > .cr-account-order').length
+        };
+      });
+      console.log('ORDER_CARDS_LAYOUT_METRICS_390='+JSON.stringify(metrics));
+      if(metrics.error)throw Error(metrics.error);
+      if(metrics.computedDisplay!=='grid')throw Error('ORDER_LIST_COMPUTED_DISPLAY_NOT_GRID='+metrics.computedDisplay);
+      if(metrics.computedGap!=='10px'||metrics.computedRowGap!=='10px')throw Error('ORDER_LIST_COMPUTED_GAP_INVALID='+JSON.stringify(metrics));
+      if(metrics.cardCount<2)throw Error('ORDER_CARD_PAIR_NOT_AVAILABLE_FOR_GEOMETRY_MEASUREMENT='+metrics.cardCount);
+      if(metrics.realVisualDistancePx===null||metrics.realVisualDistancePx<10||metrics.realVisualDistancePx>12)throw Error('ORDER_CARD_REAL_DISTANCE_OUT_OF_RANGE='+metrics.realVisualDistancePx);
+      console.log('ORDER_CARD_REAL_DISTANCE_390='+metrics.realVisualDistancePx+'px PASS');
+    }
     if(name==='REWARDS'){const text=await page.locator('body').innerText();if(/MY PUNTO|Available punto|Redeemed punto|Redeem Now/i.test(text))throw Error('NATIVE_WPLOYALTY_COPY_PRESENT@'+width);const styles=await page.locator('link[rel=stylesheet],style[id]').evaluateAll(ns=>ns.map(n=>(n.id||'')+' '+(n.href||'')));if(styles.some(x=>/wlr|wployalty|wp[-_]loyalty[-_]rules/i.test(x)))throw Error('NATIVE_WPLOYALTY_STYLES_PRESENT@'+width);}
     if(await page.locator('.cr-parent-category__title').count()!==1)throw Error('ACCOUNT_PAGE_TITLE_COUNT_INVALID='+name+'@'+width);
     const back=page.locator('.cr-parent-category__back').first();

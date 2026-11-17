@@ -25,7 +25,7 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
             <button type="button" data-cr-order-filter="cancelled" aria-pressed="false"><?php esc_html_e( 'Cancelado', 'crios-rango-2026' ); ?></button>
         </div>
 
-        <div class="cr-account-orders__list cr-account-content" data-cr-orders-list>
+        <div class="cr-account-orders__list" data-cr-orders-list>
             <?php foreach ( $customer_orders->orders as $customer_order ) :
                 $order = wc_get_order( $customer_order );
                 if ( ! $order instanceof WC_Order ) {
