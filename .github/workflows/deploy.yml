@@ -46,125 +46,144 @@ jobs:
           BASE_SHA="$EVENT_BEFORE"
           ZERO_SHA="0000000000000000000000000000000000000000"
           FORCE_FULL=false
+          WORKFLOW_CHANGED=false
+          DIFF_FAILED=false
+
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             FORCE_FULL=true
             BASE_SHA="MANUAL_FULL"
-          elif [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "$ZERO_SHA" ]; then
+          elif [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "$ZERO_SHA" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
             FORCE_FULL=true
-            BASE_SHA="UNKNOWN_FIRST_PUSH"
+            DIFF_FAILED=true
+            BASE_SHA="SAFE_FULL_FALLBACK"
           fi
 
           if [ "$FORCE_FULL" = true ]; then
-            mapfile -t CHANGED < <(git ls-files)
+            mapfile -t CHANGED < <(git ls-files | sort -u)
           else
-            git cat-file -e "$BASE_SHA^{commit}"
-            mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | sort -u)
+            if ! CHANGED_TEXT="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"; then
+              FORCE_FULL=true
+              DIFF_FAILED=true
+              BASE_SHA="SAFE_FULL_FALLBACK"
+              mapfile -t CHANGED < <(git ls-files | sort -u)
+            else
+              mapfile -t CHANGED < <(printf '%s\n' "$CHANGED_TEXT" | sed '/^$/d' | sort -u)
+            fi
           fi
 
           if [ "${#CHANGED[@]}" -eq 0 ]; then
             CHANGED=("NO_FILES_CHANGED")
             FORCE_FULL=true
+            DIFF_FAILED=true
           fi
 
-          ACCOUNT=false; HOME=false; CATEGORY=false; PRODUCT=false; CHECKOUT=false
-          SHARED=false; WORKFLOW_CHANGED=false; CATALOG=false; UNKNOWN=false; PHP_CHANGED=false
-          for path in "${CHANGED[@]}"; do
-            [[ "$path" == *.php ]] && PHP_CHANGED=true
-          done
+          DO_ACCOUNT=false
+          DO_HOME=false
+          DO_CATEGORY=false
+          DO_PRODUCT=false
+          DO_CHECKOUT=false
+          DO_SHARED=false
+          DO_CATALOG=false
+          DO_PHP=false
           for path in "${CHANGED[@]}"; do
             [ "$path" = "NO_FILES_CHANGED" ] && continue
             case "$path" in
               .github/workflows/*)
-                SHARED=true
                 WORKFLOW_CHANGED=true
                 ;;
               theme/crios-rango-2026/assets/css/main.css|theme/crios-rango-2026/assets/css/visual-system.css|theme/crios-rango-2026/assets/css/controls.css|theme/crios-rango-2026/functions.php|theme/crios-rango-2026/inc/assets.php|theme/crios-rango-2026/inc/navigation.php|theme/crios-rango-2026/inc/*shell*|theme/crios-rango-2026/inc/*header*|theme/crios-rango-2026/inc/*sidebar*|theme/crios-rango-2026/inc/*navigation*|theme/crios-rango-2026/header.php|theme/crios-rango-2026/sidebar.php|theme/crios-rango-2026/navigation.php|theme/crios-rango-2026/template-parts/*header*|theme/crios-rango-2026/template-parts/*sidebar*|theme/crios-rango-2026/template-parts/*shell*|theme/crios-rango-2026/assets/css/*header*.css|theme/crios-rango-2026/assets/css/*sidebar*.css|theme/crios-rango-2026/assets/css/*shell*.css|tests/global-*|tests/canonical-controls-contract.test.cjs|tests/page-title-contract.test.cjs|tests/desktop-geometry-contract.test.cjs|tests/canonical-customer-shell-contract.test.cjs|tests/page-specific-shell-overrides-contract.test.cjs)
-                SHARED=true
+                DO_SHARED=true
                 ;;
               theme/crios-rango-2026/woocommerce/myaccount/*|theme/crios-rango-2026/inc/account-*.php|theme/crios-rango-2026/assets/css/account.css|theme/crios-rango-2026/assets/js/account-*.js|tests/account-*)
-                ACCOUNT=true
+                DO_ACCOUNT=true
                 ;;
               theme/crios-rango-2026/front-page.php|theme/crios-rango-2026/assets/css/home*.css|theme/crios-rango-2026/assets/js/home*.js|tests/home-*)
-                HOME=true
+                DO_HOME=true
                 ;;
               theme/crios-rango-2026/woocommerce/single-product/*|theme/crios-rango-2026/woocommerce/content-single-product.php|theme/crios-rango-2026/assets/css/product-detail*.css|theme/crios-rango-2026/assets/js/product-*.js|tests/product-*)
-                PRODUCT=true
+                DO_PRODUCT=true
                 ;;
               theme/crios-rango-2026/woocommerce/archive-product.php|theme/crios-rango-2026/woocommerce/taxonomy-product_cat.php|theme/crios-rango-2026/woocommerce/content-product.php|theme/crios-rango-2026/inc/catalog-*|theme/crios-rango-2026/inc/product-query*|theme/crios-rango-2026/inc/*catalog*|theme/crios-rango-2026/assets/js/catalog*.js|theme/crios-rango-2026/assets/css/catalog*.css|theme/crios-rango-2026/woocommerce/loop/*|tests/catalog-*)
-                CATALOG=true
-                CATEGORY=true
-                PRODUCT=true
+                DO_CATALOG=true
+                DO_CATEGORY=true
+                DO_PRODUCT=true
                 ;;
-              theme/crios-rango-2026/woocommerce/taxonomy-product_cat.php|theme/crios-rango-2026/woocommerce/archive-product.php|theme/crios-rango-2026/assets/css/category*.css|theme/crios-rango-2026/assets/js/category*.js|tests/category-*)
-                CATEGORY=true
+              theme/crios-rango-2026/assets/css/category*.css|theme/crios-rango-2026/assets/js/category*.js|tests/category-*)
+                DO_CATEGORY=true
                 ;;
               theme/crios-rango-2026/woocommerce/cart/*|theme/crios-rango-2026/woocommerce/checkout/*|theme/crios-rango-2026/assets/css/checkout*.css|theme/crios-rango-2026/assets/js/checkout*.js|tests/checkout-*|tests/cart-promotions-contract.test.cjs)
-                CHECKOUT=true
+                DO_CHECKOUT=true
                 ;;
-              theme/crios-rango-2026/*)
-                UNKNOWN=true
-                ;;
-              tests/*)
-                UNKNOWN=true
+              *.php)
+                DO_PHP=true
+                DO_SHARED=true
                 ;;
               *)
-                UNKNOWN=true
+                # Unknown paths are conservative SHARED changes, never fatal.
+                DO_SHARED=true
                 ;;
             esac
           done
 
           DOMAIN_COUNT=0
-          for flag in "$ACCOUNT" "$HOME" "$CATEGORY" "$PRODUCT" "$CHECKOUT"; do
-            [ "$flag" = true ] && DOMAIN_COUNT=$((DOMAIN_COUNT + 1))
+          for flag in "$DO_ACCOUNT" "$DO_HOME" "$DO_CATEGORY" "$DO_PRODUCT" "$DO_CHECKOUT"; do
+            if [ "$flag" = true ]; then DOMAIN_COUNT=$((DOMAIN_COUNT + 1)); fi
           done
-          if [ "$UNKNOWN" = true ] || [ "$FORCE_FULL" = true ] || [ "$DOMAIN_COUNT" -gt 1 ]; then
-            SCOPE=FULL
-          elif [ "$SHARED" = true ]; then
-            SCOPE=SHARED
-          elif [ "$ACCOUNT" = true ]; then SCOPE=ACCOUNT_ONLY
-          elif [ "$HOME" = true ]; then SCOPE=HOME_ONLY
-          elif [ "$PRODUCT" = true ]; then SCOPE=PRODUCT_ONLY
-          elif [ "$CATEGORY" = true ]; then SCOPE=CATEGORY_ONLY
-          elif [ "$CHECKOUT" = true ]; then SCOPE=CHECKOUT_ONLY
-          else SCOPE=FULL
-          fi
 
           FULL=false
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$SCOPE" = FULL ] || [ "$WORKFLOW_CHANGED" = true ]; then FULL=true; fi
-          if [ "$FULL" = true ]; then
-            ACCOUNT=true; HOME=true; CATEGORY=true; PRODUCT=true; CHECKOUT=true; SHARED=true
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$WORKFLOW_CHANGED" = true ] || [ "$FORCE_FULL" = true ] || [ "$DOMAIN_COUNT" -gt 1 ]; then
+            FULL=true
           fi
 
-          RUN_BENCHMARK=false
-          if [ "$CATALOG" = true ] || [ "$FULL" = true ]; then RUN_BENCHMARK=true; fi
-          RUN_ACCOUNT_BROWSER="$ACCOUNT"
-          RUN_HOME_BROWSER="$HOME"
-          RUN_CATEGORY_BROWSER="$CATEGORY"
-          RUN_PRODUCT_BROWSER="$PRODUCT"
-          RUN_CHECKOUT_BROWSER="$CHECKOUT"
-          RUN_GLOBAL_SHELL="$SHARED"
-          RUN_PHP=false
-          if [ "$FULL" = true ] || [ "$PHP_CHANGED" = true ] || [ "$ACCOUNT" = true ] || [ "$CHECKOUT" = true ]; then RUN_PHP=true; fi
+          if [ "$FULL" = true ]; then
+            if [ "$WORKFLOW_CHANGED" = true ]; then
+              SCOPE="CI_VALIDATION/FULL"
+            else
+              SCOPE="FULL"
+            fi
+            DO_ACCOUNT=true
+            DO_HOME=true
+            DO_CATEGORY=true
+            DO_PRODUCT=true
+            DO_CHECKOUT=true
+            DO_SHARED=true
+            DO_PHP=true
+          elif [ "$DO_SHARED" = true ]; then
+            SCOPE="SHARED"
+          elif [ "$DO_ACCOUNT" = true ]; then SCOPE="ACCOUNT_ONLY"
+          elif [ "$DO_HOME" = true ]; then SCOPE="HOME_ONLY"
+          elif [ "$DO_CATEGORY" = true ]; then SCOPE="CATEGORY_ONLY"
+          elif [ "$DO_PRODUCT" = true ]; then SCOPE="PRODUCT_ONLY"
+          elif [ "$DO_CHECKOUT" = true ]; then SCOPE="CHECKOUT_ONLY"
+          else
+            SCOPE="SHARED"
+            DO_SHARED=true
+          fi
+
+          RUN_CATALOG_BENCHMARK=false
+          if [ "$DO_CATALOG" = true ] || [ "$FULL" = true ]; then RUN_CATALOG_BENCHMARK=true; fi
+          RUN_GLOBAL_SHELL="$DO_SHARED"
+          if [ "$DO_ACCOUNT" = true ] || [ "$DO_CHECKOUT" = true ] || [ "$DO_PHP" = true ] || [ "$FULL" = true ]; then DO_PHP=true; fi
 
           {
             echo "base_sha=$BASE_SHA"
             echo "head_sha=$HEAD_SHA"
             echo "scope=$SCOPE"
-            echo "run_account=$ACCOUNT"
-            echo "run_home=$HOME"
-            echo "run_category=$CATEGORY"
-            echo "run_product=$PRODUCT"
-            echo "run_checkout=$CHECKOUT"
+            echo "run_account=$DO_ACCOUNT"
+            echo "run_home=$DO_HOME"
+            echo "run_category=$DO_CATEGORY"
+            echo "run_product=$DO_PRODUCT"
+            echo "run_checkout=$DO_CHECKOUT"
             echo "run_global_shell=$RUN_GLOBAL_SHELL"
-            echo "run_php=$RUN_PHP"
-            echo "run_catalog_benchmark=$RUN_BENCHMARK"
+            echo "run_php=$DO_PHP"
+            echo "run_catalog_benchmark=$RUN_CATALOG_BENCHMARK"
             echo "full_regression=$FULL"
             echo "workflow_changed=$WORKFLOW_CHANGED"
-            echo "run_account_browser=$RUN_ACCOUNT_BROWSER"
-            echo "run_home_browser=$RUN_HOME_BROWSER"
-            echo "run_category_browser=$RUN_CATEGORY_BROWSER"
-            echo "run_product_browser=$RUN_PRODUCT_BROWSER"
-            echo "run_checkout_browser=$RUN_CHECKOUT_BROWSER"
+            echo "run_account_browser=$DO_ACCOUNT"
+            echo "run_home_browser=$DO_HOME"
+            echo "run_category_browser=$DO_CATEGORY"
+            echo "run_product_browser=$DO_PRODUCT"
+            echo "run_checkout_browser=$DO_CHECKOUT"
             echo "changed_files<<CRIOS_CHANGED_FILES"
             printf '%s\n' "${CHANGED[@]}"
             echo "CRIOS_CHANGED_FILES"
@@ -174,35 +193,34 @@ jobs:
           echo "HEAD=$HEAD_SHA"
           printf 'CHANGED_FILES=%s\n' "$(printf '%s,' "${CHANGED[@]}" | sed 's/,$//')"
           echo "CI_SCOPE=$SCOPE"
-          echo "RUN_ACCOUNT=$ACCOUNT"
-          echo "RUN_HOME=$HOME"
-          echo "RUN_CATEGORY=$CATEGORY"
-          echo "RUN_PRODUCT=$PRODUCT"
-          echo "RUN_CHECKOUT=$CHECKOUT"
+          echo "RUN_ACCOUNT=$DO_ACCOUNT"
+          echo "RUN_HOME=$DO_HOME"
+          echo "RUN_CATEGORY=$DO_CATEGORY"
+          echo "RUN_PRODUCT=$DO_PRODUCT"
+          echo "RUN_CHECKOUT=$DO_CHECKOUT"
           echo "RUN_GLOBAL_SHELL=$RUN_GLOBAL_SHELL"
-          echo "RUN_PHP=$RUN_PHP"
-          echo "RUN_CATALOG_BENCHMARK=$RUN_BENCHMARK"
+          echo "RUN_PHP=$DO_PHP"
+          echo "RUN_CATALOG_BENCHMARK=$RUN_CATALOG_BENCHMARK"
           echo "FULL_REGRESSION=$FULL"
 
           RUN=()
           SKIPPED=()
-          [ "$ACCOUNT" = true ] && RUN+=(account-contracts) || SKIPPED+=(account)
-          [ "$HOME" = true ] && RUN+=(home-contracts) || SKIPPED+=(home)
-          [ "$CATEGORY" = true ] && RUN+=(category-contracts) || SKIPPED+=(category)
-          [ "$PRODUCT" = true ] && RUN+=(product-contracts) || SKIPPED+=(product)
-          [ "$CHECKOUT" = true ] && RUN+=(checkout-contracts) || SKIPPED+=(checkout)
-          [ "$RUN_GLOBAL_SHELL" = true ] && RUN+=(global-shell global-shell-browser) || SKIPPED+=(global-shell global-shell-browser)
-          [ "$RUN_ACCOUNT" = true ] && RUN+=(account-browser) || SKIPPED+=(account-browser)
-          [ "$RUN_HOME" = true ] && RUN+=(home-browser) || SKIPPED+=(home-browser)
-          [ "$RUN_CATEGORY" = true ] && RUN+=(category-browser) || SKIPPED+=(category-browser)
-          [ "$RUN_PRODUCT" = true ] && RUN+=(product-browser) || SKIPPED+=(product-browser)
-          [ "$RUN_CHECKOUT" = true ] && RUN+=(checkout-browser) || SKIPPED+=(checkout-browser)
-          [ "$RUN_PHP" = true ] && RUN+=(php) || SKIPPED+=(php)
-          [ "$RUN_BENCHMARK" = true ] && RUN+=(catalog-benchmark) || SKIPPED+=(benchmark)
+          [ "$DO_ACCOUNT" = true ] && RUN+=(account-contracts account-browser) || SKIPPED+=(account)
+          [ "$DO_HOME" = true ] && RUN+=(home-contracts home-browser) || SKIPPED+=(home)
+          [ "$DO_CATEGORY" = true ] && RUN+=(category-contracts category-browser) || SKIPPED+=(category)
+          [ "$DO_PRODUCT" = true ] && RUN+=(product-contracts product-browser) || SKIPPED+=(product)
+          [ "$DO_CHECKOUT" = true ] && RUN+=(checkout-contracts checkout-browser) || SKIPPED+=(checkout)
+          [ "$RUN_GLOBAL_SHELL" = true ] && RUN+=(global-shell global-shell-browser) || SKIPPED+=(global-shell)
+          [ "$DO_PHP" = true ] && RUN+=(php) || SKIPPED+=(php)
+          [ "$RUN_CATALOG_BENCHMARK" = true ] && RUN+=(catalog-benchmark) || SKIPPED+=(benchmark)
           [ "$FULL" = true ] && RUN+=(full-regression)
           RUN+=(theme-structure deploy sha)
           RUN_LIST="$(IFS=,; printf '%s' "${RUN[*]}")"
           SKIPPED_LIST="$(IFS=,; printf '%s' "${SKIPPED[*]}")"
+
+          echo "BASE_SHA=$BASE_SHA"
+          echo "HEAD=$HEAD_SHA"
+          echo "WORKFLOW_CHANGED=$WORKFLOW_CHANGED"
           echo "CI_SCOPE=$SCOPE" >> "$GITHUB_STEP_SUMMARY"
           echo "RUN=[$RUN_LIST]" >> "$GITHUB_STEP_SUMMARY"
           echo "SKIPPED=[$SKIPPED_LIST]" >> "$GITHUB_STEP_SUMMARY"
@@ -211,7 +229,6 @@ jobs:
           echo "WORKFLOW_CHANGED=$WORKFLOW_CHANGED" >> "$GITHUB_STEP_SUMMARY"
           echo "CHANGED_FILES:" >> "$GITHUB_STEP_SUMMARY"
           printf -- '- %s\n' "${CHANGED[@]}" >> "$GITHUB_STEP_SUMMARY"
-
 
       - name: Bootstrap theme 0.2.0 if missing
         shell: bash
