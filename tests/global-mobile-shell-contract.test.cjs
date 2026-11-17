@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const {test}=require('node:test');
 const root=path.join(__dirname,'..','theme','crios-rango-2026');
 const main=fs.readFileSync(path.join(root,'assets/css/main.css'),'utf8');
+const visual=fs.readFileSync(path.join(root,'assets/css/visual-system.css'),'utf8');
 const footer=fs.readFileSync(path.join(root,'footer.php'),'utf8');
 const header=fs.readFileSync(path.join(root,'header.php'),'utf8');
 const helpers=fs.readFileSync(path.join(root,'inc/helpers.php'),'utf8');
@@ -40,9 +41,12 @@ test('GLOBAL_BOTTOM_NAV_MARKUP_SOURCE_COUNT=1 and GLOBAL_VISUAL_FOOTER_ABSENT=1'
 });
 
 test('MOBILE_TOP_SPACING_HAS_ONE_CANONICAL_SOURCE_AND_CATEGORY_DOES_NOT_RESERVE_HEADER_TWICE',()=>{
- assert.ok(main.includes('--cr-page-top-gap: var(--cr-app-topbar-height);'));
- assert.ok(main.includes('padding-top: var(--cr-page-top-gap);'));
+ assert.ok(main.includes('padding-top: var(--cr-app-topbar-height);'));
+ assert.ok(visual.includes('--cr-page-top-gap: 20px;'));
+ assert.ok(visual.includes('.cr-page-shell {\n  padding-top: var(--cr-page-top-gap);'));
+ assert.ok(visual.includes('.cr-main--woocommerce:not(.cr-main--product-detail) {\n  padding-top: var(--cr-page-top-gap);'));
  assert.equal(main.includes('padding-top: var(--cr-app-topbar-height); box-sizing: border-box;'),false);
  assert.ok(main.includes('body.cr-parent-category-view .cr-parent-category__canvas {\n    padding-top: 0;'));
  assert.ok(main.includes('body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub {\n    padding-top: 0;'));
+ assert.match(visual, /@media \(min-width: 1280px\) \{[\s\S]*?body\.cr-parent-category-view \.cr-parent-category__toolbar,[\s\S]*?margin-top: 30px;/);
 });

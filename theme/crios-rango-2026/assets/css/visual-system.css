@@ -108,11 +108,13 @@
 }
 .cr-main--woocommerce .cr-parent-category__toolbar { margin-bottom: 18px; }
 
-/* The 30px top separation belongs only to category and product-listing toolbars. */
-body.cr-parent-category-view .cr-parent-category__toolbar,
-body.cr-product-listing-view .cr-parent-category__toolbar,
-.cr-category-hub .cr-parent-category__toolbar {
-  margin-top: 30px;
+/* The 30px top separation is a desktop-only category/listing treatment. */
+@media (min-width: 1280px) {
+  body.cr-parent-category-view .cr-parent-category__toolbar,
+  body.cr-product-listing-view .cr-parent-category__toolbar,
+  .cr-category-hub .cr-parent-category__toolbar {
+    margin-top: 30px;
+  }
 }
 
 /* Home identity: keep the mobile white logo medallion on every viewport. */

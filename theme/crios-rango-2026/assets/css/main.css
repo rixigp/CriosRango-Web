@@ -2061,11 +2061,10 @@ body.home.cr-home-hero-out .cr-app-header.is-home-hero {
 }
 body.cr-global-app-header:not(.home) {
   --cr-app-topbar-height: 64px;
-  --cr-page-top-gap: var(--cr-app-topbar-height);
 }
 @media (max-width: 1279px) {
   body.cr-global-app-header:not(.home) {
-    padding-top: var(--cr-page-top-gap);
+    padding-top: var(--cr-app-topbar-height);
   }
 }
 body.cr-parent-category-view .cr-parent-category__canvas,
