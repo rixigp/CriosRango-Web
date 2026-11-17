@@ -15,6 +15,7 @@ body.cr-product-detail-app .cr-product-detail-toolbar {
   position: sticky;
   top: var(--cr-app-topbar-height, 64px);
   z-index: 1100;
+  margin-top: 0 !important;
   background: var(--cr-app-canvas);
   border-bottom: 1px solid rgba(24,59,53,.06);
 }
@@ -1382,7 +1383,7 @@ body.cr-product-detail-app .cr-product-title-brand-row__brand .cr-product-brand-
 }
 
 
-/* Inline WooCommerce long-description accordion, positioned between size help and variations. */
+/* WooCommerce long-description accordion, rendered below the desktop purchase rail. */
 body.cr-product-detail-app .cr-product-description {
   width: 100%;
   box-sizing: border-box;
@@ -1879,26 +1880,31 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
     box-sizing: border-box;
   }
 
-  /* Keep the Woo summary's native children and behavior; expose them as grid items
-     so the description can follow the purchase row across the complete rail. */
+  /* Keep the Woo summary as one continuous right-column purchase block. */
   body.cr-product-detail-app .cr-main--woocommerce div.product > .summary {
-    display: contents;
-  }
-
-  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > .cr-product-title-brand-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
     grid-column: 2;
     grid-row: 1;
-  }
-
-  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > *:not(.cr-product-description) {
-    grid-column: 2;
     width: 100%;
     min-width: 0;
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
-    padding-inline: clamp(4px, 1.5vw, 24px);
   }
 
-  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > .cr-product-description {
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > * {
+    width: 100%;
+    min-width: 0;
+    margin: 0 !important;
+    padding-inline: clamp(4px, 1.5vw, 24px);
+    box-sizing: border-box;
+  }
+
+  /* The long description is rendered as a sibling of .summary below both columns. */
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .cr-product-description {
     grid-column: 1 / -1;
     order: 90;
     width: 100%;

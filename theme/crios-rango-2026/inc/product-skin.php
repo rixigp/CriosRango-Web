@@ -371,7 +371,7 @@ function cr2026_product_skin_remove_description_tab( $tabs ) {
 }
 add_filter( 'woocommerce_product_tabs', 'cr2026_product_skin_remove_description_tab', 99 );
 
-/** Render the existing WooCommerce long description inline, after size help and before variations. */
+/** Render the existing WooCommerce long description below the two-column purchase rail. */
 function cr2026_product_skin_description_accordion() {
     if ( ! is_product() ) { return; }
     $product = wc_get_product( get_queried_object_id() );
@@ -396,5 +396,5 @@ function cr2026_product_skin_description_accordion() {
     echo '</div>';
     echo '</section>';
 }
-add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 );
+add_action( 'woocommerce_after_single_product_summary', 'cr2026_product_skin_description_accordion', 5 );
 

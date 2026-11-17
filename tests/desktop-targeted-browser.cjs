@@ -609,22 +609,44 @@ async function canonicalPageHeader(page, label, viewport) {
   if (!pass) throw new Error(label + '_CANONICAL_PAGE_HEADER_FAILED at ' + viewport);
 }
 
+async function productToolbarLayout(page, viewport) {
+  const state = await page.evaluate(() => {
+    const toolbar = document.querySelector('body.cr-product-detail-app .cr-product-detail-toolbar');
+    return toolbar ? { found: true, marginTop: getComputedStyle(toolbar).marginTop } : { found: false };
+  });
+  const pass = state.found && state.marginTop === '0px';
+  log('PRODUCT_TOOLBAR_EXTRA_TOP_MARGIN_' + viewport, pass ? '0' : state.marginTop || 'MISSING');
+  log('PRODUCT_CONTEXT_HEADER_NO_LONGER_DROPS_' + viewport, pass ? 'PASS' : 'FAIL');
+  if (!pass) throw new Error('PRODUCT_TOOLBAR_TOP_MARGIN_FAILED at ' + viewport);
+}
+
+async function categoryToolbarTopMargin(page, label, viewport) {
+  const state = await page.evaluate(() => {
+    const toolbar = document.querySelector('.cr-parent-category__toolbar');
+    return toolbar ? { found: true, marginTop: getComputedStyle(toolbar).marginTop } : { found: false };
+  });
+  const pass = state.found && state.marginTop === '30px';
+  log(label + '_TOOLBAR_TOP_MARGIN_' + viewport, pass ? '30px' : state.marginTop || 'MISSING');
+  if (!pass) throw new Error(label + '_TOOLBAR_TOP_MARGIN_FAILED at ' + viewport);
+}
+
 async function productLayout(page, viewport) {
   const state = await page.evaluate(() => {
     const product = document.querySelector('body.cr-product-detail-app .cr-main--woocommerce div.product');
     if (!product) return { found: false };
     const gallery = product.querySelector(':scope > .woocommerce-product-gallery');
     const summary = product.querySelector(':scope > .summary');
-    const summaryContent = summary && (
-      summary.querySelector(':scope > .cr-product-title-brand-row') ||
-      summary.querySelector(':scope > form.cart') ||
-      summary.firstElementChild
-    );
-    const description = summary && summary.querySelector(':scope > .cr-product-description');
+    const titleRow = summary && summary.querySelector(':scope > .cr-product-title-brand-row');
+    const sizeHelp = summary && summary.querySelector(':scope > .cr-product-size-help');
+    const cart = summary && summary.querySelector(':scope > form.cart');
+    const description = product.querySelector(':scope > .cr-product-description');
     const tabs = product.querySelector(':scope > .woocommerce-tabs');
     const productRect = product.getBoundingClientRect();
     const galleryRect = gallery ? gallery.getBoundingClientRect() : null;
-    const summaryRect = summaryContent ? summaryContent.getBoundingClientRect() : null;
+    const summaryRect = summary ? summary.getBoundingClientRect() : null;
+    const titleRect = titleRow ? titleRow.getBoundingClientRect() : null;
+    const sizeHelpRect = sizeHelp ? sizeHelp.getBoundingClientRect() : null;
+    const cartRect = cart ? cart.getBoundingClientRect() : null;
     const descriptionRect = description ? description.getBoundingClientRect() : null;
     const tracks = getComputedStyle(product).gridTemplateColumns.split(' ').map(value => parseFloat(value)).filter(Number.isFinite);
     const sum = tracks.reduce((total, value) => total + value, 0);
@@ -632,9 +654,13 @@ async function productLayout(page, viewport) {
       found: true,
       display: getComputedStyle(product).display,
       summaryDisplay: summary ? getComputedStyle(summary).display : 'MISSING',
+      summaryDirection: summary ? getComputedStyle(summary).flexDirection : 'MISSING',
       tracks,
       galleryRect: galleryRect && { left: galleryRect.left, top: galleryRect.top, width: galleryRect.width },
-      summaryRect: summaryRect && { left: summaryRect.left, top: summaryRect.top, width: summaryRect.width },
+      summaryRect: summaryRect && { left: summaryRect.left, top: summaryRect.top, width: summaryRect.width, bottom: summaryRect.bottom },
+      titleRect: titleRect && { top: titleRect.top, bottom: titleRect.bottom },
+      sizeHelpRect: sizeHelpRect && { top: sizeHelpRect.top, bottom: sizeHelpRect.bottom },
+      cartRect: cartRect && { top: cartRect.top, bottom: cartRect.bottom },
       descriptionRect: descriptionRect && { left: descriptionRect.left, top: descriptionRect.top, width: descriptionRect.width },
       productRect: { left: productRect.left, width: productRect.width },
       galleryShare: sum && tracks[0] / sum,
@@ -647,11 +673,17 @@ async function productLayout(page, viewport) {
     && state.tracks.length === 2
     && state.galleryShare >= 0.45 && state.galleryShare <= 0.50
     && state.summaryShare >= 0.50 && state.summaryShare <= 0.55
-    && state.galleryRect && state.summaryRect
+    && state.summaryDisplay === 'flex'
+    && state.summaryDirection === 'column'
+    && state.galleryRect && state.summaryRect && state.titleRect && state.sizeHelpRect
     && state.galleryRect.left < state.summaryRect.left
     && Math.abs(state.galleryRect.top - state.summaryRect.top) <= 4
+    && (state.sizeHelpRect.top - state.titleRect.bottom) >= 8
+    && (state.sizeHelpRect.top - state.titleRect.bottom) <= 24
+    && (!state.cartRect || state.cartRect.bottom <= state.summaryRect.bottom + 2)
     && (!state.descriptionRect || (state.descriptionRect.width >= state.productRect.width - 4
-      && Math.abs(state.descriptionRect.left - state.productRect.left) <= 4));
+      && Math.abs(state.descriptionRect.left - state.productRect.left) <= 4
+      && state.descriptionRect.top >= state.summaryRect.bottom - 2));
   log('PRODUCT_DESKTOP_TWO_COLUMN_' + viewport, pass ? 'PASS' : 'FAIL');
   log('PRODUCT_GALLERY_WIDTH_' + viewport, Math.round((state.galleryShare || 0) * 100) + '%');
   log('PRODUCT_SUMMARY_WIDTH_' + viewport, Math.round((state.summaryShare || 0) * 100) + '%');
@@ -848,11 +880,23 @@ async function loginForAuthenticatedAccount(page) {
       }
     }
 
+    for (const destinationLabel of ['Categorías', 'Outlet']) {
+      const destination = navDestinations.find(item => item.label === destinationLabel);
+      if (!destination || !destination.href) throw new Error('TOOLBAR_DESTINATION_MISSING=' + destinationLabel);
+      await visit(page, destination.href);
+      for (const viewport of [1100, 1279, 1280, 1440, 1920]) {
+        await page.setViewportSize({ width: viewport, height: 900 });
+        await page.waitForTimeout(150);
+        await categoryToolbarTopMargin(page, destinationLabel === 'Categorías' ? 'CATEGORY' : 'OUTLET', viewport);
+      }
+    }
+
     await visit(page, productUrl);
     for (const viewport of RESPONSIVE_VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
       await desktopShellLayout(page, 'PRODUCT', viewport, false);
+      await productToolbarLayout(page, viewport);
       if (viewport >= 1280) await productLayout(page, viewport);
       else await productStackedLayout(page, viewport);
       if (BOTTOM_NAV_VIEWPORTS.includes(viewport)) await canonicalBottomNavigation(page, 'PRODUCT', viewport);

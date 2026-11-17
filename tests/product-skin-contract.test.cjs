@@ -108,7 +108,7 @@ test('short description is sanitized and balanced only at the WooCommerce excerp
   assert.match(globalCss, /padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
 });
 
-test('long product description is a single accessible collapsed accordion after size help and before variations', () => {
+test('long product description is a single accessible collapsed accordion below the desktop purchase rail', () => {
   assert.ok(skin.includes("function cr2026_product_skin_remove_description_tab( $tabs )"));
   assert.ok(skin.includes("unset( $tabs['description'] )"));
   assert.ok(skin.includes("function cr2026_product_skin_description_accordion()"));
@@ -119,8 +119,8 @@ test('long product description is a single accessible collapsed accordion after 
   assert.ok(skin.includes('aria-controls='));
   assert.ok(skin.includes('role="region"'));
   assert.ok(skin.includes('class="cr-product-description__panel"') && skin.includes('hidden>'));
-  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 )"));
-  assert.ok(skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )") < skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 )"));
+  assert.ok(skin.includes("add_action( 'woocommerce_after_single_product_summary', 'cr2026_product_skin_description_accordion', 5 )"));
+  assert.ok(skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )") < skin.indexOf("add_action( 'woocommerce_after_single_product_summary', 'cr2026_product_skin_description_accordion', 5 )"));
   assert.ok(skin.includes("add_filter( 'woocommerce_product_tabs', 'cr2026_product_skin_remove_description_tab', 99 )"));
   assert.ok(productUiJs.includes('function initProductDescriptionAccordion()'));
   assert.ok(productUiJs.includes("toggle.addEventListener('click'"));
@@ -205,7 +205,7 @@ test('description icon uses the app canvas and the accordion remains compact and
   assert.ok(skin.includes('aria-expanded="false"'));
   assert.ok(productUiJs.includes('panel.hidden = isExpanded'));
   assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
-  assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 )"));
+  assert.ok(skin.includes("add_action( 'woocommerce_after_single_product_summary', 'cr2026_product_skin_description_accordion', 5 )"));
 });
 
 test('Color and Size cards render only real native options and preserve WooCommerce selection and availability', () => {
@@ -907,7 +907,7 @@ test('final mobile block order follows gallery, share, product info, size help, 
   // Gallery (WooCommerce priority 20) precedes share (priority 31) on the same hook.
   assert.ok(setup.includes("add_theme_support( 'wc-product-gallery-slider' )"));
   assert.ok(skin.includes("add_action( 'woocommerce_before_single_product_summary', 'cr2026_product_skin_actions', 31 )"));
-  // Product info and size help share the summary hook; priorities define their order.
+  // Product info and size help share the summary hook; the description follows the completed purchase rail.
   assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )"));
   assert.ok(skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
   assert.ok(skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_title_price_brand', 5 )") < skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )"));
@@ -981,6 +981,17 @@ test('Product Detail makes the complete brand logo or text fallback a safe same-
   assert.match(skin, /if \( ! \$brand instanceof WP_Term \) \{ return; \}/);
 });
 
+
+test('Product Detail keeps the Woo summary continuous and moves description below both columns', () => {
+  assert.match(skinCss, /div\.product > \.summary\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*gap:\s*16px;[^}]*grid-column:\s*2;/s);
+  assert.doesNotMatch(skinCss, /div\.product > \.summary\s*\{[^}]*display:\s*contents/s);
+  assert.match(skinCss, /div\.product > \.cr-product-description\s*\{[^}]*grid-column:\s*1 \/ -1;[^}]*order:\s*90;/s);
+  assert.ok(skin.includes("add_action( 'woocommerce_after_single_product_summary', 'cr2026_product_skin_description_accordion', 5 )"));
+  assert.ok(!skin.includes("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 )"));
+  const visualCss = fs.readFileSync(path.join(theme, 'assets/css/visual-system.css'), 'utf8');
+  assert.match(visualCss, /body\.cr-parent-category-view \.cr-parent-category__toolbar,[\s\S]*?body\.cr-product-listing-view \.cr-parent-category__toolbar,[\s\S]*?\.cr-category-hub \.cr-parent-category__toolbar\s*\{[^}]*margin-top:\s*30px;/s);
+  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{[^}]*margin-top:\s*0 !important;/s);
+});
 
 test('Product Detail uses the shared canvas and content-sized compact variation cards', () => {
   assert.match(skinCss, /--cr-product-cream:\s*var\(--cr-app-canvas\)/);
