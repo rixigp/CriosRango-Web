@@ -1517,53 +1517,7 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
 }
 
 
-/* The Account shell has a single content rail; legacy navigation styles are not rendered. */
-  body.woocommerce-account.logged-in .cr-account-home {
-    box-sizing: border-box;
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  body.woocommerce-account.logged-in .cr-account-home__user,
-  body.woocommerce-account.logged-in .cr-account-home__grid,
-  body.woocommerce-account.logged-in .cr-account-home__information {
-    width: 100%;
-    min-width: 0;
-  }
-
-  body.woocommerce-account.logged-in .cr-account-home__identity,
-  body.woocommerce-account.logged-in .cr-account-home__identity strong,
-  body.woocommerce-account.logged-in .cr-account-home__identity > span {
-    min-width: 0;
-    word-break: normal;
-    overflow-wrap: break-word;
-  }
-
-  body.woocommerce-account.logged-in .cr-account-home__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px;
-  }
-
-  body.woocommerce-account.logged-in .cr-account-home__tile {
-    box-sizing: border-box;
-    width: 100%;
-    min-width: 0;
-    min-height: 148px;
-    padding: 14px;
-  }
-
-  body.woocommerce-account.logged-in .cr-account-home__information {
-    margin-top: 26px;
-  }
-
-  body.woocommerce-account.logged-in .cr-account-home__information-card {
-    width: 100%;
-    min-width: 0;
-  }
-}
+/* The Account shell has a single content rail; the shared grid stays canonical until the 980px layout breakpoint. */
 
 /* Universal Account composition: viewport changes layout only, never the renderer. */
 body.woocommerce-account .woocommerce-MyAccount-navigation { display:none!important; }
@@ -1698,6 +1652,20 @@ body.woocommerce-account .cr-account-profile-home { width:100%; max-width:760px;
   .cr-account-order { padding: 14px; }
   .cr-account-order__top { gap: 11px; }
   .cr-account-order__bottom { margin-top: 12px; padding-top: 10px; }
+}
+
+@media (max-width: 767px) {
+  body.woocommerce-account .cr-account-orders__filters {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+  }
+  body.woocommerce-account .cr-account-orders__filter-scroll {
+    display: none !important;
+  }
 }
 
 /* Orders use the canonical page-shell top spacing; category/outlet toolbar

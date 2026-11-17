@@ -47,6 +47,17 @@ async function inspect(page, routeName, width) {
       scrollbarGutter: getComputedStyle(root).scrollbarGutter,
       accountInternalNavVisible: !!internalAccountNav && visible('body.woocommerce-account .woocommerce-MyAccount-navigation'),
       productDisplay: product ? getComputedStyle(product).display : null,
+      bodyPaddingTop: getComputedStyle(document.body).paddingTop,
+      spacing: Object.fromEntries(['#primary','.cr-shell','.cr-page-shell','.cr-account-shell','.cr-account-content','.cr-parent-category__toolbar','.cr-cart-block','.wp-block-woocommerce-cart','.woocommerce-cart-form'].map(selector => {
+        const el = document.querySelector(selector);
+        if (!el) return [selector, null];
+        const style = getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        return [selector, { top: Math.round(rect.top * 10) / 10, paddingTop: style.paddingTop, paddingBlockStart: style.paddingBlockStart, marginTop: style.marginTop, paddingBlockEnd: style.paddingBlockEnd }];
+      })),
+      accountGridColumns: (() => { const el = document.querySelector('.cr-account-home__grid'); return el ? getComputedStyle(el).gridTemplateColumns : null; })(),
+      orderFilter: (() => { const el = document.querySelector('.cr-account-orders__filters'); if (!el) return null; const style = getComputedStyle(el); return { display: style.display, flexWrap: style.flexWrap, overflowX: style.overflowX, scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }; })(),
+      visiblePageTitles: Array.from(document.querySelectorAll('h1,h2')).filter(el => { const style = getComputedStyle(el); const r = el.getBoundingClientRect(); return style.display !== 'none' && style.visibility !== 'hidden' && r.width > 0 && r.height > 0 && el.textContent.trim(); }).map(el => el.textContent.trim()),
       productFound: !!product
     };
   });

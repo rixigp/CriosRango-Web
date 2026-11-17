@@ -16,7 +16,7 @@ $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_pe
     <?php cr2026_account_render_endpoint_toolbar( __( 'Pedidos', 'crios-rango-2026' ), $account_url, 'cr-account-orders-title' ); ?>
 
     <?php if ( $has_orders ) : ?>
-        <div class="cr-account-orders__filters cr-account-content" role="group" aria-label="<?php esc_attr_e( 'Filtrar pedidos', 'crios-rango-2026' ); ?>">
+        <div class="cr-account-orders__filters" role="group" aria-label="<?php esc_attr_e( 'Filtrar pedidos', 'crios-rango-2026' ); ?>">
             <button type="button" class="is-active" data-cr-order-filter="all" aria-pressed="true"><?php esc_html_e( 'Todos', 'crios-rango-2026' ); ?></button>
             <button type="button" data-cr-order-filter="waiting" aria-pressed="false"><?php esc_html_e( 'En espera', 'crios-rango-2026' ); ?></button>
             <button type="button" data-cr-order-filter="processing" aria-pressed="false"><?php esc_html_e( 'Procesando', 'crios-rango-2026' ); ?></button>

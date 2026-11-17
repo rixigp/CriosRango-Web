@@ -76,7 +76,6 @@ function cr2026_account_render_profile_home() {
     $personal_url = add_query_arg( 'profile_view', 'personal', $base );
     $password_url = add_query_arg( 'profile_view', 'password', $base );
     $address_url = wc_get_account_endpoint_url( 'edit-address' );
-    $downloads_url = wc_get_account_endpoint_url( 'downloads' );
     $delete_url = wc_get_account_endpoint_url( 'wpf-delete-account' );
     ?>
     <section class="cr-account-content cr-account-profile-home" aria-label="<?php esc_attr_e( 'Perfil', 'crios-rango-2026' ); ?>">
@@ -86,9 +85,6 @@ function cr2026_account_render_profile_home() {
             </a>
             <a href="<?php echo esc_url( $address_url ); ?>" class="cr-account-profile-home__row">
                 <span class="cr-account-profile-home__icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg></span><span><?php esc_html_e( 'Dirección de entrega', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
-            </a>
-            <a href="<?php echo esc_url( $downloads_url ); ?>" class="cr-account-profile-home__row">
-                <span class="cr-account-profile-home__icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 19h16"></path></svg></span><span><?php esc_html_e( 'Descargas', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
             </a>
             <a href="<?php echo esc_url( $password_url ); ?>" class="cr-account-profile-home__row">
                 <span class="cr-account-profile-home__icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg></span><span><?php esc_html_e( 'Cambiar contraseña', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
@@ -850,10 +846,25 @@ function cr2026_account_remove_legacy_navigation() {
 }
 add_action( 'wp', 'cr2026_account_remove_legacy_navigation', 1 );
 
-function cr2026_account_downloads_endpoint_toolbar() {
-    cr2026_account_render_endpoint_toolbar( __( 'Descargas', 'crios-rango-2026' ), wc_get_account_endpoint_url( 'edit-account' ) );
+/**
+ * Downloads remain a registered WooCommerce endpoint for compatibility only.
+ * Keep it out of customer navigation and return direct visits to Account.
+ */
+function cr2026_account_remove_downloads_menu_item( $items ) {
+    unset( $items['downloads'] );
+    return $items;
 }
-add_action( 'woocommerce_account_downloads_endpoint', 'cr2026_account_downloads_endpoint_toolbar', 1 );
+add_filter( 'woocommerce_account_menu_items', 'cr2026_account_remove_downloads_menu_item', 99 );
+
+function cr2026_account_redirect_downloads_endpoint() {
+    if ( ! is_user_logged_in() || ! function_exists( 'is_account_page' ) || ! is_account_page()
+        || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'downloads' ) ) {
+        return;
+    }
+    wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
+    exit;
+}
+add_action( 'template_redirect', 'cr2026_account_redirect_downloads_endpoint', 1 );
 
 /**
  * WooCommerce's [woocommerce_my_account] shortcode adds a generic .woocommerce
