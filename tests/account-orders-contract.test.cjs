@@ -12,7 +12,7 @@ const js = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/js/acc
 const helpers = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/helpers.php'), 'utf8');
 
 test('ORDERS_USE_CANONICAL_TOOLBAR_AT_ALL_VIEWPORTS', () => {
-  assert.match(php, /cr2026_render_category_toolbar\(\s*__\(\s*'Pedidos'/);
+  assert.match(php, /cr2026_account_render_endpoint_toolbar\(\s*__\(\s*'Pedidos'/);
   assert.match(helpers, /cr-parent-category__toolbar/);
   assert.match(helpers, /cr-parent-category__back/);
   assert.match(helpers, /cr-parent-category__title/);
@@ -83,7 +83,7 @@ test('ORDERS_FILTERS_AND_CARDS_REUSE_EXACT_PROFILE_MOBILE_RAIL_WITHOUT_MOVING_TO
   assert.match(css, /\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin-inline:\s*0;/s);
   assert.match(css, /body\.woocommerce-account \.cr-account-orders__filters\s*\{[^}]*padding-inline:\s*0;/s);
   assert.match(css, /\.cr-account-orders__filters\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*overflow-x:\s*auto;/s);
-  assert.match(php, /cr2026_render_category_toolbar\(\s*__\(\s*'Pedidos'/);
+  assert.match(php, /cr2026_account_render_endpoint_toolbar\(\s*__\(\s*'Pedidos'/);
 });
 
 test('BROKEN_ORDER_IMAGE_IS_REMOVED_FROM_LAYOUT_AND_CLEAN_BAG_PLACEHOLDER_REMAINS', () => {

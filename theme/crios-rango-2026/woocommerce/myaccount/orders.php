@@ -13,7 +13,7 @@ $account_url = wc_get_page_permalink( 'myaccount' );
 $shop_url = apply_filters( 'woocommerce_return_to_shop_redirect', wc_get_page_permalink( 'shop' ) );
 ?>
 <section class="cr-account-orders" aria-labelledby="cr-account-orders-title">
-    <?php cr2026_account_render_endpoint_toolbar( __( 'Pedidos', 'crios-rango-2026' ), $account_url ); ?>
+    <?php cr2026_account_render_endpoint_toolbar( __( 'Pedidos', 'crios-rango-2026' ), $account_url, 'cr-account-orders-title' ); ?>
 
     <?php if ( $has_orders ) : ?>
         <div class="cr-account-orders__filters cr-account-content" role="group" aria-label="<?php esc_attr_e( 'Filtrar pedidos', 'crios-rango-2026' ); ?>">

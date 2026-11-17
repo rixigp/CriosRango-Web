@@ -7,14 +7,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Presentation-only toolbar for native WooCommerce account endpoints.
  * WPLoyalty and WooCommerce continue to own their data and endpoint actions.
  */
-function cr2026_account_render_endpoint_toolbar( $title, $back_url = '' ) {
+function cr2026_account_render_endpoint_toolbar( $title, $back_url = '', $title_id = '' ) {
     if ( ! function_exists( 'wc_get_page_permalink' ) ) {
         return;
     }
     if ( ! $back_url ) {
         $back_url = wc_get_page_permalink( 'myaccount' );
     }
-    cr2026_render_category_toolbar( $title, $back_url, 'parent', false );
+    cr2026_render_category_toolbar( $title, $back_url, 'parent', false, '', $title_id );
 }
 
 
