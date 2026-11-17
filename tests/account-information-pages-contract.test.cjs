@@ -124,7 +124,8 @@ test('ONE_CANONICAL_ACCOUNT_CONTENT_RAIL_IS_REUSED_BY_HELP_LOYALTY_ORDERS_PROFIL
   const orders = read('woocommerce/myaccount/orders.php');
   assert.match(orders, /class="cr-account-orders__filters"/);
   assert.doesNotMatch(orders, /cr-account-orders__filters cr-account-content/);
-  assert.match(orders, /class="cr-account-orders__list cr-account-content"/);
+  assert.match(orders, /class="cr-account-orders__list"/);
+  assert.doesNotMatch(orders, /cr-account-orders__list[^\"]*cr-account-content/);
   assert.match(accountCss, /\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin-inline:\s*0;/s);
   assert.equal((accountCss.match(/\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{/g) || []).length, 1, 'one canonical content rail rule');
 });
