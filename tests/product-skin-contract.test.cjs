@@ -1168,8 +1168,8 @@ test('cart visual pass preserves loyalty, promotions endpoints, auth and native 
   assert.match(cartJs, /config\.redeemUrl/);
   assert.match(cartJs, /config\.authenticated/);
   assert.match(cartTemplate, /cr2026_cart_empty_action_markup\(\)/);
-  assert.match(cartActions, /name="cr2026_empty_cart"/);
-  assert.match(cartActions, /wp_nonce_field\( 'cr2026_empty_cart'/);
+  assert.match(fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8'), /name="cr2026_empty_cart"/);
+  assert.match(fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8'), /wp_nonce_field\( 'cr2026_empty_cart'/);
   assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
 });
 
