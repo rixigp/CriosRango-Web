@@ -113,6 +113,8 @@ async function inspect(page, routeName, width) {
           scrollingElement:scrolling?scrolling.tagName:'NONE',
           isRootScrollingElement:scrolling===root,
           scrollbarGutter:getComputedStyle(root).scrollbarGutter,
+          rootOverflowY:getComputedStyle(root).overflowY,
+          bodyOverflowY:getComputedStyle(document.body).overflowY,
           innerWidth:window.innerWidth,
           clientWidth:root.clientWidth,
           scrollHeight:scrolling?scrolling.scrollHeight:0,
@@ -125,6 +127,7 @@ async function inspect(page, routeName, width) {
       });
       assert.equal(metrics.isRootScrollingElement,true,name+' scrolling element must be HTML');
       assert.equal(metrics.scrollbarGutter,'stable',name+' root gutter must be stable');
+      assert.equal(metrics.rootOverflowY,'auto',name+' root must own the vertical scroll container');
       for(const part of ['shell','sidebar','primary'])assert.ok(metrics[part],name+' '+part+' geometry missing');
       geometry.push({name,metrics});
       console.log('SCROLLBAR_ROUTE_'+name+'='+JSON.stringify(metrics));

@@ -27,6 +27,7 @@
 * { box-sizing: border-box; }
 html {
   scroll-behavior: smooth;
+  overflow-y: auto;
   scrollbar-gutter: stable;
 }
 

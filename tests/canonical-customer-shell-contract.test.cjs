@@ -100,6 +100,7 @@ test('ROOT_SCROLLBAR_GUTTER_STABLE=YES; FALLBACK=OVERFLOW_Y_SCROLL_ONLY_WHEN_UNS
  const root=main.match(/html\s*\{([^}]*)\}/);
  assert.ok(root,'canonical root html rule exists');
  assert.match(root[1],/scrollbar-gutter:\s*stable\s*;/);
+ assert.match(root[1],/overflow-y:\s*auto\s*;/,'root remains a scroll container so stable gutter applies even without overflow');
  assert.doesNotMatch(root[1],/both-edges/);
  assert.doesNotMatch(main,/scrollbar-gutter:\s*stable\s+both-edges/);
  const fallback=main.match(/@supports not \(scrollbar-gutter:\s*stable\)\s*\{\s*html\s*\{([^}]*)\}/);
