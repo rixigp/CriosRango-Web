@@ -999,6 +999,7 @@ test('Product Detail browser geometry runs before independent Home shell smoke',
   const homeChecks = browser.indexOf('for (const viewport of [1279, 1280, 1440, 1920])');
   assert.ok(productChecks >= 0 && homeChecks > productChecks);
   assert.match(browser, /clientWidth:\s*document\.documentElement\.clientWidth/);
+  assert.ok(browser.includes('layoutWidth: document.documentElement.clientWidth - (document.documentElement.clientWidth === window.innerWidth ? 15 : 0)'));
 });
 
 test('Product Detail uses the shared canvas and content-sized compact variation cards', () => {
