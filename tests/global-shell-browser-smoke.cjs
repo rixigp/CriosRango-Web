@@ -123,7 +123,7 @@ async function inspect(page, routeName, width) {
     const stagingBase = new URL(BASE_URL);
     const resolvedCart = new URL(cartUrl);
     assert.equal(resolvedCart.origin, stagingBase.origin, 'Cart destination must stay on the staging host');
-    assert.ok(resolvedCart.pathname.startsWith(stagingBase.pathname.replace(/\\/$/, '') + '/'), 'Cart destination must stay under the staging path: ' + cartUrl);
+    assert.ok(resolvedCart.pathname.startsWith(stagingBase.pathname.replace(/\/+$/, '') + '/'), 'Cart destination must stay under the staging path: ' + cartUrl);
     console.log('STAGING_CART_URL=' + cartUrl);
 
     const routes = [
