@@ -14,7 +14,7 @@ async function navigate(page, url) {
 }
 
 async function inspect(page, routeName, width) {
-  const state = await desktopPage.evaluate(() => {
+  const state = await page.evaluate(() => {
     const visible = selector => {
       const el = document.querySelector(selector);
       if (!el) return false;
@@ -100,7 +100,7 @@ async function inspect(page, routeName, width) {
     assert.ok(discovered.outlet, 'homepage must expose the Outlet route');
     assert.ok(discovered.product, 'homepage must expose a product detail route');
     await navigate(mobilePage, ACCOUNT_URL);
-    const helpUrl = await desktopPage.evaluate(() => {
+    const helpUrl = await mobilePage.evaluate(() => {
       const link = document.querySelector('.cr-account-home__tile--help[href]');
       return link ? link.href : null;
     });
