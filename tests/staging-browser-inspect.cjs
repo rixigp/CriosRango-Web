@@ -111,7 +111,7 @@ async function main() {
           DISPLAY:c.display, POSITION:c.position,
           MARGIN_TOP:c.marginTop, MARGIN_RIGHT:c.marginRight, MARGIN_BOTTOM:c.marginBottom, MARGIN_LEFT:c.marginLeft,
           PADDING_TOP:c.paddingTop, PADDING_RIGHT:c.paddingRight, PADDING_BOTTOM:c.paddingBottom, PADDING_LEFT:c.paddingLeft,
-          WIDTH:c.width, HEIGHT:c.height, RECT_LEFT:r.left, RECT_TOP:r.top, RECT_RIGHT:r.right, RECT_BOTTOM:r.bottom,
+          WIDTH:c.width, HEIGHT:c.height, RECT_LEFT:r.left, RECT_TOP:r.top, RECT_RIGHT:r.right, RECT_BOTTOM:r.bottom, RECT_WIDTH:r.width, RECT_HEIGHT:r.height,
           FONT_FAMILY:c.fontFamily, FONT_SIZE:c.fontSize, FONT_WEIGHT:c.fontWeight, LINE_HEIGHT:c.lineHeight,
           GRID_TEMPLATE_COLUMNS:c.gridTemplateColumns, GRID_TEMPLATE_ROWS:c.gridTemplateRows, GRID_COLUMN:c.gridColumn,
           GRID_ROW:c.gridRow, FLEX_WRAP:c.flexWrap, GAP:c.gap, ROW_GAP:c.rowGap, COLUMN_GAP:c.columnGap
