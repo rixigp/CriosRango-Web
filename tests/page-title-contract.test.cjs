@@ -118,7 +118,8 @@ test('generic WordPress pages use only the canonical toolbar at every viewport',
   assert.match(page, /cr2026_render_category_toolbar\(\s*get_the_title\(\),\s*\$page_back_url/);
   assert.match(mainCss, /\.cr-parent-category__toolbar\s*\{/);
   assert.match(mainCss, /\.cr-parent-category__title\s*\{/);
-  assert.match(orders, /else\s*:\s*\?>[\s\S]*?cr-account-orders__desktop-toolbar/);
+  assert.match(orders, /cr2026_account_render_endpoint_toolbar\(\s*__\( 'Pedidos'/);
+  assert.doesNotMatch(orders, /cr-account-orders__desktop-toolbar|wp_is_mobile/);
 });
 
 test('Account information and guest login templates use the canonical toolbar without duplicate page titles', () => {
