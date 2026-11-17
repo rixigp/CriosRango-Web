@@ -578,7 +578,7 @@ jobs:
           set -euo pipefail
           BASE_SHA="${{ steps.impact.outputs.base_sha }}"
           if [ "${{ steps.impact.outputs.full_regression }}" = "true" ]; then
-            mapfile -t JS_FILES < <(find theme tests -type f \\( -name '*.js' -o -name '*.cjs' \\) | sort)
+            mapfile -t JS_FILES < <(find theme tests -type f \( -name '*.js' -o -name '*.cjs' \) | sort)
           else
             mapfile -t JS_FILES < <(git diff --name-only "$BASE_SHA" "$GITHUB_SHA" -- '*.js' '*.cjs' | sort -u)
           fi
