@@ -18,7 +18,7 @@ function cr2026_account_render_endpoint_toolbar( $title, $back_url = '' ) {
 }
 
 
-/** Mobile page title for the native WooCommerce order-detail endpoint. */
+/** Universal page title for the theme-owned order-detail renderer. */
 function cr2026_account_view_order_endpoint_toolbar( $order_id = 0 ) {
     if ( ! function_exists( 'is_account_page' ) || ! is_account_page() ) {
         return;
@@ -43,13 +43,13 @@ function cr2026_account_loyalty_endpoint_toolbar() {
 add_action( 'woocommerce_account_loyalty_reward_endpoint', 'cr2026_account_loyalty_endpoint_toolbar', 1 );
 
 
-/** Resolve the mobile profile subview without changing WooCommerce endpoint data. */
+/** Resolve the Profile subview without changing WooCommerce endpoint data. */
 function cr2026_account_profile_view() {
     $view = isset( $_GET['profile_view'] ) ? sanitize_key( wp_unslash( $_GET['profile_view'] ) ) : 'home';
     return in_array( $view, array( 'home', 'personal', 'password' ), true ) ? $view : 'home';
 }
 
-/** Route only the mobile edit-account endpoint through this presentation layer. */
+/** Route the edit-account endpoint through this presentation layer. */
 function cr2026_account_route_profile() {
     if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
         || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'edit-account' ) ) {
@@ -58,10 +58,10 @@ function cr2026_account_route_profile() {
     remove_action( 'woocommerce_account_edit-account_endpoint', 'woocommerce_account_edit_account', 10 );
     add_action( 'woocommerce_account_edit-account_endpoint', 'cr2026_account_render_profile_endpoint', 10 );
 }
-add_action( 'wp', 'cr2026_account_route_mobile_profile', 20 );
+add_action( 'wp', 'cr2026_account_route_profile', 20 );
 
-/** Render a profile landing page or WooCommerce's unmodified native edit-account form. */
-function cr2026_account_render_mobile_profile() {
+/** Render the universal Profile landing or the native WooCommerce edit-account form. */
+function cr2026_account_render_profile_endpoint() {
     $view = cr2026_account_profile_view();
     if ( 'home' === $view ) {
         cr2026_account_render_profile_home();
@@ -570,7 +570,7 @@ function cr2026_account_render_save_feedback( $feedback ) {
 
 /** Preserve the selected mobile Profile subview across WooCommerce's native POST/redirect. */
 function cr2026_account_profile_save_form_feedback() {
-    if ( ! cr2026_account_mobile_save_context( 'edit-account' ) ) {
+    if ( ! cr2026_account_save_context( 'edit-account' ) ) {
         return;
     }
     $view = cr2026_account_profile_view();
@@ -584,7 +584,7 @@ add_action( 'woocommerce_edit_account_form', 'cr2026_account_profile_save_form_f
 
 /** Render address feedback before WooCommerce's native Save address submit button. */
 function cr2026_account_address_save_form_feedback() {
-    if ( ! cr2026_account_mobile_save_context( 'edit-address' ) ) {
+    if ( ! cr2026_account_save_context( 'edit-address' ) ) {
         return;
     }
     cr2026_account_render_save_feedback( 'address' );
@@ -594,7 +594,7 @@ add_action( 'woocommerce_after_edit_address_form_shipping', 'cr2026_account_addr
 /** Shorten only WooCommerce's three native password labels on the mobile password subview. */
 function cr2026_account_password_field_labels( $translated_text, $text, $domain ) {
     if ( 'woocommerce' !== $domain
-        || ! cr2026_account_mobile_save_context( 'edit-account' )
+        || ! cr2026_account_save_context( 'edit-account' )
         || 'password' !== cr2026_account_profile_view() ) {
         return $translated_text;
     }
@@ -615,7 +615,7 @@ add_filter( 'gettext', 'cr2026_account_password_field_labels', 20, 3 );
 
 /** Store success only after WooCommerce's native account save action completed without errors. */
 function cr2026_account_store_profile_save_feedback( $user_id ) {
-    if ( ! cr2026_account_mobile_save_context( 'edit-account' ) ) {
+    if ( ! cr2026_account_save_context( 'edit-account' ) ) {
         return;
     }
     $view = isset( $_POST['cr2026_account_profile_view'] )
@@ -670,7 +670,7 @@ add_action( 'woocommerce_save_account_details', 'cr2026_account_store_profile_sa
 
 /** WooCommerce calls this after its native shipping-address update has completed. */
 function cr2026_account_store_address_save_feedback( $user_id, $load_address ) {
-    if ( 'shipping' !== $load_address || ! cr2026_account_mobile_save_context( 'edit-address' ) ) {
+    if ( 'shipping' !== $load_address || ! cr2026_account_save_context( 'edit-address' ) ) {
         return;
     }
     if ( function_exists( 'wc_get_notices' ) && wc_get_notices( 'error' ) ) {
@@ -686,7 +686,7 @@ add_action( 'woocommerce_customer_save_address', 'cr2026_account_store_address_s
 
 /** Hide only WooCommerce success notices on the mobile Account save endpoints; errors remain native. */
 function cr2026_account_filter_legacy_save_success( $message ) {
-    if ( ! cr2026_account_mobile_save_context( 'edit-address' )
+    if ( ! cr2026_account_save_context( 'edit-address' )
         || ! isset( $_POST['save_address'] )
         || $message !== __( 'Address changed successfully.', 'woocommerce' ) ) {
         return $message;
@@ -754,10 +754,10 @@ function cr2026_account_route_loyalty_reward() {
 
     add_action( $hook_name, 'cr2026_account_render_loyalty_reward', 10 );
 }
-add_action( 'wp', 'cr2026_account_route_mobile_loyalty_reward', 20 );
+add_action( 'wp', 'cr2026_account_route_loyalty_reward', 20 );
 
 /** Theme-owned universal renderer; data and actions are read from the existing loyalty/Woo APIs. */
-function cr2026_account_render_mobile_loyalty_reward() {
+function cr2026_account_render_loyalty_reward() {
     if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
         || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'loyalty_reward' ) ) {
         return;

@@ -126,7 +126,7 @@ test('ADDRESS_SUCCESS_RETURNS_TO_THE_SHIPPING_EDITOR', () => {
 test('LEGACY_ADDRESS_SUCCESS_IS_SUPPRESSED_ONLY_ON_MOBILE_SHIPPING_SAVE', () => {
   assert.match(php, /add_filter\(\s*'woocommerce_add_success',\s*'cr2026_account_filter_legacy_save_success'/);
   const filter = extractPhpFunction('cr2026_account_filter_legacy_save_success');
-  assert.match(filter, /cr2026_account_mobile_save_context\( 'edit-address' \)/);
+  assert.match(filter, /cr2026_account_save_context\( 'edit-address' \)/);
   assert.match(filter, /isset\( \$_POST\['save_address'\] \)/);
   assert.ok(filter.includes("Address changed successfully."));
   assert.match(filter, /return \$message;/);
@@ -159,7 +159,7 @@ test('ADDRESS_LEGACY_SUCCESS_FILTER_IS_EXACT_AND_MOBILE_SHIPPING_SAVE_ONLY', () 
   const start = php.indexOf('function cr2026_account_filter_legacy_save_success');
   const end = php.indexOf("\nadd_filter( 'woocommerce_add_success'", start);
   const filter = php.slice(start, end);
-  assert.match(filter, /cr2026_account_mobile_save_context\( 'edit-address' \)/);
+  assert.match(filter, /cr2026_account_save_context\( 'edit-address' \)/);
   assert.match(filter, /isset\( \$_POST\['save_address'\] \)/);
   assert.match(filter, /Address changed successfully\./);
   assert.match(filter, /return \$message;/);
@@ -240,7 +240,7 @@ test('ADDRESS_RENDER_HOOK_PROVIDES_SHIPPING_TYPE_WITHOUT_REDETECTION', () => {
   const renderer = php.slice(start, end);
   assert.match(php, /add_action\(\s*'woocommerce_after_edit_address_form_shipping',\s*'cr2026_account_address_save_form_feedback'/);
   assert.doesNotMatch(renderer, /get_query_var|\$_SERVER\['REQUEST_URI'\]|preg_match|address_type/);
-  assert.match(renderer, /cr2026_account_mobile_save_context\(\s*'edit-address'\s*\)/);
+  assert.match(renderer, /cr2026_account_save_context\(\s*'edit-address'\s*\)/);
   assert.match(renderer, /cr2026_account_render_save_feedback\(\s*'address'\s*\)/);
 });
 
@@ -288,7 +288,7 @@ test('EMPTY_REAL_AND_INVALID_PASSWORD_SUBMITS_GATE_ONLY_THE_ONE_SHOT_FEEDBACK', 
   const harness = `$GLOBALS['uid'] = 41;
 $GLOBALS['meta'] = [];
 $GLOBALS['errors'] = 0;
-function cr2026_account_mobile_save_context($endpoint) { return 'edit-account' === $endpoint; }
+function cr2026_account_save_context($endpoint) { return 'edit-account' === $endpoint; }
 function sanitize_key($value) { return preg_replace('/[^a-z0-9_\\-]/', '', strtolower((string) $value)); }
 function wp_unslash($value) { return $value; }
 function wc_notice_count($type) { return $GLOBALS['errors']; }
