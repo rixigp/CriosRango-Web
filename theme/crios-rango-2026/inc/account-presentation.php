@@ -20,8 +20,7 @@ function cr2026_account_render_endpoint_toolbar( $title, $back_url = '' ) {
 
 /** Mobile page title for the native WooCommerce order-detail endpoint. */
 function cr2026_account_view_order_endpoint_toolbar( $order_id = 0 ) {
-    if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
-        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
+    if ( ! function_exists( 'is_account_page' ) || ! is_account_page() ) {
         return;
     }
     $order = function_exists( 'wc_get_order' ) ? wc_get_order( absint( $order_id ) ) : false;
@@ -51,14 +50,13 @@ function cr2026_account_profile_view() {
 }
 
 /** Route only the mobile edit-account endpoint through this presentation layer. */
-function cr2026_account_route_mobile_profile() {
+function cr2026_account_route_profile() {
     if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
-        || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'edit-account' )
-        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
+        || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'edit-account' ) ) {
         return;
     }
     remove_action( 'woocommerce_account_edit-account_endpoint', 'woocommerce_account_edit_account', 10 );
-    add_action( 'woocommerce_account_edit-account_endpoint', 'cr2026_account_render_mobile_profile', 10 );
+    add_action( 'woocommerce_account_edit-account_endpoint', 'cr2026_account_render_profile_endpoint', 10 );
 }
 add_action( 'wp', 'cr2026_account_route_mobile_profile', 20 );
 
@@ -107,7 +105,7 @@ function cr2026_account_profile_endpoint_toolbar() {
     if ( ! function_exists( 'is_account_page' ) || ! is_account_page() ) { return; }
     $view = cr2026_account_profile_view();
     $title = 'personal' === $view ? __( 'Datos personales', 'crios-rango-2026' )
-        : ( 'password' === $view ? __( 'Cambiar contraseña', 'crios-rango-2026' ) : __( 'Perfil', 'crios-rango-2026' ) );
+        : ( 'password' === $view ? __( 'Contraseña', 'crios-rango-2026' ) : __( 'Perfil', 'crios-rango-2026' ) );
     cr2026_account_render_endpoint_toolbar( $title, wc_get_account_endpoint_url( 'edit-account' ) );
 }
 add_action( 'woocommerce_account_edit-account_endpoint', 'cr2026_account_profile_endpoint_toolbar', 1 );
@@ -144,7 +142,7 @@ function cr2026_account_address_endpoint_toolbar( $endpoint_value = '' ) {
     // the endpoint subtype from the action argument on some permalink setups.
     $title = 'billing' === $address_type
         ? __( 'Dirección de facturación', 'crios-rango-2026' )
-        : __( 'Dirección de entrega', 'crios-rango-2026' );
+        : ( 'shipping' === $address_type ? __( 'Dirección de envío', 'crios-rango-2026' ) : __( 'Dirección', 'crios-rango-2026' ) );
 
     cr2026_account_render_endpoint_toolbar( $title, wc_get_account_endpoint_url( 'edit-account' ) );
 }
@@ -153,8 +151,7 @@ add_action( 'woocommerce_account_edit-address_endpoint', 'cr2026_account_address
 /** The toolbar is the only mobile title; suppress WooCommerce's secondary H2 in markup. */
 function cr2026_account_edit_address_title( $page_title, $load_address ) {
     if ( 'shipping' === $load_address
-        && function_exists( 'is_account_page' ) && is_account_page()
-        && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
+        && function_exists( 'is_account_page' ) && is_account_page() ) {
         return '';
     }
     return $page_title;
@@ -192,8 +189,7 @@ add_filter( 'woocommerce_shipping_fields', 'cr2026_account_shipping_address_fiel
 
 function cr2026_account_profile_body_class( $classes ) {
     if ( function_exists( 'is_account_page' ) && is_account_page()
-        && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'edit-account' )
-        && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
+        && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'edit-account' ) ) {
         $classes[] = 'cr-account-profile-view-' . cr2026_account_profile_view();
     }
     return $classes;
@@ -482,8 +478,7 @@ add_filter( 'the_content', 'cr2026_account_help_content', 20 );
 
 /** Display the canonical app-owned WordPress birth date as read-only text. */
 function cr2026_account_render_birth_date_field() {
-    if ( ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
-        || ! function_exists( 'is_account_page' ) || ! is_account_page()
+    if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
         || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'edit-account' )
         || 'personal' !== cr2026_account_profile_view() || ! is_user_logged_in() ) {
         return;
@@ -524,9 +519,8 @@ add_action( 'woocommerce_edit_account_form', 'cr2026_account_render_birth_date_f
  * Shared mobile Account save-feedback contract.
  * WooCommerce remains the sole owner of validation, sanitization and persistence.
  */
-function cr2026_account_mobile_save_context( $endpoint = '' ) {
+function cr2026_account_save_context( $endpoint = '' ) {
     if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
-        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
         || ! function_exists( 'is_wc_endpoint_url' ) ) {
         return false;
     }
@@ -705,19 +699,17 @@ add_filter( 'woocommerce_add_success', 'cr2026_account_filter_legacy_save_succes
 /** Scope the app-style wallet presentation to the mobile WPLoyalty account endpoint. */
 function cr2026_account_loyalty_reward_body_class( $classes ) {
     if ( function_exists( 'is_account_page' ) && is_account_page()
-        && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'loyalty_reward' )
-        && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
+        && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'loyalty_reward' ) ) {
         $classes[] = 'cr-account-loyalty-reward';
     }
     return $classes;
 }
 add_filter( 'body_class', 'cr2026_account_loyalty_reward_body_class' );
 
-/** Replace only WPLoyalty's mobile endpoint output; plugin balances and rules remain untouched. */
-function cr2026_account_route_mobile_loyalty_reward() {
+/** Replace WPLoyalty's native account output at every viewport; plugin balances and rules remain untouched. */
+function cr2026_account_route_loyalty_reward() {
     if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
-        || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'loyalty_reward' )
-        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
+        || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'loyalty_reward' ) ) {
         return;
     }
 
@@ -760,14 +752,13 @@ function cr2026_account_route_mobile_loyalty_reward() {
         }
     }
 
-    add_action( $hook_name, 'cr2026_account_render_mobile_loyalty_reward', 10 );
+    add_action( $hook_name, 'cr2026_account_render_loyalty_reward', 10 );
 }
 add_action( 'wp', 'cr2026_account_route_mobile_loyalty_reward', 20 );
 
-/** Theme-owned mobile shell; data and actions are read from the existing loyalty/Woo APIs. */
+/** Theme-owned universal renderer; data and actions are read from the existing loyalty/Woo APIs. */
 function cr2026_account_render_mobile_loyalty_reward() {
-    if ( ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
-        || ! function_exists( 'is_account_page' ) || ! is_account_page()
+    if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
         || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'loyalty_reward' ) ) {
         return;
     }
@@ -822,3 +813,31 @@ function cr2026_account_guest_auth_redirect( $redirect ) {
 }
 add_filter( 'woocommerce_login_redirect', 'cr2026_account_guest_auth_redirect', 20, 1 );
 add_filter( 'woocommerce_registration_redirect', 'cr2026_account_guest_auth_redirect', 20, 1 );
+
+/** Remove the native account-navigation renderer without unregistering endpoints. */
+function cr2026_account_remove_legacy_navigation() {
+    if ( function_exists( 'is_account_page' ) && is_account_page() ) {
+        remove_action( 'woocommerce_account_navigation', 'woocommerce_account_navigation', 10 );
+    }
+}
+add_action( 'wp', 'cr2026_account_remove_legacy_navigation', 1 );
+
+function cr2026_account_downloads_endpoint_toolbar() {
+    cr2026_account_render_endpoint_toolbar( __( 'Descargas', 'crios-rango-2026' ) );
+}
+add_action( 'woocommerce_account_downloads_endpoint', 'cr2026_account_downloads_endpoint_toolbar', 1 );
+
+function cr2026_account_guest_login_shell_open() {
+    echo '<div class="cr-account-shell cr-account-shell--guest"><div class="cr-account-shell__content">';
+}
+add_action( 'woocommerce_before_customer_login_form', 'cr2026_account_guest_login_shell_open', 1 );
+
+function cr2026_account_guest_login_toolbar() {
+    cr2026_account_render_endpoint_toolbar( __( 'Acceder', 'crios-rango-2026' ), wc_get_page_permalink( 'myaccount' ) );
+}
+add_action( 'woocommerce_before_customer_login_form', 'cr2026_account_guest_login_toolbar', 2 );
+
+function cr2026_account_guest_login_shell_close() {
+    echo '</div></div>';
+}
+add_action( 'woocommerce_after_customer_login_form', 'cr2026_account_guest_login_shell_close', 99 );
