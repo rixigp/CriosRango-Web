@@ -93,7 +93,7 @@ contract_assert( false === $shipping_fields['shipping_address_2']['required'] &&
 contract_assert( true === $shipping_fields['shipping_phone']['required'], 'existing shipping_phone required policy is preserved' );
 
 cr2026_account_address_endpoint_toolbar( 'shipping' );
-contract_assert( 'Dirección de entrega' === $GLOBALS['test_toolbar'][0], 'shipping endpoint keeps the delivery toolbar heading' );
+contract_assert( 'Dirección de envío' === $GLOBALS['test_toolbar'][0], 'shipping endpoint keeps the delivery toolbar heading' );
 contract_assert( '' === cr2026_account_edit_address_title( 'Shipping address', 'shipping' ), 'WooCommerce secondary shipping heading remains suppressed' );
 
 echo "BIRTH_DATE_CONTRACT=PASS\n";

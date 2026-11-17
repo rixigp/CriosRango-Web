@@ -1709,3 +1709,9 @@ body.woocommerce-account .cr-account-empty-state { padding:24px 18px; border:1px
 
 /* All Account endpoints supply their own single contextual page header. */
 body.woocommerce-account .cr-page__header { display:none!important; }
+
+@media (min-width: 768px) {
+ body.woocommerce-account .woocommerce-form-login.login,
+ body.woocommerce-account .woocommerce-form-register.register { max-width:520px; }
+ body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm { max-width:560px; }
+}

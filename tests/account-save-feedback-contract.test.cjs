@@ -171,8 +171,8 @@ test('ERROR_CONTENT_IS_MOVED_INLINE_WITHOUT_REWRITING_THE_MESSAGE', () => {
   assert.match(css, /\.cr-account-save-feedback--error/);
 });
 
-test('ACCOUNT_LOADING_SCRIPT_IS_ENQUEUED_ONLY_FOR_MOBILE_ACCOUNT', () => {
-  assert.match(assets, /\$uses_account_app_skin && function_exists\( 'wp_is_mobile' \) && wp_is_mobile\(\)/);
+test('ACCOUNT_LOADING_SCRIPT_IS_ENQUEUED_FOR_ALL_ACCOUNT_VIEWPORTS', () => {
+  assert.match(assets, /if \( \$uses_account_app_skin \)/);
   assert.match(assets, /assets\/js\/account-save-feedback\.js/);
 });
 

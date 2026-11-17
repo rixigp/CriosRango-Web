@@ -17,7 +17,7 @@ test('LOYALTY_ENDPOINT_USES_CANONICAL_TOOLBAR_AND_UNIVERSAL_PRESENTATION', () =>
   assert.match(presentation, /cr2026_account_render_endpoint_toolbar\(\s*__\(\s*'Cupones y promociones'/);
   assert.match(presentation, /woocommerce_account_loyalty_reward_endpoint/);
   assert.match(presentation, /cr-account-loyalty-reward/);
-  const universalRenderer = presentation.slice(presentation.indexOf('function cr2026_account_route_loyalty_reward'), presentation.indexOf('function cr2026_account_guest_login_view'));
+  const universalRenderer = presentation.slice(presentation.indexOf('function cr2026_account_route_loyalty_reward'), presentation.indexOf('function cr2026_account_remove_legacy_navigation'));
   assert.doesNotMatch(universalRenderer, /wp_is_mobile/);
   assert.match(presentation, /cr2026_account_render_loyalty_reward/);
   assert.match(assets, /is_wc_endpoint_url\( 'loyalty_reward' \)/);
