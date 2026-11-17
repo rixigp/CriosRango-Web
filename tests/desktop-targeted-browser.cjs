@@ -231,6 +231,7 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
     const ss = getComputedStyle(shell);
     return {
       found: true,
+      clientWidth: document.documentElement.clientWidth,
       shellDisplay: ss.display,
       shellLeft: sr.left,
       shellRight: sr.right,
@@ -285,7 +286,7 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
       && state.mainPaddingLeft === (isHome ? '0px' : '20px')
       && state.mainPaddingTop === (isHome ? '0px' : '32px')
       && Math.abs(state.shellWidth - Math.min(viewport - 48, 1392)) <= 1
-      && Math.abs(state.shellLeft - (viewport - Math.min(viewport - 48, 1392)) / 2) <= 1
+      && Math.abs(state.shellLeft - ((state.clientWidth || viewport) - Math.min(viewport - 48, 1392)) / 2) <= 1
       && Math.abs(state.mainWidth - (Math.min(viewport - 48, 1392) - 112)) <= 1
       && state.headerMarkDisplay === 'none'
       && state.sidebarLogoDisplay !== 'none'
@@ -826,14 +827,6 @@ async function loginForAuthenticatedAccount(page) {
     });
     if (!productUrl) throw new Error('STAGING_PRODUCT_LINK_NOT_FOUND_FROM_HOME');
     log('PRODUCT_TEST_URL', productUrl);
-    for (const viewport of [1279, 1280, 1440, 1920]) {
-      await page.setViewportSize({ width: viewport, height: 900 });
-      await page.waitForTimeout(250);
-      await desktopShellLayout(page, 'HOME', viewport, true);
-      await homeCanonicalContentRail(page, viewport);
-      await homeDesktopBrands(page, viewport);
-    }
-
     const navDestinations = await page.evaluate(() => {
       const nav = document.querySelector('nav.cr-mobile-bottom-nav.cr-app-bottom-nav');
       return nav ? Array.from(nav.querySelectorAll(':scope > .cr-mobile-bottom-nav__inner > a'))
@@ -843,6 +836,40 @@ async function loginForAuthenticatedAccount(page) {
     const categoryRoute=navDestinations.find(item=>item.label==='Categorías');
     const cartRoute=navDestinations.find(item=>item.label==='Carrito');
     if(!categoryRoute||!cartRoute)throw new Error('SHELL_ROUTE_LINKS_MISSING');
+
+    await visit(page, productUrl);
+    for (const viewport of RESPONSIVE_VIEWPORTS) {
+      await page.setViewportSize({ width: viewport, height: 900 });
+      await page.waitForTimeout(250);
+      await desktopShellLayout(page, 'PRODUCT', viewport, false);
+      await productToolbarLayout(page, viewport);
+      if (viewport >= 1280) await productLayout(page, viewport);
+      else await productStackedLayout(page, viewport);
+      if (BOTTOM_NAV_VIEWPORTS.includes(viewport)) await canonicalBottomNavigation(page, 'PRODUCT', viewport);
+      overflowResults.push(await checkOverflow(page, 'PRODUCT', viewport));
+    }
+
+    for (const destinationLabel of ['Categorías', 'Outlet']) {
+      const destination = navDestinations.find(item => item.label === destinationLabel);
+      if (!destination || !destination.href) throw new Error('TOOLBAR_DESTINATION_MISSING=' + destinationLabel);
+      await visit(page, destination.href);
+      for (const viewport of [1100, 1279, 1280, 1440, 1920]) {
+        await page.setViewportSize({ width: viewport, height: 900 });
+        await page.waitForTimeout(150);
+        await categoryToolbarTopMargin(page, destinationLabel === 'Categorías' ? 'CATEGORY' : 'OUTLET', viewport);
+      }
+    }
+
+    await visit(page, homeUrl);
+    for (const viewport of [1279, 1280, 1440, 1920]) {
+      await page.setViewportSize({ width: viewport, height: 900 });
+      await page.waitForTimeout(250);
+      await desktopShellLayout(page, 'HOME', viewport, true);
+      await homeCanonicalContentRail(page, viewport);
+      await homeDesktopBrands(page, viewport);
+    }
+
+
     await visit(page,accountUrl);
     const legalRoutes=await accountInformationLinks(page,'SHELL_LEGAL',1280);
     if(!legalRoutes.length)throw new Error('SHELL_LEGAL_ROUTE_MISSING');
@@ -878,29 +905,6 @@ async function loginForAuthenticatedAccount(page) {
         await page.waitForTimeout(200);
         await canonicalBottomNavigation(page, 'DESTINATION_' + destinationLabel.replace(/[^A-Za-z0-9]+/g, '_').toUpperCase(), viewport, destinationLabel);
       }
-    }
-
-    for (const destinationLabel of ['Categorías', 'Outlet']) {
-      const destination = navDestinations.find(item => item.label === destinationLabel);
-      if (!destination || !destination.href) throw new Error('TOOLBAR_DESTINATION_MISSING=' + destinationLabel);
-      await visit(page, destination.href);
-      for (const viewport of [1100, 1279, 1280, 1440, 1920]) {
-        await page.setViewportSize({ width: viewport, height: 900 });
-        await page.waitForTimeout(150);
-        await categoryToolbarTopMargin(page, destinationLabel === 'Categorías' ? 'CATEGORY' : 'OUTLET', viewport);
-      }
-    }
-
-    await visit(page, productUrl);
-    for (const viewport of RESPONSIVE_VIEWPORTS) {
-      await page.setViewportSize({ width: viewport, height: 900 });
-      await page.waitForTimeout(250);
-      await desktopShellLayout(page, 'PRODUCT', viewport, false);
-      await productToolbarLayout(page, viewport);
-      if (viewport >= 1280) await productLayout(page, viewport);
-      else await productStackedLayout(page, viewport);
-      if (BOTTOM_NAV_VIEWPORTS.includes(viewport)) await canonicalBottomNavigation(page, 'PRODUCT', viewport);
-      overflowResults.push(await checkOverflow(page, 'PRODUCT', viewport));
     }
 
     await page.setViewportSize({ width: 390, height: 844 });
