@@ -553,6 +553,7 @@ async function productStackedLayout(page, viewport) {
     const gallery = product.querySelector(':scope > .woocommerce-product-gallery');
     const summary = product.querySelector(':scope > .summary');
     const summaryContent = summary && (summary.querySelector(':scope > .cr-product-title-brand-row') || summary.firstElementChild);
+    const descriptionInsideSummary = Boolean(summary && summary.querySelector(':scope > .cr-product-description'));
     const productRect = product.getBoundingClientRect();
     const productStyle = getComputedStyle(product);
     const innerWidth = productRect.width - parseFloat(productStyle.paddingLeft) - parseFloat(productStyle.paddingRight);
@@ -562,6 +563,7 @@ async function productStackedLayout(page, viewport) {
       found: Boolean(galleryRect && summaryRect),
       display: productStyle.display,
       summaryDisplay: summary ? getComputedStyle(summary).display : 'MISSING',
+      descriptionInsideSummary,
       productWidth: productRect.width,
       innerWidth,
       galleryWidth: galleryRect && galleryRect.width,
@@ -570,6 +572,7 @@ async function productStackedLayout(page, viewport) {
     };
   });
   const pass = state.found && state.display === 'flex' && state.summaryDisplay !== 'contents'
+    && state.descriptionInsideSummary
     && state.galleryWidth >= state.innerWidth - 2 && state.galleryTop <= state.summaryTop;
   log('PRODUCT_TABLET_STACKED_' + viewport, pass ? 'PASS' : 'FAIL');
   log('PRODUCT_TABLET_GEOMETRY_' + viewport, JSON.stringify(state));
@@ -650,6 +653,8 @@ async function productLayout(page, viewport) {
     const sizeHelpRect = sizeHelp ? sizeHelp.getBoundingClientRect() : null;
     const cartRect = cart ? cart.getBoundingClientRect() : null;
     const descriptionRect = description ? description.getBoundingClientRect() : null;
+    const descriptionParentIsProduct = Boolean(description && description.parentElement === product);
+    const descriptionInsideSummary = Boolean(summary && summary.querySelector(':scope > .cr-product-description'));
     const tracks = getComputedStyle(product).gridTemplateColumns.split(' ').map(value => parseFloat(value)).filter(Number.isFinite);
     const sum = tracks.reduce((total, value) => total + value, 0);
     return {
@@ -664,6 +669,8 @@ async function productLayout(page, viewport) {
       sizeHelpRect: sizeHelpRect && { top: sizeHelpRect.top, bottom: sizeHelpRect.bottom },
       cartRect: cartRect && { top: cartRect.top, bottom: cartRect.bottom },
       descriptionRect: descriptionRect && { left: descriptionRect.left, top: descriptionRect.top, width: descriptionRect.width },
+      descriptionParentIsProduct,
+      descriptionInsideSummary,
       productRect: { left: productRect.left, width: productRect.width },
       galleryShare: sum && tracks[0] / sum,
       summaryShare: sum && tracks[1] / sum,
@@ -678,6 +685,7 @@ async function productLayout(page, viewport) {
     && state.summaryDisplay === 'flex'
     && state.summaryDirection === 'column'
     && state.galleryRect && state.summaryRect && state.titleRect && state.sizeHelpRect
+    && state.descriptionParentIsProduct && !state.descriptionInsideSummary
     && state.galleryRect.left < state.summaryRect.left
     && Math.abs(state.galleryRect.top - state.summaryRect.top) <= 4
     && (state.sizeHelpRect.top - state.titleRect.bottom) >= 8
@@ -908,6 +916,7 @@ async function loginForAuthenticatedAccount(page) {
       }
     }
 
+    await visit(page, productUrl);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(250);
     const mobile = await page.evaluate(() => {

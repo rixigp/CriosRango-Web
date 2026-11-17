@@ -1903,7 +1903,7 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
     box-sizing: border-box;
   }
 
-  /* The long description is rendered as a sibling of .summary below both columns. */
+  /* Desktop JS moves the single description node below both columns; mobile keeps it in .summary. */
   body.cr-product-detail-app .cr-main--woocommerce div.product > .cr-product-description {
     grid-column: 1 / -1;
     order: 90;
