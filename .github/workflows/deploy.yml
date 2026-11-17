@@ -626,11 +626,21 @@ jobs:
             [ "$RUN_CATALOG" = true ] && add_glob 'tests/catalog-*.test.cjs'
           fi
 
-          if [ "${#TESTS[@]}" -eq 0 ]; then
+          declare -a FILTERED_TESTS=()
+          for file in "${TESTS[@]}"; do
+            [ "$file" = "tests/account-coupons-promotions-contract.test.cjs" ] && continue
+            FILTERED_TESTS+=("$file")
+          done
+
+          if [ "${#FILTERED_TESTS[@]}" -eq 0 ]; then
             echo "NODE_CONTRACTS=SKIP_NO_RELEVANT_TESTS"
           else
-            printf 'NODE_CONTRACTS_SELECTED=%s\n' "${TESTS[*]}"
-            node --test "${TESTS[@]}"
+            printf 'NODE_CONTRACTS_SELECTED=%s\\n' "${FILTERED_TESTS[*]}"
+            node --test "${FILTERED_TESTS[@]}"
+          fi
+
+          if [ "$RUN_ACCOUNT" = true ] || [ "$FULL_REGRESSION" = true ]; then
+            node --test tests/account-coupons-promotions-contract.test.cjs
           fi
 
       - name: Validate PHP and run impact-selected PHP contracts
