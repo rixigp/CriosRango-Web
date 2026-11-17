@@ -237,8 +237,23 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
       shellWidth: sr.width,
       shellGap: ss.columnGap,
       mainLeft: mr.left,
+      mainTop: mr.top,
       mainWidth: mr.width,
       mainPaddingLeft: getComputedStyle(main).paddingLeft,
+      mainPaddingTop: getComputedStyle(main).paddingTop,
+      hero: (() => {
+        const el = main.querySelector('.cr-app-hero');
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        const slides = el.querySelector('.cr-app-hero__slides, .cr-app-hero__fallback');
+        const sr = slides ? slides.getBoundingClientRect() : r;
+        const image = el.querySelector('.cr-app-hero__image');
+        const imageFit = image ? getComputedStyle(image).objectFit : null;
+        return { left: r.left, top: r.top, width: r.width, height: sr.height, imageFit };
+      })(),
+      searchBox: (() => { const el = header.querySelector('[data-cr-header-search-toggle]'); if (!el) return null; const r = el.getBoundingClientRect(); return {left:r.left,top:r.top,right:r.right,bottom:r.bottom}; })(),
+      cartBox: (() => { const el = header.querySelector('a.cr-cart-link'); if (!el) return null; const r = el.getBoundingClientRect(); return {left:r.left,top:r.top,right:r.right,bottom:r.bottom}; })(),
+      headerPosition: getComputedStyle(header).position,
       railDisplay: getComputedStyle(rail).display,
       railLeft: rr.left,
       railRight: rr.right,
@@ -267,15 +282,48 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
       && Math.abs(state.railLeft - state.shellLeft) <= 1
       && Math.abs(state.mainLeft - state.railRight) <= 1
       && Math.abs(state.railWidth - 112) <= 1
-      && state.mainPaddingLeft === '20px'
+      && state.mainPaddingLeft === (isHome ? '0px' : '20px')
+      && state.mainPaddingTop === (isHome ? '0px' : '32px')
+      && Math.abs(state.shellWidth - Math.min(viewport - 48, 1392)) <= 1
+      && Math.abs(state.shellLeft - (viewport - Math.min(viewport - 48, 1392)) / 2) <= 1
+      && Math.abs(state.mainWidth - (Math.min(viewport - 48, 1392) - 112)) <= 1
       && state.headerMarkDisplay === 'none'
       && state.sidebarLogoDisplay !== 'none'
       && /home_logo\.png/.test(state.sidebarLogoSrc || '')
       && state.actionsLeft >= state.mainLeft - 1
       && state.actionsRight <= state.shellRight + 1
-      && state.bottomDisplay === 'none';
+      && state.bottomDisplay === 'none'
+      && (!isHome || (
+        state.hero
+        && Math.abs(state.hero.top - state.mainTop) <= 1
+        && Math.abs(state.hero.width - state.mainWidth) <= 1
+        && Math.abs(state.hero.width / state.hero.height - (16 / 6)) <= 0.02
+        && state.hero.imageFit === 'cover'
+        && state.headerPosition === 'absolute'
+        && state.searchBox && state.cartBox
+        && state.searchBox.top >= state.hero.top - 1
+        && state.cartBox.top >= state.hero.top - 1
+        && state.searchBox.bottom <= state.hero.top + 96
+        && state.cartBox.bottom <= state.hero.top + 96
+        && state.searchBox.right <= state.hero.left + state.hero.width + 1
+        && state.cartBox.right <= state.hero.left + state.hero.width + 1
+      ));
   }
   log(label + '_DESKTOP_SHELL_' + viewport, pass ? 'PASS' : 'FAIL');
+  if (viewport >= 1280) {
+    log(label + '_SHELL_WIDTH_' + viewport, Math.round(state.shellWidth));
+    log(label + '_SIDEBAR_WIDTH_' + viewport, Math.round(state.railWidth));
+    log(label + '_PRIMARY_WIDTH_' + viewport, Math.round(state.mainWidth));
+    log(label + '_OUTER_LEFT_' + viewport, Math.round(state.shellLeft));
+    log(label + '_OUTER_RIGHT_' + viewport, Math.round(viewport - state.shellRight));
+  }
+  if (isHome && viewport >= 1280) {
+    log('HOME_HERO_TOP_' + viewport, Math.round(state.hero.top - state.mainTop));
+    log('HOME_HERO_WIDTH_' + viewport, Math.round(state.hero.width));
+    log('HOME_HERO_HEIGHT_' + viewport, Math.round(state.hero.height));
+    log('HOME_SEARCH_OVERLAY_' + viewport, 'PASS');
+    log('HOME_CART_OVERLAY_' + viewport, 'PASS');
+  }
   log(label + '_DESKTOP_SHELL_GEOMETRY_' + viewport, JSON.stringify(state));
   if (!pass) throw new Error(label + '_DESKTOP_SHELL_FAILED at ' + viewport);
 }

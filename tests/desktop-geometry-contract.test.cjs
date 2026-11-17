@@ -46,9 +46,18 @@ test('DESKTOP_MAIN_RAIL_NOT_NARROW=PASS — one viewport-derived rail with 1440p
   const layer = desktop('main.css');
   assert.match(layer, /--cr-desktop-sidebar:\s*112px/);
   assert.match(layer, /--cr-desktop-gutter:\s*clamp\(32px,\s*3vw,\s*64px\)/);
-  assert.match(layer, /--cr-desktop-content-max:\s*1440px/);
+  assert.match(layer, /--cr-desktop-content-max:\s*1280px/);
   assert.match(layer, /width:\s*min\(calc\(100vw - var\(--cr-desktop-sidebar\) - 2 \* var\(--cr-desktop-gutter\)\), var\(--cr-desktop-content-max\)\)/);
   assert.doesNotMatch(layer, /transform:\s*scale|\bzoom\s*:/);
+});
+
+test('DESKTOP_SHELL_MAX_AND_HOME_HERO_SCALE=PASS', () => {
+  const layer = desktop('main.css');
+  assert.match(layer, /--cr-desktop-shell-max:\s*calc\(var\(--cr-desktop-sidebar\) \+ var\(--cr-desktop-content-max\)\)/);
+  assert.match(layer, /\.cr-desktop-shell > #primary\.cr-home--app\s*\{[^}]*padding:\s*0\s*!important/s);
+  assert.match(layer, /\.cr-app-hero__slides,[\s\S]*?aspect-ratio:\s*16\s*\/\s*6/);
+  assert.match(layer, /\.cr-app-hero__image\s*\{[^}]*object-fit:\s*cover/s);
+  assert.doesNotMatch(layer, /transform:\s*scale|\\bzoom\\s*:/);
 });
 
 test('DESKTOP_ACCOUNT_NO_720_CAP=PASS — shared nav/content grid replaces dashboard cap', () => {

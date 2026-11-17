@@ -3122,3 +3122,34 @@ body.cr-parent-category-view .cr-parent-category__grid,
     gap: 9px;
   }
 }
+
+
+/* DESKTOP CONTENT SCALE + HOME HERO — shared shell only; tablet/mobile stay untouched. */
+@media (min-width: 1280px) {
+  :root {
+    --cr-desktop-content-max: 1280px;
+    --cr-desktop-shell-max: calc(var(--cr-desktop-sidebar) + var(--cr-desktop-content-max));
+    --cr-shell: var(--cr-desktop-content-max);
+  }
+
+  /* Home starts flush at the top of the primary rail; interior pages retain their inset. */
+  .cr-desktop-shell > #primary.cr-home--app {
+    padding: 0 !important;
+  }
+
+  body.home .cr-home--app .cr-app-hero__slides,
+  body.home .cr-home--app .cr-app-hero__fallback {
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 16 / 6;
+    overflow: hidden;
+  }
+
+  body.home .cr-home--app .cr-app-hero__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+  }
+}
