@@ -28,7 +28,7 @@ test('order number and status share a real flex header row; metadata stays below
   assert.ok(headerCard.indexOf('cr-order-detail__header-meta') > headerCard.indexOf('cr-order-detail__header-row'));
   assert.match(css, /\.cr-order-detail__header-row\s*\{[^}]*display:flex;[^}]*align-items:center;[^}]*justify-content:space-between;[^}]*gap:12px;/);
   assert.match(css, /\.cr-order-detail__number\s*\{[^}]*min-width:0;[^}]*margin:0;/);
-  assert.match(css, /\.cr-order-detail__status\s*\{[^}]*flex-shrink:0;[^}]*margin:0;/);
+  assert.match(css, /\.cr-order-detail__header-row \.cr-order-detail__status\s*\{[^}]*flex-shrink:0;[^}]*margin:0;/);
   assert.match(css, /\.cr-order-detail__status\s*\{[^}]*padding:4px 9px;[^}]*border-radius:999px;[^}]*font:300 10px\/14px/);
   assert.doesNotMatch(css, /\.cr-order-detail__header-row[^}]*position\s*:\s*absolute|\.cr-order-detail__header-row[^}]*transform\s*:/);
 });
