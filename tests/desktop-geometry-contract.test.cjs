@@ -76,12 +76,12 @@ test('DESKTOP_CONTENT_RAIL_IS_SINGLE_SOURCE=PASS — Home and Category consume o
   assert.doesNotMatch(home.slice(0, categoriesStart), /cr-desktop-content-rail/);
 });
 
-test('DESKTOP_ACCOUNT_NO_720_CAP=PASS — shared nav/content grid replaces dashboard cap', () => {
-  const layer = desktop('account.css');
-  assert.match(layer, /grid-template-columns:\s*minmax\(220px,\s*250px\) minmax\(0,\s*1fr\)/);
-  assert.match(layer, /\.cr-account-home[\s\S]*?max-width:\s*none\s*!important/);
-  assert.match(layer, /woocommerce-MyAccount-content[\s\S]*?width:\s*100%\s*!important/);
-  assert.doesNotMatch(layer, /max-width:\s*720px/);
+test('DESKTOP_ACCOUNT_NO_720_CAP=PASS — Account shell and content use the canonical desktop rail', () => {
+  const account = css('account.css');
+  assert.match(account, /body\.woocommerce-account \.cr-account-shell[\s\S]*?max-width:\s*1280px/);
+  assert.match(account, /body\.woocommerce-account \.cr-account-content[\s\S]*?width:\s*100%\s*!important/);
+  assert.match(account, /\.cr-account-home[\s\S]*?max-width:\s*none\s*!important/);
+  assert.doesNotMatch(account, /max-width:\s*720px/);
 });
 
 test('DESKTOP_GRID_COLUMNS_RESPONSIVE=PASS — archive and category cards use flexible minimum tracks', () => {
@@ -95,7 +95,7 @@ test('DESKTOP_NO_HORIZONTAL_OVERFLOW=PASS — desktop shells and cards permit in
   const layer = desktop('main.css');
   assert.match(layer, /\.cr-main,[\s\S]*?min-width:\s*0/);
   assert.match(layer, /\.cr-product-card[\s\S]*?min-width:\s*0/);
-  assert.match(desktop('account.css'), /woocommerce-MyAccount-content[\s\S]*?min-width:\s*0/);
+  assert.match(desktop('account.css'), /body\.woocommerce-account \.cr-account-content[\s\S]*?min-width:\s*0/);
 });
 
 test('DESKTOP_CART_PAGE_SHELL_UNCAPPED=PASS — cart outer prose wrapper cannot inherit the 860px reading cap', () => {
@@ -114,24 +114,19 @@ test('WP_FOOTER_HOOK_PRESENT=PASS — technical WordPress hook retained', () => 
 test('DESKTOP_GUEST_ACCOUNT_HOME_USES_CANONICAL_RAIL=PASS — guest landing has no inherited 720px cap', () => {
   const layer = desktop('account.css');
   assert.match(layer, /body\.woocommerce-account:not\(\.logged-in\):has\(\.cr-account-home\)\s+\.cr-account-home[\s\S]*?width:\s*100%\s*!important;[\s\S]*?max-width:\s*none\s*!important/);
-  assert.match(layer, /body\.woocommerce-account\.logged-in\s+\.woocommerce[\s\S]*?grid-template-columns:\s*minmax\(220px,\s*250px\)\s+minmax\(0,\s*1fr\)/);
+  assert.match(layer, /body\.woocommerce-account\.logged-in\s+\.cr-account-shell[\s\S]*?max-width:\s*none\s*!important/);
+  assert.doesNotMatch(layer, /grid-template-columns:\s*minmax\(220px,\s*250px\)\s+minmax\(0,\s*1fr\)/);
 });
 
 
-test('ACCOUNT_AUTH_DESKTOP_EXPLICIT_TWO_COLUMN_GRID=PASS — WooCommerce floats cannot collapse authenticated content', () => {
+test('ACCOUNT_AUTH_DESKTOP_SINGLE_CONTENT_RAIL=PASS — legacy navigation column is absent', () => {
   const account = css('account.css');
-  const marker = '/* Desktop authenticated Account: replace WooCommerce';
-  const start = account.lastIndexOf(marker);
-  assert.ok(start >= 0, 'authenticated desktop account grid layer exists');
-  const layer = account.slice(start);
-  assert.match(layer, /@media \(min-width: 1280px\)/);
-  assert.match(layer, /body\.woocommerce-account\.logged-in \.woocommerce[\s\S]*?display: grid !important/);
-  assert.match(layer, /grid-template-columns: minmax\(220px, 250px\) minmax\(0, 1fr\)/);
-  assert.match(layer, /woocommerce-MyAccount-navigation[\s\S]*?float: none !important[\s\S]*?width: 100% !important/);
-  assert.match(layer, /woocommerce-MyAccount-content[\s\S]*?grid-column: 2[\s\S]*?float: none !important[\s\S]*?min-width: 0/);
-  assert.match(layer, /cr-account-home__grid[\s\S]*?repeat\(4, minmax\(0, 1fr\)\)/);
-  assert.match(layer, /cr-account-home__identity strong[\s\S]*?word-break: normal/);
-  assert.doesNotMatch(layer, /flex-wrap:\s*wrap|transform:\s*scale|\bzoom\s*:/);
+  assert.match(account, /body\.woocommerce-account\.logged-in \.cr-account-shell[\s\S]*?width: 100% !important/);
+  assert.match(account, /body\.woocommerce-account\.logged-in \.cr-account-content[\s\S]*?float: none !important[\s\S]*?min-width: 0/);
+  assert.doesNotMatch(account, /\.cr-account-shell[\s\S]*?grid-template-columns:\s*minmax\(220px, 250px\) minmax\(0, 1fr\)/);
+  assert.match(account, /cr-account-home__grid[\s\S]*?repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(account, /cr-account-home__identity strong[\s\S]*?word-break: normal/);
+  assert.doesNotMatch(account, /flex-wrap:\s*wrap|transform:\s*scale|\bzoom\s*:/);
 });
 
 

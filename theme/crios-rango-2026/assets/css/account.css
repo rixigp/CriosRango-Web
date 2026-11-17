@@ -1516,58 +1516,7 @@ body.woocommerce-account .cr-account-profile-home__action--logout.is-loading .cr
 }
 
 
-/* The Account shell now owns a single content rail; no legacy navigation column. */
-@media (min-width: 1280px) {
-  body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation {
-    grid-column: 1;
-    grid-row: 1;
-    box-sizing: border-box;
-    float: none !important;
-    width: 100% !important;
-    max-width: none !important;
-    min-width: 0;
-    margin: 0 !important;
-    padding: 16px !important;
-  }
-
-  body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation ul {
-    display: grid;
-    gap: 5px;
-    width: 100%;
-    min-width: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation li {
-    float: none;
-    width: 100%;
-    min-width: 0;
-    margin: 0;
-  }
-
-  body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation li a {
-    box-sizing: border-box;
-    display: flex;
-    min-height: 44px;
-    align-items: center;
-    padding: 10px 12px;
-    overflow-wrap: normal;
-    word-break: normal;
-  }
-
-  body.woocommerce-account.logged-in .cr-account-content {
-    grid-column: 2;
-    grid-row: 1;
-    box-sizing: border-box;
-    float: none !important;
-    width: 100% !important;
-    max-width: none !important;
-    min-width: 0;
-    margin: 0 !important;
-    padding: 24px !important;
-  }
-
+/* The Account shell has a single content rail; legacy navigation styles are not rendered. */
   body.woocommerce-account.logged-in .cr-account-home {
     box-sizing: border-box;
     width: 100%;
