@@ -1694,7 +1694,7 @@ body.woocommerce-account .cr-account-profile-home { width:100%; max-width:760px;
 
 @media (max-width: 767px) {
   .cr-account-orders__filter-controls { margin-bottom: 16px; }
-  .cr-account-orders__list { gap: 16px; }
+  .cr-account-orders__list { gap: 12px; }
   .cr-account-order { padding: 14px; }
   .cr-account-order__top { gap: 11px; }
   .cr-account-order__bottom { margin-top: 12px; padding-top: 10px; }
