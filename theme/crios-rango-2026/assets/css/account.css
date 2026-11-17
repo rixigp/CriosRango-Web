@@ -1646,3 +1646,56 @@ body.woocommerce-account .cr-page__header { display:none!important; }
 }
 
 body.woocommerce-account .cr-account-profile-home { width:100%; max-width:760px; }
+
+/* Orders: breathing room and accessible horizontal status-filter controls. */
+.cr-account-orders__filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 22px;
+}
+.cr-account-orders__filters {
+  flex: 1 1 auto;
+  width: auto !important;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 0 6px !important;
+}
+.cr-account-orders__filter-scroll {
+  box-sizing: border-box;
+  flex: 0 0 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(24,59,53,.12);
+  border-radius: 50%;
+  background: #fff;
+  color: #244436;
+  font: 300 22px/1 Arial, sans-serif;
+  cursor: pointer;
+}
+.cr-account-orders__filter-scroll[hidden] { display: none !important; }
+.cr-account-orders__filters button { flex-shrink: 0; }
+.cr-account-orders__list { gap: 15px; }
+.cr-account-order { padding: 16px; }
+.cr-account-order__top { gap: 12px; }
+.cr-account-order__status {
+  box-sizing: border-box;
+  min-height: 24px;
+  padding: 4px 10px;
+  font: 300 11px/16px "Roboto", Arial, sans-serif;
+}
+.cr-account-order__bottom { margin-top: 14px; padding-top: 11px; }
+
+@media (max-width: 767px) {
+  .cr-account-orders__filter-controls { margin-bottom: 16px; }
+  .cr-account-orders__list { gap: 12px; }
+  .cr-account-order { padding: 14px; }
+  .cr-account-order__top { gap: 11px; }
+  .cr-account-order__bottom { margin-top: 12px; padding-top: 10px; }
+}
