@@ -1175,3 +1175,30 @@ test('empty cart CTA selectors match the MHT-proven WooCommerce DOM tree', () =>
   assert.match(emptyCartTemplate, /<p class="return-to-shop">\s*<a class="button wc-backward" href="[\s\S]*?">\s*<\?php esc_html_e\( 'Volver a la tienda'/,
     'retain the actual CTA class, href expression and copy');
 });
+
+
+test('OUTLET_ROOT_445_USES_OUTLET_SCOPE_AND_ROOT_TREE_NOT_GENERAL_CATALOG', () => {
+  assert.match(helpers, /function cr2026_outlet_root_id\(\)\{return 445;\}/);
+  assert.match(helpers, /function cr2026_is_outlet_context_category\(\$category_id\)/);
+  assert.match(helpers, /\$is_outlet_context = ! \$is_root_catalog[\s\S]*?cr2026_is_outlet_context_category/);
+  assert.match(archive, /cr2026_is_outlet_context_category\(\$listing_category_id\)\?\$listing_category_id:0/);
+  assert.match(php, /if \( \$is_outlet_scope && ! cr2026_is_outlet_context_category\( \$outlet_category_id \) \)/);
+  assert.match(js, /params\.set\('outlet_category_id',String\(context\.categoryId\)\)/);
+});
+
+test('account address renderer exposes only shipping address and shipping editor', () => {
+  const template = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/woocommerce/myaccount/my-address.php'), 'utf8');
+  assert.match(template, /wc_get_account_formatted_address\( 'shipping', \$customer_id \)/);
+  assert.match(template, /wc_get_endpoint_url\( 'edit-address', 'shipping'/);
+  assert.match(template, /esc_html_e\( 'Dirección'/);
+  assert.doesNotMatch(template, /billing|woocommerce_my_account_get_addresses/);
+});
+
+test('facet cache is context-scoped, deduplicates in-flight requests and records modal/request/render timings', () => {
+  assert.match(js, /storageKeyForContext = \(\) =>[\s\S]*?filterSheet\.dataset\.scope[\s\S]*?context\.categoryId[\s\S]*?context\.originCategoryIds/);
+  assert.match(js, /if\(inFlightCache\[key\]\)return inFlightCache\[key\]/);
+  assert.match(js, /inFlightCache\[key\]=requestPromise/);
+  assert.match(js, /cancelDeferredPrefetch\(false\)/);
+  assert.match(js, /scheduleDeferredPrefetch/);
+  for (const metric of ['FILTER_MODAL_OPEN_T0','FILTER_REQUEST_START','FILTER_RESPONSE_RECEIVED','FILTER_OPTIONS_RENDERED','FILTER_API_DURATION_MS','FILTER_RENDER_DURATION_MS','TOTAL_FILTER_READY_MS']) assert.ok(js.includes(metric));
+});

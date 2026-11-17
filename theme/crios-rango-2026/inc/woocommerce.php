@@ -367,7 +367,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         $origin_category_ids = array_values( array_unique( $origin_category_ids ) );
         sort( $origin_category_ids, SORT_NUMERIC );
     }
-    if ( $is_outlet_scope && ! in_array( $outlet_category_id, cr2026_outlet_branch_ids(), true ) ) {
+    if ( $is_outlet_scope && ! cr2026_is_outlet_context_category( $outlet_category_id ) ) {
         return new WP_Error( 'cr2026_catalog_outlet_category', __( 'Rama Outlet no válida.', 'crios-rango-2026' ), array( 'status' => 400 ) );
     }
     if ( ! $is_outlet_scope && ( $outlet_category_id > 0 || ! empty( $origin_category_ids ) ) ) {

@@ -249,14 +249,17 @@
     const apiKeys = {sizes:'size_ids',colors:'color_ids',brands:'brand_ids'};
     const taxonomies = {sizes:'pa_tallas',colors:'pa_color',brands:'product_tag'};
     const initialKeys = {sizes:'initialSizes',colors:'initialColors',brands:'initialBrands'};
-    const ttl = 300000, storageKey = brandContext ? 'cr2026_filters_v2_brand_' + catalogBrandId : 'cr2026_filters_v2_category_' + categoryId;
-    try { sessionStorage.removeItem('cr2026_filters_v1_category_' + categoryId); } catch (error) {}
+    const ttl = 300000;
     const memoryCache = window.categoryFacetCacheV2 || (window.categoryFacetCacheV2 = Object.create(null));
+    const inFlightCache = window.categoryFacetInflightV1 || (window.categoryFacetInflightV1 = Object.create(null));
+    try { sessionStorage.removeItem('cr2026_filters_v1_category_' + categoryId); } catch (error) {}
     const collator = new Intl.Collator('es',{sensitivity:'base'});
     const normalize = value => String(value||'').trim().normalize('NFC').toLocaleLowerCase('es');
     const sortIds = values => Array.from(new Set((values||[]).map(String).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'en',{numeric:true}));
     const outletScope=filterSheet.dataset.scope==='outlet';
     const outletContext=()=>window.CR2026CatalogListing&&window.CR2026CatalogListing.getOutletContext?window.CR2026CatalogListing.getOutletContext():{categoryId:Number(filterSheet.dataset.outletCategoryId||0),originCategoryIds:[]};
+    const storageKeyForContext = () => { const context = outletScope ? outletContext() : null; return brandContext ? 'cr2026_filters_v3_brand_' + catalogBrandId : 'cr2026_filters_v3_' + [filterSheet.dataset.scope || 'catalog', categoryId, context ? context.categoryId : 0, context ? context.originCategoryIds.join(',') : ''].join('_'); };
+    const metricState={openT0:null,requestStart:null,responseReceived:null,optionsRendered:null,serverTiming:[],requestCount:0};
     const cacheKey=(facet,state)=>{const context=outletScope?outletContext():null;return [brandContext?'brand:'+catalogBrandId:categoryId,filterSheet.dataset.scope||'catalog',context?context.categoryId:0,context?context.originCategoryIds.join(','):'',facet,...dimensions.filter(d=>d!==facet).map(d=>d+':'+sortIds(state[d]).join(','))].join('|');};
     const isValid = value => value && Number(value.timestamp)>0 && Date.now()-Number(value.timestamp)<ttl;
     const readStore = key => {try{const value=JSON.parse(sessionStorage.getItem(key)||'null');return isValid(value)?value:null;}catch(error){return null;}};
@@ -268,24 +271,31 @@
     const optionsNode=filterSheet.querySelector('[data-cr-filter-options]');
     const dialog=filterSheet.querySelector('.cr-category-filter-sheet__dialog');
     const openButtons=Array.from(document.querySelectorAll('[data-cr-filter-open]'));
-    window.CR2026CatalogFacetContextChanged=()=>{if((outletScope||brandContext)&&!filterSheet.hidden)scheduleDependentRefresh(null);};
+    window.CR2026CatalogFacetContextChanged=()=>{if(outletScope||brandContext){baseFacets=null;if(!filterSheet.hidden){fetchBase(false).then(()=>setDimension(activeDimension)).catch(error=>{if(error&&error.name!=='AbortError')console.error(error);});scheduleDependentRefresh(null);}}};
     const facetEndpoint = async (facet,state,signal) => {
-      const key=cacheKey(facet,state), cached=memoryCache[key]||readStore(storageKey+'|'+key);
+      const key=cacheKey(facet,state), storageKey=storageKeyForContext(), cached=memoryCache[key]||readStore(storageKey+'|'+key);
       if(cached){memoryCache[key]=cached;return cached.rows;}
+      if(inFlightCache[key])return inFlightCache[key];
       const params=new URLSearchParams({scope:filterSheet.dataset.scope||'catalog',facet,page:'1',per_page:'1'});
       if(outletScope){const context=outletContext();if(!context.categoryId)throw new Error('Outlet facet context has no active branch.');params.set('outlet_category_id',String(context.categoryId));if(context.originCategoryIds.length)params.set('origin_category_ids',context.originCategoryIds.join(','));}
       else if(brandContext)params.set('catalog_brand_id',catalogBrandId);
       else if(categoryId!=='root')params.set('catalog_category_id',categoryId);
       dimensions.forEach(d=>{if(d!==facet&&state[d].length)params.set(apiKeys[d],sortIds(state[d]).join(','));});
       
-      const response=await fetch(apiUrl+'?'+params.toString(),{credentials:'same-origin',headers:{Accept:'application/json'},signal});
+      const requestUrl=apiUrl+'?'+params.toString();
+      const requestPromise=(async()=>{
+      const requestStart=performance.now();metricState.requestStart=metricState.requestStart===null?requestStart:Math.min(metricState.requestStart,requestStart);metricState.requestCount++;
+      const response=await fetch(requestUrl,{credentials:'same-origin',headers:{Accept:'application/json'},signal});
       if(!response.ok)throw new Error('Filter API HTTP '+response.status);
-      const payload=await response.json(), facets=payload&&payload.facets||{};
+      const payload=await response.json(), responseReceived=performance.now();metricState.responseReceived=metricState.responseReceived===null?responseReceived:Math.max(metricState.responseReceived,responseReceived);const serverTiming=response.headers.get('Server-Timing');if(serverTiming)metricState.serverTiming.push(serverTiming);const facets=payload&&payload.facets||{};
       const raw=Array.isArray(facets[facet])?facets[facet]:(Array.isArray(facets[facet==='colors'?'colors':facet])?facets[facet]:[]);
       const rows=rowsFor(raw,facet);
       
       writeStore(storageKey+'|'+key,{timestamp:Date.now(),rows});
       return rows;
+      })();
+      inFlightCache[key]=requestPromise;
+      try{return await requestPromise;}finally{if(inFlightCache[key]===requestPromise)delete inFlightCache[key];}
     };
     const rowsFor = (facet,dimension) => {
       const grouped=new Map(),taxonomy=taxonomies[dimension];
@@ -321,8 +331,10 @@
     };
     const render = dimension => {
       updateFilterCounters();
+      const measuringRender=metricState.openT0!==null&&metricState.optionsRendered===null, renderStart=measuringRender?performance.now():null;
+      const finishRender=()=>{if(!measuringRender)return;metricState.optionsRendered=performance.now();const apiDuration=metricState.requestStart!==null&&metricState.responseReceived!==null?Math.round(metricState.responseReceived-metricState.requestStart):0;console.info('[CR2026_FILTER_METRICS]',JSON.stringify({FILTER_MODAL_OPEN_T0:Math.round(metricState.openT0),FILTER_REQUEST_START:metricState.requestStart===null?null:Math.round(metricState.requestStart),FILTER_RESPONSE_RECEIVED:metricState.responseReceived===null?null:Math.round(metricState.responseReceived),FILTER_OPTIONS_RENDERED:Math.round(metricState.optionsRendered),FILTER_API_DURATION_MS:apiDuration,FILTER_RENDER_DURATION_MS:Math.round(metricState.optionsRendered-renderStart),TOTAL_FILTER_READY_MS:Math.round(metricState.optionsRendered-metricState.openT0),FILTER_SERVER_TIMING:metricState.serverTiming,FILTER_REQUEST_COUNT:metricState.requestCount}));};
       const rows=rowsByDimension[dimension]||[];optionsNode.replaceChildren();
-      if(!rows.length){const empty=document.createElement('p');empty.className='cr-category-filter-sheet__empty';empty.textContent='No hay opciones disponibles.';optionsNode.appendChild(empty);return;}
+      if(!rows.length){const empty=document.createElement('p');empty.className='cr-category-filter-sheet__empty';empty.textContent='No hay opciones disponibles.';optionsNode.appendChild(empty);finishRender();return;}
       rows.forEach(row=>{
         const selected=row.term_ids.some(id=>draft[dimension].includes(id));
         const available=facetAvailability[dimension];
@@ -342,6 +354,7 @@
         });
         optionsNode.appendChild(chip);
       });
+      finishRender();
     };
     const scheduleDependentRefresh = changedDimension => {
       generation++;const token=generation;
@@ -365,6 +378,7 @@
     };
     const fetchBase = async (force, isPrefetch=false) => {
       if(!force&&baseFacets){dimensions.forEach(d=>{rowsByDimension[d]=baseFacets[d]||[];facetAvailability[d]=new Set(rowsByDimension[d].flatMap(row=>row.term_ids));});return baseFacets;}
+      const storageKey=storageKeyForContext();
       const cache=memoryCache[storageKey]||readStore(storageKey);
       if(!force&&cache&&dimensions.every(d=>Array.isArray(cache[d]))){baseFacets=cache;dimensions.forEach(d=>{rowsByDimension[d]=cache[d];facetAvailability[d]=new Set(cache[d].flatMap(row=>row.term_ids));});return cache;}
       const state={sizes:[],colors:[],brands:[]};
@@ -388,7 +402,8 @@
       if(abortRequests){prefetchControllers.forEach(controller=>controller.abort());prefetchControllers=[];}
     };
     const openSheet=()=>{
-      cancelDeferredPrefetch(true);
+      cancelDeferredPrefetch(false);
+      metricState.openT0=performance.now();metricState.optionsRendered=null;metricState.requestStart=null;metricState.responseReceived=null;metricState.serverTiming=[];metricState.requestCount=0;
       savedScrollY=window.scrollY;
       const liveState=window.CR2026CatalogListing&&window.CR2026CatalogListing.getFilters?window.CR2026CatalogListing.getFilters():null;
       dimensions.forEach(d=>draft[d]=liveState?liveState[apiKeys[d]].slice():(filterSheet.dataset[initialKeys[d]]||'').split(',').filter(Boolean));

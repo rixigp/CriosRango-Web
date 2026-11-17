@@ -468,7 +468,9 @@ function cr2026_category_filter_term_labels() {
 }
 /** Render the contextual filter dialog; its trigger lives in the category toolbar. */
 /** APP-parity Outlet candidates copied from OutletCatalog.kt. */
+function cr2026_outlet_root_id(){return 445;}
 function cr2026_outlet_branch_ids(){return array(446,475,447,476,449,478,448,477);}
+function cr2026_is_outlet_context_category($category_id){$category_id=(int)$category_id;return cr2026_outlet_root_id()===$category_id||in_array($category_id,cr2026_outlet_branch_ids(),true);}
 function cr2026_fixed_outlet_bubbles($outlet_category_id){$definitions=array(
 446 => array(
             array('key'=>'abrigos y cazadoras','label'=>'Abrigos y cazadoras','category_ids'=>array(430)),
@@ -547,10 +549,11 @@ function cr2026_render_category_filter_sheet( $term, $context = 'archive' ) {
     } elseif ( ! $is_root_catalog && ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) ) {
         return;
     }
-    $filter_category_id = ( $is_root_catalog || $is_brand_context ) ? '' : (string) (int) $term->term_id;
+    $is_outlet_context = ! $is_root_catalog && ! $is_brand_context && $term instanceof WP_Term && cr2026_is_outlet_context_category( $term->term_id );
+    $filter_category_id = ( $is_root_catalog || $is_brand_context || $is_outlet_context ) ? '' : (string) (int) $term->term_id;
     $filter_brand_id = $is_brand_context ? (string) (int) $term->term_id : '';
-    $outlet_category_id = ( ! $is_root_catalog && ! $is_brand_context && in_array((int)$term->term_id,cr2026_outlet_branch_ids(),true) ) ? (int)$term->term_id : 0;
-    $filter_scope = $outlet_category_id ? 'outlet' : 'catalog';
+    $outlet_category_id = $is_outlet_context ? (int) $term->term_id : 0;
+    $filter_scope = $is_outlet_context ? 'outlet' : 'catalog';
     $dimensions = $is_brand_context ? array( 'sizes' => 'Talla', 'colors' => 'Color' ) : array( 'sizes' => 'Talla', 'colors' => 'Color', 'brands' => 'Marca' );
     $labels = cr2026_category_filter_term_labels();
     $selected = array(
