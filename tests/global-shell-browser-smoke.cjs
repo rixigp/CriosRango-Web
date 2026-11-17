@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 
 const BASE_URL = (process.env.STAGING_BASE_URL || 'https://criosrango.es/prueba').replace(/\/+$/, '');
-const WIDTHS = [390, 768, 980, 1100, 1279, 1280, 1440, 1920];
+const WIDTHS = [390, 412, 430, 768, 980, 1100, 1279, 1280, 1440, 1920];
 const ACCOUNT_URL = new URL('mi-cuenta/', BASE_URL + '/').toString();
 const LEGAL_URL = new URL('cambios-y-devoluciones/', BASE_URL + '/').toString();
 
@@ -31,6 +31,12 @@ async function inspect(page, routeName, width) {
       sidebarVisible: visible('.cr-desktop-rail'),
       bottomVisible: visible('.cr-mobile-bottom-nav.cr-app-bottom-nav'),
       headerCount: document.querySelectorAll('.cr-app-header').length,
+      contextToolbarCount: Array.from(document.querySelectorAll('.cr-parent-category__toolbar')).filter(el => {
+        const style = getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+      }).length,
+      contextTitle: document.querySelector('.cr-parent-category__title')?.textContent.trim() || null,
       visualFooter: !!document.querySelector('.cr-footer, .site-footer, #colophon'),
       overflow: Math.max(root.scrollWidth, document.body ? document.body.scrollWidth : 0) > root.clientWidth + 1,
       scrollingElementIsRoot: document.scrollingElement === root,
@@ -49,6 +55,18 @@ async function inspect(page, routeName, width) {
   assert.equal(state.overflow, false, routeName + ' no horizontal overflow at ' + width);
   assert.equal(state.scrollingElementIsRoot, true, routeName + ' document scrolling element is html');
   assert.equal(state.scrollbarGutter, 'stable', routeName + ' reserves the root scrollbar gutter');
+  if (routeName !== 'home' && width < 768) {
+    assert.equal(state.contextToolbarCount, 1, routeName + ' must render exactly one mobile context toolbar at ' + width);
+  }
+  if (width < 768 && routeName === 'account') {
+    assert.match(state.contextTitle || '', /Cuenta/, 'guest Account has one Cuenta title');
+  }
+  if (width < 768 && routeName === 'help') {
+    assert.match(state.contextTitle || '', /Ayuda/, 'Help has one Ayuda title, not Contacto');
+  }
+  if (width < 768 && routeName === 'cart') {
+    assert.match(state.contextTitle || '', /Tu carrito/, 'Cart has one Tu carrito title');
+  }
   if (routeName === 'account' && width < 1280) {
     assert.equal(state.accountInternalNavVisible, false, 'account internal desktop nav hidden below 1280');
   }
@@ -75,12 +93,29 @@ async function inspect(page, routeName, width) {
     assert.ok(discovered.category, 'homepage must expose a product category route');
     assert.ok(discovered.outlet, 'homepage must expose the Outlet route');
     assert.ok(discovered.product, 'homepage must expose a product detail route');
+    await navigate(page, ACCOUNT_URL);
+    const helpUrl = await page.evaluate(() => {
+      const link = document.querySelector('.cr-account-home__tile--help[href]');
+      return link ? link.href : null;
+    });
+    assert.ok(helpUrl, 'guest Account must expose its Help destination');
+
+    await navigate(page, BASE_URL + '/');
+    const cartUrl = await page.evaluate(() => {
+      const links = Array.from(document.querySelectorAll('.cr-app-header a[href]'));
+      const link = links.find(anchor => /carrito|cart/i.test(new URL(anchor.href).pathname));
+      return link ? link.href : null;
+    });
+    assert.ok(cartUrl, 'global app header must expose a Cart destination');
+
     const routes = [
       ['home', BASE_URL + '/'],
       ['category', discovered.category],
       ['outlet', discovered.outlet],
       ['product', discovered.product],
       ['account', ACCOUNT_URL],
+      ['help', helpUrl],
+      ['cart', cartUrl],
       ['legal', LEGAL_URL]
     ];
     for (const width of WIDTHS) {
