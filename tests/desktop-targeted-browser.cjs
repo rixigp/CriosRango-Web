@@ -330,6 +330,65 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
 
 
 
+async function homeCanonicalContentRail(page, viewport) {
+  const state = await page.evaluate(() => {
+    const primary = document.querySelector('[data-cr-desktop-shell] > #primary.cr-home--app');
+    if (!primary) return { found: false };
+    const rect = el => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right, width: r.width };
+    };
+    const rail = section => {
+      const wrapper = primary.querySelector(section + ' .cr-desktop-content-rail');
+      return rect(wrapper);
+    };
+    const title = selector => rect(primary.querySelector(selector));
+    const hero = primary.querySelector('.cr-app-hero');
+    return {
+      found: true,
+      primary: rect(primary),
+      hero: rect(hero),
+      categoryTitle: title('.cr-app-categories .cr-app-section-title'),
+      categoryGrid: title('.cr-app-categories .cr-app-category-grid'),
+      novedadesTitle: title('.cr-home-novedades .cr-home-section__header'),
+      novedadesProducts: title('.cr-home-novedades .cr-home-products'),
+      outletTitle: title('.cr-home-outlet .cr-home-section__header'),
+      outletGrid: title('.cr-home-outlet .cr-home-outlet__grid'),
+      brandsTitle: title('.cr-home-brands .cr-home-section__header'),
+      brandsPager: title('.cr-home-brands .cr-home-brand-pager--desktop'),
+      rails: [
+        rail('.cr-app-categories'),
+        rail('.cr-home-novedades'),
+        rail('.cr-home-outlet'),
+        rail('.cr-home-brands')
+      ]
+    };
+  });
+  if (!state.found) throw new Error('HOME_CONTENT_RAIL_MARKUP_MISSING_' + viewport);
+  const expectedLeft = state.primary.left + 20;
+  const contentLefts = [
+    state.categoryTitle?.left, state.categoryGrid?.left,
+    state.novedadesTitle?.left, state.novedadesProducts?.left,
+    state.outletTitle?.left, state.outletGrid?.left,
+    state.brandsTitle?.left, state.brandsPager?.left
+  ];
+  const pass = state.rails.every(r => r && Math.abs(r.left - expectedLeft) <= 1)
+    && contentLefts.every(x => Number.isFinite(x) && Math.abs(x - expectedLeft) <= 1)
+    && Math.abs(state.hero.left - state.primary.left) <= 1
+    && Math.abs(state.hero.width - state.primary.width) <= 1;
+  log('HOME_SECTIONS_USE_CANONICAL_RAIL_' + viewport, pass ? 'PASS' : 'FAIL');
+  log('HOME_HERO_FULL_PRIMARY_' + viewport,
+    Math.abs(state.hero.left - state.primary.left) <= 1 && Math.abs(state.hero.width - state.primary.width) <= 1 ? 'PASS' : 'FAIL');
+  log('HOME_CATEGORIES_TITLE_LEFT_' + viewport, Math.round(state.categoryTitle?.left ?? -1));
+  log('HOME_CATEGORIES_CONTENT_LEFT_' + viewport, Math.round(state.categoryGrid?.left ?? -1));
+  log('HOME_NOVEDADES_LEFT_' + viewport, Math.round(state.novedadesTitle?.left ?? -1));
+  log('HOME_OUTLET_LEFT_' + viewport, Math.round(state.outletTitle?.left ?? -1));
+  log('HOME_BRANDS_LEFT_' + viewport, Math.round(state.brandsTitle?.left ?? -1));
+  log('HOME_CANONICAL_RAIL_GEOMETRY_' + viewport, JSON.stringify(state));
+  if (!pass) throw new Error('HOME_CONTENT_RAIL_ALIGNMENT_FAILED_' + viewport);
+}
+
 async function desktopShellSnapshot(page) {
   return page.evaluate(() => {
     const shell=document.querySelector('[data-cr-desktop-shell]');
@@ -360,19 +419,28 @@ async function categoryDesktopContainment(page,viewport){
     if(!primary||!canvas||!grid)return {found:false};
     const box=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}};
     const p=box(primary),c=box(canvas),g=box(grid),cards=Array.from(grid.children).map(box);
+    const toolbar=primary.querySelector('.cr-parent-category__toolbar,.cr-page__header,.cr-category-hub__header');
+    const title=toolbar&&box(toolbar);
     const inside=(x,y)=>x.left>=y.left-1&&x.right<=y.right+1;
-    return {found:true,primary:p,canvas:c,grid:g,cards,contentInsidePrimary:inside(c,p)&&inside(g,p),
+    const canonicalLeft=p.left+20;
+    return {found:true,primary:p,canvas:c,grid:g,toolbar:title,
+      categoryTitleLeft:title&&title.left,categoryGridLeft:g.left,canonicalLeft,
+      categoryRailAligned:Boolean(title)&&Math.abs(title.left-canonicalLeft)<=1&&Math.abs(g.left-canonicalLeft)<=1,
+      cards,contentInsidePrimary:inside(c,p)&&inside(g,p),
       noHorizontalOverflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1&&primary.scrollWidth<=primary.clientWidth+1&&canvas.scrollWidth<=canvas.clientWidth+1,
       gridNotClipped:grid.scrollWidth<=grid.clientWidth+1&&cards.every(card=>inside(card,g))};
   });
   const inside=state.found&&state.contentInsidePrimary,overflow=state.found&&state.noHorizontalOverflow,clip=state.found&&state.gridNotClipped;
+  log('CATEGORY_TITLE_LEFT_'+viewport,Math.round(state.categoryTitleLeft ?? -1));
+  log('CATEGORY_GRID_LEFT_'+viewport,Math.round(state.categoryGridLeft ?? -1));
+  log('CATEGORY_USES_CANONICAL_RAIL_'+viewport,state.categoryRailAligned?'PASS':'FAIL');
   log('CATEGORY_CONTENT_INSIDE_PRIMARY_'+viewport,inside?'PASS':'FAIL');
   log('CATEGORY_NO_HORIZONTAL_OVERFLOW_'+viewport,overflow?'PASS':'FAIL');
   log('CATEGORY_NO_OVERFLOW_'+viewport,overflow?'PASS':'FAIL');
   log('CATEGORY_GRID_NOT_CLIPPED_'+viewport,clip?'PASS':'FAIL');
   log('CATEGORY_NO_CLIPPING_'+viewport,clip?'PASS':'FAIL');
   log('CATEGORY_CONTENT_GEOMETRY_'+viewport,JSON.stringify(state));
-  if(!inside||!overflow||!clip)throw new Error('CATEGORY_PRIMARY_CONTAINMENT_FAILED_'+viewport+':'+JSON.stringify(state));
+  if(!inside||!overflow||!clip||!state.categoryRailAligned)throw new Error('CATEGORY_PRIMARY_CONTAINMENT_FAILED_'+viewport+':'+JSON.stringify(state));
 }
 async function sixRouteDesktopShell(page,routes,viewport){
   const home=await desktopShellSnapshot(page);
@@ -726,6 +794,7 @@ async function loginForAuthenticatedAccount(page) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
       await desktopShellLayout(page, 'HOME', viewport, true);
+      await homeCanonicalContentRail(page, viewport);
       await homeDesktopBrands(page, viewport);
     }
 

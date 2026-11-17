@@ -45,7 +45,7 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
     </section>
 
     <section id="categorias" class="cr-app-categories" aria-labelledby="cr-home-categories-title">
-        <div class="cr-app-shell">
+        <div class="cr-app-shell cr-desktop-content-rail">
             <h1 id="cr-home-categories-title" class="cr-app-section-title">
                 <?php esc_html_e( 'Categorías', 'crios-rango-2026' ); ?>
             </h1>
@@ -94,6 +94,7 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
     ?>
 
     <section class="cr-home-section cr-home-novedades" aria-labelledby="cr-home-novedades-title">
+        <div class="cr-desktop-content-rail">
         <div class="cr-home-section__header">
             <h2 id="cr-home-novedades-title">Novedades</h2>
             <a href="<?php echo esc_url( cr2026_home_novedades_url() ); ?>">Ver todo</a>
@@ -134,9 +135,12 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
         <?php else : ?>
             <p class="cr-home-section__empty">No hay novedades disponibles.</p>
         <?php endif; ?>
+    
+        </div>
     </section>
 
     <section class="cr-home-section cr-home-outlet" aria-labelledby="cr-home-outlet-title">
+        <div class="cr-desktop-content-rail">
         <div class="cr-home-section__header">
             <h2 id="cr-home-outlet-title">Outlet</h2>
             <a href="<?php echo esc_url( $outlet_url ); ?>">Ver todo</a>
@@ -151,9 +155,12 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
                 <span class="cr-home-outlet-card__copy"><strong>Outlet</strong><span>Verano</span></span>
             </a>
         </div>
+    
+        </div>
     </section>
 
     <section class="cr-home-section cr-home-brands" aria-labelledby="cr-home-brands-title">
+        <div class="cr-desktop-content-rail">
         <div class="cr-home-section__header">
             <h2 id="cr-home-brands-title">Marcas</h2>
             <a href="<?php echo esc_url( cr2026_home_brands_url() ); ?>">Ver todas</a>
@@ -205,6 +212,8 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
             $render_brand_pager( $mobile_brand_pages, 'mobile' );
             ?>
         <?php endif; ?>
+    
+        </div>
     </section>
 
 </main>

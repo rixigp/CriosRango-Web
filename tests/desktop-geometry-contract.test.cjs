@@ -60,6 +60,22 @@ test('DESKTOP_SHELL_MAX_AND_HOME_HERO_SCALE=PASS', () => {
   assert.doesNotMatch(layer, /transform:\s*scale|\\bzoom\\s*:/);
 });
 
+test('DESKTOP_CONTENT_RAIL_IS_SINGLE_SOURCE=PASS — Home and Category consume one desktop inset', () => {
+  const layer = desktop('main.css');
+  const home = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/front-page.php'), 'utf8');
+  assert.match(layer, /--cr-desktop-content-inset:\s*20px/);
+  assert.match(layer, /padding-right:\s*var\(--cr-desktop-content-inset\)\s*!important/);
+  assert.match(layer, /padding-left:\s*var\(--cr-desktop-content-inset\)\s*!important/);
+  assert.match(layer, /\.cr-desktop-shell > #primary\.cr-home--app \.cr-desktop-content-rail\s*\{[\s\S]*?width:\s*calc\(100% - 2 \* var\(--cr-desktop-content-inset\)\)/);
+  assert.match(layer, /\.cr-desktop-content-rail :is\([\s\S]*?\.cr-home-section__header[\s\S]*?padding-left:\s*0 !important/);
+  assert.doesNotMatch(layer, /--cr-desktop-content-padding/);
+  assert.equal((home.match(/class="[^"]*\bcr-desktop-content-rail\b/g) || []).length, 4);
+  const heroEnd = home.indexOf('</section>', home.indexOf('class="cr-hero cr-app-hero"'));
+  const categoriesStart = home.indexOf('<section id="categorias"');
+  assert.ok(heroEnd > 0 && categoriesStart > heroEnd);
+  assert.doesNotMatch(home.slice(0, categoriesStart), /cr-desktop-content-rail/);
+});
+
 test('DESKTOP_ACCOUNT_NO_720_CAP=PASS — shared nav/content grid replaces dashboard cap', () => {
   const layer = desktop('account.css');
   assert.match(layer, /grid-template-columns:\s*minmax\(220px,\s*250px\) minmax\(0,\s*1fr\)/);

@@ -2870,7 +2870,7 @@ body.cr-parent-category-view .cr-parent-category__grid,
     --cr-desktop-sidebar: 112px;
     --cr-desktop-shell-max: calc(var(--cr-desktop-sidebar) + var(--cr-desktop-content-max));
     --cr-desktop-shell-outer: 24px;
-    --cr-desktop-content-padding: 20px;
+    --cr-desktop-content-inset: 20px;
   }
 
   .cr-desktop-shell {
@@ -2906,7 +2906,7 @@ body.cr-parent-category-view .cr-parent-category__grid,
     max-width: none !important;
     min-height: 88px;
     margin: 0 !important;
-    padding-inline: var(--cr-desktop-content-padding);
+    padding-inline: var(--cr-desktop-content-inset);
     justify-content: flex-end;
   }
 
@@ -2918,8 +2918,8 @@ body.cr-parent-category-view .cr-parent-category__grid,
     max-width: none !important;
     min-width: 0;
     margin: 0 !important;
-    padding-right: var(--cr-desktop-content-padding) !important;
-    padding-left: var(--cr-desktop-content-padding) !important;
+    padding-right: var(--cr-desktop-content-inset) !important;
+    padding-left: var(--cr-desktop-content-inset) !important;
     padding-top: var(--cr-desktop-content-top-gap) !important;
   }
 
@@ -2954,13 +2954,35 @@ body.cr-parent-category-view .cr-parent-category__grid,
   }
 
   .cr-desktop-shell > #primary.cr-home--app .cr-app-hero,
-  .cr-desktop-shell > #primary.cr-home--app .cr-home-section,
-  .cr-desktop-shell > #primary.cr-home--app .cr-app-shell {
+  .cr-desktop-shell > #primary.cr-home--app .cr-home-section {
     box-sizing: border-box;
     width: 100% !important;
     max-width: none !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
+  }
+
+  /* One canonical desktop content rail shared by Home and all interior pages.
+     Hero and section backgrounds remain full-bleed inside #primary. */
+  .cr-desktop-shell > #primary.cr-home--app .cr-desktop-content-rail {
+    box-sizing: border-box;
+    width: calc(100% - 2 * var(--cr-desktop-content-inset)) !important;
+    max-width: none !important;
+    margin-inline: auto !important;
+  }
+
+  /* No nested horizontal insets: descendants consume the shared rail directly. */
+  .cr-desktop-shell > #primary.cr-home--app .cr-desktop-content-rail :is(
+    .cr-home-section__header,
+    .cr-home-section__empty,
+    .cr-home-products,
+    .cr-home-outlet__grid,
+    .cr-home-brand-page
+  ) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    scroll-padding-left: 0 !important;
+    scroll-padding-right: 0 !important;
   }
 
   /* The desktop rail is a real first column of this shell, not a viewport-fixed island. */
