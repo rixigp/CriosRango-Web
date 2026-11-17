@@ -48,32 +48,32 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: \${{ runner.os }}-npm-staging-inspector-v1
+          key: ${{ runner.os }}-npm-staging-inspector-v1
       - name: Cache Chromium
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: \${{ runner.os }}-chromium-playwright-1.65.1
+          key: ${{ runner.os }}-chromium-playwright-1.65.1
           restore-keys: |
-            \${{ runner.os }}-chromium-playwright-
+            ${{ runner.os }}-chromium-playwright-
       - name: Install Playwright
         run: |
           npm install --no-save --no-package-lock playwright@1.65.1
           npx playwright install chromium
       - name: Inspect staging with Chromium
         env:
-          INSPECT_URL: \${{ inputs.url }}
-          INSPECT_WIDTH: \${{ inputs.viewport_width }}
-          INSPECT_HEIGHT: \${{ inputs.viewport_height }}
-          INSPECT_SELECTOR: \${{ inputs.selector }}
+          INSPECT_URL: ${{ inputs.url }}
+          INSPECT_WIDTH: ${{ inputs.viewport_width }}
+          INSPECT_HEIGHT: ${{ inputs.viewport_height }}
+          INSPECT_SELECTOR: ${{ inputs.selector }}
           INSPECT_OUTPUT_DIR: artifacts
-          STAGING_ACCOUNT_EMAIL: \${{ secrets.STAGING_ACCOUNT_EMAIL }}
-          STAGING_ACCOUNT_PASSWORD: \${{ secrets.STAGING_ACCOUNT_PASSWORD }}
+          STAGING_ACCOUNT_EMAIL: ${{ secrets.STAGING_ACCOUNT_EMAIL }}
+          STAGING_ACCOUNT_PASSWORD: ${{ secrets.STAGING_ACCOUNT_PASSWORD }}
         run: |
           set -euo pipefail
           args=(--url="$INSPECT_URL" --width="$INSPECT_WIDTH" --height="$INSPECT_HEIGHT")
           if [ -n "$INSPECT_SELECTOR" ]; then args+=(--selector="$INSPECT_SELECTOR"); fi
-          node tests/staging-browser-inspect.cjs "\${args[@]}"
+          node tests/staging-browser-inspect.cjs "${args[@]}"
       - name: Upload inspection artifacts
         if: always()
         uses: actions/upload-artifact@v4
