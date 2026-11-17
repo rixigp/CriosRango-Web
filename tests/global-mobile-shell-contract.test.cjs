@@ -42,7 +42,7 @@ test('GLOBAL_BOTTOM_NAV_MARKUP_SOURCE_COUNT=1 and GLOBAL_VISUAL_FOOTER_ABSENT=1'
 
 test('MOBILE_TOP_SPACING_HAS_ONE_CANONICAL_SOURCE_AND_CATEGORY_DOES_NOT_RESERVE_HEADER_TWICE',()=>{
  assert.ok(main.includes('padding-top: var(--cr-app-topbar-height);'));
- assert.ok(visual.includes('--cr-page-top-gap: 20px;'));
+ assert.ok(visual.includes('--cr-page-top-gap: 0px;'));
  assert.ok(visual.includes('.cr-page-shell {\n  padding-top: var(--cr-page-top-gap);'));
  assert.ok(visual.includes('.cr-main--woocommerce:not(.cr-main--product-detail) {\n  padding-top: var(--cr-page-top-gap);'));
  assert.equal(main.includes('padding-top: var(--cr-app-topbar-height); box-sizing: border-box;'),false);
