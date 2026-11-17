@@ -21,6 +21,18 @@ test('universal order detail uses canonical toolbar title and rail', () => {
   assert.doesNotMatch(css, /\.cr-order-detail\s*\{[^}]*max-width:\s*720px/);
 });
 
+test('order number and status share a real flex header row; metadata stays below and badge styling is preserved', () => {
+  const headerCard = template.split('cr-order-detail__card--header')[1].split('</article>')[0];
+  assert.match(headerCard, /<div class="cr-order-detail__header-row">[\s\S]*?<h2 class="cr-order-detail__number">[\s\S]*?<span class="cr-order-detail__status[\s\S]*?<\/div>/);
+  assert.match(headerCard, /<div class="cr-order-detail__header-meta">[\s\S]*?Realizado el[\s\S]*?Total:/);
+  assert.ok(headerCard.indexOf('cr-order-detail__header-meta') > headerCard.indexOf('cr-order-detail__header-row'));
+  assert.match(css, /\.cr-order-detail__header-row\s*\{[^}]*display:flex;[^}]*align-items:center;[^}]*justify-content:space-between;[^}]*gap:12px;/);
+  assert.match(css, /\.cr-order-detail__number\s*\{[^}]*min-width:0;[^}]*margin:0;/);
+  assert.match(css, /\.cr-order-detail__status\s*\{[^}]*flex-shrink:0;[^}]*margin:0;/);
+  assert.match(css, /\.cr-order-detail__status\s*\{[^}]*padding:4px 9px;[^}]*border-radius:999px;[^}]*font:300 10px\/14px/);
+  assert.doesNotMatch(css, /\.cr-order-detail__header-row[^}]*position\s*:\s*absolute|\.cr-order-detail__header-row[^}]*transform\s*:/);
+});
+
 test('owned orders use the same theme renderer at every viewport; non-owner fallback remains protected', () => {
   assert.match(template, /if \( \(int\) \$order->get_customer_id\(\) !== \(int\) get_current_user_id\(\) \)/);
   assert.doesNotMatch(template, /wp_is_mobile/);

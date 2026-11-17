@@ -65,10 +65,14 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
 ?>
 <section class="cr-order-detail" aria-label="<?php esc_attr_e( 'Detalle de pedido', 'crios-rango-2026' ); ?>">
     <article class="cr-order-detail__card cr-order-detail__card--header">
-        <h2 class="cr-order-detail__number"><?php echo esc_html( sprintf( __( 'Pedido #%s', 'crios-rango-2026' ), $order->get_order_number() ) ); ?></h2>
-        <span class="cr-order-detail__status cr-order-detail__status--<?php echo esc_attr( $status_class ); ?>"><?php echo esc_html( wc_get_order_status_name( $status ) ); ?></span>
-        <?php if ( $created ) : ?><div class="cr-order-detail__muted"><?php echo esc_html( sprintf( __( 'Realizado el %s', 'crios-rango-2026' ), wc_format_datetime( $created, 'd-m-Y' ) ) ); ?></div><?php endif; ?>
-        <div class="cr-order-detail__strong"><?php echo wp_kses_post( sprintf( __( 'Total: %s', 'crios-rango-2026' ), $order->get_formatted_order_total() ) ); ?></div>
+        <div class="cr-order-detail__header-row">
+            <h2 class="cr-order-detail__number"><?php echo esc_html( sprintf( __( 'Pedido #%s', 'crios-rango-2026' ), $order->get_order_number() ) ); ?></h2>
+            <span class="cr-order-detail__status cr-order-detail__status--<?php echo esc_attr( $status_class ); ?>"><?php echo esc_html( wc_get_order_status_name( $status ) ); ?></span>
+        </div>
+        <div class="cr-order-detail__header-meta">
+            <?php if ( $created ) : ?><div class="cr-order-detail__muted"><?php echo esc_html( sprintf( __( 'Realizado el %s', 'crios-rango-2026' ), wc_format_datetime( $created, 'd-m-Y' ) ) ); ?></div><?php endif; ?>
+            <div class="cr-order-detail__strong"><?php echo wp_kses_post( sprintf( __( 'Total: %s', 'crios-rango-2026' ), $order->get_formatted_order_total() ) ); ?></div>
+        </div>
         <?php if ( $order->needs_payment() ) : ?><a class="cr-order-detail__pay" href="<?php echo esc_url( $order->get_checkout_payment_url() ); ?>"><?php esc_html_e( 'Pagar pedido', 'crios-rango-2026' ); ?></a><?php endif; ?>
     </article>
 

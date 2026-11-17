@@ -919,6 +919,10 @@
  body.woocommerce-account .cr-order-detail__heading { margin:0 0 12px; display:flex; align-items:center; gap:9px; color:#183b35; font:400 15px/21px "Roboto",Arial,sans-serif; }
  body.woocommerce-account .cr-order-detail__heading svg { width:20px;height:20px;flex:0 0 20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round; }
  body.woocommerce-account .cr-order-detail__number { margin:0 0 8px; color:#263b32; font:400 15px/21px "Roboto",Arial,sans-serif; }
+ body.woocommerce-account .cr-order-detail__header-row { display:flex; align-items:center; justify-content:space-between; gap:12px; min-width:0; }
+ body.woocommerce-account .cr-order-detail__number { min-width:0; margin:0; }
+ body.woocommerce-account .cr-order-detail__status { flex-shrink:0; margin:0; }
+ body.woocommerce-account .cr-order-detail__header-meta { display:flex; flex-direction:column; gap:4px; min-width:0; }
  body.woocommerce-account .cr-order-detail__status { display:inline-flex; align-items:center; gap:5px; margin:0 0 9px; padding:4px 9px; border-radius:999px; background:#edf2ed; color:#355f4b; font:300 10px/14px "Roboto",Arial,sans-serif; }
  body.woocommerce-account .cr-order-detail__status--cancelled, body.woocommerce-account .cr-order-detail__status--failed {background:#f7e9e7;color:#9b554c;}
  body.woocommerce-account .cr-order-detail__status--pending, body.woocommerce-account .cr-order-detail__status--on-hold {background:#f5f0e2;color:#76633c;}
