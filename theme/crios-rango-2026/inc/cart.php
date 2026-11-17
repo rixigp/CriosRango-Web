@@ -22,34 +22,6 @@ function cr2026_cart_empty_action_markup() {
     return ob_get_clean();
 }
 
-/**
- * The staging Cart page is rendered with WooCommerce's Cart block, which
- * bypasses woocommerce/cart/cart.php. Add the same contextual toolbar only
- * for that block and mobile requests; the classic template keeps its own.
- * The matching browser contract checks the desktop-only 30px category margin separately.
- */
-function cr2026_cart_block_toolbar( $block_content, $block ) {
-    if ( is_admin() || ! function_exists( 'is_cart' ) || ! is_cart()
-        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
-        || empty( $block['blockName'] ) || 'woocommerce/cart' !== $block['blockName'] ) {
-        return $block_content;
-    }
-
-    ob_start();
-    cr2026_render_category_toolbar(
-        __( 'Tu carrito', 'crios-rango-2026' ),
-        wc_get_page_permalink( 'shop' ),
-        'cart',
-        false,
-        cr2026_cart_empty_action_markup(),
-        'cr-cart-title'
-    );
-    $toolbar = ob_get_clean();
-
-    return $toolbar . $block_content;
-}
-add_filter( 'render_block', 'cr2026_cart_block_toolbar', 10, 2 );
-
 /** Handle the explicit empty-cart action with a POST nonce, never a GET link. */
 function cr2026_handle_empty_cart() {
     if ( ! function_exists( 'is_cart' ) || ! is_cart() || empty( $_POST['cr2026_empty_cart'] ) ) {

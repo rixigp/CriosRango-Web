@@ -91,11 +91,13 @@ test('catalog, cart, checkout and account canonical routes remain intact', () =>
 
 test('classic Cart template and WooCommerce Cart block share exactly one mobile toolbar source', () => {
   assert.match(cartRuntime, /function cr2026_cart_empty_action_markup\(\)/);
-  assert.match(cartRuntime, /function cr2026_cart_block_toolbar\( \$block_content, \$block \)/);
-  assert.match(cartRuntime, /'woocommerce\/cart' !== \$block\['blockName'\]/);
-  assert.match(cartRuntime, /add_filter\( 'render_block', 'cr2026_cart_block_toolbar', 10, 2 \)/);
+  assert.match(page, /\$is_mobile_cart_page = function_exists\( 'is_cart' \)/);
+  assert.match(page, /\$GLOBALS\['cr2026_cart_toolbar_rendered_by_page'\] = true/);
+  assert.match(page, /cr2026_cart_empty_action_markup\(\)/);
+  assert.match(cart, /empty\( \$GLOBALS\['cr2026_cart_toolbar_rendered_by_page'\] \)/);
   assert.match(cart, /\$cart_empty_action = cr2026_cart_empty_action_markup\(\);/);
   assert.doesNotMatch(cart, /<form class="cr-cart-empty-form"/);
+  assert.doesNotMatch(cartRuntime, /cr2026_cart_block_toolbar/);
   assert.match(cartRuntime, /cr2026_render_category_toolbar\([\s\S]*?__\( 'Tu carrito'[\s\S]*?'cr-cart-title'/);
 });
 
