@@ -201,6 +201,7 @@
     if (!list.length) return null;
     const section = node('section', 'cr-account-loyalty__section');
     section.appendChild(node('h2', 'cr-account-loyalty__section-title', 'Promociones disponibles (' + list.length + ')'));
+    const grid = node('div', 'cr-account-loyalty__promotions-grid');
     list.forEach(promotion => {
       const card = node('article', 'cr-account-loyalty__promotion-card');
       card.appendChild(icon(promotionIcon(promotion), 'cr-account-loyalty__promotion-icon'));
@@ -210,8 +211,9 @@
       if (promotion.expires_at) body.appendChild(node('p', 'cr-account-loyalty__promotion-expiry', 'Válido hasta ' + displayDate(promotion.expires_at)));
       card.appendChild(body);
       if (promotion.code) card.appendChild(button(isApplied(promotion.code) ? 'Aplicado' : 'Aplicar', promotion.code, 'promotion'));
-      section.appendChild(card);
+      grid.appendChild(card);
     });
+    section.appendChild(grid);
     return section;
   };
   const displayDate = (value) => {

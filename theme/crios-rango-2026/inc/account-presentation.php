@@ -25,7 +25,7 @@ function cr2026_account_view_order_endpoint_toolbar( $order_id = 0 ) {
     }
     $order = function_exists( 'wc_get_order' ) ? wc_get_order( absint( $order_id ) ) : false;
     if ( $order instanceof WC_Order && (int) $order->get_customer_id() === (int) get_current_user_id() ) {
-        $title = __( 'Detalle de pedido', 'crios-rango-2026' );
+        $title = __( 'Detalle del pedido', 'crios-rango-2026' );
     } else {
         $title = __( 'Detalle del pedido', 'crios-rango-2026' );
     }
@@ -150,7 +150,7 @@ add_action( 'woocommerce_account_edit-address_endpoint', 'cr2026_account_address
 
 /** The toolbar is the only mobile title; suppress WooCommerce's secondary H2 in markup. */
 function cr2026_account_edit_address_title( $page_title, $load_address ) {
-    if ( 'shipping' === $load_address
+    if ( in_array( $load_address, array( 'billing', 'shipping' ), true )
         && function_exists( 'is_account_page' ) && is_account_page() ) {
         return '';
     }

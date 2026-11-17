@@ -102,7 +102,7 @@ function cr2026_enqueue_assets() {
         true
     );
 
-    if ( $uses_account_app_skin && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
+    if ( $uses_account_app_skin ) {
         wp_enqueue_script(
             'cr2026-account-save-feedback',
             CR2026_URI . '/assets/js/account-save-feedback.js',
@@ -124,8 +124,7 @@ function cr2026_enqueue_assets() {
     }
 
     if ( function_exists( 'is_account_page' ) && is_account_page()
-        && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'loyalty_reward' )
-        && function_exists( 'wp_is_mobile' ) && wp_is_mobile() ) {
+        && function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'loyalty_reward' ) ) {
         wp_enqueue_script(
             'cr2026-account-loyalty',
             CR2026_URI . '/assets/js/account-loyalty.js',

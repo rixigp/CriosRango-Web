@@ -24,6 +24,8 @@ $help_url = $find_guest_page( array( 'ayuda', 'preguntas-frecuentes', 'contacto'
 $information = cr2026_account_information_links();
 
 ?>
+<div class="cr-account-shell cr-account-shell--guest"><div class="cr-account-shell__content">
+<?php cr2026_render_category_toolbar( __( 'Cuenta', 'crios-rango-2026' ), home_url( '/' ), 'parent', false ); ?>
 <section class="cr-account-home cr-account-home--guest" aria-label="<?php esc_attr_e( 'Cuenta', 'crios-rango-2026' ); ?>">
     <a class="cr-account-home__user cr-account-home__user--guest" href="<?php echo esc_url( $login_url ); ?>">
         <span class="cr-account-home__avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"></circle><path d="M4.5 21c.6-4.1 3.2-6.2 7.5-6.2s6.9 2.1 7.5 6.2"></path></svg></span>
@@ -79,4 +81,4 @@ $information = cr2026_account_information_links();
             <?php endforeach; ?>
         </div>
     </section>
-</section>
+</section></div></div>

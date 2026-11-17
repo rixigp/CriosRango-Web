@@ -1,6 +1,6 @@
 <?php
 /**
- * Mobile app-style presentation for WooCommerce order details.
+ * Universal Críos & Rango presentation for WooCommerce order details.
  *
  * @package WooCommerce\Templates
  */
@@ -12,9 +12,8 @@ if ( ! $order instanceof WC_Order ) {
     return;
 }
 
-/* Desktop continues to use WooCommerce's standard order-detail table. */
-if ( ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
-    || (int) $order->get_customer_id() !== (int) get_current_user_id() ) {
+/* Preserve the native fallback only when the current user does not own this order. */
+if ( (int) $order->get_customer_id() !== (int) get_current_user_id() ) {
     do_action( 'woocommerce_view_order', $order_id );
     ?>
     <p><?php echo wp_kses_post( sprintf( __( 'Order #%s was placed on %s and is currently %s.', 'woocommerce' ), $order->get_order_number(), wc_format_datetime( $order->get_date_created() ), wc_get_order_status_name( $order->get_status() ) ) ); ?></p>
@@ -25,6 +24,8 @@ if ( ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
         <h2><?php esc_html_e( 'Order details', 'woocommerce' ); ?></h2>
         <?php do_action( 'woocommerce_order_details_table', $order_id ); ?>
     </section>
+<?php do_action( 'woocommerce_view_order', $order_id ); ?>
+<?php do_action( 'woocommerce_order_details_after_order_table', $order ); ?>
     <?php do_action( 'woocommerce_order_details_after_order_table', $order ); ?>
     <?php return;
 }
@@ -68,6 +69,7 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
         <span class="cr-order-detail__status cr-order-detail__status--<?php echo esc_attr( $status_class ); ?>"><?php echo esc_html( wc_get_order_status_name( $status ) ); ?></span>
         <?php if ( $created ) : ?><div class="cr-order-detail__muted"><?php echo esc_html( sprintf( __( 'Realizado el %s', 'crios-rango-2026' ), wc_format_datetime( $created, 'd-m-Y' ) ) ); ?></div><?php endif; ?>
         <div class="cr-order-detail__strong"><?php echo wp_kses_post( sprintf( __( 'Total: %s', 'crios-rango-2026' ), $order->get_formatted_order_total() ) ); ?></div>
+        <?php if ( $order->needs_payment() ) : ?><a class="cr-order-detail__pay" href="<?php echo esc_url( $order->get_checkout_payment_url() ); ?>"><?php esc_html_e( 'Pagar pedido', 'crios-rango-2026' ); ?></a><?php endif; ?>
     </article>
 
     <article class="cr-order-detail__card cr-order-detail__card--products">
@@ -204,6 +206,14 @@ $formatted_shipping = $shipping_address ? wp_strip_all_tags( str_replace( '<br/>
             <div class="cr-order-detail__muted"><?php echo wp_kses_post( 0.0 === $shipping_total ? __( 'Envío gratuito', 'crios-rango-2026' ) : wc_price( $shipping_total, array( 'currency' => $order->get_currency() ) ) ); ?></div>
         <?php endif; ?>
     </article>
+
+    <?php $formatted_billing = trim( (string) $order->get_formatted_billing_address() ); ?>
+    <?php if ( $formatted_billing ) : ?>
+    <article class="cr-order-detail__card cr-order-detail__card--billing">
+        <h2 class="cr-order-detail__heading"><?php esc_html_e( 'Facturación', 'crios-rango-2026' ); ?></h2>
+        <div class="cr-order-detail__address"><?php echo wp_kses_post( $formatted_billing ); ?></div>
+    </article>
+    <?php endif; ?>
 
     <article class="cr-order-detail__card cr-order-detail__card--payment">
         <h2 class="cr-order-detail__heading"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M3 10h18"/></svg><?php esc_html_e( 'Pago', 'crios-rango-2026' ); ?></h2>
