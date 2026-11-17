@@ -14,7 +14,7 @@ async function navigate(page, url) {
 }
 
 async function inspect(page, routeName, width) {
-  const state = await page.evaluate(() => {
+  const state = await desktopPage.evaluate(() => {
     const visible = selector => {
       const el = document.querySelector(selector);
       if (!el) return false;
@@ -80,9 +80,15 @@ async function inspect(page, routeName, width) {
 (async () => {
   const browser = await chromium.launch({ headless: true, ignoreDefaultArgs: ['--hide-scrollbars'], args: ['--disable-features=OverlayScrollbar'] });
   try {
-    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-    await navigate(page, BASE_URL + '/');
-    const discovered = await page.evaluate(() => {
+    const desktopPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    const mobilePage = await browser.newPage({
+      viewport: { width: 390, height: 1000 },
+      isMobile: true,
+      hasTouch: true,
+      userAgent: 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+    });
+    await navigate(desktopPage, BASE_URL + '/');
+    const discovered = await desktopPage.evaluate(() => {
       const links = Array.from(document.querySelectorAll('a[href]')).map(a => a.href);
       return {
         category: links.find(href => /\/categoria-producto\//i.test(new URL(href).pathname)),
@@ -93,15 +99,15 @@ async function inspect(page, routeName, width) {
     assert.ok(discovered.category, 'homepage must expose a product category route');
     assert.ok(discovered.outlet, 'homepage must expose the Outlet route');
     assert.ok(discovered.product, 'homepage must expose a product detail route');
-    await navigate(page, ACCOUNT_URL);
-    const helpUrl = await page.evaluate(() => {
+    await navigate(mobilePage, ACCOUNT_URL);
+    const helpUrl = await desktopPage.evaluate(() => {
       const link = document.querySelector('.cr-account-home__tile--help[href]');
       return link ? link.href : null;
     });
     assert.ok(helpUrl, 'guest Account must expose its Help destination');
 
-    await navigate(page, BASE_URL + '/');
-    const cartUrl = await page.evaluate(() => {
+    await navigate(desktopPage, BASE_URL + '/');
+    const cartUrl = await desktopPage.evaluate(() => {
       const links = Array.from(document.querySelectorAll('.cr-app-header a[href]'));
       const link = links.find(anchor => /carrito|cart/i.test(new URL(anchor.href).pathname));
       return link ? link.href : null;
@@ -119,6 +125,7 @@ async function inspect(page, routeName, width) {
       ['legal', LEGAL_URL]
     ];
     for (const width of WIDTHS) {
+      const page = width < 768 ? mobilePage : desktopPage;
       await page.setViewportSize({ width, height: 1000 });
       for (const [name, url] of routes) {
         await navigate(page, url);
@@ -127,6 +134,7 @@ async function inspect(page, routeName, width) {
     }
 
     // Validate the one canonical desktop shell at the three requested widths on every public smoke route.
+    const page = desktopPage;
     const desktopWidths=[1280,1440,1920];
     const geometryRoutes=[
       ['HOME',BASE_URL+'/'],
