@@ -24,6 +24,8 @@ concurrency:
 
 jobs:
   validate-and-deploy:
+    # This workflow is staging-only. Production (main) is deliberately excluded.
+    if: github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin'
     runs-on: ubuntu-latest
 
     steps:
@@ -37,7 +39,6 @@ jobs:
         env:
           EVENT_BEFORE: ${{ github.event.before }}
           EVENT_NAME: ${{ github.event_name }}
-          MANUAL_FULL: ${{ inputs.full_regression || 'true' }}
         run: |
           set -euo pipefail
 
@@ -66,7 +67,10 @@ jobs:
           fi
 
           ACCOUNT=false; HOME=false; CATEGORY=false; PRODUCT=false; CHECKOUT=false
-          SHARED=false; WORKFLOW_CHANGED=false; CATALOG=false; UNKNOWN=false
+          SHARED=false; WORKFLOW_CHANGED=false; CATALOG=false; UNKNOWN=false; PHP_CHANGED=false
+          for path in "${CHANGED[@]}"; do
+            [[ "$path" == *.php ]] && PHP_CHANGED=true
+          done
           for path in "${CHANGED[@]}"; do
             [ "$path" = "NO_FILES_CHANGED" ] && continue
             case "$path" in
@@ -74,7 +78,7 @@ jobs:
                 SHARED=true
                 WORKFLOW_CHANGED=true
                 ;;
-              theme/crios-rango-2026/assets/css/main.css|theme/crios-rango-2026/assets/css/visual-system.css|theme/crios-rango-2026/assets/css/controls.css|theme/crios-rango-2026/functions.php|theme/crios-rango-2026/inc/assets.php|theme/crios-rango-2026/inc/navigation.php|theme/crios-rango-2026/inc/shell-*|theme/crios-rango-2026/inc/header*|theme/crios-rango-2026/inc/sidebar*|theme/crios-rango-2026/template-parts/header*|theme/crios-rango-2026/template-parts/sidebar*|theme/crios-rango-2026/template-parts/shell*|tests/global-*)
+              theme/crios-rango-2026/assets/css/main.css|theme/crios-rango-2026/assets/css/visual-system.css|theme/crios-rango-2026/assets/css/controls.css|theme/crios-rango-2026/functions.php|theme/crios-rango-2026/inc/assets.php|theme/crios-rango-2026/inc/navigation.php|theme/crios-rango-2026/inc/shell-*|theme/crios-rango-2026/inc/header*|theme/crios-rango-2026/inc/sidebar*|theme/crios-rango-2026/template-parts/header*|theme/crios-rango-2026/template-parts/sidebar*|theme/crios-rango-2026/template-parts/shell*|tests/global-*|tests/canonical-controls-contract.test.cjs|tests/page-title-contract.test.cjs|tests/desktop-geometry-contract.test.cjs|tests/canonical-customer-shell-contract.test.cjs|tests/page-specific-shell-overrides-contract.test.cjs)
                 SHARED=true
                 ;;
               theme/crios-rango-2026/woocommerce/myaccount/*|theme/crios-rango-2026/inc/account-*.php|theme/crios-rango-2026/assets/css/account.css|theme/crios-rango-2026/assets/js/account-*.js|tests/account-*)
@@ -97,7 +101,7 @@ jobs:
                 CATEGORY=true
                 PRODUCT=true
                 ;;
-              theme/crios-rango-2026/*|tests/canonical-controls-contract.test.cjs|tests/page-title-contract.test.cjs|tests/desktop-geometry-contract.test.cjs|tests/canonical-customer-shell-contract.test.cjs)
+              theme/crios-rango-2026/*)
                 UNKNOWN=true
                 ;;
               tests/*)
@@ -139,6 +143,8 @@ jobs:
           RUN_PRODUCT_BROWSER="$PRODUCT"
           RUN_CHECKOUT_BROWSER="$CHECKOUT"
           RUN_GLOBAL_SHELL="$SHARED"
+          RUN_PHP=false
+          if [ "$FULL" = true ] || [ "$PHP_CHANGED" = true ] || [ "$ACCOUNT" = true ] || [ "$CHECKOUT" = true ]; then RUN_PHP=true; fi
 
           {
             echo "base_sha=$BASE_SHA"
@@ -150,6 +156,7 @@ jobs:
             echo "run_product=$PRODUCT"
             echo "run_checkout=$CHECKOUT"
             echo "run_global_shell=$RUN_GLOBAL_SHELL"
+            echo "run_php=$RUN_PHP"
             echo "run_catalog_benchmark=$RUN_BENCHMARK"
             echo "full_regression=$FULL"
             echo "workflow_changed=$WORKFLOW_CHANGED"
@@ -173,6 +180,7 @@ jobs:
           echo "RUN_PRODUCT=$PRODUCT"
           echo "RUN_CHECKOUT=$CHECKOUT"
           echo "RUN_GLOBAL_SHELL=$RUN_GLOBAL_SHELL"
+          echo "RUN_PHP=$RUN_PHP"
           echo "RUN_CATALOG_BENCHMARK=$RUN_BENCHMARK"
           echo "FULL_REGRESSION=$FULL"
 
@@ -184,12 +192,15 @@ jobs:
           [ "$PRODUCT" = true ] && RUN+=(product-contracts) || SKIPPED+=(product)
           [ "$CHECKOUT" = true ] && RUN+=(checkout-contracts) || SKIPPED+=(checkout)
           [ "$RUN_GLOBAL_SHELL" = true ] && RUN+=(global-shell) || SKIPPED+=(global-shell)
+          [ "$RUN_PHP" = true ] && RUN+=(php) || SKIPPED+=(php)
           [ "$RUN_BENCHMARK" = true ] && RUN+=(catalog-benchmark) || SKIPPED+=(benchmark)
           [ "$FULL" = true ] && RUN+=(full-regression)
-          RUN+=(php theme-structure deploy sha)
+          RUN+=(theme-structure deploy sha)
+          RUN_LIST="$(IFS=,; printf '%s' "${RUN[*]}")"
+          SKIPPED_LIST="$(IFS=,; printf '%s' "${SKIPPED[*]}")"
           echo "CI_SCOPE=$SCOPE" >> "$GITHUB_STEP_SUMMARY"
-          echo "RUN=[$(IFS=,; echo "${RUN[*]}"])" >> "$GITHUB_STEP_SUMMARY"
-          echo "SKIPPED=[$(IFS=,; echo "${SKIPPED[*]}"])" >> "$GITHUB_STEP_SUMMARY"
+          echo "RUN=[$RUN_LIST]" >> "$GITHUB_STEP_SUMMARY"
+          echo "SKIPPED=[$SKIPPED_LIST]" >> "$GITHUB_STEP_SUMMARY"
           echo "BASE_SHA=$BASE_SHA" >> "$GITHUB_STEP_SUMMARY"
           echo "HEAD=$HEAD_SHA" >> "$GITHUB_STEP_SUMMARY"
           echo "WORKFLOW_CHANGED=$WORKFLOW_CHANGED" >> "$GITHUB_STEP_SUMMARY"
@@ -545,7 +556,7 @@ jobs:
           set -euo pipefail
           BASE_SHA="${{ steps.impact.outputs.base_sha }}"
           if [ "${{ steps.impact.outputs.full_regression }}" = "true" ]; then
-            mapfile -t JS_FILES < <(find theme tests -type f -name '*.js' -o -name '*.cjs' | sort)
+            mapfile -t JS_FILES < <(find theme tests -type f \\( -name '*.js' -o -name '*.cjs' \\) | sort)
           else
             mapfile -t JS_FILES < <(git diff --name-only "$BASE_SHA" "$GITHUB_SHA" -- '*.js' '*.cjs' | sort -u)
           fi
@@ -601,6 +612,7 @@ jobs:
           fi
 
       - name: Validate PHP and run impact-selected PHP contracts
+        if: steps.impact.outputs.run_php == 'true'
         shell: bash
         env:
           FULL_REGRESSION: ${{ steps.impact.outputs.full_regression }}
