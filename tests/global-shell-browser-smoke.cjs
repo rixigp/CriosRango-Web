@@ -60,7 +60,7 @@ async function inspect(page, routeName, width) {
 }
 
 (async () => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, ignoreDefaultArgs: ['--hide-scrollbars'], args: ['--disable-features=OverlayScrollbar'] });
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     await navigate(page, BASE_URL + '/');
@@ -135,6 +135,11 @@ async function inspect(page, routeName, width) {
     assert.ok(withoutScroll,'at least one real route must not have vertical scroll');
     assert.equal(new Set(geometry.map(x=>x.metrics.innerWidth)).size,1,'window.innerWidth must remain fixed');
     assert.equal(new Set(geometry.map(x=>x.metrics.clientWidth)).size,1,'documentElement.clientWidth must remain fixed');
+    const reservedGutterWidths=geometry.map(x=>x.metrics.innerWidth-x.metrics.clientWidth);
+    assert.equal(new Set(reservedGutterWidths).size,1,'reserved scrollbar gutter width must remain fixed');
+    assert.ok(reservedGutterWidths[0]>=8,'classic scrollbar gutter must be measurable; got '+reservedGutterWidths[0]+'px');
+    console.log('RESERVED_SCROLLBAR_GUTTER_PX='+reservedGutterWidths[0]);
+
     const edges=[['shell','left'],['shell','right'],['sidebar','left'],['sidebar','right'],['primary','left'],['primary','right']];
     let shellShift=0;
     for(const [part,edge] of edges)shellShift=Math.max(shellShift,Math.abs(withScroll.metrics[part][edge]-withoutScroll.metrics[part][edge]));
