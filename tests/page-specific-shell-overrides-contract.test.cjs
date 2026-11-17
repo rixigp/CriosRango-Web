@@ -3,24 +3,24 @@ const root=path.join(__dirname,'..','theme','crios-rango-2026','assets','css');
 const files=['main.css','account.css','cart.css','checkout.css','product-detail-skin.css','login.css','outlet-bubbles.css'];
 const css=Object.fromEntries(files.map(f=>[f,fs.readFileSync(path.join(root,f),'utf8')]));
 function rules(src){const out=[],re=/([^{}]+)\{([^{}]*)\}/g;let m;while((m=re.exec(src))!==null){const selector=m[1].replace(/\/\*[\s\S]*?\*\//g,'').trim().replace(/\s+/g,' ');const declarations=m[2].split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf(':');return i<0?null:{property:x.slice(0,i).trim().toLowerCase(),value:x.slice(i+1).trim()};}).filter(Boolean);out.push({selector,declarations});}return out;}
+function stripNarrowMedia(src){const ranges=[],re=/@media\s*([^\{]+)\{/g;let m;while((m=re.exec(src))!==null){let depth=1,end=re.lastIndex;for(;end<src.length&&depth;end++){if(src[end]==='{')depth++;else if(src[end]==='}')depth--;}if(depth===0){if(/max-width\s*:\s*(?:1279|12[0-7]\d|1[01]\d\d|\d{1,3})px/i.test(m[1]))ranges.push([m.index,end]);re.lastIndex=end;}}let out=src;for(const [start,end] of ranges.reverse())out=out.slice(0,start)+' '.repeat(end-start)+out.slice(end);return out;}
 const context=/body\.(?:woocommerce-cart|woocommerce-checkout|woocommerce-account|cr-account-[\w-]+|cr-order-[\w-]+|cr-information-[\w-]+|cr-product-detail-app|cr-parent-category-view|cr-product-listing-view|cr-brands-index-view|search|error404|home)/;
 const shell=/\.cr-(?:main(?:--woocommerce)?|page-shell|shell|parent-category__toolbar|parent-category__back|parent-category__title)/;
 const props=new Set(['--cr-app-topbar-height','--cr-app-topbar-height','--cr-bottom-nav','background','background-color','width','max-width','min-width','margin','margin-inline','margin-left','margin-right','margin-top','padding','padding-inline','padding-left','padding-right','padding-top','padding-block','padding-block-start','padding-block-end','height','min-height','gap','column-gap','row-gap','font-size','font-weight','line-height','position','top','left','right','bottom','transform']);
 const offenders=[];for(const [file,src] of Object.entries(css))for(const r of rules(src)){if(!context.test(r.selector))continue;for(const d of r.declarations){if(!props.has(d.property))continue;const productContent=/\.cr-main--woocommerce\s+div\.product/.test(r.selector);if(shell.test(r.selector)&&!productContent)offenders.push({file,selector:r.selector,property:d.property,value:d.value});if(/^body\.(?:woocommerce-cart|woocommerce-checkout|woocommerce-account|cr-account-[\w-]+|cr-product-detail-app|search|error404)$/.test(r.selector)&&['background','background-color'].includes(d.property))offenders.push({file,selector:r.selector,property:d.property,value:d.value});if(['padding','padding-bottom','padding-block-end'].includes(d.property)&&/calc\(\s*(?:var\(--cr-bottom-nav|(?:72|88|92|96|100)px)|(?:72|88|92|96|100|108)px/.test(d.value))offenders.push({file,selector:r.selector,property:d.property,value:d.value});}}
 test('PAGE_SPECIFIC_BODY_BACKGROUND=0',()=>assert.deepEqual(offenders.filter(x=>['background','background-color'].includes(x.property)&&/^body\./.test(x.selector)),[]));
 test('PAGE_SPECIFIC_PAGE_SHELL_TOP_PADDING=0',()=>assert.deepEqual(offenders.filter(x=>/page-shell|cr-main/.test(x.selector)&&/padding|margin-top/.test(x.property)),[]));
-test('PAGE_SPECIFIC_TOOLBAR_GEOMETRY=0',()=>{
-  const intentionalOrdersReset = offenders.filter(x =>
-    x.file === 'account.css'
-    && x.selector === 'body.woocommerce-account .cr-account-orders > .cr-parent-category__toolbar'
-    && x.property === 'margin-top'
-    && x.value === '0'
-  );
-  assert.equal(intentionalOrdersReset.length, 1, 'the Orders toolbar has one intentional, narrowly scoped top-margin reset');
-  assert.deepEqual(
-    offenders.filter(x => /parent-category__toolbar|parent-category__back|parent-category__title/.test(x.selector) && !intentionalOrdersReset.includes(x)),
-    []
-  );
+test('PAGE_SPECIFIC_DESKTOP_TOOLBAR_OVERRIDE_COUNT=0',()=>{
+  const desktopToolbarOverrides=[];
+  for(const [file,source] of Object.entries(css)){
+    for(const r of rules(stripNarrowMedia(source))){
+      if(!context.test(r.selector)||!r.selector.includes('.cr-parent-category__toolbar'))continue;
+      for(const d of r.declarations){
+        if(props.has(d.property))desktopToolbarOverrides.push({file,selector:r.selector,property:d.property,value:d.value});
+      }
+    }
+  }
+  assert.deepEqual(desktopToolbarOverrides,[], 'Account, Orders, Order Detail and Address inherit the shared desktop toolbar geometry');
 });
 test('PAGE_SPECIFIC_BOTTOM_NAV_CLEARANCE=0',()=>assert.deepEqual(offenders.filter(x=>/calc\(\s*(?:72|88|92|96|100)px|(?:72|88|92|96|100|108)px/.test(x.value)),[]));
 

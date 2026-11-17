@@ -8,6 +8,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const php = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/woocommerce/myaccount/orders.php'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/account.css'), 'utf8');
+const visual = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/visual-system.css'), 'utf8');
 const js = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/js/account-orders.js'), 'utf8');
 const helpers = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/helpers.php'), 'utf8');
 
@@ -118,8 +119,12 @@ test('ORDER_SPACING_AND_STATUS_BADGES_USE_MODERATE_DESKTOP_DENSITY', () => {
   assert.match(css, /@media \(max-width:\s*767px\)[\s\S]*?body\.woocommerce-account \.cr-account-orders__list\s*\{\s*gap:\s*10px;/);
 });
 
-test('ORDERS_TOOLBAR_USES_CANONICAL_TOP_SPACING_WITHOUT_GLOBAL_SHELL_CHANGES', () => {
-  assert.match(css, /body\.woocommerce-account \.cr-account-orders > \.cr-parent-category__toolbar\s*\{\s*margin-top:\s*0;\s*\}/);
+test('ORDERS_INHERITS_SHARED_DESKTOP_TOOLBAR_TOP_SPACING_WITHOUT_GLOBAL_SHELL_CHANGES', () => {
+  const desktop = visual.match(/@media \(min-width: 1280px\) \{([\s\S]*?)\n\}/);
+  assert.ok(desktop, 'the shared >=1280px toolbar rule exists');
+  assert.match(desktop[1], /body\.woocommerce-account :is\(\.cr-account-shell__content, \.cr-account-orders\) > \.cr-parent-category__toolbar/);
+  assert.match(desktop[1], /margin:\s*30px 0 18px;/);
+  assert.doesNotMatch(css, /body\.woocommerce-account \.cr-account-orders > \.cr-parent-category__toolbar\s*\{[^}]*margin-top:\s*0;/s);
   assert.match(css, /\.cr-account-orders__list\s*\{\s*gap:\s*16px;\s*\}/);
   assert.match(css, /@media \(max-width:\s*767px\)[\s\S]*?body\.woocommerce-account \.cr-account-orders__list\s*\{\s*gap:\s*10px;\s*\}/);
   assert.match(css, /\.cr-account-orders__filter-controls\s*\{[^}]*margin:\s*0 0 22px;/s);

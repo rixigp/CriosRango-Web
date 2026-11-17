@@ -48,5 +48,12 @@ test('MOBILE_TOP_SPACING_HAS_ONE_CANONICAL_SOURCE_AND_CATEGORY_DOES_NOT_RESERVE_
  assert.equal(main.includes('padding-top: var(--cr-app-topbar-height); box-sizing: border-box;'),false);
  assert.ok(main.includes('body.cr-parent-category-view .cr-parent-category__canvas {\n    padding-top: 0;'));
  assert.ok(main.includes('body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub {\n    padding-top: 0;'));
- assert.match(visual, /@media \(min-width: 1280px\) \{[\s\S]*?body\.cr-parent-category-view \.cr-parent-category__toolbar,[\s\S]*?margin-top: 30px;/);
+ const desktop = visual.match(/@media \(min-width: 1280px\) \{([\s\S]*?)\n\}/);
+ assert.ok(desktop, 'desktop toolbar spacing is breakpoint-scoped to >=1280px');
+ assert.match(desktop[1], /body\.cr-parent-category-view \.cr-parent-category__toolbar/);
+ assert.match(desktop[1], /body\.woocommerce-account :is\(\.cr-account-shell__content, \.cr-account-orders\) > \.cr-parent-category__toolbar/);
+ assert.match(desktop[1], /margin:\s*30px 0 18px;/);
+ const mobileToolbar = main.match(/\.cr-parent-category__toolbar\s*\{([^}]*)\}/);
+ assert.ok(mobileToolbar, 'canonical base toolbar rule remains present below desktop breakpoint');
+ assert.match(mobileToolbar[1], /margin:\s*0 0 14px;/);
 });
