@@ -15,7 +15,6 @@ body.cr-product-detail-app .cr-product-detail-toolbar {
   position: sticky;
   top: var(--cr-app-topbar-height, 64px);
   z-index: 1100;
-  margin-top: 0 !important;
   background: var(--cr-app-canvas);
   border-bottom: 1px solid rgba(24,59,53,.06);
 }

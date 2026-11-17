@@ -11,7 +11,7 @@
   --cr-type-secondary: 12px;
   --cr-type-button: 14px;
   --cr-type-navigation: 11px;
-  --cr-page-top-gap: 32px;
+  --cr-page-top-gap: 0px;
   --cr-page-inline-gutter: 20px;
   --cr-section-gap: 28px;
   --cr-card-gap: 12px;
@@ -31,12 +31,14 @@
 }
 
 /* One page-heading language, whether supplied by a Woo toolbar or a page template. */
+.cr-page-toolbar,
 .cr-parent-category__toolbar,
 .cr-page__header {
   box-sizing: border-box;
   width: 100%;
   align-items: center;
 }
+.cr-page-toolbar,
 .cr-parent-category__toolbar {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
@@ -45,6 +47,7 @@
   margin: 0 0 14px;
   padding-block: 0;
 }
+.cr-page-toolbar--no-back,
 .cr-parent-category__toolbar--no-back {
   grid-template-columns: minmax(0, 1fr) auto;
 }
@@ -108,12 +111,9 @@
 }
 .cr-main--woocommerce .cr-parent-category__toolbar { margin-bottom: 18px; }
 
-/* One desktop spacing source for every contextual page toolbar. */
+/* One desktop spacing source: the canonical toolbar owns the entire context gap. */
 @media (min-width: 1280px) {
-  body.cr-parent-category-view .cr-parent-category__toolbar,
-  body.cr-product-listing-view .cr-parent-category__toolbar,
-  .cr-category-hub .cr-parent-category__toolbar,
-  body.woocommerce-account :is(.cr-account-shell__content, .cr-account-orders) > .cr-parent-category__toolbar {
+  .cr-page-toolbar {
     margin: 30px 0 18px;
   }
 }

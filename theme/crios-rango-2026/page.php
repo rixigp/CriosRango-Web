@@ -7,14 +7,13 @@ $is_mobile_account = ( function_exists( 'is_account_page' ) && is_account_page()
 $is_mobile_help = function_exists( 'cr2026_account_is_help_page' ) && cr2026_account_is_help_page()
     && function_exists( 'wp_is_mobile' ) && wp_is_mobile();
 /* Page-level ownership covers both the Cart block and the classic cart shortcode. */
-$is_mobile_cart_page = function_exists( 'is_cart' ) && is_cart()
-    && function_exists( 'wp_is_mobile' ) && wp_is_mobile();
+$is_cart_page = function_exists( 'is_cart' ) && is_cart();
 ?>
 <main id="primary" class="cr-main">
     <div class="cr-shell cr-page-shell">
         <?php while ( have_posts() ) : the_post(); ?>
             <article <?php post_class( 'cr-page' ); ?>>
-                <?php if ( $is_mobile_cart_page ) : ?>
+                <?php if ( $is_cart_page ) : ?>
                     <?php
                     $GLOBALS['cr2026_cart_toolbar_rendered_by_page'] = true;
                     $cart_empty_action = function_exists( 'cr2026_cart_empty_action_markup' ) ? cr2026_cart_empty_action_markup() : '';

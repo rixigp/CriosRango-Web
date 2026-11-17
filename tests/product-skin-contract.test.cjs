@@ -994,8 +994,9 @@ test('Product Detail keeps the Woo summary continuous and moves description belo
   assert.ok(productUiJs.includes('product.insertBefore(description, tabs || null)'));
   assert.ok(productUiJs.includes('summary.insertBefore(description, purchaseForm)'));
   const visualCss = fs.readFileSync(path.join(theme, 'assets/css/visual-system.css'), 'utf8');
-  assert.match(visualCss, /body\.cr-parent-category-view \.cr-parent-category__toolbar,[\s\S]*?body\.cr-product-listing-view \.cr-parent-category__toolbar,[\s\S]*?\.cr-category-hub \.cr-parent-category__toolbar\s*\{[^}]*margin-top:\s*30px;/s);
-  assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{[^}]*margin-top:\s*0 !important;/s);
+  assert.match(visualCss, /@media \(min-width: 1280px\) \{\s*\.cr-page-toolbar\s*\{\s*margin: 30px 0 18px;/s);
+  assert.doesNotMatch(visualCss, /body\.cr-parent-category-view .*toolbar|body\.cr-product-listing-view .*toolbar|body\.woocommerce-account .*toolbar/);
+  assert.doesNotMatch(skinCss, /body\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{[^}]*margin-top:\s*0 !important;/s);
 });
 
 test('Product Detail browser geometry runs before independent Home shell smoke', () => {

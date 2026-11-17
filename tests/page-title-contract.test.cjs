@@ -89,9 +89,9 @@ test('catalog, cart, checkout and account canonical routes remain intact', () =>
   assert.match(account, /cr2026_account_render_endpoint_toolbar/);
 });
 
-test('classic Cart template and WooCommerce Cart block share exactly one mobile toolbar source', () => {
+test('classic Cart template and WooCommerce Cart block share exactly one toolbar source at every viewport', () => {
   assert.match(cartRuntime, /function cr2026_cart_empty_action_markup\(\)/);
-  assert.match(page, /\$is_mobile_cart_page = function_exists\( 'is_cart' \)/);
+  assert.match(page, /\$is_cart_page = function_exists\( 'is_cart' \) && is_cart\(\)/);
   assert.match(page, /\$GLOBALS\['cr2026_cart_toolbar_rendered_by_page'\] = true/);
   assert.match(page, /cr2026_cart_empty_action_markup\(\)/);
   assert.match(cart, /empty\( \$GLOBALS\['cr2026_cart_toolbar_rendered_by_page'\] \)/);
@@ -125,7 +125,7 @@ test('legal pages and help use the canonical toolbar with contextual back destin
   assert.match(search, /cr2026_render_category_toolbar\(\s*sprintf\([\s\S]*?cr2026_shop_url\(\)/);
   assert.match(brandsIndex, /cr2026_render_category_toolbar\(\s*__\( 'Nuestras marcas'[\s\S]*?home_url\( '\/' \)/);
   assert.match(brandArchive, /cr2026_render_category_toolbar\(\s*\$brand_term->name,\s*\$brands_index_url/);
-  assert.match(notFound, /cr2026_render_category_toolbar\(\s*__\( 'Página no encontrada'[\s\S]*?''/);
+  assert.match(notFound, /cr2026_render_category_toolbar\(\s*__\( 'Página no encontrada'[\s\S]*?''[\s\S]*?'cr-404-title'/);
 });
 
 test('generic WordPress pages use only the canonical toolbar at every viewport', () => {

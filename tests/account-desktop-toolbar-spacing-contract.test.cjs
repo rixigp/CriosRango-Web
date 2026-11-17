@@ -49,12 +49,11 @@ function rules(source) {
   return out;
 }
 
-test('DESKTOP_SHARED_TOOLBAR_MARGIN=30px 0 18px for Category, Account and Orders', () => {
+test('DESKTOP_SHARED_TOOLBAR_MARGIN=30px 0 18px for every contextual route', () => {
   const desktop = mediaBlocks(visual).find(block => /min-width\s*:\s*1280px/i.test(block.query));
   assert.ok(desktop, 'the >=1280px desktop media query exists');
-  assert.match(desktop.body, /body\.cr-parent-category-view \.cr-parent-category__toolbar/);
-  assert.match(desktop.body, /body\.woocommerce-account :is\(\.cr-account-shell__content, \.cr-account-orders\) > \.cr-parent-category__toolbar/);
-  assert.match(desktop.body, /margin:\s*30px 0 18px;/);
+  assert.match(desktop.body, /\.cr-page-toolbar\s*\{\s*margin:\s*30px 0 18px;/);
+  assert.doesNotMatch(desktop.body, /body\.cr-parent-category-view|body\.cr-product-listing-view|body\.woocommerce-account/);
 });
 
 test('ACCOUNT_DESKTOP_TOP_OVERRIDE=ABSENT and ORDERS_DESKTOP_TOP_OVERRIDE=ABSENT', () => {

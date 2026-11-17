@@ -3187,3 +3187,13 @@ body.cr-parent-category-view .cr-parent-category__grid,
     object-position: center center;
   }
 }
+
+
+/* Contextual pages get their only desktop top gap from .cr-page-toolbar. */
+@media (min-width: 1280px) {
+  #primary:has(.cr-page-toolbar),
+  .cr-main:has(.cr-page-toolbar),
+  .cr-parent-category__canvas:has(.cr-page-toolbar) {
+    padding-top: 0 !important;
+  }
+}

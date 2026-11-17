@@ -168,15 +168,16 @@ function cr2026_checkout_render_toolbar() {
     }
 
     $back_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/' );
-    echo '<div class="cr-checkout-header-shell">';
     cr2026_render_category_toolbar( __( 'Finalizar compra', 'crios-rango-2026' ), $back_url, 'parent', false );
-    echo '</div>';
 }
 add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_render_toolbar', 5 );
 
 function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context = 'parent', $show_filters = true, $right_action_html = '', $title_id = '', $toolbar_extra_class = '', $back_attributes = array() ) {
     $title_id_attribute = '' !== $title_id ? ' id="' . esc_attr( $title_id ) . '"' : '';
-    $toolbar_class = '' === $back_url ? 'cr-parent-category__toolbar cr-parent-category__toolbar--no-back' : 'cr-parent-category__toolbar';
+    $toolbar_class = 'cr-page-toolbar cr-parent-category__toolbar';
+    if ( '' === $back_url ) {
+        $toolbar_class .= ' cr-page-toolbar--no-back cr-parent-category__toolbar--no-back';
+    }
     if ( '' !== $toolbar_extra_class ) {
         $toolbar_class .= ' ' . sanitize_html_class( $toolbar_extra_class );
     }
