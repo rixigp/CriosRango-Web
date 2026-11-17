@@ -286,9 +286,9 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
       && Math.abs(state.railWidth - 112) <= 1
       && state.mainPaddingLeft === (isHome ? '0px' : '20px')
       && state.mainPaddingTop === (isHome ? '0px' : '32px')
-      && Math.abs(state.shellWidth - Math.min(viewport - 48, 1392)) <= 1
-      && Math.abs(state.shellLeft - ((state.layoutWidth || state.clientWidth || viewport) - Math.min(viewport - 48, 1392)) / 2) <= 1
-      && Math.abs(state.mainWidth - (Math.min(viewport - 48, 1392) - 112)) <= 1
+      && Math.abs(state.shellWidth - Math.min(viewport - 48, 1232)) <= 1
+      && Math.abs(state.shellLeft - ((state.layoutWidth || state.clientWidth || viewport) - Math.min(viewport - 48, 1232)) / 2) <= 1
+      && Math.abs(state.mainWidth - (Math.min(viewport - 48, 1232) - 112)) <= 1
       && state.headerMarkDisplay === 'none'
       && state.sidebarLogoDisplay !== 'none'
       && /home_logo\.png/.test(state.sidebarLogoSrc || '')
