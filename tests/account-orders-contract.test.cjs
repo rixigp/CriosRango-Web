@@ -11,7 +11,7 @@ const css = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/a
 const js = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/js/account-orders.js'), 'utf8');
 const helpers = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/helpers.php'), 'utf8');
 
-test('MOBILE_ORDERS_USE_CANONICAL_TOOLBAR', () => {
+test('ORDERS_USE_CANONICAL_TOOLBAR_AT_ALL_VIEWPORTS', () => {
   assert.match(php, /cr2026_render_category_toolbar\(\s*__\(\s*'Pedidos'/);
   assert.match(helpers, /cr-parent-category__toolbar/);
   assert.match(helpers, /cr-parent-category__back/);

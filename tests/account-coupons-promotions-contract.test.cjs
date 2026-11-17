@@ -13,17 +13,18 @@ const css = fs.readFileSync(path.join(theme, 'assets/css/account.css'), 'utf8');
 const js = fs.readFileSync(path.join(theme, 'assets/js/account-loyalty.js'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github/workflows/deploy.yml'), 'utf8');
 
-test('LOYALTY_ENDPOINT_USES_CANONICAL_TOOLBAR_AND_MOBILE_ONLY_PRESENTATION', () => {
+test('LOYALTY_ENDPOINT_USES_CANONICAL_TOOLBAR_AND_UNIVERSAL_PRESENTATION', () => {
   assert.match(presentation, /cr2026_account_render_endpoint_toolbar\(\s*__\(\s*'Cupones y promociones'/);
   assert.match(presentation, /woocommerce_account_loyalty_reward_endpoint/);
   assert.match(presentation, /cr-account-loyalty-reward/);
-  assert.match(presentation, /wp_is_mobile\(\)/);
-  assert.match(presentation, /cr2026_account_render_mobile_loyalty_reward/);
+  const universalRenderer = presentation.slice(presentation.indexOf('function cr2026_account_route_loyalty_reward'), presentation.indexOf('function cr2026_account_guest_login_view'));
+  assert.doesNotMatch(universalRenderer, /wp_is_mobile/);
+  assert.match(presentation, /cr2026_account_render_loyalty_reward/);
   assert.match(assets, /is_wc_endpoint_url\( 'loyalty_reward' \)/);
   assert.match(assets, /assets\/js\/account-loyalty\.js/);
 });
 
-test('MOBILE_LEGACY_WPLoyalty_PRESENTATION_CALLBACKS_ARE_REMOVED_WITHOUT_TOUCHING_PLUGIN_LOGIC', () => {
+test('LEGACY_WPLoyalty_CALLBACKS_ARE_REMOVED_UNIVERSALLY_WITHOUT_TOUCHING_PLUGIN_LOGIC', () => {
   assert.match(presentation, /remove_action\(\s*\$hook_name,\s*\$callback,\s*\(int\) \$priority\s*\)/);
   assert.match(presentation, /wlr|wployalty|wp\[-_\]loyalty\[-_\]rules/);
   assert.doesNotMatch(presentation, /update_user_meta\([^\n]*(?:points|wallet|reward)|wp_delete_post\([^\n]*coupon/);

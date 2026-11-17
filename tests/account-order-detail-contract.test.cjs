@@ -12,8 +12,8 @@ const presentation = fs.readFileSync(presentationPath, 'utf8');
 const css = fs.readFileSync(cssPath, 'utf8');
 const mobileTemplate = template.split("$created = $order->get_date_created();")[1] || '';
 
-test('mobile order detail uses canonical toolbar title and rail', () => {
-  assert.match(presentation, /cr2026_account_view_order_endpoint_toolbar[\s\S]*?\$title = __\( 'Detalle de pedido'/);
+test('universal order detail uses canonical toolbar title and rail', () => {
+  assert.match(presentation, /cr2026_account_view_order_endpoint_toolbar[\s\S]*?\$title = __\( 'Detalle del pedido'/);
   assert.match(presentation, /cr2026_account_render_endpoint_toolbar\( \$title, wc_get_account_endpoint_url\( 'orders' \) \)/);
   assert.match(template, /class="cr-order-detail"/);
   assert.match(css, /\.cr-order-detail\s*\{[^}]*width:100%; max-width:none; margin:0;/);
@@ -21,10 +21,10 @@ test('mobile order detail uses canonical toolbar title and rail', () => {
   assert.doesNotMatch(css, /\.cr-order-detail\s*\{[^}]*max-width:\s*720px/);
 });
 
-test('mobile endpoint replaces legacy order table and paragraph visually', () => {
-  assert.match(template, /if \( ! function_exists\( 'wp_is_mobile' \)[\s\S]*?do_action\( 'woocommerce_order_details_table', \$order_id \)/);
-  assert.match(template, /if \( ! function_exists\( 'wp_is_mobile' \)[\s\S]*?return;/);
-  assert.doesNotMatch(mobileTemplate, /<h2>\s*<\?php esc_html_e\( 'Order details'/);
+test('owned orders use the same theme renderer at every viewport; non-owner fallback remains protected', () => {
+  assert.match(template, /if \( \(int\) \$order->get_customer_id\(\) !== \(int\) get_current_user_id\(\) \)/);
+  assert.doesNotMatch(template, /wp_is_mobile/);
+  assert.doesNotMatch(mobileTemplate, /woocommerce_order_details_table/);
   assert.match(template, /cr-order-detail__card--header/);
   assert.match(template, /cr-order-detail__card--products/);
   assert.match(template, /cr-order-detail__card--delivery/);

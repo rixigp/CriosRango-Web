@@ -30,6 +30,8 @@ on:
       - "tests/account-orders-contract.test.cjs"
       - "tests/account-order-detail-contract.test.cjs"
       - "tests/account-coupons-promotions-contract.test.cjs"
+      - "tests/account-universal-renderer-contract.test.cjs"
+      - "tests/account-universal-browser.cjs"
       - "tests/global-mobile-shell-contract.test.cjs"
       - "tests/global-responsive-navigation-contract.test.cjs"
       - "tests/desktop-geometry-contract.test.cjs"
@@ -465,11 +467,14 @@ jobs:
       - name: Run mobile Account Orders app-skin contract test
         run: node --test tests/account-orders-contract.test.cjs
 
-      - name: Run mobile Account Order Detail app-skin contract test
+      - name: Run universal Account Order Detail renderer contract test
         run: node --test tests/account-order-detail-contract.test.cjs
 
-      - name: Run mobile Account Coupons & Promotions app-skin contract test
+      - name: Run universal Account Coupons & Promotions renderer contract test
         run: node --test tests/account-coupons-promotions-contract.test.cjs
+
+      - name: Run universal Account renderer architecture contract test
+        run: node --test tests/account-universal-renderer-contract.test.cjs
 
       - name: Validate theme structure
         shell: bash
@@ -937,6 +942,7 @@ jobs:
           npx playwright install chromium
           node tests/desktop-targeted-browser.cjs
           node tests/global-shell-browser-smoke.cjs
+          node tests/account-universal-browser.cjs
       - name: Benchmark staging catalog endpoint (3 cold + 3 warm requests)
         if: github.ref == 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
         shell: bash
