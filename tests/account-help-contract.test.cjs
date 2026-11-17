@@ -18,7 +18,7 @@ test('MOBILE_HELP_REPLACES_UNPROCESSED_PAGE_BUILDER_CONTENT', () => {
   assert.doesNotMatch(presentation, /return \$panel \. \$content/);
   assert.match(presentation, /add_filter\( 'the_content', 'cr2026_account_help_content', 20 \)/);
   assert.match(presentation, /if \( ! \$back_url \) \{\s*\$back_url = wc_get_page_permalink\( 'myaccount' \);\s*\}/);
-  assert.match(presentation, /cr2026_render_category_toolbar\( \$title, \$back_url, 'parent', false \)/);
+  assert.match(presentation, /cr2026_render_category_toolbar\( \$title, \$back_url, 'parent', false, '', \$title_id \)/);
   assert.match(dashboard, /cr2026_render_category_toolbar\( __\( 'Cuenta'/);
 });
 
