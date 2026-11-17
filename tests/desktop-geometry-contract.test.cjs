@@ -124,7 +124,7 @@ test('ACCOUNT_AUTH_DESKTOP_SINGLE_CONTENT_RAIL=PASS — legacy navigation column
   assert.match(account, /body\.woocommerce-account\.logged-in \.cr-account-shell[\s\S]*?width: 100% !important/);
   assert.match(account, /body\.woocommerce-account\.logged-in \.cr-account-content[\s\S]*?float: none !important[\s\S]*?min-width: 0/);
   assert.doesNotMatch(account, /body\.woocommerce-account\.logged-in \.cr-account-shell\s*\{[^}]*display:\s*grid/);
-  assert.match(account, /cr-account-home__grid[\s\S]*?repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(account, /@media\s*\(min-width:\s*980px\)[\s\S]*?body\.woocommerce-account \.cr-account-home__grid\s*\{\s*grid-template-columns:\s*repeat\(4,minmax\(0,1fr\)\)/);
   assert.match(account, /cr-account-home__identity strong[\s\S]*?word-break: normal/);
 });
 

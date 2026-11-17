@@ -27,7 +27,7 @@ test('PROFILE_AND_REWARDS_RENDERERS_DO_NOT_USE_DEVICE_DETECTION',()=>{
 });
 test('ADDRESS_OVERVIEW_AND_DOWNLOADS_USE_THEME_RENDERERS_WITH_NATIVE_DATA',()=>{
  assert.match(address,/wc_get_account_formatted_address/); assert.match(address,/cr-account-empty-state/); assert.match(address,/woocommerce_my_account_get_addresses/); assert.match(address,/wc_get_endpoint_url\( 'edit-address'/);
- assert.match(downloads,/\$downloads/); assert.match(downloads,/\$download\['download_url'\]/); assert.match(downloads,/cr-account-empty-state/);
+ assert.match(downloads,/return;/); assert.doesNotMatch(downloads,/<section|<article|download_url|Descargas/);
 });
 test('VIEWPORTS_CHANGE_LAYOUT_NOT_RENDERER',()=>{
  const viewports=[390,768,980,1279,1280,1440,1920]; assert.deepEqual(viewports,[390,768,980,1279,1280,1440,1920]);

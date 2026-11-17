@@ -122,16 +122,22 @@ test('ONE_CANONICAL_ACCOUNT_CONTENT_RAIL_IS_REUSED_BY_HELP_LOYALTY_ORDERS_PROFIL
   assert.match(presentation, /<section class="cr-account-content cr-account-profile-home"/);
   assert.match(presentation, /<section class="cr-account-content cr-account-information"/);
   const orders = read('woocommerce/myaccount/orders.php');
-  assert.match(orders, /class="cr-account-orders__filters cr-account-content"/);
+  assert.match(orders, /class="cr-account-orders__filters"/);
+  assert.doesNotMatch(orders, /cr-account-orders__filters cr-account-content/);
   assert.match(orders, /class="cr-account-orders__list cr-account-content"/);
   assert.match(accountCss, /\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin-inline:\s*0;/s);
   assert.equal((accountCss.match(/\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{/g) || []).length, 1, 'one canonical content rail rule');
 });
 
 test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_WOO_VISUAL_CARD=0',()=>{
-  const page = read('page.php');
-  assert.match(page, /\$is_mobile_account && function_exists\( 'is_account_page' \) && is_account_page\(\) && ! is_user_logged_in\(\)[\s\S]*?\$guest_login_view \? __\( 'Acceder'[\s\S]*?__\( 'Cuenta'/,'guest toolbar switches between Account home and login subview');
-  assert.match(presentation,/woocommerce_locate_template[\s\S]*?cr2026_account_guest_home_template/);
+  const loginTemplate = read('woocommerce/myaccount/form-login.php');
+  assert.match(presentation,/woocommerce_before_customer_login_form/);
+  assert.match(presentation,/cr2026_account_guest_login_toolbar/);
+  assert.match(presentation,/cr2026_account_render_endpoint_toolbar\( __( 'Acceder'/);
+  assert.match(loginTemplate,/woocommerce_before_customer_login_form/);
+  assert.doesNotMatch(loginTemplate,/<h2>\\s*<\\?php esc_html_e\\( 'Login'/);
+  assert.match(loginTemplate,/aria-label=.*Acceder/);
+  assert.match(presentation,/woocommerce_locate_template[\\s\\S]*?cr2026_account_guest_home_template/);
   assert.match(presentation,/myaccount\/form-login\.php/);
   assert.match(presentation,/cr2026_account_guest_login_view\(\)/);
   assert.match(presentation,/woocommerce_login_redirect[\s\S]*?woocommerce_registration_redirect/);

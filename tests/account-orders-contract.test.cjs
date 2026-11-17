@@ -78,7 +78,8 @@ test('ORDER_CARD_APP_VISUAL_CONTRACT_REMOVES_OUTLINED_DETAIL_BUTTON', () => {
 
 test('ORDERS_FILTERS_AND_CARDS_REUSE_EXACT_PROFILE_MOBILE_RAIL_WITHOUT_MOVING_TOOLBAR', () => {
   assert.match(css, /\.cr-account-home\s*\{[^}]*width:\s*100%;\s*max-width:\s*720px;\s*margin:\s*0;/);
-  assert.match(php, /class="cr-account-orders__filters cr-account-content"/);
+  assert.match(php, /class="cr-account-orders__filters"/);
+  assert.doesNotMatch(php, /cr-account-orders__filters cr-account-content/);
   assert.match(php, /class="cr-account-orders__list cr-account-content"/);
   assert.match(css, /\.cr-account-content,\s*body\.woocommerce-account\.cr-account-loyalty-reward \.cr-account-loyalty\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin-inline:\s*0;/s);
   assert.match(css, /body\.woocommerce-account \.cr-account-orders__filters\s*\{[^}]*padding-inline:\s*0;/s);
@@ -96,7 +97,8 @@ test('BROKEN_ORDER_IMAGE_IS_REMOVED_FROM_LAYOUT_AND_CLEAN_BAG_PLACEHOLDER_REMAIN
 });
 
 test('ORDER_FILTER_SCROLL_CONTROLS_APPEAR_ONLY_WHEN_NEEDED_AND_SCROLL_THE_EXISTING_TRACK', () => {
-  assert.match(php, /class="cr-account-orders__filters cr-account-content"/);
+  assert.match(php, /class="cr-account-orders__filters"/);
+  assert.doesNotMatch(php, /cr-account-orders__filters cr-account-content/);
   assert.match(js, /filterTrack\.scrollBy\(\{\s*left:[^,]+,\s*behavior:\s*'smooth'/);
   assert.match(js, /leftControl\.hidden\s*=\s*!hasOverflow\s*\|\|\s*scrollLeft\s*<=\s*1/);
   assert.match(js, /rightControl\.hidden\s*=\s*!hasOverflow\s*\|\|\s*scrollLeft\s*>=\s*maxScrollLeft\s*-\s*1/);
