@@ -96,16 +96,14 @@ test('CART_EXTRA_OUTER_GUTTERS=0; PRODUCT_DETAIL_EXTRA_OUTER_GUTTERS=0; SEARCH_V
 });
 
 
-test('ROOT_SCROLLBAR_GUTTER_STABLE=YES; FALLBACK=OVERFLOW_Y_SCROLL_ONLY_WHEN_UNSUPPORTED',()=>{
+test('ROOT_OVERFLOW_Y_SCROLL=YES; ROOT_SCROLLBAR_GUTTER_STABLE=YES',()=>{
  const root=main.match(/html\s*\{([^}]*)\}/);
  assert.ok(root,'canonical root html rule exists');
+ assert.match(root[1],/overflow-y:\s*scroll\s*;/);
  assert.match(root[1],/scrollbar-gutter:\s*stable\s*;/);
 
  assert.doesNotMatch(root[1],/both-edges/);
  assert.doesNotMatch(main,/scrollbar-gutter:\s*stable\s+both-edges/);
- const fallback=main.match(/@supports not \(scrollbar-gutter:\s*stable\)\s*\{\s*html\s*\{([^}]*)\}/);
- assert.ok(fallback,'unsupported browsers receive a mutually exclusive fallback');
- assert.match(fallback[1],/overflow-y:\s*scroll\s*;/);
 });
 
 test('DESKTOP_CANONICAL_SHELL_MAX=1232px; PRIMARY_MAX=1120px; SIDEBAR=112px',()=>{
