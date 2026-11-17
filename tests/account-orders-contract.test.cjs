@@ -94,3 +94,22 @@ test('BROKEN_ORDER_IMAGE_IS_REMOVED_FROM_LAYOUT_AND_CLEAN_BAG_PLACEHOLDER_REMAIN
   assert.match(php, /<span class="cr-account-order__placeholder">.*?cr2026_icon\( 'bag' \).*?<\/span>\s*<\?php if \( \$image_url \) : \?>/s);
   assert.match(php, /alt="" loading="lazy"/);
 });
+
+test('ORDER_FILTER_SCROLL_CONTROLS_APPEAR_ONLY_WHEN_NEEDED_AND_SCROLL_THE_EXISTING_TRACK', () => {
+  assert.match(php, /class="cr-account-orders__filters cr-account-content"/);
+  assert.match(js, /filterTrack\.scrollBy\(\{\s*left:[^,]+,\s*behavior:\s*'smooth'/);
+  assert.match(js, /leftControl\.hidden\s*=\s*!hasOverflow\s*\|\|\s*scrollLeft\s*<=\s*1/);
+  assert.match(js, /rightControl\.hidden\s*=\s*!hasOverflow\s*\|\|\s*scrollLeft\s*>=\s*maxScrollLeft\s*-\s*1/);
+  assert.match(js, /new ResizeObserver\(updateScrollControls\)/);
+  assert.match(css, /\.cr-account-orders__filter-controls\s*\{/);
+  assert.match(css, /\.cr-account-orders__filter-scroll\[hidden\]\s*\{\s*display:\s*none\s*!important;/);
+  assert.match(css, /\.cr-account-orders__filters\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*overflow-x:\s*auto;/s);
+});
+
+test('ORDER_SPACING_AND_STATUS_BADGES_USE_MODERATE_DESKTOP_DENSITY', () => {
+  assert.match(css, /\.cr-account-orders__filter-controls\s*\{[^}]*margin:\s*0 0 22px;/s);
+  assert.match(css, /\.cr-account-orders__list\s*\{[^}]*gap:\s*15px;/s);
+  assert.match(css, /\.cr-account-order\s*\{[^}]*padding:\s*16px;/s);
+  assert.match(css, /\.cr-account-order__status\s*\{[^}]*min-height:\s*24px;[^}]*padding:\s*4px 10px;[^}]*font:\s*300 11px\/16px/s);
+  assert.match(css, /@media \(max-width:\s*767px\)[\s\S]*?\.cr-account-orders__list\s*\{\s*gap:\s*12px;/);
+});
