@@ -90,6 +90,71 @@ async function inspect(page, routeName, width) {
         await inspect(page, name, width);
       }
     }
+
+    // Compare actual scrollbar states at one identical desktop viewport.
+    await page.setViewportSize({width:1440,height:1300});
+    const geometryRoutes=[
+      ['CATEGORY',discovered.category],
+      ['OUTLET',discovered.outlet],
+      ['ACCOUNT',ACCOUNT_URL],
+      ['PRODUCT',discovered.product],
+      ['LEGAL',LEGAL_URL]
+    ];
+    const geometry=[];
+    for(const [name,url] of geometryRoutes){
+      await navigate(page,url);
+      const metrics=await page.evaluate(()=>{
+        const root=document.documentElement, scrolling=document.scrollingElement;
+        const bounds=selector=>{
+          const el=document.querySelector(selector);if(!el)return null;
+          const rect=el.getBoundingClientRect();return {left:rect.left,right:rect.right};
+        };
+        return {
+          scrollingElement:scrolling?scrolling.tagName:'NONE',
+          isRootScrollingElement:scrolling===root,
+          scrollbarGutter:getComputedStyle(root).scrollbarGutter,
+          innerWidth:window.innerWidth,
+          clientWidth:root.clientWidth,
+          scrollHeight:scrolling?scrolling.scrollHeight:0,
+          clientHeight:scrolling?scrolling.clientHeight:0,
+          hasVerticalScroll:!!scrolling&&scrolling.scrollHeight>scrolling.clientHeight+1,
+          shell:bounds('.cr-desktop-shell'),
+          sidebar:bounds('.cr-desktop-rail'),
+          primary:bounds('#primary')
+        };
+      });
+      assert.equal(metrics.isRootScrollingElement,true,name+' scrolling element must be HTML');
+      assert.equal(metrics.scrollbarGutter,'stable',name+' root gutter must be stable');
+      for(const part of ['shell','sidebar','primary'])assert.ok(metrics[part],name+' '+part+' geometry missing');
+      geometry.push({name,metrics});
+      console.log('SCROLLBAR_ROUTE_'+name+'='+JSON.stringify(metrics));
+    }
+    const withScroll=geometry.find(x=>x.metrics.hasVerticalScroll);
+    const withoutScroll=geometry.find(x=>!x.metrics.hasVerticalScroll);
+    assert.ok(withScroll,'at least one real route must have vertical scroll');
+    assert.ok(withoutScroll,'at least one real route must not have vertical scroll');
+    assert.equal(new Set(geometry.map(x=>x.metrics.innerWidth)).size,1,'window.innerWidth must remain fixed');
+    assert.equal(new Set(geometry.map(x=>x.metrics.clientWidth)).size,1,'documentElement.clientWidth must remain fixed');
+    const edges=[['shell','left'],['shell','right'],['sidebar','left'],['sidebar','right'],['primary','left'],['primary','right']];
+    let shellShift=0;
+    for(const [part,edge] of edges)shellShift=Math.max(shellShift,Math.abs(withScroll.metrics[part][edge]-withoutScroll.metrics[part][edge]));
+    console.log('SCROLLING_ELEMENT=HTML(document.documentElement)');
+    console.log('ROUTE_WITH_SCROLL='+withScroll.name);
+    console.log('ROUTE_WITHOUT_SCROLL='+withoutScroll.name);
+    console.log('WINDOW_INNER_WIDTH='+withScroll.metrics.innerWidth);
+    console.log('DOCUMENT_ELEMENT_CLIENT_WIDTH_WITH_SCROLL='+withScroll.metrics.clientWidth);
+    console.log('DOCUMENT_ELEMENT_CLIENT_WIDTH_WITHOUT_SCROLL='+withoutScroll.metrics.clientWidth);
+    console.log('SHELL_LEFT_WITH_SCROLL='+withScroll.metrics.shell.left.toFixed(2));
+    console.log('SHELL_LEFT_WITHOUT_SCROLL='+withoutScroll.metrics.shell.left.toFixed(2));
+    console.log('SHELL_RIGHT_WITH_SCROLL='+withScroll.metrics.shell.right.toFixed(2));
+    console.log('SHELL_RIGHT_WITHOUT_SCROLL='+withoutScroll.metrics.shell.right.toFixed(2));
+    console.log('SIDEBAR_LEFT_WITH_SCROLL='+withScroll.metrics.sidebar.left.toFixed(2));
+    console.log('SIDEBAR_RIGHT_WITH_SCROLL='+withScroll.metrics.sidebar.right.toFixed(2));
+    console.log('PRIMARY_LEFT_WITH_SCROLL='+withScroll.metrics.primary.left.toFixed(2));
+    console.log('PRIMARY_RIGHT_WITH_SCROLL='+withScroll.metrics.primary.right.toFixed(2));
+    console.log('SHELL_SHIFT_DUE_TO_SCROLLBAR='+shellShift.toFixed(2)+'px');
+    assert.ok(shellShift<=1,'shell/sidebar/primary geometry shifted '+shellShift+'px');
+    console.log('SCROLLBAR_GEOMETRY_STABILITY=PASS');
   } finally {
     await browser.close();
   }
