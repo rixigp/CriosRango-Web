@@ -159,8 +159,7 @@ function cr2026_product_card_image_attributes( $attr, $attachment, $size ) {
 }
 add_filter( 'wp_get_attachment_image_attributes', 'cr2026_product_card_image_attributes', 20, 3 );
 
-/** Render the one shared toolbar markup for shop hub and category landings. */
-/** Render the checkout heading through the same toolbar used by Categories, Outlet and Cart. */
+/** Render Checkout's title through the canonical contextual page toolbar. */
 function cr2026_checkout_render_toolbar() {
     if ( ! function_exists( 'is_checkout' ) || ! is_checkout()
         || ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) ) {
@@ -172,6 +171,7 @@ function cr2026_checkout_render_toolbar() {
 }
 add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_render_toolbar', 5 );
 
+/** Canonical page toolbar markup; the legacy function name remains for template compatibility. */
 function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context = 'parent', $show_filters = true, $right_action_html = '', $title_id = '', $toolbar_extra_class = '', $back_attributes = array() ) {
     $title_id_attribute = '' !== $title_id ? ' id="' . esc_attr( $title_id ) . '"' : '';
     $toolbar_class = 'cr-page-toolbar cr-parent-category__toolbar';

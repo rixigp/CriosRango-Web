@@ -71,7 +71,9 @@ test('CANONICAL_DESKTOP_CONTEXT_GAP_HAS_ONE_SOURCE_AND_NO_ROUTE_OVERRIDES', () =
   assert.match(visual, /@media \(min-width: 1280px\) \{\s*\.cr-page-toolbar\s*\{\s*margin: 30px 0 18px;/);
   assert.doesNotMatch(visual, /body\.cr-parent-category-view .*toolbar|body\.cr-product-listing-view .*toolbar|body\.woocommerce-account .*toolbar/);
   assert.match(main, /#primary:has\(\.cr-page-toolbar\)[\s\S]*?padding-top: 0 !important;/);
-  assert.match(visual, /--cr-page-top-gap: 0px;/);
+  assert.match(main, /#primary:has\(\.cr-page-toolbar\) \.cr-page-shell\s*\{[^}]*padding-top: 0 !important;/s);
+  assert.match(visual, /--cr-page-top-gap: 32px;/);
+  assert.match(visual, /@media \\(max-width: 767px\\)[\\s\\S]*?--cr-page-top-gap: 0px;/);
   assert.match(main, /\.cr-parent-category__toolbar\s*\{[^}]*margin: 0 0 14px;/s,
     'mobile/tablet base spacing remains unchanged');
 });

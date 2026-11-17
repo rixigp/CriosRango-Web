@@ -3196,4 +3196,8 @@ body.cr-parent-category-view .cr-parent-category__grid,
   .cr-parent-category__canvas:has(.cr-page-toolbar) {
     padding-top: 0 !important;
   }
+
+  #primary:has(.cr-page-toolbar) .cr-page-shell {
+    padding-top: 0 !important;
+  }
 }
