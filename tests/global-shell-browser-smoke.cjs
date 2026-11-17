@@ -37,6 +37,10 @@ async function inspect(page, routeName, width) {
         return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
       }).length,
       contextTitle: document.querySelector('.cr-parent-category__title')?.textContent.trim() || null,
+      rawContextToolbarCount: document.querySelectorAll('.cr-parent-category__toolbar').length,
+      bodyClass: document.body.className,
+      bodyText: (document.body.innerText || '').slice(0, 240),
+      h1Texts: Array.from(document.querySelectorAll('h1')).map(el => el.textContent.trim()),
       visualFooter: !!document.querySelector('.cr-footer, .site-footer, #colophon'),
       overflow: Math.max(root.scrollWidth, document.body ? document.body.scrollWidth : 0) > root.clientWidth + 1,
       scrollingElementIsRoot: document.scrollingElement === root,
@@ -55,6 +59,9 @@ async function inspect(page, routeName, width) {
   assert.equal(state.overflow, false, routeName + ' no horizontal overflow at ' + width);
   assert.equal(state.scrollingElementIsRoot, true, routeName + ' document scrolling element is html');
   assert.equal(state.scrollbarGutter, 'stable', routeName + ' reserves the root scrollbar gutter');
+  if (routeName === 'cart' && width === 390) {
+    console.log('CART_CONTEXT_DIAGNOSTIC=' + JSON.stringify({ url: page.url(), raw: state.rawContextToolbarCount, visible: state.contextToolbarCount, bodyClass: state.bodyClass, h1: state.h1Texts, text: state.bodyText }));
+  }
   if (routeName !== 'home' && width < 768) {
     assert.equal(state.contextToolbarCount, 1, routeName + ' must render exactly one mobile context toolbar at ' + width);
   }
@@ -113,6 +120,11 @@ async function inspect(page, routeName, width) {
       return link ? link.href : null;
     });
     assert.ok(cartUrl, 'global app header must expose a Cart destination');
+    const stagingBase = new URL(BASE_URL);
+    const resolvedCart = new URL(cartUrl);
+    assert.equal(resolvedCart.origin, stagingBase.origin, 'Cart destination must stay on the staging host');
+    assert.ok(resolvedCart.pathname.startsWith(stagingBase.pathname.replace(/\\/$/, '') + '/'), 'Cart destination must stay under the staging path: ' + cartUrl);
+    console.log('STAGING_CART_URL=' + cartUrl);
 
     const routes = [
       ['home', BASE_URL + '/'],

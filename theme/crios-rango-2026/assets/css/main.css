@@ -2059,7 +2059,7 @@ body.home.cr-home-hero-out .cr-app-header.is-home-hero {
   top: 0;
   right: -1px;
 }
-/* Fixed-header reservation is independent from the contextual page gap owned by visual-system.css. */
+/* Fixed-header reservation is independent from the contextual page gap owned by visual-system.css; staging route smoke stays scoped to /prueba. */
 body.cr-global-app-header:not(.home) {
   --cr-app-topbar-height: 64px;
 }
