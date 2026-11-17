@@ -26,7 +26,7 @@ test('PROFILE_AND_REWARDS_RENDERERS_DO_NOT_USE_DEVICE_DETECTION',()=>{
  assert.match(assets,/assets\/js\/account-loyalty\.js/); assert.match(assets,/if \( \$uses_account_app_skin \)/);
 });
 test('ADDRESS_OVERVIEW_AND_DOWNLOADS_USE_THEME_RENDERERS_WITH_NATIVE_DATA',()=>{
- assert.match(address,/wc_get_account_formatted_address/); assert.match(address,/cr-account-empty-state/); assert.match(address,/woocommerce_my_account_get_addresses/); assert.match(address,/wc_get_endpoint_url\( 'edit-address'/);
+ assert.match(address,/wc_get_account_formatted_address\( 'shipping'/); assert.match(address,/cr-account-empty-state/); assert.match(address,/wc_get_endpoint_url\( 'edit-address', 'shipping'/); assert.doesNotMatch(address,/billing|woocommerce_my_account_get_addresses/);
  assert.match(downloads,/return;/); assert.doesNotMatch(downloads,/<section|<article|download_url|Descargas/);
 });
 test('VIEWPORTS_CHANGE_LAYOUT_NOT_RENDERER',()=>{

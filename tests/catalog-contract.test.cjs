@@ -1004,7 +1004,8 @@ test('CART_REMOVE_SECURE=PASS', () => {
 });
 
 test('CART_EMPTY_NONCE=PASS', () => {
-  assert.match(cartTemplate, /wp_nonce_field\( 'cr2026_empty_cart', 'cr2026_empty_cart_nonce' \)/);
+  assert.match(cartTemplate, /cr2026_cart_empty_action_markup\(\)/);
+  assert.match(cartPhp, /wp_nonce_field\( 'cr2026_empty_cart', 'cr2026_empty_cart_nonce' \)/);
   assert.match(cartPhp, /wp_verify_nonce\( \$nonce, 'cr2026_empty_cart' \)/);
   assert.match(cartPhp, /WC\(\)->cart->empty_cart\(\)/);
   assert.match(cartPhp, /wp_safe_redirect\( wc_get_cart_url\(\) \)/);

@@ -43,10 +43,11 @@ test('Downloads are absent from Account UI while WooCommerce endpoint remains re
   assert.doesNotMatch(downloads, /<section|<article|Descargas|download_url/);
 });
 
-test('Address overview keeps native WooCommerce address mode untouched until store mode is confirmed', () => {
+test('Account address overview uses shipping as the canonical Account presentation', () => {
   const address = read('woocommerce/myaccount/my-address.php');
-  assert.match(address, /woocommerce_my_account_get_addresses/);
-  assert.match(address, /wc_get_account_formatted_address\( \$name, \$customer_id \)/);
+  assert.match(address, /wc_get_account_formatted_address\( 'shipping', \$customer_id \)/);
+  assert.match(address, /wc_get_endpoint_url\( 'edit-address', 'shipping'/);
+  assert.doesNotMatch(address, /billing|woocommerce_my_account_get_addresses/);
 });
 
 test('mobile page top gap has one canonical zero token; desktop toolbar separation stays scoped', () => {

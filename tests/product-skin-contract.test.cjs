@@ -1059,6 +1059,7 @@ test('Shared bottom navigation uses the exact storefront canvas with no visible 
  
 test('mobile cart uses one WooCommerce table cell card and cart-only WPLoyalty filters', () => {
   const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
+  const cartActions = fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8');
   const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
   const cartHooks = fs.readFileSync(path.join(theme, 'inc/cart.php'), 'utf8');
   const pageTemplate = fs.readFileSync(path.join(theme, 'page.php'), 'utf8');
@@ -1166,8 +1167,9 @@ test('cart visual pass preserves loyalty, promotions endpoints, auth and native 
   assert.match(cartJs, /config\.loyaltyUrl/);
   assert.match(cartJs, /config\.redeemUrl/);
   assert.match(cartJs, /config\.authenticated/);
-  assert.match(cartTemplate, /name="cr2026_empty_cart"/);
-  assert.match(cartTemplate, /wp_nonce_field\( 'cr2026_empty_cart'/);
+  assert.match(cartTemplate, /cr2026_cart_empty_action_markup\(\)/);
+  assert.match(cartActions, /name="cr2026_empty_cart"/);
+  assert.match(cartActions, /wp_nonce_field\( 'cr2026_empty_cart'/);
   assert.match(cartTemplate, /wc_get_cart_remove_url\( \$cart_item_key \)/);
 });
 

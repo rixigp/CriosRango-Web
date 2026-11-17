@@ -287,7 +287,7 @@
       const requestStart=performance.now();metricState.requestStart=metricState.requestStart===null?requestStart:Math.min(metricState.requestStart,requestStart);metricState.requestCount++;
       const response=await fetch(requestUrl,{credentials:'same-origin',headers:{Accept:'application/json'},signal});
       if(!response.ok)throw new Error('Filter API HTTP '+response.status);
-      const payload=await response.json(), responseReceived=performance.now();metricState.responseReceived=metricState.responseReceived===null?responseReceived:Math.max(metricState.responseReceived,responseReceived);const serverTiming=response.headers.get('Server-Timing');if(serverTiming)metricState.serverTiming.push(serverTiming);const facets=payload&&payload.facets||{};
+      const payload=await response.json(), responseReceived=performance.now();metricState.responseReceived=metricState.responseReceived===null?responseReceived:Math.max(metricState.responseReceived,responseReceived);const serverTiming=response.headers.get('server-timing');if(serverTiming)metricState.serverTiming.push(serverTiming);const facets=payload&&payload.facets||{};
       const raw=Array.isArray(facets[facet])?facets[facet]:(Array.isArray(facets[facet==='colors'?'colors':facet])?facets[facet]:[]);
       const rows=rowsFor(raw,facet);
       
