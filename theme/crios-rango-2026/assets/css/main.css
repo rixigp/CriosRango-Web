@@ -27,13 +27,8 @@
 * { box-sizing: border-box; }
 html {
   scroll-behavior: smooth;
+  overflow-y: scroll;
   scrollbar-gutter: stable;
-}
-
-@supports not (scrollbar-gutter: stable) {
-  html {
-    overflow-y: scroll;
-  }
 }
 body {
   margin: 0;
