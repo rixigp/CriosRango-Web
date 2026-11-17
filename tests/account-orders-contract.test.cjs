@@ -111,7 +111,7 @@ test('ORDER_SPACING_AND_STATUS_BADGES_USE_MODERATE_DESKTOP_DENSITY', () => {
   assert.match(css, /\.cr-account-orders__list\s*\{[^}]*gap:\s*15px;/s);
   assert.match(css, /\.cr-account-order\s*\{[^}]*padding:\s*16px;/s);
   assert.match(css, /\.cr-account-order__status\s*\{[^}]*min-height:\s*24px;[^}]*padding:\s*4px 10px;[^}]*font:\s*300 11px\/16px/s);
-  assert.match(css, /@media \(max-width:\s*767px\)[\s\S]*?\.cr-account-orders__list\s*\{\s*gap:\s*12px;/);
+  assert.match(css, /@media \(max-width:\s*767px\)[\s\S]*?\.cr-account-orders__list\s*\{\s*gap:\s*16px;/);
 });
 
 test('ORDERS_TOOLBAR_USES_CANONICAL_TOP_SPACING_WITHOUT_GLOBAL_SHELL_CHANGES', () => {
