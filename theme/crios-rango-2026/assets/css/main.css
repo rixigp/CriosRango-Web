@@ -2059,6 +2059,7 @@ body.home.cr-home-hero-out .cr-app-header.is-home-hero {
   top: 0;
   right: -1px;
 }
+/* Reserve the fixed global header once; contextual page spacing stays in --cr-page-top-gap. */
 body.cr-global-app-header:not(.home) {
   --cr-app-topbar-height: 64px;
 }
