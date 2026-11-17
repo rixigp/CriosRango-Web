@@ -148,7 +148,8 @@ test('LOGIN_USES_CANONICAL_SHELL=YES; LOGIN_EXTRA_OUTER_GUTTERS=0; LOGIN_LEGACY_
   assert.match(accountCss,/\.cr-account-home__user--guest/);
   assert.match(accountCss,/\.cr-account-home__user\s*\{[^}]*background:\s*#fff/,'authenticated identity hero surface is white');
   assert.match(accountCss,/\.cr-account-home__user--guest\s*\{[^}]*background:\s*#fff/,'guest login hero surface matches the authenticated identity card');
-  assert.doesNotMatch(presentation, /woocommerce_before_customer_login_form/,'toolbar is not nested in WooCommerce login markup');
+  assert.match(presentation, /woocommerce_before_customer_login_form/,'guest login uses the shared Account shell hook');
+  assert.match(presentation, /woocommerce_after_customer_login_form/,'guest login closes the shared Account shell');
   assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.cr-page,[\s\S]*?body\.woocommerce-account:not\(\.logged-in\) \.u-column1\s*\{[^}]*width:100%!important;[^}]*max-width:none!important;[^}]*margin-inline:0!important;[^}]*padding-inline:0!important;/s,'logged-out outer wrappers inherit the shell without an additional rail');
   assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.woocommerce-form-login\.login\s*\{[^}]*padding:0!important;[^}]*border:0!important;[^}]*border-radius:0!important;[^}]*background:transparent!important;[^}]*box-shadow:none!important;/s,'legacy login visual card is removed');
   assert.match(accountCss,/body\.woocommerce-account:not\(\.logged-in\) \.woocommerce-form-login\.login \.woocommerce-form-login__submit\s*\{[^}]*width:100%!important;[^}]*border-radius:999px!important;[^}]*background:#183b35!important;/s,'canonical full-width green pill CTA is reused');
