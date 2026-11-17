@@ -79,6 +79,10 @@ async function inspect(page, routeName, width) {
   if (width < 768 && routeName === 'account') {
     assert.match(state.contextTitle || '', /Cuenta/, 'guest Account has one Cuenta title');
   }
+  if (width < 768 && routeName === 'login') {
+    assert.match(state.contextTitle || '', /Acceder/, 'login has one Acceder context toolbar');
+    assert.equal(state.visiblePageTitles.filter(title => /acceder|login/i.test(title)).length, 1, 'login has exactly one visible Acceder title');
+  }
   if (width < 768 && routeName === 'help') {
     assert.match(state.contextTitle || '', /Ayuda/, 'Help has one Ayuda title, not Contacto');
   }
@@ -91,6 +95,12 @@ async function inspect(page, routeName, width) {
   if (routeName === 'product') {
     assert.equal(state.productFound, true, 'product detail marker found');
     assert.equal(state.productDisplay === 'grid', width >= 1280, 'product 2-column grid starts at 1280');
+  }
+  if (width === 390 && ['account','cart','outlet'].includes(routeName)) {
+    console.log('MOBILE_SPACING_' + routeName.toUpperCase() + '=' + JSON.stringify({ bodyPaddingTop: state.bodyPaddingTop, spacing: state.spacing }));
+  }
+  if (routeName === 'account' && width < 768 && state.accountGridColumns) {
+    assert.equal(state.accountGridColumns.split(' ').length, 2, 'guest Account remains a two-column grid at ' + width);
   }
   console.log('GLOBAL_SHELL_' + routeName.toUpperCase() + '_' + width + '=PASS');
 }
@@ -123,6 +133,11 @@ async function inspect(page, routeName, width) {
       return link ? link.href : null;
     });
     assert.ok(helpUrl, 'guest Account must expose its Help destination');
+    const loginUrl = await mobilePage.evaluate(() => {
+      const link = document.querySelector('.cr-account-home__user[href]');
+      return link ? link.href : null;
+    });
+    assert.ok(loginUrl, 'guest Account must expose its canonical login destination');
 
     await navigate(desktopPage, BASE_URL + '/');
     const cartUrl = await desktopPage.evaluate(() => {
@@ -143,6 +158,7 @@ async function inspect(page, routeName, width) {
       ['outlet', discovered.outlet],
       ['product', discovered.product],
       ['account', ACCOUNT_URL],
+      ['login', loginUrl],
       ['help', helpUrl],
       ['cart', cartUrl],
       ['legal', LEGAL_URL]
