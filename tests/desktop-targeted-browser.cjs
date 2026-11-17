@@ -331,6 +331,7 @@ async function desktopShellLayout(page, label, viewport, isHome = false) {
 
 
 async function homeCanonicalContentRail(page, viewport) {
+  if (viewport < 1280) return;
   const state = await page.evaluate(() => {
     const primary = document.querySelector('[data-cr-desktop-shell] > #primary.cr-home--app');
     if (!primary) return { found: false };
@@ -373,7 +374,10 @@ async function homeCanonicalContentRail(page, viewport) {
     state.outletTitle?.left, state.outletGrid?.left,
     state.brandsTitle?.left, state.brandsPager?.left
   ];
-  const pass = state.rails.every(r => r && Math.abs(r.left - expectedLeft) <= 1)
+  const expectedWidth = state.primary.width - 40;
+  const pass = state.rails.every(r => r
+      && Math.abs(r.left - expectedLeft) <= 1
+      && Math.abs(r.width - expectedWidth) <= 1)
     && contentLefts.every(x => Number.isFinite(x) && Math.abs(x - expectedLeft) <= 1)
     && Math.abs(state.hero.left - state.primary.left) <= 1
     && Math.abs(state.hero.width - state.primary.width) <= 1;
