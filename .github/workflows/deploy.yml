@@ -12,34 +12,8 @@ on:
       - style/product-detail-app-skin
     paths:
       - "theme/**"
-      - "tests/catalog-contract.test.cjs"
-      - "tests/product-skin-contract.test.cjs"
-      - "tests/checkout-shell-contract.test.cjs"
-      - "tests/checkout-points-runtime.test.php"
-      - "tests/checkout-review-contract.test.cjs"
-      - "tests/cart-promotions-contract.test.cjs"
-      - "tests/canonical-controls-contract.test.cjs"
-      - "tests/category-asset-contract.test.cjs"
-      - "tests/account-information-icons.test.cjs"
-      - "tests/account-help-contract.test.cjs"
-      - "tests/account-information-pages-contract.test.cjs"
-      - "tests/account-birthday-contract.test.php"
-      - "tests/page-title-contract.test.cjs"
-      - "tests/account-address-layout-contract.test.cjs"
-      - "tests/account-save-feedback-contract.test.cjs"
-      - "tests/account-orders-contract.test.cjs"
-      - "tests/account-order-detail-contract.test.cjs"
-      - "tests/account-coupons-promotions-contract.test.cjs"
-      - "tests/account-universal-renderer-contract.test.cjs"
-      - "tests/account-universal-browser.cjs"
-      - "tests/global-mobile-shell-contract.test.cjs"
-      - "tests/global-responsive-navigation-contract.test.cjs"
-      - "tests/desktop-geometry-contract.test.cjs"
-      - "tests/desktop-targeted-browser.cjs"
-      - "tests/global-shell-browser-smoke.cjs"
-      - "tests/canonical-customer-shell-contract.test.cjs"
+      - "tests/**"
       - ".github/workflows/deploy.yml"
-      - ".github/workflows/catalog-contract.yml"
 
 permissions:
   contents: write
@@ -57,6 +31,171 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      - name: Detect changed-file impact
+        id: impact
+        shell: bash
+        env:
+          EVENT_BEFORE: ${{ github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_FULL: ${{ inputs.full_regression || 'true' }}
+        run: |
+          set -euo pipefail
+
+          HEAD_SHA="$GITHUB_SHA"
+          BASE_SHA="$EVENT_BEFORE"
+          ZERO_SHA="0000000000000000000000000000000000000000"
+          FORCE_FULL=false
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            FORCE_FULL=true
+            BASE_SHA="MANUAL_FULL"
+          elif [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "$ZERO_SHA" ]; then
+            FORCE_FULL=true
+            BASE_SHA="UNKNOWN_FIRST_PUSH"
+          fi
+
+          if [ "$FORCE_FULL" = true ]; then
+            mapfile -t CHANGED < <(git ls-files)
+          else
+            git cat-file -e "$BASE_SHA^{commit}"
+            mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | sort -u)
+          fi
+
+          if [ "${#CHANGED[@]}" -eq 0 ]; then
+            CHANGED=("NO_FILES_CHANGED")
+            FORCE_FULL=true
+          fi
+
+          ACCOUNT=false; HOME=false; CATEGORY=false; PRODUCT=false; CHECKOUT=false
+          SHARED=false; WORKFLOW_CHANGED=false; CATALOG=false; UNKNOWN=false
+          for path in "${CHANGED[@]}"; do
+            [ "$path" = "NO_FILES_CHANGED" ] && continue
+            case "$path" in
+              .github/workflows/*)
+                SHARED=true
+                WORKFLOW_CHANGED=true
+                ;;
+              theme/crios-rango-2026/assets/css/main.css|theme/crios-rango-2026/assets/css/visual-system.css|theme/crios-rango-2026/assets/css/controls.css|theme/crios-rango-2026/functions.php|theme/crios-rango-2026/inc/assets.php|theme/crios-rango-2026/inc/navigation.php|theme/crios-rango-2026/inc/shell-*|theme/crios-rango-2026/inc/header*|theme/crios-rango-2026/inc/sidebar*|theme/crios-rango-2026/template-parts/header*|theme/crios-rango-2026/template-parts/sidebar*|theme/crios-rango-2026/template-parts/shell*|tests/global-*)
+                SHARED=true
+                ;;
+              theme/crios-rango-2026/woocommerce/myaccount/*|theme/crios-rango-2026/inc/account-*.php|theme/crios-rango-2026/assets/css/account.css|theme/crios-rango-2026/assets/js/account-*.js|tests/account-*)
+                ACCOUNT=true
+                ;;
+              theme/crios-rango-2026/front-page.php|theme/crios-rango-2026/assets/css/home*.css|theme/crios-rango-2026/assets/js/home*.js|tests/home-*)
+                HOME=true
+                ;;
+              theme/crios-rango-2026/woocommerce/single-product/*|theme/crios-rango-2026/woocommerce/content-single-product.php|theme/crios-rango-2026/assets/css/product-detail*.css|theme/crios-rango-2026/assets/js/product-*.js|tests/product-*)
+                PRODUCT=true
+                ;;
+              theme/crios-rango-2026/woocommerce/taxonomy-product_cat.php|theme/crios-rango-2026/woocommerce/archive-product.php|theme/crios-rango-2026/assets/css/category*.css|theme/crios-rango-2026/assets/js/category*.js|tests/category-*)
+                CATEGORY=true
+                ;;
+              theme/crios-rango-2026/woocommerce/cart/*|theme/crios-rango-2026/woocommerce/checkout/*|theme/crios-rango-2026/assets/css/checkout*.css|theme/crios-rango-2026/assets/js/checkout*.js|tests/checkout-*|tests/cart-promotions-contract.test.cjs)
+                CHECKOUT=true
+                ;;
+              theme/crios-rango-2026/inc/catalog-*|theme/crios-rango-2026/inc/product-query*|theme/crios-rango-2026/inc/*catalog*|theme/crios-rango-2026/assets/js/catalog*.js|theme/crios-rango-2026/assets/css/catalog*.css|theme/crios-rango-2026/woocommerce/loop/*|tests/catalog-*)
+                CATALOG=true
+                CATEGORY=true
+                PRODUCT=true
+                ;;
+              theme/crios-rango-2026/*|tests/canonical-controls-contract.test.cjs|tests/page-title-contract.test.cjs|tests/desktop-geometry-contract.test.cjs|tests/canonical-customer-shell-contract.test.cjs)
+                UNKNOWN=true
+                ;;
+              tests/*)
+                UNKNOWN=true
+                ;;
+              *)
+                UNKNOWN=true
+                ;;
+            esac
+          done
+
+          DOMAIN_COUNT=0
+          for flag in "$ACCOUNT" "$HOME" "$CATEGORY" "$PRODUCT" "$CHECKOUT"; do
+            [ "$flag" = true ] && DOMAIN_COUNT=$((DOMAIN_COUNT + 1))
+          done
+          if [ "$UNKNOWN" = true ] || [ "$FORCE_FULL" = true ] || [ "$DOMAIN_COUNT" -gt 1 ]; then
+            SCOPE=FULL
+          elif [ "$SHARED" = true ]; then
+            SCOPE=SHARED
+          elif [ "$ACCOUNT" = true ]; then SCOPE=ACCOUNT_ONLY
+          elif [ "$HOME" = true ]; then SCOPE=HOME_ONLY
+          elif [ "$PRODUCT" = true ]; then SCOPE=PRODUCT_ONLY
+          elif [ "$CATEGORY" = true ]; then SCOPE=CATEGORY_ONLY
+          elif [ "$CHECKOUT" = true ]; then SCOPE=CHECKOUT_ONLY
+          else SCOPE=FULL
+          fi
+
+          FULL=false
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$SCOPE" = FULL ] || [ "$WORKFLOW_CHANGED" = true ]; then FULL=true; fi
+          if [ "$FULL" = true ]; then
+            ACCOUNT=true; HOME=true; CATEGORY=true; PRODUCT=true; CHECKOUT=true; SHARED=true
+          fi
+
+          RUN_BENCHMARK=false
+          if [ "$CATALOG" = true ] || [ "$FULL" = true ]; then RUN_BENCHMARK=true; fi
+          RUN_ACCOUNT_BROWSER="$ACCOUNT"
+          RUN_HOME_BROWSER="$HOME"
+          RUN_CATEGORY_BROWSER="$CATEGORY"
+          RUN_PRODUCT_BROWSER="$PRODUCT"
+          RUN_CHECKOUT_BROWSER="$CHECKOUT"
+          RUN_GLOBAL_SHELL="$SHARED"
+
+          {
+            echo "base_sha=$BASE_SHA"
+            echo "head_sha=$HEAD_SHA"
+            echo "scope=$SCOPE"
+            echo "run_account=$ACCOUNT"
+            echo "run_home=$HOME"
+            echo "run_category=$CATEGORY"
+            echo "run_product=$PRODUCT"
+            echo "run_checkout=$CHECKOUT"
+            echo "run_global_shell=$RUN_GLOBAL_SHELL"
+            echo "run_catalog_benchmark=$RUN_BENCHMARK"
+            echo "full_regression=$FULL"
+            echo "workflow_changed=$WORKFLOW_CHANGED"
+            echo "run_account_browser=$RUN_ACCOUNT_BROWSER"
+            echo "run_home_browser=$RUN_HOME_BROWSER"
+            echo "run_category_browser=$RUN_CATEGORY_BROWSER"
+            echo "run_product_browser=$RUN_PRODUCT_BROWSER"
+            echo "run_checkout_browser=$RUN_CHECKOUT_BROWSER"
+            echo "changed_files<<CRIOS_CHANGED_FILES"
+            printf '%s\n' "${CHANGED[@]}"
+            echo "CRIOS_CHANGED_FILES"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "BASE_SHA=$BASE_SHA"
+          echo "HEAD=$HEAD_SHA"
+          printf 'CHANGED_FILES=%s\n' "$(printf '%s,' "${CHANGED[@]}" | sed 's/,$//')"
+          echo "CI_SCOPE=$SCOPE"
+          echo "RUN_ACCOUNT=$ACCOUNT"
+          echo "RUN_HOME=$HOME"
+          echo "RUN_CATEGORY=$CATEGORY"
+          echo "RUN_PRODUCT=$PRODUCT"
+          echo "RUN_CHECKOUT=$CHECKOUT"
+          echo "RUN_GLOBAL_SHELL=$RUN_GLOBAL_SHELL"
+          echo "RUN_CATALOG_BENCHMARK=$RUN_BENCHMARK"
+          echo "FULL_REGRESSION=$FULL"
+
+          RUN=()
+          SKIPPED=()
+          [ "$ACCOUNT" = true ] && RUN+=(account-contracts) || SKIPPED+=(account)
+          [ "$HOME" = true ] && RUN+=(home-contracts) || SKIPPED+=(home)
+          [ "$CATEGORY" = true ] && RUN+=(category-contracts) || SKIPPED+=(category)
+          [ "$PRODUCT" = true ] && RUN+=(product-contracts) || SKIPPED+=(product)
+          [ "$CHECKOUT" = true ] && RUN+=(checkout-contracts) || SKIPPED+=(checkout)
+          [ "$RUN_GLOBAL_SHELL" = true ] && RUN+=(global-shell) || SKIPPED+=(global-shell)
+          [ "$RUN_BENCHMARK" = true ] && RUN+=(catalog-benchmark) || SKIPPED+=(benchmark)
+          [ "$FULL" = true ] && RUN+=(full-regression)
+          RUN+=(php theme-structure deploy sha)
+          echo "CI_SCOPE=$SCOPE" >> "$GITHUB_STEP_SUMMARY"
+          echo "RUN=[$(IFS=,; echo "${RUN[*]}"])" >> "$GITHUB_STEP_SUMMARY"
+          echo "SKIPPED=[$(IFS=,; echo "${SKIPPED[*]}"])" >> "$GITHUB_STEP_SUMMARY"
+          echo "BASE_SHA=$BASE_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "HEAD=$HEAD_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "WORKFLOW_CHANGED=$WORKFLOW_CHANGED" >> "$GITHUB_STEP_SUMMARY"
+          echo "CHANGED_FILES:" >> "$GITHUB_STEP_SUMMARY"
+          printf -- '- %s\n' "${CHANGED[@]}" >> "$GITHUB_STEP_SUMMARY"
+
 
       - name: Bootstrap theme 0.2.0 if missing
         shell: bash
@@ -390,91 +529,108 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Validate JavaScript syntax
-        run: node --check theme/crios-rango-2026/assets/js/main.js
-        
-      - name: Validate Product Detail enhancement JavaScript syntax
-        run: node --check theme/crios-rango-2026/assets/js/product-ui-enhancements.js
+      - name: Cache npm and Playwright browser
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-node22-playwright-1.65.1-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node22-playwright-1.65.1-
 
-
-      - name: Run catalog contract tests
-        run: node --test tests/catalog-contract.test.cjs
-      - name: Run desktop geometry contracts
-        run: node --test tests/desktop-geometry-contract.test.cjs
-      - name: Run Home desktop brands contract tests
-        run: node --test tests/home-desktop-brands-contract.test.cjs
-
-      - name: Run global responsive navigation contracts
-        run: node --test tests/global-responsive-navigation-contract.test.cjs
-
-      - name: Run canonical customer shell architecture contracts
-        run: node --test tests/global-mobile-shell-contract.test.cjs tests/canonical-customer-shell-contract.test.cjs
-
-      - name: Run product skin contract tests
-        run: node --test tests/product-skin-contract.test.cjs tests/global-mobile-shell-contract.test.cjs tests/page-specific-shell-overrides-contract.test.cjs
-
-      - name: Run checkout shell contract tests
-        run: node --test tests/checkout-shell-contract.test.cjs
-
-      - name: Run checkout review/AJAX root contract tests
-        run: node --test tests/checkout-review-contract.test.cjs
-
-      - name: Run cart promotions contract tests
-        run: node --test tests/cart-promotions-contract.test.cjs
-
-      - name: Run canonical controls and login contracts
-        run: node --test tests/canonical-controls-contract.test.cjs
-
-      - name: Run category asset geometry contracts
-        run: node --test tests/category-asset-contract.test.cjs
-
-      - name: Run Account information icon geometry tests
-        run: node --test tests/account-information-icons.test.cjs
-
-      - name: Run mobile Account Help contract tests
-        run: node --test tests/account-help-contract.test.cjs
-
-      - name: Run mobile Account Information pages contract tests
-        run: node --test tests/account-information-pages-contract.test.cjs
-
-      - name: Verify PHP runtime availability
+      - name: Validate changed JavaScript syntax
         shell: bash
         run: |
           set -euo pipefail
+          BASE_SHA="${{ steps.impact.outputs.base_sha }}"
+          if [ "${{ steps.impact.outputs.full_regression }}" = "true" ]; then
+            mapfile -t JS_FILES < <(find theme tests -type f -name '*.js' -o -name '*.cjs' | sort)
+          else
+            mapfile -t JS_FILES < <(git diff --name-only "$BASE_SHA" "$GITHUB_SHA" -- '*.js' '*.cjs' | sort -u)
+          fi
+          for file in "${JS_FILES[@]}"; do
+            [ -f "$file" ] || continue
+            node --check "$file"
+            echo "JS_SYNTAX_PASS=$file"
+          done
+
+      - name: Run impact-selected Node contracts
+        if: steps.impact.outputs.full_regression == 'true' || steps.impact.outputs.run_account == 'true' || steps.impact.outputs.run_home == 'true' || steps.impact.outputs.run_category == 'true' || steps.impact.outputs.run_product == 'true' || steps.impact.outputs.run_checkout == 'true' || steps.impact.outputs.run_global_shell == 'true' || steps.impact.outputs.run_catalog_benchmark == 'true'
+        shell: bash
+        env:
+          FULL_REGRESSION: ${{ steps.impact.outputs.full_regression }}
+          RUN_ACCOUNT: ${{ steps.impact.outputs.run_account }}
+          RUN_HOME: ${{ steps.impact.outputs.run_home }}
+          RUN_CATEGORY: ${{ steps.impact.outputs.run_category }}
+          RUN_PRODUCT: ${{ steps.impact.outputs.run_product }}
+          RUN_CHECKOUT: ${{ steps.impact.outputs.run_checkout }}
+          RUN_GLOBAL_SHELL: ${{ steps.impact.outputs.run_global_shell }}
+          RUN_CATALOG: ${{ steps.impact.outputs.run_catalog_benchmark }}
+        run: |
+          set -euo pipefail
+          declare -a TESTS=()
+          declare -A SEEN=()
+          add_glob() {
+            local pattern file
+            for pattern in "$@"; do
+              for file in $pattern; do
+                [ -f "$file" ] || continue
+                if [ -z "${SEEN[$file]+x}" ]; then TESTS+=("$file"); SEEN[$file]=1; fi
+              done
+            done
+          }
+
+          if [ "$FULL_REGRESSION" = true ]; then
+            mapfile -t TESTS < <(find tests -maxdepth 1 -type f -name '*.test.cjs' | sort)
+          else
+            [ "$RUN_ACCOUNT" = true ] && add_glob 'tests/account-*.test.cjs'
+            [ "$RUN_HOME" = true ] && add_glob 'tests/home-*.test.cjs'
+            [ "$RUN_CATEGORY" = true ] && add_glob 'tests/category-*.test.cjs'
+            [ "$RUN_PRODUCT" = true ] && add_glob 'tests/product-*.test.cjs'
+            [ "$RUN_CHECKOUT" = true ] && add_glob 'tests/checkout-*.test.cjs' 'tests/cart-promotions-contract.test.cjs' 'tests/canonical-controls-contract.test.cjs'
+            [ "$RUN_GLOBAL_SHELL" = true ] && add_glob 'tests/global-*.test.cjs' 'tests/canonical-customer-shell-contract.test.cjs' 'tests/desktop-geometry-contract.test.cjs' 'tests/page-title-contract.test.cjs' 'tests/page-specific-shell-overrides-contract.test.cjs'
+            [ "$RUN_CATALOG" = true ] && add_glob 'tests/catalog-*.test.cjs'
+          fi
+
+          if [ "${#TESTS[@]}" -eq 0 ]; then
+            echo "NODE_CONTRACTS=SKIP_NO_RELEVANT_TESTS"
+          else
+            printf 'NODE_CONTRACTS_SELECTED=%s\n' "${TESTS[*]}"
+            node --test "${TESTS[@]}"
+          fi
+
+      - name: Validate PHP and run impact-selected PHP contracts
+        shell: bash
+        env:
+          FULL_REGRESSION: ${{ steps.impact.outputs.full_regression }}
+          RUN_ACCOUNT: ${{ steps.impact.outputs.run_account }}
+          RUN_CHECKOUT: ${{ steps.impact.outputs.run_checkout }}
+        run: |
+          set -euo pipefail
           if ! command -v php >/dev/null 2>&1; then
-            echo "PHP_RUNTIME_MISSING"
+            echo "ERROR: PHP_RUNTIME_MISSING"
             exit 1
           fi
           echo "PHP_AVAILABLE=YES"
-          echo "PHP_RUNTIME_SOURCE=$(command -v php)"
-          php -v
-
-      - name: Run checkout Points & Rewards runtime contract test
-        run: php tests/checkout-points-runtime.test.php
-
-      - name: Run mobile page title audit contract test
-        run: node --test tests/page-title-contract.test.cjs
-
-      - name: Run WPLoyalty birthday contract test
-        run: php tests/account-birthday-contract.test.php
-
-      - name: Run mobile Account address layout contract test
-        run: node --test tests/account-address-layout-contract.test.cjs
-
-      - name: Run mobile Account save feedback contract test
-        run: node --test tests/account-save-feedback-contract.test.cjs
-
-      - name: Run mobile Account Orders app-skin contract test
-        run: node --test tests/account-orders-contract.test.cjs
-
-      - name: Run universal Account Order Detail renderer contract test
-        run: node --test tests/account-order-detail-contract.test.cjs
-
-      - name: Run universal Account Coupons & Promotions renderer contract test
-        run: node --test tests/account-coupons-promotions-contract.test.cjs
-
-      - name: Run universal Account renderer architecture contract test
-        run: node --test tests/account-universal-renderer-contract.test.cjs
+          declare -a PHP_FILES=()
+          declare -a PHP_TESTS=()
+          if [ "$FULL_REGRESSION" = true ]; then
+            mapfile -t PHP_FILES < <(find theme/crios-rango-2026 -type f -name '*.php' | sort)
+            mapfile -t PHP_TESTS < <(find tests -maxdepth 1 -type f -name '*.test.php' | sort)
+          else
+            mapfile -t PHP_FILES < <(git diff --name-only "${{ steps.impact.outputs.base_sha }}" "$GITHUB_SHA" -- '*.php' | sort -u)
+            if [ "$RUN_ACCOUNT" = true ] && [ -f tests/account-birthday-contract.test.php ]; then PHP_TESTS+=(tests/account-birthday-contract.test.php); fi
+            if [ "$RUN_CHECKOUT" = true ] && [ -f tests/checkout-points-runtime.test.php ]; then PHP_TESTS+=(tests/checkout-points-runtime.test.php); fi
+          fi
+          for file in "${PHP_FILES[@]}"; do
+            [ -f "$file" ] || continue
+            php -l "$file"
+          done
+          for file in "${PHP_TESTS[@]}"; do
+            php "$file"
+          done
+          echo "PHP_VALIDATION=PASS"
 
       - name: Validate theme structure
         shell: bash
@@ -482,18 +638,11 @@ jobs:
           set -euo pipefail
           test -f "theme/crios-rango-2026/style.css"
           test -f "theme/crios-rango-2026/functions.php"
-
           if find theme/crios-rango-2026 -type l -print -quit | grep -q .; then
             echo "ERROR: symlinks are not allowed in the deployable theme."
             exit 1
           fi
-
-      - name: Validate PHP
-        shell: bash
-        run: |
-          set -euo pipefail
-          find theme/crios-rango-2026 -type f -name "*.php" -print0 \
-            | xargs -0 -r -n1 php -l
+          echo "THEME_STRUCTURE=PASS"
 
       - name: Check exact PR13 staging HEAD compatibility and PR14 staging HEAD
         id: staging-head
@@ -929,22 +1078,40 @@ jobs:
           curl --silent --show-error --fail --ssl-reqd --ftp-pasv --connect-timeout 20 --retry 2 \
             --user "${SFTP_USER}:${SFTP_PASSWORD}" "${BASE_URL}/build.json" --output /tmp/criosrango-build.json
           node -e 'const fs=require("fs");const manifest=JSON.parse(fs.readFileSync("/tmp/criosrango-build.json","utf8"));if(manifest.sha!==process.env.EXPECTED_THEME_SHA){console.error("STAGING_BUILD_SHA mismatch: "+manifest.sha+" != "+process.env.EXPECTED_THEME_SHA);process.exit(1)}console.log("STAGING_BUILD_SHA="+manifest.sha);console.log("REPOSITORY_HEAD="+process.env.GITHUB_SHA);console.log("THEME_DEPLOY_SHA="+manifest.sha);'
-      - name: Run targeted desktop browser geometry checks
-        if: github.ref == 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
+      - name: Install cached Playwright Chromium
+        if: (steps.impact.outputs.run_account_browser == 'true' || steps.impact.outputs.run_home_browser == 'true' || steps.impact.outputs.run_category_browser == 'true' || steps.impact.outputs.run_product_browser == 'true' || steps.impact.outputs.run_checkout_browser == 'true' || steps.impact.outputs.run_global_shell == 'true') && steps.staging-head.outputs.current == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-package-lock playwright@1.65.1
+          npx playwright install chromium
+
+      - name: Run Account browser suite
+        if: steps.impact.outputs.run_account_browser == 'true' && steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
           STAGING_BASE_URL: https://criosrango.es/prueba
           STAGING_ACCOUNT_EMAIL: ${{ secrets.STAGING_ACCOUNT_EMAIL }}
           STAGING_ACCOUNT_PASSWORD: ${{ secrets.STAGING_ACCOUNT_PASSWORD }}
-        run: |
-          set -euo pipefail
-          npm install --no-save --no-package-lock playwright@1.65.1
-          npx playwright install chromium
-          node tests/desktop-targeted-browser.cjs
-          node tests/global-shell-browser-smoke.cjs
-          node tests/account-universal-browser.cjs
+        run: node tests/account-universal-browser.cjs
+
+      - name: Run affected page browser suite
+        if: (steps.impact.outputs.run_home_browser == 'true' || steps.impact.outputs.run_category_browser == 'true' || steps.impact.outputs.run_product_browser == 'true' || steps.impact.outputs.run_checkout_browser == 'true') && steps.staging-head.outputs.current == 'true'
+        shell: bash
+        env:
+          STAGING_BASE_URL: https://criosrango.es/prueba
+          STAGING_ACCOUNT_EMAIL: ${{ secrets.STAGING_ACCOUNT_EMAIL }}
+          STAGING_ACCOUNT_PASSWORD: ${{ secrets.STAGING_ACCOUNT_PASSWORD }}
+        run: node tests/desktop-targeted-browser.cjs
+
+      - name: Run global shell browser smoke
+        if: steps.impact.outputs.run_global_shell == 'true' && steps.staging-head.outputs.current == 'true'
+        shell: bash
+        env:
+          STAGING_BASE_URL: https://criosrango.es/prueba
+        run: node tests/global-shell-browser-smoke.cjs
       - name: Benchmark staging catalog endpoint (3 cold + 3 warm requests)
-        if: github.ref == 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
+        if: steps.impact.outputs.run_catalog_benchmark == 'true' && steps.staging-head.outputs.current == 'true'
         shell: bash
         run: |
           set -euo pipefail
