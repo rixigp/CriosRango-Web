@@ -55,7 +55,8 @@ function cr2026_enqueue_assets() {
         $main_style_dependencies[] = 'cr2026-roboto';
     }
 
-    if ( $uses_app_category_components || $uses_checkout_shell ) {
+    if ( $uses_app_category_components || $uses_checkout_shell
+        || ( function_exists( 'is_account_page' ) && is_account_page() ) ) {
         wp_enqueue_style(
             'cr2026-roboto',
             'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
