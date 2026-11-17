@@ -17,7 +17,7 @@ test('ORDER_DETAIL_RENDERER_IS_UNIVERSAL_WITH_OWNER_GUARD',()=>{
 test('PROFILE_AND_REWARDS_RENDERERS_DO_NOT_USE_DEVICE_DETECTION',()=>{
  for(const n of ['cr2026_account_route_loyalty_reward','cr2026_account_render_loyalty_reward','cr2026_account_route_profile','cr2026_account_render_profile_endpoint']) assert.ok(presentation.includes(n));
  const loyalty=presentation.slice(presentation.indexOf('function cr2026_account_route_loyalty_reward'),presentation.indexOf('function cr2026_account_remove_legacy_navigation'));
- const profile=presentation.slice(presentation.indexOf('function cr2026_account_route_profile'),presentation.indexOf('function cr2026_account_render_birth_date_field'));
+ const profile=presentation.slice(presentation.indexOf('function cr2026_account_route_profile'),presentation.indexOf('function cr2026_account_render_profile_home'));
  assert.doesNotMatch(loyalty,/wp_is_mobile/); assert.doesNotMatch(profile,/wp_is_mobile/);
  assert.match(assets,/assets\/js\/account-loyalty\.js/); assert.match(assets,/if \( \$uses_account_app_skin \)/);
 });
