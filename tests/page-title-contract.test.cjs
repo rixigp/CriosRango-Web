@@ -11,6 +11,7 @@ const dashboard = read('woocommerce/myaccount/dashboard.php');
 const guestHome = read('woocommerce/myaccount/guest-home.php');
 const orders = read('woocommerce/myaccount/orders.php');
 const cart = read('woocommerce/cart/cart.php');
+const cartRuntime = read('inc/cart.php');
 const emptyCart = read('woocommerce/cart/cart-empty.php');
 const page = read('page.php');
 const search = read('search.php');
@@ -86,6 +87,16 @@ test('catalog, cart, checkout and account canonical routes remain intact', () =>
   assert.ok(helpers.includes('wc_get_cart_url()'), 'Checkout back link returns to Cart');
   assert.match(dashboard, /cr2026_render_category_toolbar\s*\(\s*__\( 'Cuenta'/);
   assert.match(account, /cr2026_account_render_endpoint_toolbar/);
+});
+
+test('classic Cart template and WooCommerce Cart block share exactly one mobile toolbar source', () => {
+  assert.match(cartRuntime, /function cr2026_cart_empty_action_markup\(\)/);
+  assert.match(cartRuntime, /function cr2026_cart_block_toolbar\( \$block_content, \$block \)/);
+  assert.match(cartRuntime, /'woocommerce\/cart' !== \$block\['blockName'\]/);
+  assert.match(cartRuntime, /add_filter\( 'render_block', 'cr2026_cart_block_toolbar', 10, 2 \)/);
+  assert.match(cart, /\$cart_empty_action = cr2026_cart_empty_action_markup\(\);/);
+  assert.doesNotMatch(cart, /<form class="cr-cart-empty-form"/);
+  assert.match(cartRuntime, /cr2026_render_category_toolbar\([\s\S]*?__\( 'Tu carrito'[\s\S]*?'cr-cart-title'/);
 });
 
 test('shipping address uses exactly one canonical delivery title', () => {

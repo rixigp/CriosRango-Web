@@ -3,6 +3,52 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * Shared secure empty-cart action used by both the classic cart template and
+ * the WooCommerce Cart block toolbar.
+ */
+function cr2026_cart_empty_action_markup() {
+    if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart || WC()->cart->is_empty() ) {
+        return '';
+    }
+
+    ob_start();
+    ?>
+    <form class="cr-cart-empty-form" method="post" action="<?php echo esc_url( wc_get_cart_url() ); ?>">
+        <?php wp_nonce_field( 'cr2026_empty_cart', 'cr2026_empty_cart_nonce' ); ?>
+        <button type="submit" name="cr2026_empty_cart" value="1"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m3 3v7m6-7v7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><?php esc_html_e( 'Vaciar carrito', 'crios-rango-2026' ); ?></span></button>
+    </form>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * The staging Cart page is rendered with WooCommerce's Cart block, which
+ * bypasses woocommerce/cart/cart.php. Add the same contextual toolbar only
+ * for that block and mobile requests; the classic template keeps its own.
+ */
+function cr2026_cart_block_toolbar( $block_content, $block ) {
+    if ( is_admin() || ! function_exists( 'is_cart' ) || ! is_cart()
+        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile()
+        || empty( $block['blockName'] ) || 'woocommerce/cart' !== $block['blockName'] ) {
+        return $block_content;
+    }
+
+    ob_start();
+    cr2026_render_category_toolbar(
+        __( 'Tu carrito', 'crios-rango-2026' ),
+        wc_get_page_permalink( 'shop' ),
+        'cart',
+        false,
+        cr2026_cart_empty_action_markup(),
+        'cr-cart-title'
+    );
+    $toolbar = ob_get_clean();
+
+    return $toolbar . $block_content;
+}
+add_filter( 'render_block', 'cr2026_cart_block_toolbar', 10, 2 );
+
 /** Handle the explicit empty-cart action with a POST nonce, never a GET link. */
 function cr2026_handle_empty_cart() {
     if ( ! function_exists( 'is_cart' ) || ! is_cart() || empty( $_POST['cr2026_empty_cart'] ) ) {
