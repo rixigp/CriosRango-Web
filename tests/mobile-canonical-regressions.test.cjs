@@ -55,5 +55,5 @@ test('mobile page top gap has one canonical zero token; desktop toolbar separati
   assert.match(visual, /@media\s*\(max-width:\s*767px\)[\s\S]*?--cr-page-top-gap:\s*0px/);
   assert.match(visual, /\.cr-page-shell\s*\{\s*padding-top:\s*var\(--cr-page-top-gap\)/);
   assert.match(visual, /\.cr-main--woocommerce:not\(\.cr-main--product-detail\)\s*\{\s*padding-top:\s*var\(--cr-page-top-gap\)/);
-  assert.match(visual, /@media\s*\(min-width:\s*1280px\)[\s\S]*?body\.cr-parent-category-view[\s\S]*?margin-top:\s*30px/);
+  assert.match(visual, /@media\s*\(min-width:\s*1280px\)[\s\S]*?\.cr-page-toolbar\s*\{\s*margin:\s*30px 0 18px;/);
 });

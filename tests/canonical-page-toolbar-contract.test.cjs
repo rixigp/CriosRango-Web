@@ -45,7 +45,7 @@ const routeInventory = [
 test('ALL_STANDARD_ROUTES_USE_CANONICAL_PAGE_TOOLBAR=PASS', () => {
   assert.match(helpers, /\$toolbar_class = 'cr-page-toolbar cr-parent-category__toolbar'/,
     'the shared renderer must emit the canonical structural class');
-  assert.match(helpers, /function cr2026_account_render_endpoint_toolbar[\s\S]*?cr2026_render_category_toolbar/,
+  assert.match(account, /function cr2026_account_render_endpoint_toolbar[\s\S]*?cr2026_render_category_toolbar/,
     'all account endpoint headings must delegate to the same renderer');
   for (const route of routeInventory) {
     assert.equal(route.usesCanonical, true, route.page + ' must use the canonical component');

@@ -122,7 +122,7 @@ test('ORDER_SPACING_AND_STATUS_BADGES_USE_MODERATE_DESKTOP_DENSITY', () => {
 test('ORDERS_INHERITS_SHARED_DESKTOP_TOOLBAR_TOP_SPACING_WITHOUT_GLOBAL_SHELL_CHANGES', () => {
   const desktop = visual.match(/@media \(min-width: 1280px\) \{([\s\S]*?)\n\}/);
   assert.ok(desktop, 'the shared >=1280px toolbar rule exists');
-  assert.match(desktop[1], /body\.woocommerce-account :is\(\.cr-account-shell__content, \.cr-account-orders\) > \.cr-parent-category__toolbar/);
+  assert.match(desktop[1], /\.cr-page-toolbar\s*\{\s*margin:\s*30px 0 18px;/);
   assert.match(desktop[1], /margin:\s*30px 0 18px;/);
   assert.doesNotMatch(css, /body\.woocommerce-account \.cr-account-orders > \.cr-parent-category__toolbar\s*\{[^}]*margin-top:\s*0;/s);
   assert.match(css, /\.cr-account-orders__list\s*\{\s*gap:\s*16px;\s*\}/);
