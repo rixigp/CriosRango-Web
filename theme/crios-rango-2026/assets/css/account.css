@@ -1530,15 +1530,19 @@ body.woocommerce-account .cr-account-content,
 body.woocommerce-account .cr-account-shell__content { display:block; box-sizing:border-box; float:none!important; grid-column:auto!important; grid-row:auto!important; width:100%!important; max-width:none!important; min-width:0; margin:0!important; padding:0!important; border:0!important; border-radius:0!important; background:transparent!important; }
 /* Orders are a card grid, not a generic block account-content wrapper. */
 body.woocommerce-account .cr-account-orders__list { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; }
-body.woocommerce-account .cr-account-shell__content > .cr-parent-category__toolbar { margin-bottom:18px; }
+@media (max-width:1279px) {
+ body.woocommerce-account .cr-account-shell__content > .cr-parent-category__toolbar { margin-bottom:18px; }
+}
 body.woocommerce-account .cr-account-home { box-sizing:border-box; width:100%!important; max-width:none!important; margin:0!important; padding:0!important; }
 body.woocommerce-account .cr-account-home__grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+@media (min-width:768px) and (max-width:1279px) {
+ body.woocommerce-account .cr-account-shell__content > .cr-parent-category__toolbar { margin-bottom:24px; }
+}
 @media (min-width:980px) {
  body.woocommerce-account .cr-account-home__grid { grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; }
  body.woocommerce-account .cr-account-home__tile { min-height:170px; padding:20px; }
 }
 @media (min-width:768px) {
- body.woocommerce-account .cr-account-shell__content > .cr-parent-category__toolbar { margin-bottom:24px; }
  body.woocommerce-account .cr-order-detail { grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
  body.woocommerce-account .cr-order-detail__card--header,
  body.woocommerce-account .cr-order-detail__card--products { grid-column:1/-1; }
@@ -1671,12 +1675,6 @@ body.woocommerce-account .cr-account-profile-home { width:100%; max-width:760px;
   body.woocommerce-account .cr-account-orders__filter-scroll {
     display: none !important;
   }
-}
-
-/* Orders use the canonical page-shell top spacing; category/outlet toolbar
-   positioning remains owned by their own page surfaces. */
-body.woocommerce-account .cr-account-orders > .cr-parent-category__toolbar {
-  margin-top: 0;
 }
 
 @media (max-width: 767px) {

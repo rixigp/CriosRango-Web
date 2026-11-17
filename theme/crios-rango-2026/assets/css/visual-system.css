@@ -108,12 +108,13 @@
 }
 .cr-main--woocommerce .cr-parent-category__toolbar { margin-bottom: 18px; }
 
-/* The 30px top separation is a desktop-only category/listing treatment. */
+/* One desktop spacing source for every contextual page toolbar. */
 @media (min-width: 1280px) {
   body.cr-parent-category-view .cr-parent-category__toolbar,
   body.cr-product-listing-view .cr-parent-category__toolbar,
-  .cr-category-hub .cr-parent-category__toolbar {
-    margin-top: 30px;
+  .cr-category-hub .cr-parent-category__toolbar,
+  body.woocommerce-account :is(.cr-account-shell__content, .cr-account-orders) > .cr-parent-category__toolbar {
+    margin: 30px 0 18px;
   }
 }
 
