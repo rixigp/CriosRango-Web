@@ -6,6 +6,7 @@ $is_mobile_account = ( function_exists( 'is_account_page' ) && is_account_page()
     || ( function_exists( 'cr2026_is_account_information_page' ) && cr2026_is_account_information_page() );
 $is_mobile_help = function_exists( 'cr2026_account_is_help_page' ) && cr2026_account_is_help_page()
     && function_exists( 'wp_is_mobile' ) && wp_is_mobile();
+/* Page-level ownership covers both the Cart block and the classic cart shortcode. */
 $is_mobile_cart_page = function_exists( 'is_cart' ) && is_cart()
     && function_exists( 'wp_is_mobile' ) && wp_is_mobile();
 ?>
