@@ -48,3 +48,11 @@ test('Address overview keeps native WooCommerce address mode untouched until sto
   assert.match(address, /woocommerce_my_account_get_addresses/);
   assert.match(address, /wc_get_account_formatted_address\( \$name, \$customer_id \)/);
 });
+
+test('mobile page top gap has one canonical zero token; desktop toolbar separation stays scoped', () => {
+  const visual = read('assets/css/visual-system.css');
+  assert.match(visual, /@media\s*\(max-width:\s*767px\)[\s\S]*?--cr-page-top-gap:\s*0px/);
+  assert.match(visual, /\.cr-page-shell\s*\{\s*padding-top:\s*var\(--cr-page-top-gap\)/);
+  assert.match(visual, /\.cr-main--woocommerce:not\(\.cr-main--product-detail\)\s*\{\s*padding-top:\s*var\(--cr-page-top-gap\)/);
+  assert.match(visual, /@media\s*\(min-width:\s*1280px\)[\s\S]*?body\.cr-parent-category-view[\s\S]*?margin-top:\s*30px/);
+});

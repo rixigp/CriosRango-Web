@@ -23,7 +23,7 @@
 }
 @media (max-width: 767px) {
   :root {
-    --cr-page-top-gap: 20px;
+    --cr-page-top-gap: 0px;
     --cr-page-inline-gutter: 20px;
     --cr-section-gap: 22px;
     --cr-card-gap: 10px;
@@ -257,7 +257,7 @@ body.home .cr-app-header.is-home-hero .cr-home-mark__logo {
   width: 20px;
   height: 20px;
 }
-@media (min-width: 900px) and (max-width: 1279px) {
+@media (min-width: 980px) and (max-width: 1279px) {
   .cr-account-home__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .cr-account-home__tile { min-height: 148px; }
 }
