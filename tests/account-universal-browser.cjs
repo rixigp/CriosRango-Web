@@ -9,12 +9,22 @@ const viewports=[390,768,980,1279,1280,1440,1920];
  try{
   await page.goto(account,{waitUntil:'domcontentloaded'});
   if(!(await page.locator('form.login').count())){const l=page.locator('a[href*="cr-account-view=login"]').first();if(await l.count())await l.click();}
+  await page.locator('.cr-account-shell').first().waitFor({state:'attached',timeout:15000});
+  if(await page.locator('.woocommerce-MyAccount-navigation').count())throw Error('GUEST_LEGACY_ACCOUNT_NAV_PRESENT');
+  if(await page.locator('.cr-parent-category__title').count()!==1)throw Error('GUEST_LOGIN_PAGE_TITLE_COUNT_INVALID');
+  if(!(await page.locator('form.login').count()))throw Error('GUEST_LOGIN_FORM_MISSING');
+  for(const width of viewports){await page.setViewportSize({width,height:900});if(await page.locator('.cr-parent-category__title').count()!==1)throw Error('LOGIN_TITLE_COUNT_INVALID@'+width);}
   await page.locator('form.login input[name="username"], form.login #username').first().fill(email);
   await page.locator('form.login input[name="password"], form.login #password').first().fill(password);
   await page.locator('form.login button[name="login"], form.login input[name="login"]').first().click();
   await page.waitForLoadState('domcontentloaded');
   await page.goto(account+'orders/',{waitUntil:'domcontentloaded'});
   const orderLink=page.locator('a.cr-account-order__view').first(), orderHref=await orderLink.count()?await orderLink.getAttribute('href'):'';
+  await page.goto(account,{waitUntil:'domcontentloaded'});
+  for(const part of ['orders','loyalty_reward','edit-account']) if(!(await page.locator('.cr-account-home a[href*="'+part+'"]').count())) throw Error('DASHBOARD_LINK_MISSING='+part);
+  await page.goto(account+'edit-account/',{waitUntil:'domcontentloaded'});
+  if(!(await page.locator('.cr-account-profile-home a[href*="edit-address"]').count())) throw Error('PROFILE_ADDRESS_OVERVIEW_LINK_MISSING');
+  if(!(await page.locator('.cr-account-profile-home a[href*="downloads"]').count())) throw Error('PROFILE_DOWNLOADS_LINK_MISSING');
   const routes=[
    ['DASHBOARD',account,'.cr-account-home'],['ORDERS',account+'orders/','.cr-account-orders'],
    ['ADDRESS_OVERVIEW',account+'edit-address/','.cr-account-addresses'],['ADDRESS_BILLING',account+'edit-address/billing/','.woocommerce-address-fields'],
@@ -28,7 +38,10 @@ const viewports=[390,768,980,1279,1280,1440,1920];
    for(const [name,url,selector] of routes){
     await page.goto(url,{waitUntil:'domcontentloaded'}); await page.locator('.cr-account-shell').first().waitFor({state:'attached',timeout:15000});
     if(await page.locator('.woocommerce-MyAccount-navigation').count())throw Error('LEGACY_ACCOUNT_NAV_PRESENT='+name+'@'+width);
-    if(!(await page.locator(selector).count()))throw Error('ACCOUNT_RENDERER_MISSING='+name+'@'+width); checks++;
+    if(!(await page.locator(selector).count()))throw Error('ACCOUNT_RENDERER_MISSING='+name+'@'+width);
+    if(name==='REWARDS'){const text=await page.locator('body').innerText();if(/MY PUNTO|Available punto|Redeemed punto|Redeem Now/i.test(text))throw Error('NATIVE_WPLOYALTY_COPY_PRESENT@'+width);const styles=await page.locator('link[rel=stylesheet],style[id]').evaluateAll(ns=>ns.map(n=>(n.id||'')+' '+(n.href||'')));if(styles.some(x=>/wlr|wployalty|wp[-_]loyalty[-_]rules/i.test(x)))throw Error('NATIVE_WPLOYALTY_STYLES_PRESENT@'+width);}
+    if(await page.locator('.cr-parent-category__title').count()!==1)throw Error('ACCOUNT_PAGE_TITLE_COUNT_INVALID='+name+'@'+width);
+    checks++;
    }
    if(orderHref){await page.goto(orderHref,{waitUntil:'domcontentloaded'});await page.locator('.cr-order-detail').first().waitFor({state:'attached',timeout:15000});if(await page.locator('.woocommerce-order-details table, table.woocommerce-table--order-details').count())throw Error('NATIVE_ORDER_TABLE_PRESENT='+width);checks++;}
    else console.log('ORDER_DETAIL_BROWSER_CHECK=SKIPPED_NO_STAGING_ORDER');

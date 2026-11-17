@@ -75,7 +75,8 @@ function cr2026_account_render_profile_home() {
     $base = wc_get_account_endpoint_url( 'edit-account' );
     $personal_url = add_query_arg( 'profile_view', 'personal', $base );
     $password_url = add_query_arg( 'profile_view', 'password', $base );
-    $shipping_url = wc_get_endpoint_url( 'edit-address', 'shipping', wc_get_page_permalink( 'myaccount' ) );
+    $address_url = wc_get_account_endpoint_url( 'edit-address' );
+    $downloads_url = wc_get_account_endpoint_url( 'downloads' );
     $delete_url = wc_get_account_endpoint_url( 'wpf-delete-account' );
     ?>
     <section class="cr-account-content cr-account-profile-home" aria-label="<?php esc_attr_e( 'Perfil', 'crios-rango-2026' ); ?>">
@@ -83,8 +84,11 @@ function cr2026_account_render_profile_home() {
             <a href="<?php echo esc_url( $personal_url ); ?>" class="cr-account-profile-home__row">
                 <span class="cr-account-profile-home__icon" aria-hidden="true"><?php echo cr2026_icon( 'user' ); ?></span><span><?php esc_html_e( 'Datos personales', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
             </a>
-            <a href="<?php echo esc_url( $shipping_url ); ?>" class="cr-account-profile-home__row">
+            <a href="<?php echo esc_url( $address_url ); ?>" class="cr-account-profile-home__row">
                 <span class="cr-account-profile-home__icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg></span><span><?php esc_html_e( 'Dirección de entrega', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
+            </a>
+            <a href="<?php echo esc_url( $downloads_url ); ?>" class="cr-account-profile-home__row">
+                <span class="cr-account-profile-home__icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 19h16"></path></svg></span><span><?php esc_html_e( 'Descargas', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
             </a>
             <a href="<?php echo esc_url( $password_url ); ?>" class="cr-account-profile-home__row">
                 <span class="cr-account-profile-home__icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg></span><span><?php esc_html_e( 'Cambiar contraseña', 'crios-rango-2026' ); ?></span><span class="cr-account-profile-home__chevron" aria-hidden="true">›</span>
@@ -815,6 +819,28 @@ add_filter( 'woocommerce_login_redirect', 'cr2026_account_guest_auth_redirect', 
 add_filter( 'woocommerce_registration_redirect', 'cr2026_account_guest_auth_redirect', 20, 1 );
 
 /** Remove the native account-navigation renderer without unregistering endpoints. */
+
+/** Remove only WPLoyalty's native presentation styles on its Account endpoint. */
+function cr2026_account_dequeue_native_loyalty_styles() {
+    if ( ! function_exists( 'is_account_page' ) || ! is_account_page()
+        || ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'loyalty_reward' )
+        || ! function_exists( 'wp_styles' ) ) {
+        return;
+    }
+    $styles = wp_styles();
+    if ( empty( $styles->registered ) ) {
+        return;
+    }
+    foreach ( $styles->registered as $handle => $style ) {
+        $source = is_object( $style ) && isset( $style->src ) ? (string) $style->src : '';
+        $identity = strtolower( (string) $handle . ' ' . $source );
+        if ( preg_match( '/(?:^|[\\/._-])(?:wlr|wployalty|wp[-_]loyalty[-_]rules)(?:[\\/._-]|$)/', $identity ) ) {
+            wp_dequeue_style( $handle );
+        }
+    }
+}
+add_action( 'wp_enqueue_scripts', 'cr2026_account_dequeue_native_loyalty_styles', 999 );
+
 function cr2026_account_remove_legacy_navigation() {
     if ( function_exists( 'is_account_page' ) && is_account_page() ) {
         remove_action( 'woocommerce_account_navigation', 'woocommerce_account_navigation', 10 );

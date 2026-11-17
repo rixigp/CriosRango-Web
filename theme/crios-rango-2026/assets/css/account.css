@@ -1679,14 +1679,16 @@ body.woocommerce-account .woocommerce-form-login.login,
 body.woocommerce-account .wpfda-delete-account-container { box-sizing:border-box; width:100%; max-width:760px; margin-inline:auto; }
 body.woocommerce-account .woocommerce-EditAccountForm,
 body.woocommerce-account .woocommerce-address-fields { padding:0!important; border:0!important; background:transparent!important; box-shadow:none!important; }
-body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_first_name),
-body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_last_name),
-body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-first,
-body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-last { box-sizing:border-box; width:calc(50% - 8px); }
-body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_first_name),
-body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-first { float:left; }
-body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_last_name),
-body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-last { float:right; }
+@media (min-width:768px) {
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_first_name),
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_last_name),
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-first,
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-last { box-sizing:border-box; width:calc(50% - 8px); }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_first_name),
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-first { float:left; }
+ body.woocommerce-account.cr-account-profile-view-personal .woocommerce-EditAccountForm p:has(#account_last_name),
+ body.woocommerce-account.woocommerce-edit-address .woocommerce-address-fields p.form-row-last { float:right; }
+}
 body.woocommerce-account .woocommerce-EditAccountForm .cr-control-shell,
 body.woocommerce-account .woocommerce-address-fields .cr-control-shell { width:100%; }
 body.woocommerce-account .woocommerce-EditAccountForm fieldset:not(.cr-control-shell) { width:100%; }
@@ -1715,3 +1717,5 @@ body.woocommerce-account .cr-page__header { display:none!important; }
  body.woocommerce-account .woocommerce-form-register.register { max-width:520px; }
  body.woocommerce-account.cr-account-profile-view-password .woocommerce-EditAccountForm { max-width:560px; }
 }
+
+body.woocommerce-account .cr-account-profile-home { width:100%; max-width:760px; }
