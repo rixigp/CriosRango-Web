@@ -33,6 +33,8 @@ async function inspect(page, routeName, width) {
       headerCount: document.querySelectorAll('.cr-app-header').length,
       visualFooter: !!document.querySelector('.cr-footer, .site-footer, #colophon'),
       overflow: Math.max(root.scrollWidth, document.body ? document.body.scrollWidth : 0) > root.clientWidth + 1,
+      scrollingElementIsRoot: document.scrollingElement === root,
+      scrollbarGutter: getComputedStyle(root).scrollbarGutter,
       accountInternalNavVisible: !!internalAccountNav && visible('body.woocommerce-account .woocommerce-MyAccount-navigation'),
       productDisplay: product ? getComputedStyle(product).display : null,
       productFound: !!product
@@ -45,6 +47,8 @@ async function inspect(page, routeName, width) {
   assert.equal(state.bottomVisible, width < 1280, routeName + ' bottom nav at ' + width);
   assert.equal(state.visualFooter, false, routeName + ' visual footer absent');
   assert.equal(state.overflow, false, routeName + ' no horizontal overflow at ' + width);
+  assert.equal(state.scrollingElementIsRoot, true, routeName + ' document scrolling element is html');
+  assert.equal(state.scrollbarGutter, 'stable', routeName + ' reserves the root scrollbar gutter');
   if (routeName === 'account' && width < 1280) {
     assert.equal(state.accountInternalNavVisible, false, 'account internal desktop nav hidden below 1280');
   }
@@ -64,14 +68,17 @@ async function inspect(page, routeName, width) {
       const links = Array.from(document.querySelectorAll('a[href]')).map(a => a.href);
       return {
         category: links.find(href => /\/categoria-producto\//i.test(new URL(href).pathname)),
+        outlet: links.find(href => /\/outlet(?:\/|$)/i.test(new URL(href).pathname)),
         product: links.find(href => /\/producto\//i.test(new URL(href).pathname))
       };
     });
     assert.ok(discovered.category, 'homepage must expose a product category route');
+    assert.ok(discovered.outlet, 'homepage must expose the Outlet route');
     assert.ok(discovered.product, 'homepage must expose a product detail route');
     const routes = [
       ['home', BASE_URL + '/'],
       ['category', discovered.category],
+      ['outlet', discovered.outlet],
       ['product', discovered.product],
       ['account', ACCOUNT_URL],
       ['legal', LEGAL_URL]

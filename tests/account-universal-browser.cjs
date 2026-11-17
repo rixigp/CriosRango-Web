@@ -68,6 +68,86 @@ const viewports=[390,768,1279,1280,1440,1920];
    else console.log('ORDER_DETAIL_BROWSER_CHECK=SKIPPED_NO_STAGING_ORDER');
    console.log('ACCOUNT_VIEWPORT='+width+' RENDERERS=PASS');
   }
+
+  // Real-route desktop scrollbar geometry comparison at one fixed viewport.
+  await page.setViewportSize({width:1440,height:1300});
+  await page.goto(base+'/',{waitUntil:'domcontentloaded'});
+  const navRoutes=await page.evaluate(()=>{
+   const links=Array.from(document.querySelectorAll('.cr-desktop-rail__destination[href]')).map(a=>({
+    label:(a.innerText||a.textContent||'').replace(/\s+/g,' ').trim(),href:a.href
+   }));
+   return {
+    category:links.find(x=>/categor/i.test(x.label))?.href||'',
+    outlet:links.find(x=>/^outlet$/i.test(x.label))?.href||''
+   };
+  });
+  if(!navRoutes.category)throw Error('SCROLLBAR_CATEGORY_ROUTE_MISSING');
+  if(!navRoutes.outlet)throw Error('SCROLLBAR_OUTLET_ROUTE_MISSING');
+  if(!orderHref)throw Error('SCROLLBAR_ORDER_DETAIL_ROUTE_MISSING');
+  const geometryRoutes=[
+   ['CATEGORIAS',navRoutes.category,'.cr-parent-category__canvas, #primary'],
+   ['OUTLET',navRoutes.outlet,'#primary'],
+   ['CUENTA',account,'.cr-account-home'],
+   ['PEDIDOS',account+'orders/','.cr-account-orders'],
+   ['DETALLE_PEDIDO',new URL(orderHref,account).toString(),'.cr-order-detail']
+  ];
+  const measurements=[];
+  for(const [name,url,selector] of geometryRoutes){
+   const response=await page.goto(url,{waitUntil:'domcontentloaded'});
+   if(!response||response.status()>=400)throw Error('SCROLLBAR_ROUTE_HTTP_FAILURE='+name);
+   await page.locator(selector).first().waitFor({state:'attached',timeout:20000});
+   await page.waitForTimeout(250);
+   const metrics=await page.evaluate(()=>{
+    const root=document.documentElement, scrolling=document.scrollingElement;
+    const bounds=selector=>{
+     const el=document.querySelector(selector);if(!el)return null;
+     const r=el.getBoundingClientRect();return {left:r.left,right:r.right};
+    };
+    return {
+     scrollingElement:scrolling?scrolling.tagName:'NONE',
+     isRootScrollingElement:scrolling===root,
+     scrollbarGutter:getComputedStyle(root).scrollbarGutter,
+     innerWidth:window.innerWidth,clientWidth:root.clientWidth,
+     scrollHeight:scrolling?scrolling.scrollHeight:0,
+     clientHeight:scrolling?scrolling.clientHeight:0,
+     hasVerticalScroll:!!scrolling&&scrolling.scrollHeight>scrolling.clientHeight+1,
+     shell:bounds('.cr-desktop-shell'),sidebar:bounds('.cr-desktop-rail'),primary:bounds('#primary')
+    };
+   });
+   if(!metrics.isRootScrollingElement||metrics.scrollingElement!=='HTML')throw Error('SCROLLING_ELEMENT_NOT_HTML='+name+':'+metrics.scrollingElement);
+   if(metrics.scrollbarGutter!=='stable')throw Error('SCROLLBAR_GUTTER_NOT_STABLE='+name+':'+metrics.scrollbarGutter);
+   for(const key of ['shell','sidebar','primary'])if(!metrics[key])throw Error('SCROLLBAR_GEOMETRY_MISSING='+name+':'+key);
+   measurements.push({name,metrics});
+   console.log('SCROLLBAR_ROUTE_'+name+'='+JSON.stringify(metrics));
+  }
+  const withScroll=measurements.find(x=>x.metrics.hasVerticalScroll);
+  const withoutScroll=measurements.find(x=>!x.metrics.hasVerticalScroll);
+  if(!withScroll||!withoutScroll)throw Error('SCROLLBAR_ROUTE_PAIR_MISSING='+JSON.stringify(measurements.map(x=>({name:x.name,scroll:x.metrics.hasVerticalScroll,scrollHeight:x.metrics.scrollHeight,clientHeight:x.metrics.clientHeight}))));
+  const innerWidths=new Set(measurements.map(x=>x.metrics.innerWidth));
+  const clientWidths=new Set(measurements.map(x=>x.metrics.clientWidth));
+  if(innerWidths.size!==1)throw Error('WINDOW_INNER_WIDTH_CHANGED_BETWEEN_ROUTES');
+  if(clientWidths.size!==1)throw Error('ROOT_CLIENT_WIDTH_CHANGED_BETWEEN_ROUTES');
+  const edges=[['shell','left'],['shell','right'],['sidebar','left'],['sidebar','right'],['primary','left'],['primary','right']];
+  let shellShift=0;
+  for(const [part,edge] of edges)shellShift=Math.max(shellShift,Math.abs(withScroll.metrics[part][edge]-withoutScroll.metrics[part][edge]));
+  console.log('SCROLLING_ELEMENT=HTML(document.documentElement)');
+  console.log('ROUTE_WITH_SCROLL='+withScroll.name);
+  console.log('ROUTE_WITHOUT_SCROLL='+withoutScroll.name);
+  console.log('WINDOW_INNER_WIDTH='+withScroll.metrics.innerWidth);
+  console.log('DOCUMENT_ELEMENT_CLIENT_WIDTH_WITH_SCROLL='+withScroll.metrics.clientWidth);
+  console.log('DOCUMENT_ELEMENT_CLIENT_WIDTH_WITHOUT_SCROLL='+withoutScroll.metrics.clientWidth);
+  console.log('SHELL_LEFT_WITH_SCROLL='+withScroll.metrics.shell.left.toFixed(2));
+  console.log('SHELL_LEFT_WITHOUT_SCROLL='+withoutScroll.metrics.shell.left.toFixed(2));
+  console.log('SHELL_RIGHT_WITH_SCROLL='+withScroll.metrics.shell.right.toFixed(2));
+  console.log('SHELL_RIGHT_WITHOUT_SCROLL='+withoutScroll.metrics.shell.right.toFixed(2));
+  console.log('SIDEBAR_LEFT_WITH_SCROLL='+withScroll.metrics.sidebar.left.toFixed(2));
+  console.log('SIDEBAR_RIGHT_WITH_SCROLL='+withScroll.metrics.sidebar.right.toFixed(2));
+  console.log('PRIMARY_LEFT_WITH_SCROLL='+withScroll.metrics.primary.left.toFixed(2));
+  console.log('PRIMARY_RIGHT_WITH_SCROLL='+withScroll.metrics.primary.right.toFixed(2));
+  console.log('SHELL_SHIFT_DUE_TO_SCROLLBAR='+shellShift.toFixed(2)+'px');
+  if(shellShift>1)throw Error('SHELL_SHIFT_DUE_TO_SCROLLBAR_EXCEEDS_1PX='+shellShift);
+  console.log('SCROLLBAR_GEOMETRY_STABILITY=PASS');
+
   console.log('ACCOUNT_BROWSER_CHECKS='+checks);console.log('ACCOUNT_LEGACY_NAV_VISIBLE=NO');console.log('ORDER_DETAIL_NATIVE_DESKTOP_BRANCH=ABSENT');console.log('ACCOUNT_RENDERER_DEVICE_DIVERGENCE=NO');
  }finally{await context.close();await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

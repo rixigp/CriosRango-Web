@@ -94,3 +94,15 @@ test('CART_EXTRA_OUTER_GUTTERS=0; PRODUCT_DETAIL_EXTRA_OUTER_GUTTERS=0; SEARCH_V
   assert.match(mainJs,/button\.classList\.add\('is-loading'\)[\s\S]*?button\.setAttribute\('aria-busy', 'true'\)[\s\S]*?button\.textContent = 'Buscando…'/,'Search loading feedback includes spinner class, aria-busy and copy');
   assert.match(mainJs,/window\.addEventListener\('pageshow', resetSearchSubmitStates\)/,'Search loading is reset after BFCache restore');
 });
+
+
+test('ROOT_SCROLLBAR_GUTTER_STABLE=YES; FALLBACK=OVERFLOW_Y_SCROLL_ONLY_WHEN_UNSUPPORTED',()=>{
+ const root=main.match(/html\s*\{([^}]*)\}/);
+ assert.ok(root,'canonical root html rule exists');
+ assert.match(root[1],/scrollbar-gutter:\s*stable\s*;/);
+ assert.doesNotMatch(root[1],/both-edges/);
+ assert.doesNotMatch(main,/scrollbar-gutter:\s*stable\s+both-edges/);
+ const fallback=main.match(/@supports not \(scrollbar-gutter:\s*stable\)\s*\{\s*html\s*\{([^}]*)\}/);
+ assert.ok(fallback,'unsupported browsers receive a mutually exclusive fallback');
+ assert.match(fallback[1],/overflow-y:\s*scroll\s*;/);
+});
