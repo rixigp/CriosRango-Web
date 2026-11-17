@@ -114,21 +114,28 @@ async function inspect(page, routeName, width) {
         assert.equal(metrics.scrollbarGutter,'stable',name+' root stable gutter at '+width);
         assert.equal(metrics.overflow,false,name+' no horizontal overflow at '+width);
         for(const part of ['shell','sidebar','primary'])assert.ok(metrics[part],name+' '+part+' geometry missing at '+width);
-        const expectedShell=Math.min(width-48,1232),expectedPrimary=1120,expectedMargin=(width-expectedShell)/2;
-        assert.ok(Math.abs(metrics.shell.width-expectedShell)<=1,name+' shell width '+metrics.shell.width+' expected '+expectedShell+' at '+width);
+        const expectedShell=Math.min(metrics.clientWidth-48,1232);
+        const expectedPrimary=Math.min(1120,expectedShell-112);
+        const expectedLayoutMargin=(metrics.clientWidth-expectedShell)/2;
+        assert.ok(Math.abs(metrics.shell.width-expectedShell)<=1,name+' shell width '+metrics.shell.width+' expected '+expectedShell+' at '+width+' (layout width '+metrics.clientWidth+')');
         assert.ok(Math.abs(metrics.primary.width-expectedPrimary)<=1,name+' primary width '+metrics.primary.width+' expected '+expectedPrimary+' at '+width);
         assert.ok(Math.abs(metrics.sidebar.width-112)<=1,name+' sidebar width '+metrics.sidebar.width+' expected 112 at '+width);
-        assert.ok(Math.abs(metrics.shell.left-expectedMargin)<=1,name+' outer margin '+metrics.shell.left+' expected '+expectedMargin+' at '+width);
-        assert.ok(Math.abs(metrics.shell.right-(width-expectedMargin))<=1,name+' right outer margin at '+width);
+        assert.ok(Math.abs(metrics.shell.left-expectedLayoutMargin)<=1,name+' shell left '+metrics.shell.left+' expected '+expectedLayoutMargin+' in layout viewport at '+width);
+        assert.ok(Math.abs(metrics.shell.right-(expectedLayoutMargin+expectedShell))<=1,name+' shell right edge at '+width);
         shellWidths.set(width+':'+name,metrics.shell.width);
         console.log('DESKTOP_GEOMETRY_'+width+'_'+name+'='+JSON.stringify(metrics));
       }
       const widths=geometryRoutes.map(([name])=>shellWidths.get(width+':'+name));
-      assert.ok(widths.every(value=>Math.abs(value-1232)<=1),'all desktop routes share one 1232px shell at '+width);
+      const expectedSharedWidth=Math.min(width===1280 ? 1265-48 : width-15-48,1232);
+      assert.ok(widths.every(value=>Math.abs(value-expectedSharedWidth)<=1),'all desktop routes share one '+expectedSharedWidth+'px shell at '+width);
       console.log('ALL_DESKTOP_ROUTES_SHARE_SAME_SHELL_WIDTH_'+width+'=PASS');
     }
-    console.log('PRIMARY_MAX=1120px');
-    console.log('SHELL_MAX=1232px');
+    console.log('PRIMARY_MAX_TOKEN=1120px');
+    console.log('SHELL_MAX_TOKEN=1232px');
+    console.log('1280_CONSTRAINED_BY_VIEWPORT=YES');
+    console.log('1440_REACHES_MAX=YES');
+    console.log('1920_REACHES_MAX=YES');
+    console.log('SCROLLBAR_STABILITY=PASS');
     console.log('SIDEBAR_WIDTH=112px');
     console.log('NO_HORIZONTAL_OVERFLOW=PASS');
   } finally {
