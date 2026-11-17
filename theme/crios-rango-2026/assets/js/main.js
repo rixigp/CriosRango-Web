@@ -482,7 +482,7 @@
     const taxonomyByKey = {size_ids:'pa_tallas',color_ids:'pa_color',brand_ids:'product_tag'};
     const labelByKey = {size_ids:'Talla',color_ids:'',brand_ids:''};
     let currentPage = 0, hasMore = false, loading = false, requestGeneration = 0, activeRequest = null;
-    let totalProducts = null, selectedOutletBubbleKey = null, activeOutletOriginIds = [], outletContextInitialized = !outletCategoryId;
+    let totalProducts = null, selectedOutletBubbleKey = null, activeOutletOriginIds = [], outletContextInitialized = !outletCategoryId || outletCategoryId === 445;
     const getOutletContext=()=>({categoryId:outletCategoryId,originCategoryIds:activeOutletOriginIds.slice(),selectedBubbleKey:selectedOutletBubbleKey});
     const normalizeIds = values => Array.from(new Set((values||[]).map(String).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'en',{numeric:true}));
     const getFilters = () => Object.fromEntries(filterKeys.map(key=>[key,(currentUrl.searchParams.get(key)||'').split(',').filter(Boolean)]));
