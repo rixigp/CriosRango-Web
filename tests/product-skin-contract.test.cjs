@@ -993,6 +993,14 @@ test('Product Detail keeps the Woo summary continuous and moves description belo
   assert.match(skinCss, /body\.cr-product-detail-app \.cr-product-detail-toolbar\s*\{[^}]*margin-top:\s*0 !important;/s);
 });
 
+test('Product Detail browser geometry runs before independent Home shell smoke', () => {
+  const browser = fs.readFileSync(path.join(__dirname, 'desktop-targeted-browser.cjs'), 'utf8');
+  const productChecks = browser.indexOf('await visit(page, productUrl);');
+  const homeChecks = browser.indexOf('for (const viewport of [1279, 1280, 1440, 1920])');
+  assert.ok(productChecks >= 0 && homeChecks > productChecks);
+  assert.match(browser, /clientWidth:\s*document\.documentElement\.clientWidth/);
+});
+
 test('Product Detail uses the shared canvas and content-sized compact variation cards', () => {
   assert.match(skinCss, /--cr-product-cream:\s*var\(--cr-app-canvas\)/);
   assert.doesNotMatch(skinCss, /body\.cr-product-detail-app \.cr-main--woocommerce\s*\{/);
