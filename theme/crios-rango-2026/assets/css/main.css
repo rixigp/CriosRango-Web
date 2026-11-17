@@ -1874,10 +1874,16 @@ body.cr-parent-category-view .cr-app-header .cr-home-topbar::after {
 body.cr-parent-category-view .cr-app-header .cr-home-topbar {
   min-height: var(--cr-app-topbar-height);
 }
+/* The fixed global header is reserved once by --cr-page-top-gap on body.
+   Category canvases must not reserve a second copy of the same header height. */
 @media (max-width: 1279px) {
-body.cr-parent-category-view .cr-parent-category__canvas {
-  padding-top: var(--cr-app-topbar-height); box-sizing: border-box;
-}
+  body.cr-parent-category-view .cr-parent-category__canvas {
+    padding-top: 0;
+  }
+
+  body.cr-app-nav-shell:not(.home):not(.cr-parent-category-view) .cr-category-hub {
+    padding-top: 0;
+  }
 }
 @media (max-width: 767px) {
     }
@@ -2055,10 +2061,11 @@ body.home.cr-home-hero-out .cr-app-header.is-home-hero {
 }
 body.cr-global-app-header:not(.home) {
   --cr-app-topbar-height: 64px;
+  --cr-page-top-gap: var(--cr-app-topbar-height);
 }
 @media (max-width: 1279px) {
   body.cr-global-app-header:not(.home) {
-    padding-top: var(--cr-app-topbar-height);
+    padding-top: var(--cr-page-top-gap);
   }
 }
 body.cr-parent-category-view .cr-parent-category__canvas,

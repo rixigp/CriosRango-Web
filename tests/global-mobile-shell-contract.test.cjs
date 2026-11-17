@@ -38,3 +38,11 @@ test('GLOBAL_BOTTOM_NAV_MARKUP_SOURCE_COUNT=1 and GLOBAL_VISUAL_FOOTER_ABSENT=1'
  assert.match(footer, /<\?php\s+wp_footer\(\);\s+\?>/);
  assert.match(main,/padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
 });
+
+test('MOBILE_TOP_SPACING_HAS_ONE_CANONICAL_SOURCE_AND_CATEGORY_DOES_NOT_RESERVE_HEADER_TWICE',()=>{
+ assert.match(main,/--cr-page-top-gap:\\s*var\\(--cr-app-topbar-height\\)/);
+ assert.match(main,/padding-top:\\s*var\\(--cr-page-top-gap\\)/);
+ assert.doesNotMatch(main,/body\\.cr-parent-category-view \\.cr-parent-category__canvas \\{\\s*padding-top:\\s*var\\(--cr-app-topbar-height\\)/);
+ assert.match(main,/body\\.cr-parent-category-view \\.cr-parent-category__canvas \\{\\s*padding-top:\\s*0;/);
+ assert.match(main,/body\\.cr-app-nav-shell:not\\(\\.home\\):not\\(\\.cr-parent-category-view\\) \\.cr-category-hub \\{\\s*padding-top:\\s*0;/);
+});
