@@ -77,7 +77,7 @@ test('Roboto 300/400 is globally available before the shared canonical title sty
 test('the existing canonical renderer and class contract remain the single source of truth', () => {
   assert.match(helpers, /function\s+cr2026_render_category_toolbar\s*\(/);
   assert.ok(helpers.includes("if ( '' !== $back_url )"), 'back link is conditional on an actual destination');
-  assert.ok(helpers.includes("echo '<h1 class=\"cr-parent-category__title\"'"), 'renderer owns the canonical title element');
+  assert.ok(helpers.includes("echo '<h1 class=\\"cr-parent-category__title\\"'"), 'renderer owns the canonical title element');
   for (const className of ['cr-parent-category__toolbar','cr-parent-category__back','cr-parent-category__title']) {
     assert.ok(helpers.includes(className), 'missing canonical class ' + className);
   }
@@ -150,7 +150,8 @@ test('generic WordPress pages use only the canonical toolbar at every viewport',
 });
 
 test('Account information and guest login templates use the canonical toolbar without duplicate page titles', () => {
-  assert.match(page, /if \( \$is_mobile_account && function_exists\( 'cr2026_is_account_information_page' \)/);
+  assert.match(page, /\$is_mobile_account\s*=\s*\(\s*function_exists\( 'is_account_page' \) && is_account_page\(\)\s*\)\s*\|\|\s*\(\s*function_exists\( 'cr2026_is_account_information_page' \) && cr2026_is_account_information_page\(\)\s*\)/);
+  assert.match(page, /if \( \$is_information_page \)/);
   assert.match(page, /\$is_help_page = function_exists\( 'cr2026_account_is_help_page' \)/);
   assert.match(page, /elseif \( ! \$is_mobile_account && ! \$is_help_page \)/);
   assert.doesNotMatch(page, /is_account_page\(\) && ! is_user_logged_in\(\)/);
