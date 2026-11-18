@@ -463,6 +463,10 @@ async function sixRouteDesktopShell(page,routes,viewport){
 }
 
 async function homeDesktopBrands(page, viewport) {
+  await page.locator('.cr-home-brands img').evaluateAll(async images => {
+    images.forEach(image => { image.loading = 'eager'; });
+    await Promise.all(images.map(image => image.decode().catch(() => null)));
+  });
   const state = await page.evaluate(() => {
     const section = document.querySelector('.cr-home-brands');
     const pager = section && section.querySelector('[data-cr-brand-pager]');
@@ -505,7 +509,7 @@ async function homeDesktopBrands(page, viewport) {
         count: cards.length, columns, rows,
         row1Bottom, row2Top, rowGap: grid ? getComputedStyle(grid).rowGap : 'MISSING',
         cards: cardData,
-        allImagesPresent: cardData.every(x => x.image !== null),
+        allImagesPresent: cardData.every(x => x.image !== null && x.image.loaded),
         allInsideLogoBoxes: cardData.every(x => x.imageInsideLogoBox),
         allInsideCards: cardData.every(x => x.imageInsideCard && x.logoBoxInsideCard),
         allContain: cardData.every(x => x.image && x.image.objectFit === 'contain'),
