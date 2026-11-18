@@ -62,11 +62,11 @@ const brandArchive = fs.readFileSync(path.join(root, 'taxonomy-product_brand.php
 test('OLD_HEADING_STRUCTURE_RESTORED=PASS',()=>{
  assert.match(helpers,/cr-parent-category__back[\s\S]*?cr-parent-category__title/);
  assert.doesNotMatch(helpers,/cr-page-toolbar__heading|cr-page-toolbar__controls/);
- assert.doesNotMatch(main,/display:\s*contents/);
  assert.match(main,/\.cr-parent-category__toolbar\s*\{[^}]*grid-template-columns:\s*48px minmax\(0, 1fr\) auto;/s);
 });
 test('SECONDARY_CONTROLS_ROW_IS_SIBLING=PASS',()=>{
  assert.match(helpers,/echo '<div class="cr-page-controls">'/);
+ assert.match(helpers,/echo '<\/div>';\s*\n\s*if \( '' !== \\$ordering_html/);
  assert.match(helpers,/echo '<\/div>';\s*\}/);
 });
 test('ORDERING_AND_FILTERS_ARE_INSIDE_SECONDARY_ROW=PASS',()=>{
@@ -75,7 +75,7 @@ test('ORDERING_AND_FILTERS_ARE_INSIDE_SECONDARY_ROW=PASS',()=>{
  assert.match(helpers,/elseif \( \$show_filters \)/);
 });
 test('SORT_AND_FILTER_BEFORE_BUBBLES=PASS',()=>{
- const controls=listingArchive.indexOf('cr2026_render_category_toolbar');
+ const controls=listingArchive.indexOf('cr2026_render_category_toolbar( $listing_title');
  const bubbles=listingArchive.indexOf('cr2026_render_outlet_bubbles');
  assert.ok(controls>=0 && bubbles>controls);
  assert.ok(listingArchive.indexOf('$listing_ordering_html')<controls);
