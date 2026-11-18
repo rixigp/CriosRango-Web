@@ -560,6 +560,8 @@ async function homeDesktopBrands(page, viewport) {
     log('HOME_INTERMEDIATE_PAGE_COUNTS_' + viewport, counts.join(','));
     log('HOME_INTERMEDIATE_TOTAL_' + viewport, state.total);
     log('HOME_INTERMEDIATE_DUPLICATES_' + viewport, state.total - state.unique);
+    log('HOME_INTERMEDIATE_IMAGE_INSIDE_LOGO_BOX_' + viewport, state.pagesGeometry.every(p => p.allInsideLogoBoxes) ? 'PASS' : 'FAIL');
+    log('HOME_INTERMEDIATE_IMAGE_INSIDE_CARD_' + viewport, state.pagesGeometry.every(p => p.allInsideCards) ? 'PASS' : 'FAIL');
     log('HOME_INTERMEDIATE_LOGOS_FULLY_VISIBLE_' + viewport, state.pagesGeometry.every(p => p.allInsideLogoBoxes && p.allInsideCards) ? 'YES' : 'NO');
     log('HOME_INTERMEDIATE_LOGOS_NOT_DISTORTED_' + viewport, state.pagesGeometry.every(p => p.allNotDistorted) ? 'YES' : 'NO');
     log('HOME_INTERMEDIATE_LOGOS_CROPPED_' + viewport, state.pagesGeometry.every(p => p.allInsideLogoBoxes && p.allInsideCards && p.allContain) ? 'NO' : 'YES');
@@ -632,7 +634,7 @@ async function homeBrandWinnerAudit(page, viewport) {
         for (const group of Object.values(winners)) for (const item of Object.values(group)) {
           if (item.href !== href) continue;
           const pos = source.lastIndexOf(item.selector);
-          sourceLines[item.selector] = pos < 0 ? null : source.slice(0,pos).split('\\n').length;
+          sourceLines[item.selector] = pos < 0 ? null : source.slice(0,pos).split('\n').length;
         }
       } catch (error) {}
     }
