@@ -167,7 +167,6 @@ test('one mobile PAGE TITLE is emitted per route and Product Detail remains excl
   assert.doesNotMatch(page, /\$is_mobile_help/);
   assert.equal((account.match(/function cr2026_account_help_content[\s\S]*?cr2026_account_render_endpoint_toolbar\( __\( 'Ayuda'/) || []).length, 0);
   assert.ok(page.includes("cr2026_account_render_endpoint_toolbar( __( 'Ayuda'"), 'Help toolbar is emitted by the page template');
-  assert.match(page, /cr2026_account_render_endpoint_toolbar\\( __\\( 'Ayuda'/);
   assert.match(account, /woocommerce_account_view-order_endpoint/);
   assert.match(productSkin, /cr2026_render_category_toolbar\([\s\S]*?'cr-product-detail-toolbar'/);
   assert.match(helpers, /echo '<h1 class="cr-parent-category__title"'/);
