@@ -1096,14 +1096,14 @@ async function loginForAuthenticatedAccount(page) {
         }
       } catch (_) {}
       const links = Array.from(document.querySelectorAll('a[href]'));
-      const currentPath = location.pathname.replace(/\\/+$/, '');
+      const currentPath = location.pathname.replace(/\/+$/, '');
       return links.filter(link => {
         try {
-          const path = new URL(link.href).pathname.replace(/\\/+$/, '');
+          const path = new URL(link.href).pathname.replace(/\/+$/, '');
           return path !== currentPath && /outlet/i.test(path) && link.textContent.trim();
         } catch (_) { return false; }
       }).map(link => link.href);
-    }, new URL(BASE_URL).pathname.replace(/\\/+$/, ''));
+    }, new URL(BASE_URL).pathname.replace(/\/+$/, ''));
     if (!outletBranchUrls.length) throw new Error('OUTLET_BRANCH_ROUTES_NOT_FOUND');
     let outletBranchUrl = '';
     const outletBranchDiagnostics = [];
