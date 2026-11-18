@@ -262,207 +262,7 @@ async function inspect(page, routeName, width) {
     const newArrivalsUrl = discovered.newArrivals || new URL('novedades/', BASE_URL + '/').toString();
     const brandsUrl = discovered.brands || new URL('marcas/', BASE_URL + '/').toString();
     const contactUrl = discovered.contact || new URL('contacto/', BASE_URL + '/').toString();
-    await navigate(mobilePage, ACCOUNT_URL);
-    const helpUrl = await mobilePage.evaluate(() => {
-      const link = document.querySelector('.cr-account-home__tile--help[href]');
-      return link ? link.href : null;
-    });
-    assert.ok(helpUrl, 'guest Account must expose its Help destination');
-    const loginUrl = await mobilePage.evaluate(() => {
-      const link = document.querySelector('.cr-account-home__user[href]');
-      return link ? link.href : null;
-    });
-    assert.ok(loginUrl, 'guest Account must expose its canonical login destination');
 
-    await navigate(desktopPage, BASE_URL + '/');
-    const cartUrl = await desktopPage.evaluate(() => {
-      const links = Array.from(document.querySelectorAll('.cr-app-header a[href]'));
-      const link = links.find(anchor => /carrito|cart/i.test(new URL(anchor.href).pathname));
-      return link ? link.href : null;
-    });
-    assert.ok(cartUrl, 'global app header must expose a Cart destination');
-    const stagingBase = new URL(BASE_URL);
-    const resolvedCart = new URL(cartUrl);
-    assert.equal(resolvedCart.origin, stagingBase.origin, 'Cart destination must stay on the staging host');
-    assert.ok(resolvedCart.pathname.startsWith(stagingBase.pathname.replace(/\/+$/, '') + '/'), 'Cart destination must stay under the staging path: ' + cartUrl);
-    console.log('STAGING_CART_URL=' + cartUrl);
-
-    const routes = [
-      ['home', BASE_URL + '/'],
-      ['category', discovered.category],
-      ['outlet', discovered.outlet],
-      ['product', discovered.product],
-      ['account', ACCOUNT_URL],
-      ['login', loginUrl],
-      ['help', helpUrl],
-      ['contact', contactUrl],
-      ['cart', cartUrl],
-      ['legal', LEGAL_URL]
-    ];
-    for (const width of WIDTHS) {
-      const page = width < 768 ? mobilePage : desktopPage;
-      await page.setViewportSize({ width, height: 1000 });
-      for (const [name, url] of routes) {
-        await navigate(page, url);
-        await inspect(page, name, width);
-      }
-    }
-
-    // Explicitly request Checkout: the shared shell smoke does not otherwise visit this route.
-    const checkoutUrl = new URL('finalizar-compra/', BASE_URL + '/').toString();
-    const checkoutResponse = await desktopPage.goto(checkoutUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
-    assert.ok(checkoutResponse && checkoutResponse.status() < 400,
-      'checkout route failed: ' + checkoutUrl + ' status=' + (checkoutResponse && checkoutResponse.status()));
-    const checkoutBody = await desktopPage.locator('body').innerText();
-    assert.doesNotMatch(checkoutBody, /Ha habido un error crítico|There has been a critical error/i,
-      'checkout route must not render the WordPress critical-error page');
-    console.log('GLOBAL_SHELL_CHECKOUT_HTTP=' + checkoutResponse.status());
-    console.log('GLOBAL_SHELL_CHECKOUT_FINAL_URL=' + desktopPage.url());
-
-    // Verify the platform font actually used to paint title glyphs via Chrome DevTools Protocol.
-    const fontRoutes = [
-      ['CATEGORY', discovered.category],
-      ['NEW_ARRIVALS', newArrivalsUrl],
-      ['BRANDS', brandsUrl],
-      ['CONTACT', contactUrl],
-      ['LEGAL', LEGAL_URL],
-      ['ACCOUNT', ACCOUNT_URL]
-    ];
-    const fontPage = desktopPage;
-    await fontPage.setViewportSize({ width: 1440, height: 1000 });
-    const cdp = await fontPage.context().newCDPSession(fontPage);
-    await cdp.send('DOM.enable');
-    await cdp.send('CSS.enable');
-    for (const [name, url] of fontRoutes) {
-      await navigate(fontPage, url);
-      await fontPage.evaluate(async () => {
-        await document.fonts.load('300 21px "Roboto"');
-        await document.fonts.ready;
-      });
-      const cssState = await fontPage.evaluate(() => {
-        const title = document.querySelector('.cr-parent-category__title');
-        if (!title) return null;
-        const style = getComputedStyle(title);
-        const faces = Array.from(document.fonts)
-          .filter(face => face.family.replace(/["']/g, '') === 'Roboto' && /300/.test(face.weight))
-          .map(face => ({ weight: face.weight, status: face.status }));
-        return {
-          text: title.textContent.trim(), fontFamily: style.fontFamily,
-          fontWeight: style.fontWeight, fontSize: style.fontSize, lineHeight: style.lineHeight,
-          fontCheck300: document.fonts.check('300 21px "Roboto"'), faces
-        };
-      });
-      assert.ok(cssState, name + ' canonical title exists at ' + url);
-      assert.equal(cssState.fontWeight, '300', name + ' CSS/rendered weight');
-      assert.equal(cssState.fontSize, '21px', name + ' CSS font size');
-      assert.equal(cssState.lineHeight, '28px', name + ' CSS line height');
-      assert.equal(cssState.fontCheck300, true, name + ' Roboto 300 FontFaceSet check');
-      assert.ok(cssState.faces.some(face => face.status === 'loaded'), name + ' Roboto 300 face loaded');
-      const doc = await cdp.send('DOM.getDocument', { depth: -1, pierce: true });
-      const node = await cdp.send('DOM.querySelector', { nodeId: doc.root.nodeId, selector: '.cr-parent-category__title' });
-      assert.ok(node.nodeId, name + ' title node available through CDP');
-      const platform = await cdp.send('CSS.getPlatformFontsForNode', { nodeId: node.nodeId });
-      const rendered = (platform.fonts || []).filter(font => font.glyphCount > 0);
-      console.log('ROBOTO_RENDER_' + name + '=' + JSON.stringify({
-        url, title: cssState.text, cssFontFamily: cssState.fontFamily,
-        cssFontWeight: cssState.fontWeight, cssFontSize: cssState.fontSize,
-        cssLineHeight: cssState.lineHeight, fontCheck300: cssState.fontCheck300,
-        loadedRobotoFaces: cssState.faces, renderedPlatformFonts: rendered
-      }));
-      assert.ok(rendered.some(font => /Roboto/i.test(font.familyName)),
-        name + ' actual rendered platform font must be Roboto; got ' + JSON.stringify(rendered));
-    }
-    await cdp.detach();
-
-    // Validate the one canonical desktop shell at the three requested widths on every public smoke route.
-    const page = desktopPage;
-    const desktopWidths=[1280,1440,1920];
-    const geometryRoutes=[
-      ['HOME',BASE_URL+'/'],
-      ['CATEGORY',discovered.category],
-      ['OUTLET',discovered.outlet],
-      ['PRODUCT',discovered.product],
-      ['ACCOUNT',ACCOUNT_URL],
-      ['LEGAL',LEGAL_URL]
-    ];
-    const shellWidths=new Map();
-    for(const width of desktopWidths){
-      await page.setViewportSize({width,height:1300});
-      for(const [name,url] of geometryRoutes){
-        await navigate(page,url);
-        const metrics=await page.evaluate(()=>{
-          const rect=selector=>{const el=document.querySelector(selector);if(!el)return null;const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};};
-          const root=document.documentElement;
-          return {innerWidth:window.innerWidth,clientWidth:root.clientWidth,overflow:Math.max(root.scrollWidth,document.body.scrollWidth)>root.clientWidth+1,shell:rect('.cr-desktop-shell'),sidebar:rect('.cr-desktop-rail'),primary:rect('#primary'),scrollbarGutter:getComputedStyle(root).scrollbarGutter};
-        });
-        assert.equal(metrics.scrollbarGutter,'stable',name+' root stable gutter at '+width);
-        assert.equal(metrics.overflow,false,name+' no horizontal overflow at '+width);
-        for(const part of ['shell','sidebar','primary'])assert.ok(metrics[part],name+' '+part+' geometry missing at '+width);
-        const expectedShell=Math.min(metrics.clientWidth-48,1232);
-        const expectedPrimary=Math.min(1120,expectedShell-112);
-        const expectedLayoutMargin=(metrics.clientWidth-expectedShell)/2;
-        assert.ok(Math.abs(metrics.shell.width-expectedShell)<=1,name+' shell width '+metrics.shell.width+' expected '+expectedShell+' at '+width+' (layout width '+metrics.clientWidth+')');
-        assert.ok(Math.abs(metrics.primary.width-expectedPrimary)<=1,name+' primary width '+metrics.primary.width+' expected '+expectedPrimary+' at '+width);
-        assert.ok(Math.abs(metrics.sidebar.width-112)<=1,name+' sidebar width '+metrics.sidebar.width+' expected 112 at '+width);
-        assert.ok(Math.abs(metrics.shell.left-expectedLayoutMargin)<=1,name+' shell left '+metrics.shell.left+' expected '+expectedLayoutMargin+' in layout viewport at '+width);
-        assert.ok(Math.abs(metrics.shell.right-(expectedLayoutMargin+expectedShell))<=1,name+' shell right edge at '+width);
-        shellWidths.set(width+':'+name,metrics.shell.width);
-        console.log('DESKTOP_GEOMETRY_'+width+'_'+name+'='+JSON.stringify(metrics));
-      }
-      const widths=geometryRoutes.map(([name])=>shellWidths.get(width+':'+name));
-      const expectedSharedWidth=Math.min(width===1280 ? 1265-48 : width-15-48,1232);
-      assert.ok(widths.every(value=>Math.abs(value-expectedSharedWidth)<=1),'all desktop routes share one '+expectedSharedWidth+'px shell at '+width);
-      console.log('ALL_DESKTOP_ROUTES_SHARE_SAME_SHELL_WIDTH_'+width+'=PASS');
-    }
-
-    // The five Information pages must align their 920px reading measure with the canonical toolbar.
-    const legalPages = [
-      ['CHANGES', 'cambios-y-devoluciones/'],
-      ['CONDITIONS', 'condiciones-generales-de-contratacion/'],
-      ['PRIVACY', 'politica-de-privacidad/'],
-      ['LEGAL_NOTICE', 'aviso-legal/'],
-      ['COOKIES', 'politica-de-cookies/']
-    ];
-    for (const width of [1280, 1440, 1920]) {
-      await page.setViewportSize({ width, height: 1200 });
-      for (const [name, slug] of legalPages) {
-        const url = new URL(slug, BASE_URL + '/').toString();
-        await navigate(page, url);
-        const metrics = await page.evaluate(() => {
-          const toolbar = document.querySelector('.cr-parent-category__toolbar');
-          const prose = document.querySelector('.cr-prose');
-          const back = toolbar?.querySelector('.cr-parent-category__back');
-          const tr = toolbar?.getBoundingClientRect();
-          const pr = prose?.getBoundingClientRect();
-          const style = prose ? getComputedStyle(prose) : null;
-          return {
-            bodyClass: document.body.className,
-            toolbarLeft: tr ? tr.left : null,
-            proseLeft: pr ? pr.left : null,
-            proseWidth: pr ? pr.width : null,
-            extraLeftInset: tr && pr ? pr.left - tr.left : null,
-            maxWidth: style ? style.maxWidth : null,
-            marginLeft: style ? style.marginLeft : null,
-            marginRight: style ? style.marginRight : null,
-            backHref: back ? back.href : null
-          };
-        });
-        assert.match(metrics.bodyClass, /(?:^|\s)cr-legal-information-page(?:\s|$)/, name + ' legal-page marker at ' + width);
-        assert.ok(metrics.toolbarLeft !== null && metrics.proseLeft !== null, name + ' toolbar/prose measurable at ' + width);
-        assert.ok(Math.abs(metrics.extraLeftInset) <= 1, name + ' prose aligns to toolbar at ' + width + ': ' + metrics.extraLeftInset);
-        assert.ok(metrics.proseWidth <= 920 + 1, name + ' prose stays within 920px at ' + width + ': ' + metrics.proseWidth);
-        assert.equal(metrics.marginLeft, '0px', name + ' prose has no centering left margin at ' + width);
-        assert.equal(metrics.backHref, new URL('mi-cuenta/', BASE_URL + '/').toString(), name + ' back target is Account at ' + width);
-        console.log('LEGAL_GEOMETRY_' + width + '_' + name + '=' + JSON.stringify(metrics));
-        console.log('LEGAL_BACK_TARGET_' + name + '=PASS');
-      }
-    }
-    console.log('LEGAL_PAGES_VALIDATED=5/5');
-    console.log('PRIMARY_MAX_TOKEN=1120px');
-    console.log('SHELL_MAX_TOKEN=1232px');
-    console.log('1280_CONSTRAINED_BY_VIEWPORT=YES');
-    console.log('1440_REACHES_MAX=YES');
-    console.log('1920_REACHES_MAX=YES');
     // Novedades total cap: clean load, second page, reload, history and legacy multi-page cache.
     const noveltiesPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const noveltiesUrl = new URL('novedades/', BASE_URL + '/').toString();
@@ -664,6 +464,208 @@ async function inspect(page, routeName, width) {
     console.log('NOVEDADES_SORT_COHORT_BROWSER=PASS');
     await noveltiesSortPage.close();
     await noveltiesPage.close();
+    await navigate(mobilePage, ACCOUNT_URL);
+    const helpUrl = await mobilePage.evaluate(() => {
+      const link = document.querySelector('.cr-account-home__tile--help[href]');
+      return link ? link.href : null;
+    });
+    assert.ok(helpUrl, 'guest Account must expose its Help destination');
+    const loginUrl = await mobilePage.evaluate(() => {
+      const link = document.querySelector('.cr-account-home__user[href]');
+      return link ? link.href : null;
+    });
+    assert.ok(loginUrl, 'guest Account must expose its canonical login destination');
+
+    await navigate(desktopPage, BASE_URL + '/');
+    const cartUrl = await desktopPage.evaluate(() => {
+      const links = Array.from(document.querySelectorAll('.cr-app-header a[href]'));
+      const link = links.find(anchor => /carrito|cart/i.test(new URL(anchor.href).pathname));
+      return link ? link.href : null;
+    });
+    assert.ok(cartUrl, 'global app header must expose a Cart destination');
+    const stagingBase = new URL(BASE_URL);
+    const resolvedCart = new URL(cartUrl);
+    assert.equal(resolvedCart.origin, stagingBase.origin, 'Cart destination must stay on the staging host');
+    assert.ok(resolvedCart.pathname.startsWith(stagingBase.pathname.replace(/\/+$/, '') + '/'), 'Cart destination must stay under the staging path: ' + cartUrl);
+    console.log('STAGING_CART_URL=' + cartUrl);
+
+    const routes = [
+      ['home', BASE_URL + '/'],
+      ['category', discovered.category],
+      ['outlet', discovered.outlet],
+      ['product', discovered.product],
+      ['account', ACCOUNT_URL],
+      ['login', loginUrl],
+      ['help', helpUrl],
+      ['contact', contactUrl],
+      ['cart', cartUrl],
+      ['legal', LEGAL_URL]
+    ];
+    for (const width of WIDTHS) {
+      const page = width < 768 ? mobilePage : desktopPage;
+      await page.setViewportSize({ width, height: 1000 });
+      for (const [name, url] of routes) {
+        await navigate(page, url);
+        await inspect(page, name, width);
+      }
+    }
+
+    // Explicitly request Checkout: the shared shell smoke does not otherwise visit this route.
+    const checkoutUrl = new URL('finalizar-compra/', BASE_URL + '/').toString();
+    const checkoutResponse = await desktopPage.goto(checkoutUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    assert.ok(checkoutResponse && checkoutResponse.status() < 400,
+      'checkout route failed: ' + checkoutUrl + ' status=' + (checkoutResponse && checkoutResponse.status()));
+    const checkoutBody = await desktopPage.locator('body').innerText();
+    assert.doesNotMatch(checkoutBody, /Ha habido un error crítico|There has been a critical error/i,
+      'checkout route must not render the WordPress critical-error page');
+    console.log('GLOBAL_SHELL_CHECKOUT_HTTP=' + checkoutResponse.status());
+    console.log('GLOBAL_SHELL_CHECKOUT_FINAL_URL=' + desktopPage.url());
+
+    // Verify the platform font actually used to paint title glyphs via Chrome DevTools Protocol.
+    const fontRoutes = [
+      ['CATEGORY', discovered.category],
+      ['NEW_ARRIVALS', newArrivalsUrl],
+      ['BRANDS', brandsUrl],
+      ['CONTACT', contactUrl],
+      ['LEGAL', LEGAL_URL],
+      ['ACCOUNT', ACCOUNT_URL]
+    ];
+    const fontPage = desktopPage;
+    await fontPage.setViewportSize({ width: 1440, height: 1000 });
+    const cdp = await fontPage.context().newCDPSession(fontPage);
+    await cdp.send('DOM.enable');
+    await cdp.send('CSS.enable');
+    for (const [name, url] of fontRoutes) {
+      await navigate(fontPage, url);
+      await fontPage.evaluate(async () => {
+        await document.fonts.load('300 21px "Roboto"');
+        await document.fonts.ready;
+      });
+      const cssState = await fontPage.evaluate(() => {
+        const title = document.querySelector('.cr-parent-category__title');
+        if (!title) return null;
+        const style = getComputedStyle(title);
+        const faces = Array.from(document.fonts)
+          .filter(face => face.family.replace(/["']/g, '') === 'Roboto' && /300/.test(face.weight))
+          .map(face => ({ weight: face.weight, status: face.status }));
+        return {
+          text: title.textContent.trim(), fontFamily: style.fontFamily,
+          fontWeight: style.fontWeight, fontSize: style.fontSize, lineHeight: style.lineHeight,
+          fontCheck300: document.fonts.check('300 21px "Roboto"'), faces
+        };
+      });
+      assert.ok(cssState, name + ' canonical title exists at ' + url);
+      assert.equal(cssState.fontWeight, '300', name + ' CSS/rendered weight');
+      assert.equal(cssState.fontSize, '21px', name + ' CSS font size');
+      assert.equal(cssState.lineHeight, '28px', name + ' CSS line height');
+      assert.equal(cssState.fontCheck300, true, name + ' Roboto 300 FontFaceSet check');
+      assert.ok(cssState.faces.some(face => face.status === 'loaded'), name + ' Roboto 300 face loaded');
+      const doc = await cdp.send('DOM.getDocument', { depth: -1, pierce: true });
+      const node = await cdp.send('DOM.querySelector', { nodeId: doc.root.nodeId, selector: '.cr-parent-category__title' });
+      assert.ok(node.nodeId, name + ' title node available through CDP');
+      const platform = await cdp.send('CSS.getPlatformFontsForNode', { nodeId: node.nodeId });
+      const rendered = (platform.fonts || []).filter(font => font.glyphCount > 0);
+      console.log('ROBOTO_RENDER_' + name + '=' + JSON.stringify({
+        url, title: cssState.text, cssFontFamily: cssState.fontFamily,
+        cssFontWeight: cssState.fontWeight, cssFontSize: cssState.fontSize,
+        cssLineHeight: cssState.lineHeight, fontCheck300: cssState.fontCheck300,
+        loadedRobotoFaces: cssState.faces, renderedPlatformFonts: rendered
+      }));
+      assert.ok(rendered.some(font => /Roboto/i.test(font.familyName)),
+        name + ' actual rendered platform font must be Roboto; got ' + JSON.stringify(rendered));
+    }
+    await cdp.detach();
+
+    // Validate the one canonical desktop shell at the three requested widths on every public smoke route.
+    const page = desktopPage;
+    const desktopWidths=[1280,1440,1920];
+    const geometryRoutes=[
+      ['HOME',BASE_URL+'/'],
+      ['CATEGORY',discovered.category],
+      ['OUTLET',discovered.outlet],
+      ['PRODUCT',discovered.product],
+      ['ACCOUNT',ACCOUNT_URL],
+      ['LEGAL',LEGAL_URL]
+    ];
+    const shellWidths=new Map();
+    for(const width of desktopWidths){
+      await page.setViewportSize({width,height:1300});
+      for(const [name,url] of geometryRoutes){
+        await navigate(page,url);
+        const metrics=await page.evaluate(()=>{
+          const rect=selector=>{const el=document.querySelector(selector);if(!el)return null;const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};};
+          const root=document.documentElement;
+          return {innerWidth:window.innerWidth,clientWidth:root.clientWidth,overflow:Math.max(root.scrollWidth,document.body.scrollWidth)>root.clientWidth+1,shell:rect('.cr-desktop-shell'),sidebar:rect('.cr-desktop-rail'),primary:rect('#primary'),scrollbarGutter:getComputedStyle(root).scrollbarGutter};
+        });
+        assert.equal(metrics.scrollbarGutter,'stable',name+' root stable gutter at '+width);
+        assert.equal(metrics.overflow,false,name+' no horizontal overflow at '+width);
+        for(const part of ['shell','sidebar','primary'])assert.ok(metrics[part],name+' '+part+' geometry missing at '+width);
+        const expectedShell=Math.min(metrics.clientWidth-48,1232);
+        const expectedPrimary=Math.min(1120,expectedShell-112);
+        const expectedLayoutMargin=(metrics.clientWidth-expectedShell)/2;
+        assert.ok(Math.abs(metrics.shell.width-expectedShell)<=1,name+' shell width '+metrics.shell.width+' expected '+expectedShell+' at '+width+' (layout width '+metrics.clientWidth+')');
+        assert.ok(Math.abs(metrics.primary.width-expectedPrimary)<=1,name+' primary width '+metrics.primary.width+' expected '+expectedPrimary+' at '+width);
+        assert.ok(Math.abs(metrics.sidebar.width-112)<=1,name+' sidebar width '+metrics.sidebar.width+' expected 112 at '+width);
+        assert.ok(Math.abs(metrics.shell.left-expectedLayoutMargin)<=1,name+' shell left '+metrics.shell.left+' expected '+expectedLayoutMargin+' in layout viewport at '+width);
+        assert.ok(Math.abs(metrics.shell.right-(expectedLayoutMargin+expectedShell))<=1,name+' shell right edge at '+width);
+        shellWidths.set(width+':'+name,metrics.shell.width);
+        console.log('DESKTOP_GEOMETRY_'+width+'_'+name+'='+JSON.stringify(metrics));
+      }
+      const widths=geometryRoutes.map(([name])=>shellWidths.get(width+':'+name));
+      const expectedSharedWidth=Math.min(width===1280 ? 1265-48 : width-15-48,1232);
+      assert.ok(widths.every(value=>Math.abs(value-expectedSharedWidth)<=1),'all desktop routes share one '+expectedSharedWidth+'px shell at '+width);
+      console.log('ALL_DESKTOP_ROUTES_SHARE_SAME_SHELL_WIDTH_'+width+'=PASS');
+    }
+
+    // The five Information pages must align their 920px reading measure with the canonical toolbar.
+    const legalPages = [
+      ['CHANGES', 'cambios-y-devoluciones/'],
+      ['CONDITIONS', 'condiciones-generales-de-contratacion/'],
+      ['PRIVACY', 'politica-de-privacidad/'],
+      ['LEGAL_NOTICE', 'aviso-legal/'],
+      ['COOKIES', 'politica-de-cookies/']
+    ];
+    for (const width of [1280, 1440, 1920]) {
+      await page.setViewportSize({ width, height: 1200 });
+      for (const [name, slug] of legalPages) {
+        const url = new URL(slug, BASE_URL + '/').toString();
+        await navigate(page, url);
+        const metrics = await page.evaluate(() => {
+          const toolbar = document.querySelector('.cr-parent-category__toolbar');
+          const prose = document.querySelector('.cr-prose');
+          const back = toolbar?.querySelector('.cr-parent-category__back');
+          const tr = toolbar?.getBoundingClientRect();
+          const pr = prose?.getBoundingClientRect();
+          const style = prose ? getComputedStyle(prose) : null;
+          return {
+            bodyClass: document.body.className,
+            toolbarLeft: tr ? tr.left : null,
+            proseLeft: pr ? pr.left : null,
+            proseWidth: pr ? pr.width : null,
+            extraLeftInset: tr && pr ? pr.left - tr.left : null,
+            maxWidth: style ? style.maxWidth : null,
+            marginLeft: style ? style.marginLeft : null,
+            marginRight: style ? style.marginRight : null,
+            backHref: back ? back.href : null
+          };
+        });
+        assert.match(metrics.bodyClass, /(?:^|\s)cr-legal-information-page(?:\s|$)/, name + ' legal-page marker at ' + width);
+        assert.ok(metrics.toolbarLeft !== null && metrics.proseLeft !== null, name + ' toolbar/prose measurable at ' + width);
+        assert.ok(Math.abs(metrics.extraLeftInset) <= 1, name + ' prose aligns to toolbar at ' + width + ': ' + metrics.extraLeftInset);
+        assert.ok(metrics.proseWidth <= 920 + 1, name + ' prose stays within 920px at ' + width + ': ' + metrics.proseWidth);
+        assert.equal(metrics.marginLeft, '0px', name + ' prose has no centering left margin at ' + width);
+        assert.equal(metrics.backHref, new URL('mi-cuenta/', BASE_URL + '/').toString(), name + ' back target is Account at ' + width);
+        console.log('LEGAL_GEOMETRY_' + width + '_' + name + '=' + JSON.stringify(metrics));
+        console.log('LEGAL_BACK_TARGET_' + name + '=PASS');
+      }
+    }
+    console.log('LEGAL_PAGES_VALIDATED=5/5');
+    console.log('PRIMARY_MAX_TOKEN=1120px');
+    console.log('SHELL_MAX_TOKEN=1232px');
+    console.log('1280_CONSTRAINED_BY_VIEWPORT=YES');
+    console.log('1440_REACHES_MAX=YES');
+    console.log('1920_REACHES_MAX=YES');
+
 
     console.log('SCROLLBAR_STABILITY=PASS');
     console.log('SIDEBAR_WIDTH=112px');
