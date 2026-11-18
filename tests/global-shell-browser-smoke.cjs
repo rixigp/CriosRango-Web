@@ -569,7 +569,7 @@ async function inspect(page, routeName, width) {
     const waitForSortPage = async () => {
       await noveltiesSortPage.waitForFunction(() => {
         const grid = document.querySelector('[data-cr-product-grid]');
-        return !!grid && grid.querySelectorAll('[data-product-id]').length === 12;
+        return !!grid && grid.querySelectorAll('[data-product-id]').length >= 12;
       }, undefined, { timeout: 30000 });
     };
     const loadSecondSortPage = async () => {

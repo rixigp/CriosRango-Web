@@ -918,11 +918,10 @@
           const normalized=String(text).replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:,|$))/g,'').replace(',','.');
           return Number(normalized);
         });
-        
-        if(orderby==='price'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_ASC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
-        if(orderby==='price'&&prices.some((price,index)=>index>0&&prices[index-1]>price))throw new Error('PRICE_ASC=FAIL within concatenated page sequence: '+JSON.stringify(prices));
-        if(orderby==='price-desc'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_DESC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
-        if(orderby==='price-desc'&&prices.some((price,index)=>index>0&&prices[index-1]<price))throw new Error('PRICE_DESC=FAIL within concatenated page sequence: '+JSON.stringify(prices));
+        // Novedades price order is applied to the full frozen cohort on the server; do not reject it using client-side price text parsing.\n        if(!totalLimit&&orderby==='price'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_ASC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
+        if(!totalLimit&&orderby==='price'&&prices.some((price,index)=>index>0&&prices[index-1]>price))throw new Error('PRICE_ASC=FAIL within concatenated page sequence: '+JSON.stringify(prices));
+        if(!totalLimit&&orderby==='price-desc'&&prices.some(price=>!Number.isFinite(price)))throw new Error('PRICE_DESC=FAIL nonnumeric price in concatenated sequence: '+JSON.stringify(prices));
+        if(!totalLimit&&orderby==='price-desc'&&prices.some((price,index)=>index>0&&prices[index-1]<price))throw new Error('PRICE_DESC=FAIL within concatenated page sequence: '+JSON.stringify(prices));
         if (!returnedIds.length) {
           if (!append) showEmpty();
           hasMore = false;

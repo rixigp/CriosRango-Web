@@ -67,6 +67,7 @@ test('Novedades freezes newest-24 IDs, sorts only those hydrated products, then 
   assert.ok(php.includes("$has_more = ( $page_offset + count( $products ) ) < $total;"));
   assert.ok(js.includes("title:'title_asc','title-desc':'title_desc'"));
   assert.ok(js.includes("'title-desc'"));
+  assert.ok(js.includes("if(!totalLimit&&orderby==='price'"), 'Novedades must trust server-side cohort price sorting, not client text parsing');
   assert.ok(archive.includes('value="title-desc"'));
   for (const marker of [
     'INITIAL_NOVELTY_IDS=',
