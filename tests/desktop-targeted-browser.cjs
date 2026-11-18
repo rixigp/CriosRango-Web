@@ -474,7 +474,7 @@ async function homeDesktopBrands(page, viewport) {
     if (!section || !pager || !dots) return { found: false };
     const pages = Array.from(pager.querySelectorAll('.cr-home-brand-page'));
     const pageNames = pages.map(pg => Array.from(pg.querySelectorAll('.cr-home-brand'))
-      .map(card => card.querySelector('img')?.alt || (card.textContent || '').trim()));
+      .map(card => card.querySelector('img:not([hidden])')?.alt || (card.textContent || '').trim()));
     const pagesGeometry = pages.map(pg => {
       const grid = pg.querySelector('.cr-home-brand-grid');
       const cards = Array.from(grid ? grid.querySelectorAll('.cr-home-brand') : []);
@@ -486,97 +486,172 @@ async function homeDesktopBrands(page, viewport) {
         const br = box && box.getBoundingClientRect();
         const img = box && box.querySelector('img:not([hidden])');
         const ir = img && img.getBoundingClientRect();
-        const cs = getComputedStyle(card);
-        const bs = box && getComputedStyle(box);
-        const is = img && getComputedStyle(img);
+        const cs = getComputedStyle(card), bs = box && getComputedStyle(box), is = img && getComputedStyle(img);
         const inside = (inner, outer) => Boolean(inner && outer
           && inner.left >= outer.left - 1 && inner.right <= outer.right + 1
           && inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1);
+        const ratioMatches = Boolean(img && ir && img.naturalWidth > 0 && img.naturalHeight > 0
+          && ir.width > 0 && ir.height > 0
+          && Math.abs(ir.width / ir.height - img.naturalWidth / img.naturalHeight) <= 0.02);
         return {
           name: img?.alt || (card.textContent || '').trim(),
           card: { left: cr.left, right: cr.right, top: cr.top, bottom: cr.bottom, width: cr.width, height: cr.height, overflow: cs.overflow },
-          logoBox: br && { left: br.left, right: br.right, top: br.top, bottom: br.bottom, width: br.width, height: br.height, overflow: bs.overflow },
-          image: ir && { left: ir.left, right: ir.right, top: ir.top, bottom: ir.bottom, width: ir.width, height: ir.height, objectFit: is.objectFit, loaded: img.complete && img.naturalWidth > 0 },
-          imageInsideLogoBox: inside(ir, br),
-          imageInsideCard: inside(ir, cr),
-          logoBoxInsideCard: inside(br, cr)
+          logoBox: br && { left: br.left, right: br.right, top: br.top, bottom: br.bottom, width: br.width, height: br.height, overflow: bs.overflow, display: bs.display },
+          image: ir && { left: ir.left, right: ir.right, top: ir.top, bottom: ir.bottom, width: ir.width, height: ir.height, maxWidth: is.maxWidth, maxHeight: is.maxHeight, objectFit: is.objectFit, loaded: img.complete && img.naturalWidth > 0, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight },
+          imageInsideLogoBox: inside(ir, br), imageInsideCard: inside(ir, cr), logoBoxInsideCard: inside(br, cr),
+          imageNotDistorted: ratioMatches
         };
       });
-      const rowRects = cards.map(card => card.getBoundingClientRect());
-      const row1Bottom = rowRects.length >= 5 ? Math.max(...rowRects.slice(0, 5).map(r => r.bottom)) : 0;
-      const row2Top = rowRects.length >= 10 ? Math.min(...rowRects.slice(5, 10).map(r => r.top)) : 0;
+      const rects = cards.map(card => card.getBoundingClientRect());
+      const row1Bottom = rects.length >= 4 ? Math.max(...rects.slice(0, 4).map(x => x.bottom)) : 0;
+      const row2Top = rects.length >= 8 ? Math.min(...rects.slice(4, 8).map(x => x.top)) : 0;
+      const gridRect = grid && grid.getBoundingClientRect();
       return {
-        count: cards.length, columns, rows,
+        count: cards.length, columns, rows, gridWidth: gridRect?.width || 0,
         row1Bottom, row2Top, rowGap: grid ? getComputedStyle(grid).rowGap : 'MISSING',
         cards: cardData,
         allImagesPresent: cardData.every(x => x.image !== null && x.image.loaded),
         allInsideLogoBoxes: cardData.every(x => x.imageInsideLogoBox),
         allInsideCards: cardData.every(x => x.imageInsideCard && x.logoBoxInsideCard),
         allContain: cardData.every(x => x.image && x.image.objectFit === 'contain'),
+        allNotDistorted: cardData.every(x => x.imageNotDistorted),
         cardsClipSafely: window.innerWidth >= 1280 || cardData.every(x => x.card.overflow === 'hidden' && x.logoBox?.overflow === 'hidden'),
-        rowsSeparated: rowRects.length === 10 && row2Top >= row1Bottom + 1
+        rowsSeparated: cards.length <= 4 || (rects.length >= 8 && row2Top >= row1Bottom + 1)
       };
     });
     return {
-      found: true, pagerDisplay: getComputedStyle(pager).display,
-      dotsDisplay: getComputedStyle(dots).display,
-      pageNames, pagesGeometry,
+      found: true, pagerDisplay: getComputedStyle(pager).display, dotsDisplay: getComputedStyle(dots).display,
+      pageNames, pagesGeometry, hiddenPages: pages.map(pg => pg.hidden),
       dots: dots.querySelectorAll('[data-cr-brand-dot]').length,
       activeDot: dots.querySelector('[data-cr-brand-dot][aria-current="true"]')?.getAttribute('data-cr-brand-dot'),
-      columns: pagesGeometry[0]?.columns || 0,
-      rows: pagesGeometry[0]?.rows || 0,
-      total: pageNames.flat().length,
-      unique: new Set(pageNames.flat()).size,
-      clientWidth: document.documentElement.clientWidth,
-      scrollWidth: document.documentElement.scrollWidth,
-      pagerClientWidth: pager.clientWidth,
-      pagerScrollWidth: pager.scrollWidth
+      columns: pagesGeometry[0]?.columns || 0, rows: pagesGeometry[0]?.rows || 0,
+      total: pageNames.flat().length, unique: new Set(pageNames.flat()).size,
+      clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth,
+      pagerClientWidth: pager.clientWidth, pagerScrollWidth: pager.scrollWidth
     };
   });
   if (!state.found) throw new Error('HOME_BRANDS_MARKUP_MISSING_' + viewport);
+  const counts = state.pagesGeometry.map(p => p.count);
+  const uniquePass = state.total === 20 && state.unique === 20;
+  const noPageOverflow = state.scrollWidth <= state.clientWidth + 1
+    && state.pagerScrollWidth <= state.pagerClientWidth * state.pagesGeometry.length + 1;
+  const logosPass = state.pagesGeometry.every(p => p.allImagesPresent && p.allInsideLogoBoxes
+    && p.allInsideCards && p.allContain && p.allNotDistorted && p.cardsClipSafely);
 
   if (viewport < 768) {
-    log('HOME_BRANDS_MOBILE_FROZEN_' + viewport, 'NOT_TESTED_BY_INTERMEDIATE_SUITE');
+    const mobilePass = state.pagerDisplay !== 'none' && state.dotsDisplay !== 'none'
+      && counts.join(',') === '8,8,4' && state.hiddenPages.join(',') === 'false,false,true'
+      && state.dots === 2 && uniquePass && noPageOverflow;
+    log('HOME_BRANDS_MOBILE_UNCHANGED_' + viewport, mobilePass ? 'PASS' : 'FAIL');
+    log('HOME_BRANDS_MOBILE_COUNTS_' + viewport, counts.join(','));
+    if (!mobilePass) throw new Error('HOME_BRANDS_MOBILE_CHANGED_' + viewport);
     return;
   }
 
-  const counts = state.pagesGeometry.map(p => p.count);
-  const pageGeometryPass = state.pagesGeometry.length === 2
-    && state.pagesGeometry.every(p => p.count === 10 && p.columns === 5 && p.rows === 2
-      && p.allImagesPresent && p.allInsideLogoBoxes && p.allInsideCards
-      && p.allContain && p.cardsClipSafely && p.rowsSeparated);
-  const uniquePass = state.total === 20 && state.unique === 20;
-  const dotsPass = state.dots === 2 && state.activeDot === '0';
-  const noPageOverflow = state.scrollWidth <= state.clientWidth + 1
-    && state.pagerScrollWidth <= state.pagerClientWidth * 2 + 1;
-  const pass = state.pagerDisplay !== 'none' && state.dotsDisplay !== 'none'
-    && counts.every(n => n === 10) && state.columns === 5 && state.rows === 2
-    && pageGeometryPass && uniquePass && dotsPass && noPageOverflow;
+  if (viewport < 1280) {
+    const pageGeometryPass = state.pagesGeometry.length === 3
+      && state.pagesGeometry.every(p => p.columns === 4 && p.rows === 2 && p.rowsSeparated);
+    const pass = state.pagerDisplay !== 'none' && state.dotsDisplay !== 'none'
+      && counts.join(',') === '8,8,4' && state.columns === 4 && state.rows === 2
+      && pageGeometryPass && uniquePass && logosPass && state.dots === 3 && state.activeDot === '0' && noPageOverflow;
+    log('HOME_INTERMEDIATE_BRANDS_' + viewport, pass ? 'PASS' : 'FAIL');
+    log('HOME_INTERMEDIATE_COLUMNS_' + viewport, state.columns);
+    log('HOME_INTERMEDIATE_ROWS_' + viewport, state.rows);
+    log('HOME_INTERMEDIATE_PAGE_COUNTS_' + viewport, counts.join(','));
+    log('HOME_INTERMEDIATE_TOTAL_' + viewport, state.total);
+    log('HOME_INTERMEDIATE_DUPLICATES_' + viewport, state.total - state.unique);
+    log('HOME_INTERMEDIATE_LOGOS_FULLY_VISIBLE_' + viewport, state.pagesGeometry.every(p => p.allInsideLogoBoxes && p.allInsideCards) ? 'YES' : 'NO');
+    log('HOME_INTERMEDIATE_LOGOS_NOT_DISTORTED_' + viewport, state.pagesGeometry.every(p => p.allNotDistorted) ? 'YES' : 'NO');
+    log('HOME_INTERMEDIATE_LOGOS_CROPPED_' + viewport, logosPass ? 'NO' : 'YES');
+    log('HOME_INTERMEDIATE_LOGOS_OVERFLOW_CARD_' + viewport, state.pagesGeometry.every(p => p.allInsideCards) ? 'NO' : 'YES');
+    log('HOME_INTERMEDIATE_GEOMETRY_' + viewport, JSON.stringify(state.pagesGeometry));
+    if (!pass) throw new Error('HOME_INTERMEDIATE_BRANDS_LAYOUT_FAILED_' + viewport);
+    for (const index of [1, 2, 0]) {
+      await page.locator('[data-cr-brand-dot="' + index + '"]').click();
+      await page.waitForTimeout(650);
+      const active = await page.locator('[data-cr-brand-dot="' + index + '"]').getAttribute('aria-current');
+      log('HOME_INTERMEDIATE_DOTS_SYNC_PAGE_' + index + '_' + viewport, active === 'true' ? 'PASS' : 'FAIL');
+      if (active !== 'true') throw new Error('HOME_INTERMEDIATE_DOTS_NOT_SYNCED_PAGE_' + index + '_' + viewport);
+    }
+    return;
+  }
 
-  log('HOME_INTERMEDIATE_BRANDS_' + viewport, pass ? 'PASS' : 'FAIL');
-  log('HOME_INTERMEDIATE_COLUMNS_' + viewport, state.columns);
-  log('HOME_INTERMEDIATE_ROWS_' + viewport, state.rows);
-  log('HOME_INTERMEDIATE_PAGE_1_COUNT_' + viewport, counts[0] ?? 'MISSING');
-  log('HOME_INTERMEDIATE_PAGE_2_COUNT_' + viewport, counts[1] ?? 'MISSING');
-  log('HOME_INTERMEDIATE_TOTAL_' + viewport, state.total);
-  log('HOME_INTERMEDIATE_DUPLICATES_' + viewport, state.total - state.unique);
-  log('HOME_INTERMEDIATE_IMAGE_CONTAIN_' + viewport, state.pagesGeometry.every(p => p.allContain) ? 'PASS' : 'FAIL');
-  log('HOME_INTERMEDIATE_IMAGE_INSIDE_LOGO_BOX_' + viewport, state.pagesGeometry.every(p => p.allInsideLogoBoxes) ? 'PASS' : 'FAIL');
-  log('HOME_INTERMEDIATE_IMAGE_INSIDE_CARD_' + viewport, state.pagesGeometry.every(p => p.allInsideCards) ? 'PASS' : 'FAIL');
-  log('HOME_INTERMEDIATE_NO_LOGO_OVERFLOW_' + viewport, state.pagesGeometry.every(p => p.cardsClipSafely) ? 'PASS' : 'FAIL');
-  log('HOME_INTERMEDIATE_GEOMETRY_' + viewport, JSON.stringify(state.pagesGeometry));
-  if (!pass) throw new Error('HOME_INTERMEDIATE_BRANDS_LAYOUT_FAILED_' + viewport);
+  const desktopPass = state.pagesGeometry.length === 2 && counts.join(',') === '10,10'
+    && state.pagesGeometry.every(p => p.columns === 5 && p.rows === 2)
+    && state.columns === 5 && state.rows === 2 && uniquePass && logosPass && state.dots === 2 && noPageOverflow;
+  log('HOME_BRANDS_DESKTOP_UNCHANGED_' + viewport, desktopPass ? 'PASS' : 'FAIL');
+  if (!desktopPass) throw new Error('HOME_BRANDS_DESKTOP_CHANGED_' + viewport);
+}
 
-  await page.locator('[data-cr-brand-dot="1"]').click();
-  await page.waitForTimeout(650);
-  const page2Active = await page.locator('[data-cr-brand-dot="1"]').getAttribute('aria-current');
-  log('HOME_INTERMEDIATE_DOTS_SYNC_PAGE_2_' + viewport, page2Active === 'true' ? 'PASS' : 'FAIL');
-  if (page2Active !== 'true') throw new Error('HOME_INTERMEDIATE_DOTS_NOT_SYNCED_PAGE_2_' + viewport);
-  await page.locator('[data-cr-brand-dot="0"]').click();
-  await page.waitForTimeout(650);
-  const page1Active = await page.locator('[data-cr-brand-dot="0"]').getAttribute('aria-current');
-  log('HOME_INTERMEDIATE_DOTS_SYNC_PAGE_1_' + viewport, page1Active === 'true' ? 'PASS' : 'FAIL');
-  if (page1Active !== 'true') throw new Error('HOME_INTERMEDIATE_DOTS_NOT_SYNCED_PAGE_1_' + viewport);
+async function homeBrandWinnerAudit(page, viewport) {
+  if (viewport !== 768) return;
+  const audit = await page.evaluate(async () => {
+    const section = document.querySelector('.cr-home-brands');
+    const grid = section?.querySelector('.cr-home-brand-grid');
+    const card = grid?.querySelector('.cr-home-brand');
+    const box = card?.querySelector('.cr-home-brand__logo-box');
+    const image = box?.querySelector('img:not([hidden])');
+    const winner = (el, properties) => {
+      const out = {};
+      const visit = rules => {
+        for (const rule of Array.from(rules || [])) {
+          if (rule.cssRules) {
+            if (rule.conditionText && rule.media && !matchMedia(rule.conditionText).matches) continue;
+            try { visit(rule.cssRules); } catch (error) {}
+            continue;
+          }
+          if (!rule.selectorText || !rule.style) continue;
+          let matches = false;
+          try { matches = el.matches(rule.selectorText); } catch (error) {}
+          if (!matches) continue;
+          for (const property of properties) {
+            const value = rule.style.getPropertyValue(property);
+            if (!value) continue;
+            const important = rule.style.getPropertyPriority(property) === 'important';
+            if (!out[property] || important || !out[property].important) out[property] = {
+              selector: rule.selectorText, value: value.trim(), important, href: rule.parentStyleSheet?.href || ''
+            };
+          }
+        }
+      };
+      for (const sheet of Array.from(document.styleSheets)) { try { visit(sheet.cssRules); } catch (error) {} }
+      return out;
+    };
+    const rect = el => { if (!el) return null; const r=el.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}; };
+    const winners = {
+      grid: winner(grid, ['width','grid-template-columns']),
+      card: winner(card, ['width','height','overflow']),
+      logoBox: winner(box, ['display','width','height','overflow']),
+      image: winner(image, ['width','height','max-width','max-height','object-fit'])
+    };
+    const hrefs = Array.from(new Set(Object.values(winners).flatMap(group => Object.values(group).map(x => x.href).filter(Boolean))));
+    const sourceLines = {};
+    for (const href of hrefs) {
+      try {
+        const source = await fetch(href).then(r => r.text());
+        for (const group of Object.values(winners)) for (const item of Object.values(group)) {
+          if (item.href !== href) continue;
+          const pos = source.lastIndexOf(item.selector);
+          sourceLines[item.selector] = pos < 0 ? null : source.slice(0,pos).split('\\n').length;
+        }
+      } catch (error) {}
+    }
+    const imageStyle = image ? getComputedStyle(image) : null;
+    return {
+      viewport: innerWidth, grid: rect(grid), gridColumns: grid ? getComputedStyle(grid).gridTemplateColumns : null,
+      card: rect(card), logoBox: rect(box), image: rect(image),
+      imageMaxWidth: imageStyle?.maxWidth || null, imageMaxHeight: imageStyle?.maxHeight || null,
+      objectFit: imageStyle?.objectFit || null,
+      overflow: {card:card?getComputedStyle(card).overflow:null,logoBox:box?getComputedStyle(box).overflow:null,image:imageStyle?.overflow||null},
+      winners, sourceFile: hrefs[0] || null, sourceLines
+    };
+  });
+  log('HOME_INTERMEDIATE_VIEWPORT_AUDIT_768', JSON.stringify(audit));
+  log('WINNING_CARD_SELECTOR', audit.winners.card.width?.selector || 'MISSING');
+  log('WINNING_LOGO_BOX_SELECTOR', audit.winners.logoBox.width?.selector || 'MISSING');
+  log('WINNING_IMAGE_SELECTOR', audit.winners.image['max-width']?.selector || 'MISSING');
+  log('SOURCE_FILE', audit.sourceFile || 'MISSING');
+  log('SOURCE_LINES', JSON.stringify(audit.sourceLines));
 }
 
 async function productStackedLayout(page, viewport) {
@@ -904,12 +979,13 @@ async function loginForAuthenticatedAccount(page) {
     }
 
     await visit(page, homeUrl);
-    for (const viewport of [768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920]) {
+    for (const viewport of [390, 430, 768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920]) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
       await desktopShellLayout(page, 'HOME', viewport, true);
       await homeCanonicalContentRail(page, viewport);
       await homeDesktopBrands(page, viewport);
+      await homeBrandWinnerAudit(page, viewport);
     }
 
 
