@@ -1086,28 +1086,56 @@ async function loginForAuthenticatedAccount(page) {
     const outletDestination = navDestinations.find(item => item.label === 'Outlet');
     if (!outletDestination || !outletDestination.href) throw new Error('OUTLET_ROUTE_MISSING');
     await visit(page, outletDestination.href);
-    const outletBranchUrl = await page.evaluate(async stagingBasePath => {
+    const outletBranchUrls = await page.evaluate(async stagingBasePath => {
       const ids = [447, 476, 446, 475, 449, 478, 448, 477];
       try {
         const response = await fetch(stagingBasePath + '/wp-json/wp/v2/product_cat?include=' + ids.join(',') + '&_fields=id,link');
         if (response.ok) {
           const terms = await response.json();
-          const preferred = terms.find(term => term.id === 447 || term.id === 476) || terms[0];
-          if (preferred && preferred.link) return preferred.link;
+          return ids.map(id => terms.find(term => term.id === id)).filter(term => term && term.link).map(term => term.link);
         }
       } catch (_) {}
       const links = Array.from(document.querySelectorAll('a[href]'));
-      const currentPath = location.pathname.replace(/\/+$/, '');
-      const candidate = links.find(link => {
+      const currentPath = location.pathname.replace(/\\/+$/, '');
+      return links.filter(link => {
         try {
-          const path = new URL(link.href).pathname.replace(/\/+$/, '');
+          const path = new URL(link.href).pathname.replace(/\\/+$/, '');
           return path !== currentPath && /outlet/i.test(path) && link.textContent.trim();
         } catch (_) { return false; }
+      }).map(link => link.href);
+    }, new URL(BASE_URL).pathname.replace(/\\/+$/, ''));
+    if (!outletBranchUrls.length) throw new Error('OUTLET_BRANCH_ROUTES_NOT_FOUND');
+    let outletBranchUrl = '';
+    const outletBranchDiagnostics = [];
+    for (const candidateUrl of outletBranchUrls) {
+      if (!candidateUrl.startsWith(BASE_URL)) {
+        outletBranchDiagnostics.push({ url: candidateUrl, reason: 'NOT_STAGING' });
+        continue;
+      }
+      await visit(page, candidateUrl);
+      await page.waitForTimeout(700);
+      const state = await page.evaluate(() => {
+        const track = document.querySelector('[data-cr-outlet-bubbles]');
+        const grid = document.querySelector('[data-cr-product-grid]');
+        return {
+          url: location.href,
+          bodyClass: document.body.className,
+          trackFound: Boolean(track),
+          trackHidden: track ? track.hidden : null,
+          bubbleCount: track ? track.querySelectorAll('button').length : 0,
+          cardCount: grid ? grid.querySelectorAll(':scope > .cr-product-card').length : 0,
+          availabilityUrl: track ? track.dataset.availabilityUrl || '' : ''
+        };
       });
-      return candidate ? candidate.href : '';
-    }, new URL(BASE_URL).pathname.replace(/\/+$/, ''));
-    if (!outletBranchUrl) throw new Error('OUTLET_BRANCH_ROUTE_NOT_FOUND');
-    if (!outletBranchUrl.startsWith(BASE_URL)) throw new Error('OUTLET_BRANCH_NOT_ON_STAGING=' + outletBranchUrl);
+      outletBranchDiagnostics.push(state);
+      log('OUTLET_BRANCH_CANDIDATE', JSON.stringify(state));
+      if (state.trackFound && !state.trackHidden && state.bubbleCount > 1 && state.cardCount > 0) {
+        outletBranchUrl = candidateUrl;
+        break;
+      }
+    }
+    if (!outletBranchUrl) throw new Error('OUTLET_BRANCH_WITH_BUBBLES_AND_PRODUCTS_NOT_FOUND=' + JSON.stringify(outletBranchDiagnostics));
+    log('OUTLET_BRANCH_URL', outletBranchUrl);
     await outletListingGeometry(page, outletBranchUrl);
 
     await visit(page, homeUrl);
