@@ -66,7 +66,7 @@ test('OLD_HEADING_STRUCTURE_RESTORED=PASS',()=>{
 });
 test('SECONDARY_CONTROLS_ROW_IS_SIBLING=PASS',()=>{
  assert.match(helpers,/echo '<div class="cr-page-controls">'/);
- assert.match(helpers,/echo '<\/div>';\s*\n\s*if \( '' !== \\$ordering_html/);
+  assert.match(helpers,/echo '<\/div>';\s*\n\s*if \( '' !== \$ordering_html/);
  assert.match(helpers,/echo '<\/div>';\s*\}/);
 });
 test('ORDERING_AND_FILTERS_ARE_INSIDE_SECONDARY_ROW=PASS',()=>{

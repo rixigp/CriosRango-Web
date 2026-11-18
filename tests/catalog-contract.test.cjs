@@ -161,7 +161,11 @@ test('web catalog page size is sourced from the audited app paginator contract',
 
 test('category filter selection remains live in listings and HUB Apply navigates through the canonical listing route', () => {
   assert.match(js, /publishLiveFilters\(\);scheduleDependentRefresh\(dimension\)/);
-  assert.match(js, /window\.CR2026CatalogListing=\{applyFilters,getFilters,renderActiveFilterChips,pageSize,getOutletContext\}/);
+  const listingApi = js.match(/window\.CR2026CatalogListing\s*=\s*\{([^}]*)\}/s);
+  assert.ok(listingApi, 'the public catalog listing API must be exported');
+  for (const member of ['applyFilters', 'getFilters', 'renderActiveFilterChips', 'pageSize', 'getOutletContext']) {
+    assert.match(listingApi[1], new RegExp('(?:^|,)\\s*' + member + '\\s*(?=,|$)'), 'catalog listing API must expose ' + member);
+  }
   assert.match(js, /const applyFilterSelection = \(\) => \{/);
   assert.match(js, /if \(hasProductListing \|\| filterSheet\.dataset\.context !== 'parent'\) \{\s*closeSheet\(\);\s*return;/);
   assert.match(js, /window\.location\.href = buildCategoryHubFilterUrl\(window\.location\.href, filters\)/);
@@ -322,7 +326,11 @@ test('staging deploy is exact-HEAD guarded, incremental and verifies the deploye
 test('web sort options reproduce app enum mapping including Name A-Z', () => {
   assert.match(archive, /value="title".*Nombre A-Z/s);
   assert.match(js, /title:'title_asc'/);
-  assert.match(js, /orderby=\['date','price','price-desc','title'\]/);
+  const orderbyMatch = js.match(/orderby=\[([^\]]+)\]/);
+  assert.ok(orderbyMatch, 'the web sort option list must be declared');
+  for (const value of ['date', 'price', 'price-desc', 'title']) {
+    assert.match(orderbyMatch[1], new RegExp("['\\\"]" + value + "['\\\"]"), 'web sort options must retain ' + value);
+  }
   assert.match(php, /'title_asc' === \$sort/);
 });
 
@@ -628,7 +636,7 @@ test('brand archive uses the shared contextual back control and shows either log
   const productSkin = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/inc/product-skin.php'), 'utf8');
   const styles = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/assets/css/main.css'), 'utf8');
   assert.match(brandArchive, /function_exists\( 'cr2026_home_brands_url' \) \? cr2026_home_brands_url\(\)/);
-  assert.match(brandArchive, /cr2026_render_category_toolbar\( \$brand_term->name, \$brands_index_url, 'parent', false, \$brand_filter_action \)/);
+  assert.match(brandArchive, /cr2026_render_category_toolbar\s*\(\s*\$brand_term->name\s*,\s*\$brands_index_url\s*,\s*'parent'\s*,\s*false\s*,\s*\$brand_filter_action(?=\s*[,\)])/);
   assert.match(brandArchive, /class="cr-parent-category__filters" data-cr-filter-open/);
   assert.match(brandArchive, /if \( \$brand_logo_url \)[\s\S]*?cr-brand-archive__brand-logo[\s\S]*?<img/);
   assert.doesNotMatch(brandArchive, /cr-brand-archive__back-row|cr-brand-archive__heading/);
@@ -700,7 +708,11 @@ test('brand archive uses the existing shared catalog sort control and retains br
   assert.match(brandTemplate, /data-cr-product-order/);
   assert.match(brandTemplate, /get_term_link\( \$brand_term \)/);
   for (const value of ['date', 'price', 'price-desc', 'title']) assert.ok(brandTemplate.includes('value="' + value + '"'));
-  assert.ok(js.includes("const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc',title:'title_asc'};"));
+  const sortMapMatch = js.match(/const sortMap = \{([^}]+)\};/);
+  assert.ok(sortMapMatch, 'the shared catalog sort map must be declared');
+  for (const [key, value] of [['date', 'newest'], ['price', 'price_asc'], ['price-desc', 'price_desc'], ['title', 'title_asc']]) {
+    assert.match(sortMapMatch[1], new RegExp("['\\\"]?" + key + "['\\\"]?\\s*:\\s*['\\\"]" + value + "['\\\"]"), 'sort map must retain ' + key + ' → ' + value);
+  }
   assert.match(js, /orderControl.addEventListener\('change'/);
   assert.match(js, /window\.history\.replaceState\(\{\},'',currentUrl\.toString\(\)\)/);
   assert.match(js, /resetAndLoad\(\)/);
