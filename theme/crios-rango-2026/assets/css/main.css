@@ -2714,6 +2714,18 @@ body.cr-parent-category-view .cr-parent-category__grid,
   }
 }
 
+/* Help content consumes the same desktop rail as its page toolbar.
+   The generic reading measure is for prose pages, not this app-like contact screen. */
+@media (min-width: 1280px) {
+  body.page.cr-account-help-page main#primary.cr-main .cr-page > .cr-prose {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
 /* Cart desktop consumer moved into the global desktop layer to keep cart.css mobile contracts isolated. */
 @media (min-width: 1280px) {
   body.woocommerce-cart.woocommerce-cart .cr-cart-content,

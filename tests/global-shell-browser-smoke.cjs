@@ -96,6 +96,13 @@ async function inspect(page, routeName, width) {
       const titles = document.querySelectorAll('.cr-parent-category__title');
       const grid = document.querySelector('.cr-account-help__grid');
       const style = grid ? getComputedStyle(grid) : null;
+      const toolbar = document.querySelector('.cr-page-toolbar');
+      const content = document.querySelector('.cr-account-help');
+      const contentWrapper = document.querySelector('body.cr-account-help-page .cr-page > .cr-prose');
+      const toolbarRect = toolbar ? toolbar.getBoundingClientRect() : null;
+      const contentRect = content ? content.getBoundingClientRect() : null;
+      const wrapperStyle = contentWrapper ? getComputedStyle(contentWrapper) : null;
+      const wrapperRect = contentWrapper ? contentWrapper.getBoundingClientRect() : null;
       const text = document.body.innerText || '';
       const shortcodeMatches = text.match(/\[(?:\/?(?:vc_row|vc_column|nectar_gmap))\b/gi) || [];
       return {
@@ -106,6 +113,13 @@ async function inspect(page, routeName, width) {
         hoursCount: document.querySelectorAll('.cr-account-help__hours-row').length,
         gridDisplay: style ? style.display : 'none',
         gridColumns: style ? style.gridTemplateColumns : '',
+        toolbarLeft: toolbarRect ? Math.round(toolbarRect.left * 10) / 10 : null,
+        contentLeft: contentRect ? Math.round(contentRect.left * 10) / 10 : null,
+        contentWrapper: contentWrapper ? contentWrapper.className : null,
+        contentWrapperPaddingLeft: wrapperStyle ? wrapperStyle.paddingLeft : null,
+        contentWrapperMarginLeft: wrapperStyle ? wrapperStyle.marginLeft : null,
+        contentWrapperLeft: wrapperRect ? Math.round(wrapperRect.left * 10) / 10 : null,
+        extraLeftInset: toolbarRect && contentRect ? Math.round((contentRect.left - toolbarRect.left) * 10) / 10 : null,
         shortcodeTextCount: shortcodeMatches.length,
         visible: renderer.length === 1 && getComputedStyle(renderer[0]).display !== 'none'
       };
@@ -120,6 +134,12 @@ async function inspect(page, routeName, width) {
     assert.equal(contact.visible, true, 'Contact renderer must be visible at ' + width);
     assert.equal(contact.gridDisplay, 'grid', 'Contact cards use the shared responsive grid at ' + width);
     assert.equal(contact.gridColumns.trim().split(/\s+/).length, width < 768 ? 1 : 3, 'Contact grid columns at ' + width);
+    if (width >= 1280) {
+      assert.ok(contact.toolbarLeft !== null && contact.contentLeft !== null, 'Contact toolbar/content rails are measurable at ' + width);
+      assert.ok(Math.abs(contact.extraLeftInset) <= 1, 'Contact content starts on the toolbar rail at ' + width + ': ' + contact.extraLeftInset);
+      assert.equal(contact.contentWrapperPaddingLeft, '0px', 'Contact prose wrapper has no nested left padding at ' + width);
+      assert.equal(contact.contentWrapperMarginLeft, '0px', 'Contact prose wrapper has no nested left margin at ' + width);
+    }
     console.log('CONTACT_SINGLE_RENDERER_' + width + '=PASS');
   }
   if (routeName === 'account' && width < 1280) {

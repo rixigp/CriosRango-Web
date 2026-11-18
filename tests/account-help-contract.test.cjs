@@ -36,6 +36,9 @@ test('HELP_CONTACT_USES_ONE_UNIVERSAL_RENDERER_WITHOUT_READING_LEGACY_POST_CONTE
   assert.match(dashboard, /cr2026_render_category_toolbar\( __\( 'Cuenta'/);
   assert.match(css, /\.cr-account-help__grid \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\); gap: 14px; \}/);
   assert.doesNotMatch(css, /\.cr-account-help \{ display: none !important; \}/);
+  const mainCss = fs.readFileSync(path.join(root, 'assets/css/main.css'), 'utf8');
+  assert.match(mainCss, /@media \(min-width: 1280px\) \{\s*body\.page\.cr-account-help-page main#primary\.cr-main \.cr-page > \.cr-prose \{[\s\S]*?width: 100%;[\s\S]*?max-width: none;[\s\S]*?margin-left: 0;[\s\S]*?margin-right: 0;/);
+
 });
 
 test('HELP_CONTACTS_USE_ONE_CENTRAL_CONFIGURATION_AND_REAL_ACTIONS', () => {
