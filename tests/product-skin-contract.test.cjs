@@ -1658,8 +1658,10 @@ test('CART_REMOVE_PRODUCT_NOTICE_SUPPRESSED=PASS; CART_REMOVE_PRODUCT_UNDO_NOT_R
 
 
 test('DESKTOP_PRODUCT_DETAIL_TWO_COLUMN_RAIL=PASS — grid geometry is desktop-only and description spans the rail', () => {
-  const start = skinCss.lastIndexOf('@media (min-width: 1280px) {');
-  assert.ok(start >= 0, 'desktop-only Product Detail layer exists');
+  const railDeclaration = skinCss.indexOf('grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr)');
+  assert.ok(railDeclaration >= 0, 'desktop two-column rail declaration exists');
+  const start = skinCss.lastIndexOf('@media (min-width: 1280px) {', railDeclaration);
+  assert.ok(start >= 0, 'desktop-only Product Detail rail layer exists');
   const layer = skinCss.slice(start);
   assert.match(layer, /div\.product\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*minmax\(0,\s*\.92fr\)\s+minmax\(0,\s*1\.08fr\)/);
   assert.match(layer, /\.woocommerce-product-gallery\s*\{[\s\S]*?grid-column:\s*1;[\s\S]*?grid-row:\s*1;/);
