@@ -911,6 +911,131 @@ async function accountInformationLinks(page, audience, viewport) {
   return rows.map(row => ({ label: row.label, href: row.href }));
 }
 
+async function outletListingGeometry(page, branchUrl) {
+  await visit(page, branchUrl);
+  await page.waitForFunction(() => {
+    const track = document.querySelector('[data-cr-outlet-bubbles]');
+    const grid = document.querySelector('[data-cr-product-grid]');
+    return Boolean(track && !track.hidden && track.querySelectorAll('button').length > 1
+      && grid && grid.querySelector('.cr-product-card'));
+  }, null, { timeout: 30000 });
+
+  const measure = async () => page.evaluate(() => {
+    const track = document.querySelector('[data-cr-outlet-bubbles]');
+    const pill = track && track.querySelector('.cr-outlet-bubbles__pill');
+    const sortLabel = document.querySelector('.cr-product-listing__ordering label');
+    const grid = document.querySelector('[data-cr-product-grid]');
+    const card = grid && grid.querySelector('.cr-product-card');
+    const image = card && card.querySelector('.cr-product-card__image');
+    if (!track || !pill || !sortLabel || !grid || !card || !image) return { found: false };
+    const bubbleLeft = pill.getBoundingClientRect().left;
+    const sortLeft = sortLabel.getBoundingClientRect().left;
+    const cardWidth = card.getBoundingClientRect().width;
+    const imageWidth = image.getBoundingClientRect().width;
+    const columns = getComputedStyle(grid).gridTemplateColumns.trim().split(/\\s+/).filter(Boolean).length;
+    return {
+      found: true,
+      bubbleLeft,
+      sortLeft,
+      delta: bubbleLeft - sortLeft,
+      columns,
+      resultCount: grid.querySelectorAll(':scope > .cr-product-card').length,
+      cardWidth,
+      imageWidth,
+      gridWidth: grid.getBoundingClientRect().width
+    };
+  });
+
+  const baseline = new Map();
+  for (const viewport of [1280, 1440, 1920]) {
+    await page.setViewportSize({ width: viewport, height: 900 });
+    await page.waitForTimeout(200);
+    const state = await measure();
+    if (!state.found) throw new Error('OUTLET_BASELINE_GEOMETRY_MISSING_' + viewport);
+    baseline.set(viewport, state);
+    log('OUTLET_NORMAL_' + viewport, JSON.stringify(state));
+  }
+
+  const labels = await page.locator('[data-cr-outlet-bubbles] .cr-outlet-bubbles__pill').allTextContents();
+  let selectedLabel = '';
+  let selectedCount = 0;
+  for (let index = 1; index < labels.length; index += 1) {
+    await page.locator('[data-cr-outlet-bubbles] .cr-outlet-bubbles__pill').nth(index).click();
+    await page.waitForTimeout(1100);
+    const count = await page.locator('[data-cr-product-grid] > .cr-product-card').count();
+    log('OUTLET_FILTER_RESULT_' + labels[index].trim().replace(/\\s+/g, '_'), count);
+    if (count > 0 && (!selectedLabel || count <= 4)) {
+      selectedLabel = labels[index].trim();
+      selectedCount = count;
+      if (count <= 4) break;
+    }
+  }
+  if (!selectedLabel) throw new Error('OUTLET_NO_NONEMPTY_BUBBLE_RESULT');
+  const selected = page.locator('[data-cr-outlet-bubbles] .cr-outlet-bubbles__pill')
+    .filter({ hasText: selectedLabel }).first();
+  await selected.click();
+  await page.waitForTimeout(1100);
+  log('OUTLET_SELECTED_BUBBLE', selectedLabel);
+  log('OUTLET_SELECTED_RESULT_COUNT', selectedCount);
+
+  for (const viewport of [1280, 1440, 1920]) {
+    await page.setViewportSize({ width: viewport, height: 900 });
+    await page.waitForTimeout(200);
+    const state = await measure();
+    const normal = baseline.get(viewport);
+    const aligned = Math.abs(state.delta) <= 1;
+    const fixedColumns = state.columns === 4;
+    const cardStable = Math.abs(state.cardWidth - normal.cardWidth) <= 1;
+    const imageStable = Math.abs(state.imageWidth - normal.imageWidth) <= 1;
+    log('OUTLET_BUBBLES_LEFT_' + viewport, state.bubbleLeft.toFixed(2));
+    log('OUTLET_SORT_LEFT_' + viewport, state.sortLeft.toFixed(2));
+    log('OUTLET_BUBBLES_SORT_DELTA_' + viewport, state.delta.toFixed(2));
+    log('OUTLET_BUBBLES_SORT_ALIGNMENT_' + viewport, aligned ? 'PASS' : 'FAIL');
+    log('OUTLET_VIEWPORT_' + viewport + '_RESULT_COUNT', state.resultCount);
+    log('OUTLET_VIEWPORT_' + viewport + '_GRID_COLUMNS', state.columns);
+    log('OUTLET_VIEWPORT_' + viewport + '_CARD_WIDTH', state.cardWidth.toFixed(2));
+    log('OUTLET_VIEWPORT_' + viewport + '_IMAGE_WIDTH', state.imageWidth.toFixed(2));
+    if (!aligned || !fixedColumns || !cardStable || !imageStable) {
+      throw new Error('OUTLET_DESKTOP_GEOMETRY_FAILED_' + viewport + ':' + JSON.stringify({ state, normal }));
+    }
+
+    const probes = await page.evaluate(() => {
+      const liveGrid = document.querySelector('[data-cr-product-grid]');
+      const sourceCard = liveGrid && liveGrid.querySelector('.cr-product-card');
+      if (!liveGrid || !sourceCard) return [];
+      const liveWidth = liveGrid.getBoundingClientRect().width;
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'position:fixed;left:-10000px;top:0;width:' + liveWidth + 'px;max-width:none;visibility:hidden;pointer-events:none;';
+      const probe = document.createElement('div');
+      probe.className = liveGrid.className;
+      wrapper.appendChild(probe);
+      document.body.appendChild(wrapper);
+      const results = [];
+      for (let count = 1; count <= 4; count += 1) {
+        probe.replaceChildren(...Array.from({ length: count }, () => sourceCard.cloneNode(true)));
+        const card = probe.querySelector('.cr-product-card');
+        const image = card && card.querySelector('.cr-product-card__image');
+        const columns = getComputedStyle(probe).gridTemplateColumns.trim().split(/\\s+/).filter(Boolean).length;
+        results.push({
+          resultCount: count,
+          columns,
+          cardWidth: card ? card.getBoundingClientRect().width : 0,
+          imageWidth: image ? image.getBoundingClientRect().width : 0
+        });
+      }
+      wrapper.remove();
+      return results;
+    });
+    for (const probe of probes) {
+      const pass = probe.columns === 4
+        && Math.abs(probe.cardWidth - normal.cardWidth) <= 1
+        && Math.abs(probe.imageWidth - normal.imageWidth) <= 1;
+      log('OUTLET_PROBE_' + viewport + '_RESULT_' + probe.resultCount, JSON.stringify(probe));
+      if (!pass) throw new Error('OUTLET_GRID_COUNT_GEOMETRY_FAILED_' + viewport + '_' + probe.resultCount);
+    }
+  }
+}
+
 async function loginForAuthenticatedAccount(page) {
   await visit(page, accountUrl);
   let loginForm = page.locator('form.woocommerce-form-login');
@@ -992,6 +1117,32 @@ async function loginForAuthenticatedAccount(page) {
         await categoryToolbarTopMargin(page, destinationLabel === 'Categorías' ? 'CATEGORY' : 'OUTLET', viewport);
       }
     }
+
+    const outletDestination = navDestinations.find(item => item.label === 'Outlet');
+    if (!outletDestination || !outletDestination.href) throw new Error('OUTLET_ROUTE_MISSING');
+    await visit(page, outletDestination.href);
+    const outletBranchUrl = await page.evaluate(async () => {
+      const ids = [447, 476, 446, 475, 449, 478, 448, 477];
+      try {
+        const response = await fetch('/wp-json/wp/v2/product_cat?include=' + ids.join(',') + '&_fields=id,link');
+        if (response.ok) {
+          const terms = await response.json();
+          const preferred = terms.find(term => term.id === 447 || term.id === 476) || terms[0];
+          if (preferred && preferred.link) return preferred.link;
+        }
+      } catch (_) {}
+      const links = Array.from(document.querySelectorAll('a[href]'));
+      const currentPath = location.pathname.replace(/\\/+$/, '');
+      const candidate = links.find(link => {
+        try {
+          const path = new URL(link.href).pathname.replace(/\\/+$/, '');
+          return path !== currentPath && /outlet/i.test(path) && link.textContent.trim();
+        } catch (_) { return false; }
+      });
+      return candidate ? candidate.href : '';
+    });
+    if (!outletBranchUrl) throw new Error('OUTLET_BRANCH_ROUTE_NOT_FOUND');
+    await outletListingGeometry(page, outletBranchUrl);
 
     await visit(page,accountUrl);
     const legalRoutes=await accountInformationLinks(page,'SHELL_LEGAL',1280);
