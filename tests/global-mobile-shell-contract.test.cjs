@@ -56,3 +56,42 @@ test('MOBILE_TOP_SPACING_HAS_ONE_CANONICAL_SOURCE_AND_CATEGORY_DOES_NOT_RESERVE_
  assert.ok(mobileToolbar, 'canonical base toolbar rule remains present below desktop breakpoint');
  assert.match(mobileToolbar[1], /margin:\s*0 0 14px;/);
 });
+
+const listingArchive = fs.readFileSync(path.join(root, 'archive-product.php'), 'utf8');
+const brandArchive = fs.readFileSync(path.join(root, 'taxonomy-product_brand.php'), 'utf8');
+test('SHARED_CONTROLS_WRAPPER_PRESENT=PASS',()=>{
+ assert.match(helpers,/cr-page-toolbar__heading/);
+ assert.match(helpers,/cr-page-toolbar__controls/);
+});
+test('ORDERING_INSIDE_SHARED_CONTROLS=PASS',()=>{
+ assert.match(helpers,/\$left_action_html/);
+ assert.match(listingArchive,/cr2026_render_category_toolbar\([\s\S]*?\$listing_ordering_html/);
+ assert.match(brandArchive,/cr2026_render_category_toolbar\([\s\S]*?\$brand_ordering_html/);
+});
+test('FILTERS_INSIDE_SHARED_CONTROLS=PASS',()=>{
+ assert.match(helpers,/echo '<div class="cr-page-toolbar__controls">[\s\S]*?cr-parent-category__filters/);
+ assert.match(brandArchive,/\$brand_filter_action/);
+});
+test('SORT_ONLY_SUPPORTED=PASS',()=>{
+ assert.match(helpers,/'' !== \$left_action_html \|\| '' !== \$right_action_html \|\| \$show_filters/);
+ assert.match(helpers,/if \( '' !== \$left_action_html \)/);
+});
+test('FILTER_ONLY_SUPPORTED=PASS',()=>{
+ assert.match(helpers,/elseif \( \$show_filters \)/);
+});
+test('SORT_AND_FILTER_SUPPORTED=PASS',()=>{
+ assert.match(listingArchive,/true, '', '', '', array\(\), \$listing_ordering_html/);
+ assert.match(brandArchive,/false, \$brand_filter_action, '', '', array\(\), \$brand_ordering_html/);
+});
+test('RESPONSIVE_390_430_STATIC_CONTRACT=PASS',()=>{
+ const mobile=main.match(/@media \(max-width: 767px\) \{([\s\S]*?)\n\}/);
+ assert.ok(mobile,'mobile composition must be scoped to <=767px');
+ assert.match(mobile[1],/\.cr-page-toolbar__controls\s*\{[^}]*display: flex;[^}]*align-items: center;[^}]*justify-content: space-between;[^}]*width: 100%;/s);
+ assert.match(mobile[1],/\.cr-page-toolbar__controls \.cr-product-listing__ordering\s*\{[^}]*margin: 0;/s);
+ assert.match(mobile[1],/\.cr-page-toolbar__controls \.cr-parent-category__filters\s*\{[^}]*margin-left: auto;/s);
+ for(const viewport of [390,430]) assert.ok(viewport <= 767,viewport+'px must use the mobile controls contract');
+});
+test('TABLET_DESKTOP_RULES_REMAIN_OUTSIDE_MOBILE_OVERRIDE',()=>{
+ assert.match(main,/\.cr-page-toolbar__heading,\s*\.cr-page-toolbar__controls \{ display: contents; \}/);
+ assert.match(main,/\.cr-product-listing__ordering \{ min-height:38px; margin:0 20px 14px;/);
+});
