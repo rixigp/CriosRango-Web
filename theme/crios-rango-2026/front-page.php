@@ -89,8 +89,9 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
     $winter_image  = cr2026_home_outlet_image_url( 'winter' );
     $summer_image  = cr2026_home_outlet_image_url( 'summer' );
     $home_brands         = cr2026_home_brands();
-    $desktop_brand_pages = array_chunk( $home_brands, 10 );
-    $mobile_brand_pages  = array_chunk( array_slice( $home_brands, 0, 16 ), 8 );
+    $desktop_brand_pages      = array_chunk( $home_brands, 10 );
+    $mobile_brand_pages       = array_chunk( array_slice( $home_brands, 0, 16 ), 8 );
+    $intermediate_brand_pages = array( $home_brands );
     ?>
 
     <section class="cr-home-section cr-home-novedades" aria-labelledby="cr-home-novedades-title">
@@ -171,8 +172,8 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
                 if ( empty( $brand_pages ) ) {
                     return;
                 }
-                $pager_class = 'desktop' === $variant ? 'cr-home-brand-pager--desktop' : 'cr-home-brand-pager--mobile';
-                $dots_class  = 'desktop' === $variant ? 'cr-home-brand-dots--desktop' : 'cr-home-brand-dots--mobile';
+                $pager_class = 'desktop' === $variant ? 'cr-home-brand-pager--desktop' : ( 'intermediate' === $variant ? 'cr-home-brand-pager--intermediate' : 'cr-home-brand-pager--mobile' );
+                $dots_class  = 'desktop' === $variant ? 'cr-home-brand-dots--desktop' : ( 'intermediate' === $variant ? 'cr-home-brand-dots--intermediate' : 'cr-home-brand-dots--mobile' );
                 ?>
                 <div class="cr-home-brand-pager <?php echo esc_attr( $pager_class ); ?>" data-cr-brand-pager data-cr-brand-pager-variant="<?php echo esc_attr( $variant ); ?>">
                     <?php foreach ( $brand_pages as $page_index => $page_brands ) : ?>
@@ -199,8 +200,8 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
                         </div>
                     <?php endforeach; ?>
                 </div>
-                <?php if ( count( $brand_pages ) > 1 ) : ?>
-                    <div class="cr-home-brand-dots <?php echo esc_attr( $dots_class ); ?>" data-cr-brand-dots aria-label="Páginas de marcas">
+                <?php if ( count( $brand_pages ) > 1 || 'intermediate' === $variant ) : ?>
+                    <div class="cr-home-brand-dots <?php echo esc_attr( $dots_class ); ?>" data-cr-brand-dots aria-label="Páginas de marcas"<?php echo 'intermediate' === $variant ? ' hidden' : ''; ?>>
                         <?php foreach ( $brand_pages as $page_index => $unused_page ) : ?>
                             <button type="button" class="cr-home-brand-dot<?php echo 0 === $page_index ? ' is-active' : ''; ?>" data-cr-brand-dot="<?php echo esc_attr( $page_index ); ?>" aria-label="<?php echo esc_attr( sprintf( 'Ir a página %d', $page_index + 1 ) ); ?>" aria-current="<?php echo 0 === $page_index ? 'true' : 'false'; ?>"></button>
                         <?php endforeach; ?>
@@ -210,6 +211,7 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
             };
             $render_brand_pager( $desktop_brand_pages, 'desktop' );
             $render_brand_pager( $mobile_brand_pages, 'mobile' );
+            $render_brand_pager( $intermediate_brand_pages, 'intermediate' );
             ?>
         <?php endif; ?>
     
