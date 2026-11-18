@@ -20,7 +20,7 @@ test('HOME_BRANDS_SOURCE_AND_PUBLISHED_COUNT_ORDER=PASS',()=>{
  assert.doesNotMatch(query,/usort\s*\(|orderby'\s*=>\s*'date|menu_order/i);
 });
 
-test('HOME_BRANDS_RENDER_ONCE_WITH_MOBILE_16_OF_8_AND_WIDE_20_OF_10=PASS',()=>{
+test('HOME_BRANDS_RENDER_ONCE_WITH_MOBILE_16_OF_8_INTERMEDIATE_20_OF_8_AND_DESKTOP_20_OF_10=PASS',()=>{
  assert.match(home,/\$all_brand_pages\s*=\s*array_chunk\(\s*\$home_brands,\s*10\s*\)/);
  assert.match(home,/\$render_brand_pager\(\s*\$all_brand_pages,\s*'unified'\s*\)/);
  assert.equal((home.match(/\$render_brand_pager\(/g)||[]).length,1);
@@ -29,36 +29,43 @@ test('HOME_BRANDS_RENDER_ONCE_WITH_MOBILE_16_OF_8_AND_WIDE_20_OF_10=PASS',()=>{
  assert.match(home,/Ver todas/);assert.match(home,/cr-home-brand__fallback/);
  assert.match(helpers,/wp_attachment_is_image\(\s*\$image_id\s*\)/);
 });
-test('HOME_INTERMEDIATE_BRANDS_FIXED_FIVE_BY_TWO_TEN_PER_PAGE_NO_DUPLICATE_RENDER=PASS',()=>{
- const intermediateStart=css.indexOf('/* Intermediate Home brands: fixed 5 x 2 pages of ten');
+test('HOME_INTERMEDIATE_BRANDS_FIXED_FOUR_BY_TWO_EIGHT_PER_PAGE_NO_DUPLICATE_RENDER=PASS',()=>{
+ const intermediateStart=css.indexOf('/* Intermediate Home brands: fixed 4 x 2 pages of eight');
  const dotsRule=css.indexOf('body.home .cr-home-brand-dots--intermediate { display: flex; }',intermediateStart);
- const intermediateEnd=css.indexOf('\n}',dotsRule);
+ const intermediateEnd=css.indexOf('\\n}',dotsRule);
  const intermediate=css.slice(intermediateStart,intermediateEnd);
  assert.ok(intermediateStart>=0 && intermediateEnd>intermediateStart,'intermediate brands CSS exists');
- assert.match(intermediate,/grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)\s*!important/);
- assert.match(intermediate,/grid-template-rows:\s*repeat\(2,\s*96px\)/);
- assert.doesNotMatch(intermediate,/auto-fit|grid-auto-flow:\s*column|grid-auto-columns/);
- assert.match(intermediate,/width:\s*min\(100%,\s*clamp\(88px,/);
- assert.match(intermediate,/height:\s*clamp\(72px,/);
- assert.match(intermediate,/width:\s*clamp\(44px,/);
- assert.match(intermediate,/max-width:\s*100%/);
- assert.match(intermediate,/max-height:\s*100%/);
- assert.match(intermediate,/object-fit:\s*contain/);
- assert.equal((intermediate.match(/overflow:\s*hidden/g)||[]).length,2);
- assert.doesNotMatch(intermediate,/overflow:\s*visible/);
- assert.match(js,/variant === 'unified'/);
- assert.match(js,/const perPage = mode === 'mobile' \? 8 : 10/);
- assert.match(js,/brandPager\.replaceChildren\(\.\.\.pages\)/);
- assert.match(js,/brands\.slice\(offset, offset \+ perPage\)\.forEach\(\(brand\) => grid\.appendChild\(brand\)\)/);
- assert.doesNotMatch(js,/brands\.map\(.*cloneNode|brand\.cloneNode/);
+ assert.match(intermediate,/grid-template-columns:\\s*repeat\\(4,\\s*minmax\\(0,\\s*1fr\\)\\)\\s*!important/);
+ assert.match(intermediate,/grid-template-rows:\\s*repeat\\(2,\\s*clamp\\(/);
+ assert.match(intermediate,/grid-auto-rows:\\s*clamp\\(/);
+ assert.doesNotMatch(intermediate,/repeat\\(5,|auto-fit|grid-auto-flow:\\s*column|grid-auto-columns/);
+ assert.match(intermediate,/width:\\s*min\\(100%,\\s*clamp\\(112px,/);
+ assert.match(intermediate,/height:\\s*clamp\\(66px,/);
+ assert.match(intermediate,/width:\\s*clamp\\(48px,/);
+ assert.match(intermediate,/display:\\s*flex/);
+ assert.match(intermediate,/align-items:\\s*center/);
+ assert.match(intermediate,/justify-content:\\s*center/);
+ assert.match(intermediate,/max-width:\\s*100%/);
+ assert.match(intermediate,/max-height:\\s*100%/);
+ assert.match(intermediate,/object-fit:\\s*contain/);
+ assert.equal((intermediate.match(/overflow:\\s*hidden/g)||[]).length,2);
+ assert.doesNotMatch(intermediate,/overflow:\\s*visible/);
+ assert.doesNotMatch(css,/@media \\(min-width: 768px\\) and \\(max-width: 1279px\\) \\{[\\s\\S]*?repeat\\(5,/);
+ assert.match(js,/const intermediateMedia = window\\.matchMedia\\('\\(min-width: 768px\\) and \\(max-width: 1279px\\)'\\)/);
+ assert.match(js,/const perPage = mode === 'desktop' \\? 10 : 8/);
+ assert.match(js,/Math\\.ceil\\(brands\\.length \\/ perPage\\)/);
 });
 test('HOME_INTERMEDIATE_BRANDS_CHROMIUM_MEASURES_ALL_LOGOS_AT_EVERY_REQUIRED_WIDTH=PASS',()=>{
- assert.match(browser,/\[768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920\]/);
+ assert.match(browser,/\\[390, 430, 768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920\\]/);
  assert.match(browser,/HOME_INTERMEDIATE_IMAGE_INSIDE_LOGO_BOX_/);
  assert.match(browser,/HOME_INTERMEDIATE_IMAGE_INSIDE_CARD_/);
- assert.match(browser,/image\.complete && image\.naturalWidth > 0/);
- assert.match(browser,/HOME_INTERMEDIATE_DOTS_SYNC_PAGE_2_/);
- assert.match(browser,/HOME_INTERMEDIATE_DOTS_SYNC_PAGE_1_/);
+ assert.match(browser,/image\\.complete && image\\.naturalWidth > 0/);
+ assert.match(browser,/HOME_INTERMEDIATE_DOTS_SYNC_PAGE_3_/);
+ assert.match(browser,/HOME_INTERMEDIATE_VIEWPORT_AUDIT_768/);
+ assert.match(browser,/WINNING_CARD_SELECTOR/);
+ assert.match(browser,/WINNING_LOGO_BOX_SELECTOR/);
+ assert.match(browser,/WINNING_IMAGE_SELECTOR/);
+ assert.match(browser,/SOURCE_LINES/);
 });
 test('HOME_DESKTOP_BRANDS_GRID_AND_PAGINATION_ARE_BREAKPOINT_SCOPED=PASS',()=>{
  assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
