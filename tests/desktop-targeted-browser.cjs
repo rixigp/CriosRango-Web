@@ -1086,10 +1086,10 @@ async function loginForAuthenticatedAccount(page) {
     const outletDestination = navDestinations.find(item => item.label === 'Outlet');
     if (!outletDestination || !outletDestination.href) throw new Error('OUTLET_ROUTE_MISSING');
     await visit(page, outletDestination.href);
-    const outletBranchUrl = await page.evaluate(async () => {
+    const outletBranchUrl = await page.evaluate(async stagingBasePath => {
       const ids = [447, 476, 446, 475, 449, 478, 448, 477];
       try {
-        const response = await fetch('/wp-json/wp/v2/product_cat?include=' + ids.join(',') + '&_fields=id,link');
+        const response = await fetch(stagingBasePath + '/wp-json/wp/v2/product_cat?include=' + ids.join(',') + '&_fields=id,link');
         if (response.ok) {
           const terms = await response.json();
           const preferred = terms.find(term => term.id === 447 || term.id === 476) || terms[0];
@@ -1105,8 +1105,9 @@ async function loginForAuthenticatedAccount(page) {
         } catch (_) { return false; }
       });
       return candidate ? candidate.href : '';
-    });
+    }, new URL(BASE_URL).pathname.replace(/\\/+$/, ''));
     if (!outletBranchUrl) throw new Error('OUTLET_BRANCH_ROUTE_NOT_FOUND');
+    if (!outletBranchUrl.startsWith(BASE_URL)) throw new Error('OUTLET_BRANCH_NOT_ON_STAGING=' + outletBranchUrl);
     await outletListingGeometry(page, outletBranchUrl);
 
     await visit(page, homeUrl);
