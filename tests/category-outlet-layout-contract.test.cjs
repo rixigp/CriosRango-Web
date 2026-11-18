@@ -21,6 +21,7 @@ test('OUTLET_BUBBLE_TRACK_MATCHES_ORDERING_GUTTER_AT_EACH_BREAKPOINT', () => {
   assert.match(outletCss, /@media \(min-width:768px\) and \(max-width:1279px\)\{\.cr-outlet-bubbles\{padding-inline:32px\}\}/);
   assert.match(outletCss, /@media \(min-width:1280px\)\{\.cr-outlet-bubbles\{padding-inline:0\}\}/);
   assert.match(browser, /async function outletListingGeometry\(page, branchUrl\)/);
+  assert.match(browser, /OUTLET_NORMAL_/);
   assert.match(browser, /OUTLET_BUBBLES_SORT_ALIGNMENT_/);
   assert.match(browser, /OUTLET_VIEWPORT_/);
   assert.match(browser, /OUTLET_SELECTED_RESULT_COUNT/);
