@@ -7,7 +7,7 @@
 defined( 'ABSPATH' ) || exit;
 $customer_id = get_current_user_id();
 $formatted_address = wc_get_account_formatted_address( 'shipping', $customer_id );
-$edit_url = wc_get_endpoint_url( 'edit-address', 'shipping', wc_get_page_permalink( 'myaccount' ) );
+$edit_url = wc_get_endpoint_url( 'edit-address', 'envio', wc_get_page_permalink( 'myaccount' ) );
 ?>
 <section class="cr-account-addresses" aria-label="<?php esc_attr_e( 'Dirección', 'crios-rango-2026' ); ?>">
     <?php if ( $formatted_address ) : ?>
