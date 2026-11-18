@@ -1105,7 +1105,7 @@ async function loginForAuthenticatedAccount(page) {
         } catch (_) { return false; }
       });
       return candidate ? candidate.href : '';
-    }, new URL(BASE_URL).pathname.replace(/\\/+$/, ''));
+    }, new URL(BASE_URL).pathname.replace(/\/+$/, ''));
     if (!outletBranchUrl) throw new Error('OUTLET_BRANCH_ROUTE_NOT_FOUND');
     if (!outletBranchUrl.startsWith(BASE_URL)) throw new Error('OUTLET_BRANCH_NOT_ON_STAGING=' + outletBranchUrl);
     await outletListingGeometry(page, outletBranchUrl);
