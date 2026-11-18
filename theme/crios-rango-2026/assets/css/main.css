@@ -1667,6 +1667,18 @@ body.cr-parent-category-view .cr-parent-category__canvas { flex: 1 0 auto; paddi
   align-items: center;
   column-gap: 10px;
 }
+/* Desktop/tablet keep the existing grid geometry; mobile composes the heading
+   and secondary controls as two explicit rows of one shared toolbar. */
+.cr-page-toolbar__heading,
+.cr-page-toolbar__controls { display: contents; }
+.cr-page-toolbar__controls .cr-product-listing__ordering {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.cr-page-toolbar__controls .cr-parent-category__filters {
+  grid-column: 3;
+  grid-row: 1;
+}
 .cr-parent-category__back {
   width: 48px;
   height: 48px;
@@ -2176,6 +2188,45 @@ body.cr-app-nav-shell .cr-category-hub {
 body.cr-product-listing-view .cr-product-listing { box-sizing:border-box; }
 
 .cr-product-listing__ordering { min-height:38px; margin:0 20px 14px; display:flex; align-items:center; gap:9px; color:#777b77; font:300 13px/20px "Roboto",Arial,sans-serif; }
+@media (max-width: 767px) {
+  .cr-parent-category__toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+  }
+  .cr-page-toolbar__heading {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 10px;
+    width: 100%;
+    min-height: 64px;
+  }
+  .cr-parent-category__toolbar--no-back .cr-page-toolbar__heading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cr-page-toolbar__controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 38px;
+    gap: 8px;
+    margin: 0 0 14px;
+  }
+  .cr-page-toolbar__controls .cr-product-listing__ordering {
+    grid-column: auto;
+    grid-row: auto;
+    min-height: 38px;
+    margin: 0;
+  }
+  .cr-page-toolbar__controls .cr-parent-category__filters {
+    grid-column: auto;
+    grid-row: auto;
+    margin-left: auto;
+  }
+}
 .cr-product-listing__select-wrap { position:relative; display:inline-flex; align-items:center; width:max-content; }
 .cr-product-listing__select-wrap::after { content:""; position:absolute; right:3px; top:50%; width:7px; height:7px; margin:0; border-right:1px solid #777b77; border-bottom:1px solid #777b77; transform:translateY(-65%) rotate(45deg); pointer-events:none; }
 .cr-product-listing__ordering select { width:auto; min-width:0; max-width:none; min-height:34px; padding:0 22px 0 2px; appearance:none; -webkit-appearance:none; border:0; border-radius:0; outline:none; background:transparent; color:#183B35; font:300 13px/20px "Roboto",Arial,sans-serif; cursor:pointer; }

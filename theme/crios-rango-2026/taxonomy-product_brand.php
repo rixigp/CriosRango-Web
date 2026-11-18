@@ -37,7 +37,22 @@ get_header( 'shop' );
     <div class="cr-product-listing__shell cr-brand-archive__shell cr-shell">
         <?php
         $brand_filter_action = '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
-        cr2026_render_category_toolbar( $brand_term->name, $brands_index_url, 'parent', false, $brand_filter_action );
+        ob_start();
+        ?>
+        <div class="cr-product-listing__ordering">
+            <label for="cr-brand-product-order"><?php esc_html_e( 'Ordenar por', 'crios-rango-2026' ); ?></label>
+            <span class="cr-product-listing__select-wrap">
+                <select id="cr-brand-product-order" data-cr-product-order aria-label="<?php esc_attr_e( 'Ordenar productos', 'crios-rango-2026' ); ?>">
+                    <option value="date"<?php selected( 'date', $brand_orderby ); ?>><?php esc_html_e( 'Más recientes', 'crios-rango-2026' ); ?></option>
+                    <option value="price"<?php selected( 'price', $brand_orderby ); ?>><?php esc_html_e( 'Precio: menor a mayor', 'crios-rango-2026' ); ?></option>
+                    <option value="price-desc"<?php selected( 'price-desc', $brand_orderby ); ?>><?php esc_html_e( 'Precio: mayor a menor', 'crios-rango-2026' ); ?></option>
+                    <option value="title"<?php selected( 'title', $brand_orderby ); ?>><?php esc_html_e( 'Nombre A-Z', 'crios-rango-2026' ); ?></option>
+                </select>
+            </span>
+        </div>
+        <?php
+        $brand_ordering_html = ob_get_clean();
+        cr2026_render_category_toolbar( $brand_term->name, $brands_index_url, 'parent', false, $brand_filter_action, '', '', array(), $brand_ordering_html );
         ?>
         <?php if ( $brand_logo_url ) : ?>
             <div class="cr-brand-archive__brand-logo"><img src="<?php echo esc_url( $brand_logo_url ); ?>" alt="<?php echo esc_attr( $brand_term->name ); ?>" loading="eager" decoding="async"></div>
@@ -50,18 +65,6 @@ get_header( 'shop' );
         ?>
         <?php cr2026_render_category_filter_sheet( $brand_term, 'brand' ); ?>
         <div class="cr-product-listing__active-filters" data-cr-active-filter-chips hidden aria-live="polite"></div>
-        <div class="cr-product-listing__ordering">
-            <label for="cr-brand-product-order"><?php esc_html_e( 'Ordenar por', 'crios-rango-2026' ); ?></label>
-            <span class="cr-product-listing__select-wrap">
-                <select id="cr-brand-product-order" data-cr-product-order aria-label="<?php esc_attr_e( 'Ordenar productos', 'crios-rango-2026' ); ?>">
-                    <option value="date"<?php selected( 'date', $brand_orderby ); ?>><?php esc_html_e( 'Más recientes', 'crios-rango-2026' ); ?></option>
-                    <option value="price"<?php selected( 'price', $brand_orderby ); ?>><?php esc_html_e( 'Precio: menor a mayor', 'crios-rango-2026' ); ?></option>
-                    <option value="price-desc"<?php selected( 'price-desc', $brand_orderby ); ?>><?php esc_html_e( 'Precio: mayor a menor', 'crios-rango-2026' ); ?></option>
-                    <option value="title"<?php selected( 'title', $brand_orderby ); ?>><?php esc_html_e( 'Nombre A-Z', 'crios-rango-2026' ); ?></option>
-                </select>
-            </span>
-
-        </div>
         <div class="cr-product-grid" data-cr-product-grid aria-live="polite">
             <?php for ( $skeleton_index = 0; $skeleton_index < 4; $skeleton_index++ ) : ?>
                 <div class="cr-product-skeleton" aria-hidden="true"><span></span><i></i><b></b></div>

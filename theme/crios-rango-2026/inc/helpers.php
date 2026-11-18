@@ -172,7 +172,7 @@ function cr2026_checkout_render_toolbar() {
 add_action( 'woocommerce_before_checkout_form', 'cr2026_checkout_render_toolbar', 5 );
 
 /** Canonical page toolbar markup; the legacy function name remains for template compatibility. */
-function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context = 'parent', $show_filters = true, $right_action_html = '', $title_id = '', $toolbar_extra_class = '', $back_attributes = array() ) {
+function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context = 'parent', $show_filters = true, $right_action_html = '', $title_id = '', $toolbar_extra_class = '', $back_attributes = array(), $left_action_html = '' ) {
     $title_id_attribute = '' !== $title_id ? ' id="' . esc_attr( $title_id ) . '"' : '';
     $toolbar_class = 'cr-page-toolbar cr-parent-category__toolbar';
     if ( '' === $back_url ) {
@@ -188,14 +188,23 @@ function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context
         }
     }
     echo '<div class="' . esc_attr( $toolbar_class ) . '">';
+    echo '<div class="cr-page-toolbar__heading">';
     if ( '' !== $back_url ) {
         echo '<a class="cr-parent-category__back" href="' . esc_url( $back_url ) . '"' . $back_attribute_html . ' aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
     }
     echo '<h1 class="cr-parent-category__title"' . $title_id_attribute . '>' . esc_html( $title ) . '</h1>';
-    if ( '' !== $right_action_html ) {
-        echo $right_action_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- locally generated action control.
-    } elseif ( $show_filters ) {
-        echo '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
+    echo '</div>';
+    if ( '' !== $left_action_html || '' !== $right_action_html || $show_filters ) {
+        echo '<div class="cr-page-toolbar__controls">';
+        if ( '' !== $left_action_html ) {
+            echo $left_action_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- locally generated action control.
+        }
+        if ( '' !== $right_action_html ) {
+            echo $right_action_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- locally generated action control.
+        } elseif ( $show_filters ) {
+            echo '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
+        }
+        echo '</div>';
     }
     echo '</div>';
 }

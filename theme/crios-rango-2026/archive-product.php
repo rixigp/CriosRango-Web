@@ -50,7 +50,13 @@ get_header( 'shop' );
     data-filter-api-url="<?php echo esc_url( rest_url( 'criosrango-filter/v1/query' ) ); ?>"
     data-products-url="<?php echo esc_url( rest_url( 'cr2026/v1/catalog-page' ) ); ?>">
     <div class="cr-product-listing__shell cr-shell">
-        <?php cr2026_render_category_toolbar( $listing_title, $listing_back_url, $listing_context, true ); ?>
+        <?php
+        ob_start();
+        ?>
+        <?php
+        $listing_ordering_html = ob_get_clean();
+        cr2026_render_category_toolbar( $listing_title, $listing_back_url, $listing_context, true, '', '', '', array(), $listing_ordering_html );
+        ?>
         <?php if ( $listing_outlet_category_id ) { cr2026_render_outlet_bubbles( $listing_outlet_category_id ); } ?>
         <div class="cr-product-listing__active-filters" data-cr-active-filter-chips hidden aria-live="polite"></div>
         <?php cr2026_render_category_filter_sheet( $listing_term, $listing_context ); ?>
