@@ -72,8 +72,12 @@ test('Novedades freezes newest-24 IDs, sorts only those hydrated products, then 
     'SORT_NAME_DESC_SET_MATCH=',
     'SORT_PRICE_ASC_SET_MATCH=',
     'SORT_PRICE_DESC_SET_MATCH=',
+    'SORTED_NOVELTY_IDS=',
     'OUTSIDE_INITIAL_COHORT=',
     'MISSING_FROM_INITIAL_COHORT=',
-    'CATALOG_PRODUCTS_LEAKED=0'
+    'SORTED_COHORT_AFTER_RELOAD=PASS',
+    'SORTED_COHORT_AFTER_BACK=PASS',
+    'MAX_PRODUCTS=',
+    'CATALOG_PRODUCTS_LEAKED='
   ]) assert.ok(browser.includes(marker), 'missing cohort sort browser assertion/log: ' + marker);
 });
