@@ -201,10 +201,126 @@
   }
 
   document.querySelectorAll('[data-cr-brand-pager]').forEach((brandPager) => {
+    const variant = brandPager.dataset.crBrandPagerVariant || 'mobile';
+
+    if (variant === 'intermediate') {
+      const brands = Array.from(brandPager.querySelectorAll('.cr-home-brand'));
+      const section = brandPager.closest('.cr-home-brands');
+      const dotsContainer = section && section.querySelector('.cr-home-brand-dots--intermediate');
+      const intermediateMedia = window.matchMedia('(min-width: 768px) and (max-width: 1279px)');
+      let renderedPerPage = 0;
+      let pageObserver = null;
+
+      brands.forEach((brand) => {
+        const image = brand.querySelector('img');
+        if (!image) return;
+        image.addEventListener('error', () => {
+          image.hidden = true;
+          const fallback = image.parentElement && image.parentElement.querySelector('.cr-home-brand__fallback');
+          if (fallback) fallback.hidden = false;
+        }, { once: true });
+      });
+
+      const renderIntermediatePages = () => {
+        if (!intermediateMedia.matches) return;
+        const measureGrid = brandPager.querySelector('.cr-home-brand-grid');
+        if (!measureGrid) return;
+        const gridWidth = measureGrid.clientWidth;
+        const gridStyle = window.getComputedStyle(measureGrid);
+        const columnGap = Number.parseFloat(gridStyle.columnGap) || 0;
+        const cardWidth = 96;
+        const columns = Math.max(1, Math.floor((gridWidth + columnGap) / (cardWidth + columnGap)));
+        const perPage = columns * 2;
+        if (perPage === renderedPerPage) return;
+        renderedPerPage = perPage;
+
+        if (pageObserver) {
+          pageObserver.disconnect();
+          pageObserver = null;
+        }
+
+        const pages = [];
+        for (let offset = 0; offset < brands.length; offset += perPage) {
+          const pageIndex = pages.length;
+          const page = document.createElement('div');
+          page.className = 'cr-home-brand-page';
+          page.setAttribute('data-cr-brand-page', '');
+          page.setAttribute('aria-label', 'Página ' + (pageIndex + 1) + ' de ' + Math.ceil(brands.length / perPage));
+          const grid = document.createElement('div');
+          grid.className = 'cr-home-brand-grid';
+          brands.slice(offset, offset + perPage).forEach((brand) => grid.appendChild(brand));
+          page.appendChild(grid);
+          pages.push(page);
+        }
+        brandPager.replaceChildren(...pages);
+
+        if (!dotsContainer) return;
+        dotsContainer.replaceChildren();
+        dotsContainer.hidden = pages.length < 2;
+        const dots = pages.map((page, index) => {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'cr-home-brand-dot' + (index === 0 ? ' is-active' : '');
+          dot.setAttribute('data-cr-brand-dot', String(index));
+          dot.setAttribute('aria-label', 'Ir a página ' + (index + 1));
+          dot.setAttribute('aria-current', index === 0 ? 'true' : 'false');
+          dotsContainer.appendChild(dot);
+          return dot;
+        });
+        const setActivePage = (activeIndex) => {
+          dots.forEach((dot, index) => {
+            const active = index === activeIndex;
+            dot.classList.toggle('is-active', active);
+            dot.setAttribute('aria-current', active ? 'true' : 'false');
+          });
+        };
+        dots.forEach((dot, index) => {
+          dot.addEventListener('click', () => {
+            const page = pages[index];
+            if (page) brandPager.scrollTo({
+              left: page.offsetLeft - brandPager.offsetLeft,
+              behavior: 'smooth'
+            });
+          });
+        });
+        if ('IntersectionObserver' in window) {
+          pageObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              const index = pages.indexOf(entry.target);
+              if (index >= 0) setActivePage(index);
+            });
+          }, { root: brandPager, threshold: 0.6 });
+          pages.forEach((page) => pageObserver.observe(page));
+        } else {
+          brandPager.onscroll = () => {
+            const pageWidth = brandPager.clientWidth || 1;
+            setActivePage(Math.min(pages.length - 1, Math.round(brandPager.scrollLeft / pageWidth)));
+          };
+        }
+        brandPager.scrollTo({ left: 0, behavior: 'auto' });
+      };
+
+      const scheduleIntermediateRender = () => window.requestAnimationFrame(renderIntermediatePages);
+      scheduleIntermediateRender();
+      if ('ResizeObserver' in window) {
+        const brandResizeObserver = new ResizeObserver(scheduleIntermediateRender);
+        brandResizeObserver.observe(brandPager);
+      } else {
+        window.addEventListener('resize', scheduleIntermediateRender, { passive: true });
+      }
+      if (typeof intermediateMedia.addEventListener === 'function') {
+        intermediateMedia.addEventListener('change', scheduleIntermediateRender);
+      } else if (typeof intermediateMedia.addListener === 'function') {
+        intermediateMedia.addListener(scheduleIntermediateRender);
+      }
+      return;
+    }
+
     const brandPages = Array.from(brandPager.querySelectorAll('[data-cr-brand-page]'));
     const section = brandPager.closest('.cr-home-brands');
     const brandDotsContainer = section && section.querySelector(
-      brandPager.dataset.crBrandPagerVariant === 'desktop' ? '.cr-home-brand-dots--desktop' : '.cr-home-brand-dots--mobile'
+      variant === 'desktop' ? '.cr-home-brand-dots--desktop' : '.cr-home-brand-dots--mobile'
     );
     const brandDots = brandDotsContainer ? Array.from(brandDotsContainer.querySelectorAll('[data-cr-brand-dot]')) : [];
     brandPager.querySelectorAll('.cr-home-brand img').forEach((image) => {
