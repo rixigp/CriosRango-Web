@@ -1949,3 +1949,12 @@ body.cr-product-detail-app .cr-product-reserve:not(:disabled):focus-visible {
 body.cr-product-detail-app .cr-product-reserve .cr-product-actions__icon {
   color: inherit;
 }
+
+/* Choice cursor reflects native availability without changing option appearance. */
+body.cr-product-detail-app .cr-product-choice-chip:not(:disabled):not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+body.cr-product-detail-app .cr-product-choice-chip:disabled,
+body.cr-product-detail-app .cr-product-choice-chip[aria-disabled="true"] {
+  cursor: not-allowed;
+}

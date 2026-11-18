@@ -235,6 +235,13 @@ test('Color and Size cards render only real native options and preserve WooComme
   assert.ok(productUiJs.includes("select.addEventListener('change', render)"));
 });
 
+test('Product Detail option cursors reflect enabled and disabled variation chips only', () => {
+  assert.match(skinCss, /body\\.cr-product-detail-app \\.cr-product-choice-chip:not\\(:disabled\\):not\\(\\[aria-disabled="true"\\]\\)\\s*\\{\\s*cursor:\\s*pointer;\\s*\\}/);
+  assert.match(skinCss, /body\\.cr-product-detail-app \\.cr-product-choice-chip:disabled,\\s*body\\.cr-product-detail-app \\.cr-product-choice-chip\\[aria-disabled="true"\\]\\s*\\{\\s*cursor:\\s*not-allowed;\\s*\\}/);
+  assert.ok(productUiJs.includes('chip.disabled = !!option.disabled'));
+  assert.ok(productUiJs.includes('chip.disabled = !option || !!option.disabled'));
+});
+
 test('quantity stepper background matches Product Detail canvas without changing its layout or behavior', () => {
   const backgroundFix = skinCss.slice(skinCss.lastIndexOf('Quantity control follows the page canvas'));
   assert.match(backgroundFix, /\.cr-product-quantity-stepper,[\s\S]*?\.cr-product-quantity-stepper button,[\s\S]*?\.cr-product-quantity-stepper input\.qty[\s\S]*?background:\s*transparent !important;[\s\S]*?background-color:\s*transparent !important;/);
