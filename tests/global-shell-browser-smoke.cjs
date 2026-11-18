@@ -121,12 +121,12 @@ async function inspect(page, routeName, width) {
         href: a.href, text: (a.innerText || a.textContent || '').trim()
       }));
       return {
-        category: anchors.find(a => /\\/categoria-producto\\//i.test(new URL(a.href).pathname))?.href,
-        outlet: anchors.find(a => /\\/outlet(?:\\/|$)/i.test(new URL(a.href).pathname))?.href,
-        product: anchors.find(a => /\\/producto\\//i.test(new URL(a.href).pathname))?.href,
-        newArrivals: anchors.find(a => /novedades|reci[eé]n llegad|new arrivals/i.test(a.text) || /\\/novedades(?:\\/|$)/i.test(new URL(a.href).pathname))?.href,
-        brands: anchors.find(a => /nuestras marcas|marcas/i.test(a.text) || /\\/marcas(?:\\/|$)/i.test(new URL(a.href).pathname))?.href,
-        contact: anchors.find(a => /contacto/i.test(a.text) || /\\/contacto(?:\\/|$)/i.test(new URL(a.href).pathname))?.href
+        category: anchors.find(a => /\/categoria-producto\//i.test(new URL(a.href).pathname))?.href,
+        outlet: anchors.find(a => /\/outlet(?:\/|$)/i.test(new URL(a.href).pathname))?.href,
+        product: anchors.find(a => /\/producto\//i.test(new URL(a.href).pathname))?.href,
+        newArrivals: anchors.find(a => /novedades|reci[eé]n llegad|new arrivals/i.test(a.text) || /\/novedades(?:\/|$)/i.test(new URL(a.href).pathname))?.href,
+        brands: anchors.find(a => /nuestras marcas|marcas/i.test(a.text) || /\/marcas(?:\/|$)/i.test(new URL(a.href).pathname))?.href,
+        contact: anchors.find(a => /contacto/i.test(a.text) || /\/contacto(?:\/|$)/i.test(new URL(a.href).pathname))?.href
       };
     });
     assert.ok(discovered.category, 'homepage must expose a product category route');
