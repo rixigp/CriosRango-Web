@@ -35,9 +35,8 @@ test('checkout remains vertical below 1280px and keeps shipping before summary b
   assert.notEqual(desktopStart, -1);
   const preDesktop = checkoutCss.slice(0, desktopStart);
   assert.doesNotMatch(preDesktop, /form\.checkout\.woocommerce-checkout[^}]*display:\s*grid/);
-  assert.match(preDesktop, /\.cr-checkout-layout__shipping/);
-  assert.match(preDesktop, /\.cr-checkout-layout__summary/);
-  assert.match(preDesktop, /\.cr-checkout-layout__payment/);
+  assert.doesNotMatch(preDesktop, /grid-template-areas:/);
+  assert.doesNotMatch(preDesktop, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)/);
   assert.match(checkoutCss.slice(desktopStart), /@media \(min-width: 1280px\)/);
 });
 
