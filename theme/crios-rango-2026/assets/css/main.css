@@ -2886,11 +2886,6 @@ body.cr-parent-category-view .cr-parent-category__grid,
     line-height: 16px;
   }
 
-  .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-icon {
-    width: 28px;
-    height: 28px;
-  }
-
   .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-cart-count {
     min-width: 22px;
     height: 22px;
@@ -3234,11 +3229,17 @@ body.cr-parent-category-view .cr-parent-category__grid,
 /* TABLET GLOBAL NAVIGATION SCALE — visual-only; keep the 1280px mode switch intact. */
 @media (min-width: 768px) and (max-width: 1279px) {
   :root {
-    --cr-global-nav-icon-size: clamp(24px, calc(.944vw + 16.75px), 28px);
-    --cr-global-nav-label-size: clamp(13px, calc(.472vw + 9.37px), 14px);
-    --cr-global-header-icon-size: clamp(32px, calc(1.338vw + 21.73px), 36px);
-    --cr-global-header-badge-size: clamp(20px, calc(.669vw + 14.86px), 22px);
-    --cr-global-header-badge-font-size: clamp(11px, calc(.335vw + 8.43px), 12px);
+    --cr-global-nav-icon-size: clamp(24px, calc(1.1742vw + 14.98px), 30px);
+    --cr-global-nav-label-size: clamp(13px, calc(.3012vw + 10.69px), 14px);
+    --cr-global-header-icon-size: clamp(32px, calc(1.1742vw + 22.98px), 38px);
+    --cr-global-header-badge-size: clamp(20px, calc(.587vw + 15.49px), 23px);
+    --cr-global-header-badge-font-size: clamp(11px, calc(.196vw + 9.49px), 12px);
+  }
+
+  .cr-mobile-bottom-nav.cr-app-bottom-nav > .cr-mobile-bottom-nav__inner {
+    width: 100%;
+    max-width: none;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .cr-mobile-bottom-nav.cr-app-bottom-nav > .cr-mobile-bottom-nav__inner > a {

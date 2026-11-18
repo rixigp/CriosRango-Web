@@ -72,11 +72,13 @@ test('CANONICAL_BOTTOM_NAV_INTERMEDIATE_SCALE_ONLY=PASS', () => {
   assert.match(legacyTabletScale, /--cr-bottom-nav:\s*88px/);
   assert.match(legacyTabletScale, /padding:\s*8px\s+8px\s+env\(safe-area-inset-bottom\)/);
   assert.match(intermediateScale, /min-height:\s*68px/);
-  assert.match(intermediateScale, /--cr-global-nav-icon-size:\s*clamp\(24px,[^;]+28px\)/);
-  assert.match(intermediateScale, /--cr-global-nav-label-size:\s*clamp\(13px,[^;]+14px\)/);
-  assert.match(intermediateScale, /--cr-global-header-icon-size:\s*clamp\(32px,[^;]+36px\)/);
-  assert.match(intermediateScale, /--cr-global-header-badge-size:\s*clamp\(20px,[^;]+22px\)/);
-  assert.match(intermediateScale, /--cr-global-header-badge-font-size:\s*clamp\(11px,[^;]+12px\)/);
+  assert.match(intermediateScale, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s*>\s*\.cr-mobile-bottom-nav__inner\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;/s);
+  assert.match(intermediateScale, /grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(intermediateScale, /--cr-global-nav-icon-size:\s*clamp\(24px,\s*calc\(1\.1742vw \+ 14\.98px\),\s*30px\)/);
+  assert.match(intermediateScale, /--cr-global-nav-label-size:\s*clamp\(13px,\s*calc\(\.3012vw \+ 10\.69px\),\s*14px\)/);
+  assert.match(intermediateScale, /--cr-global-header-icon-size:\s*clamp\(32px,\s*calc\(1\.1742vw \+ 22\.98px\),\s*38px\)/);
+  assert.match(intermediateScale, /--cr-global-header-badge-size:\s*clamp\(20px,\s*calc\(\.587vw \+ 15\.49px\),\s*23px\)/);
+  assert.match(intermediateScale, /--cr-global-header-badge-font-size:\s*clamp\(11px,\s*calc\(\.196vw \+ 9\.49px\),\s*12px\)/);
   assert.match(intermediateScale, /min-width:\s*44px/);
   assert.match(intermediateScale, /min-height:\s*68px/);
   assert.match(intermediateScale, /font-size:\s*var\(--cr-global-nav-label-size\)/);
@@ -146,4 +148,9 @@ test('DESKTOP_LOGO_OWNERSHIP_AND_MOBILE_HOME_IDENTITY=PASS', () => {
   assert.match(css, /\.cr-desktop-rail\s*\{\s*display:\s*none\s*!important/);
   assert.match(css, /\.cr-desktop-shell > \.cr-desktop-rail[\s\S]*?display:\s*flex\s*!important/);
   assert.match(css, /@media \(min-width: 1280px\)[\s\S]*?\.cr-desktop-shell\s*\{/);
+});
+
+test('PRODUCT_DETAIL_USES_GLOBAL_BOTTOM_NAV=YES; PAGE_SPECIFIC_NAV_OVERRIDES=NO', () => {
+  assert.doesNotMatch(product, /\.cr-mobile-bottom-nav|\.cr-desktop-rail|--cr-global-nav|--cr-global-header/, 'Product Detail must not redefine or suppress the global navigation component');
+  assert.match(css, /@media \(min-width: 768px\) and \(max-width: 1279px\)[\s\S]*?\.cr-mobile-bottom-nav\.cr-app-bottom-nav\s*>\s*\.cr-mobile-bottom-nav__inner\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;/);
 });

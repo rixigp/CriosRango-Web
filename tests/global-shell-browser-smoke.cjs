@@ -6,6 +6,7 @@ const BASE_URL = (process.env.STAGING_BASE_URL || 'https://criosrango.es/prueba'
 const WIDTHS = [390, 430, 768, 980, 1100, 1200, 1279, 1280, 1440];
 const ACCOUNT_URL = new URL('mi-cuenta/', BASE_URL + '/').toString();
 const LEGAL_URL = new URL('cambios-y-devoluciones/', BASE_URL + '/').toString();
+const NAV_METRICS_BY_ROUTE = new Map();
 
 async function navigate(page, url) {
   const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
@@ -32,20 +33,31 @@ async function inspect(page, routeName, width) {
       bottomVisible: visible('.cr-mobile-bottom-nav.cr-app-bottom-nav'),
       headerCount: document.querySelectorAll('.cr-app-header').length,
       globalNavigationScale: (() => {
-        const navLink = document.querySelector('.cr-mobile-bottom-nav.cr-app-bottom-nav .cr-mobile-bottom-nav__inner > a');
+        const nav = document.querySelector('.cr-mobile-bottom-nav.cr-app-bottom-nav');
+        const inner = nav?.querySelector('.cr-mobile-bottom-nav__inner');
+        const navLink = inner?.querySelector(':scope > a');
         const navIcon = navLink?.querySelector('.cr-icon');
-        const headerButton = document.querySelector('.cr-app-header .cr-app-icon-button');
-        const headerIcon = headerButton?.querySelector('.cr-icon');
-        const badge = document.querySelector('.cr-app-header .cr-cart-count');
+        const headerButtons = Array.from(document.querySelectorAll('.cr-app-header .cr-app-icon-button'));
+        const searchButton = headerButtons[0] || null;
+        const cartButton = headerButtons.find(button => button.querySelector('.cr-cart-count')) || headerButtons[headerButtons.length - 1] || null;
+        const searchIcon = searchButton?.querySelector('.cr-icon');
+        const cartIcon = cartButton?.querySelector('.cr-icon');
+        const badge = cartButton?.querySelector('.cr-cart-count') || document.querySelector('.cr-app-header .cr-cart-count');
         const navLinkStyle = navLink ? getComputedStyle(navLink) : null;
         const badgeStyle = badge ? getComputedStyle(badge) : null;
         const rect = el => { const r = el?.getBoundingClientRect(); return r ? { width: r.width, height: r.height } : null; };
         return {
+          navWidth: rect(nav)?.width ?? null,
+          innerWidth: rect(inner)?.width ?? null,
+          itemWidth: rect(navLink)?.width ?? null,
           navIcon: navIcon ? rect(navIcon).width : null,
           navLabel: navLinkStyle ? parseFloat(navLinkStyle.fontSize) : null,
           navTarget: rect(navLink),
-          headerIcon: headerIcon ? rect(headerIcon).width : null,
-          headerTarget: rect(headerButton),
+          searchIcon: searchIcon ? rect(searchIcon).width : null,
+          cartIcon: cartIcon ? rect(cartIcon).width : null,
+          headerIcon: searchIcon ? rect(searchIcon).width : null,
+          headerTarget: rect(searchButton),
+          badgeWidth: badgeStyle ? parseFloat(badgeStyle.minWidth) : null,
           badgeMinWidth: badgeStyle ? parseFloat(badgeStyle.minWidth) : null,
           badgeHeight: badgeStyle ? parseFloat(badgeStyle.height) : null,
           badgeFont: badgeStyle ? parseFloat(badgeStyle.fontSize) : null,
@@ -91,16 +103,33 @@ async function inspect(page, routeName, width) {
   assert.equal(state.headerCount, 1, routeName + ' must render one global header');
   assert.equal(state.sidebarVisible, width >= 1280, routeName + ' sidebar at ' + width);
   assert.equal(state.bottomVisible, width < 1280, routeName + ' bottom nav at ' + width);
+  if (width === 1279) console.log('1279_BOTTOM_NAV=' + (state.bottomVisible ? 'YES' : 'NO') + '; SIDEBAR_VISIBLE=' + (state.sidebarVisible ? 'YES' : 'NO'));
+  if (width === 1280) console.log('1280_BOTTOM_NAV=' + (state.bottomVisible ? 'YES' : 'NO') + '; SIDEBAR_VISIBLE=' + (state.sidebarVisible ? 'YES' : 'NO'));
   if (width >= 768 && width < 1280) {
     const scale = state.globalNavigationScale;
-    const expectedNavIcon = Math.min(28, 24 + (width - 768) * .00944);
-    const expectedNavLabel = Math.min(14, 13 + (width - 768) * .00472);
-    const expectedHeaderIcon = Math.min(36, 32 + (width - 768) * .01338);
-    const expectedBadge = Math.min(22, 20 + (width - 768) * .00669);
-    assert.ok(Math.abs(scale.navIcon - expectedNavIcon) <= .25, routeName + ' tablet bottom-nav icon scale at ' + width + ': ' + scale.navIcon);
-    assert.ok(Math.abs(scale.navLabel - expectedNavLabel) <= .25, routeName + ' tablet bottom-nav label scale at ' + width + ': ' + scale.navLabel);
-    assert.ok(Math.abs(scale.headerIcon - expectedHeaderIcon) <= .25, routeName + ' tablet header icon scale at ' + width + ': ' + scale.headerIcon);
-    assert.ok(Math.abs(scale.badgeMinWidth - expectedBadge) <= .25, routeName + ' tablet cart badge scale at ' + width + ': ' + scale.badgeMinWidth);
+    const expectedNavIcon = Math.min(30, 24 + (width - 768) * 6 / 511);
+    const expectedNavLabel = Math.min(14, 13 + (width - 768) / 332);
+    const expectedHeaderIcon = Math.min(38, 32 + (width - 768) * 6 / 511);
+    const expectedBadge = Math.min(23, 20 + (width - 768) * 3 / 511);
+    assert.ok(Math.abs(scale.navIcon - expectedNavIcon) <= .3, routeName + ' tablet bottom-nav icon scale at ' + width + ': ' + scale.navIcon);
+    assert.ok(Math.abs(scale.navLabel - expectedNavLabel) <= .3, routeName + ' tablet bottom-nav label scale at ' + width + ': ' + scale.navLabel);
+    assert.ok(Math.abs(scale.headerIcon - expectedHeaderIcon) <= .3, routeName + ' tablet header search icon scale at ' + width + ': ' + scale.headerIcon);
+    assert.ok(Math.abs(scale.cartIcon - expectedHeaderIcon) <= .3, routeName + ' tablet header cart icon scale at ' + width + ': ' + scale.cartIcon);
+    assert.ok(Math.abs(scale.badgeMinWidth - expectedBadge) <= .3, routeName + ' tablet cart badge scale at ' + width + ': ' + scale.badgeMinWidth);
+    assert.ok(Math.abs(scale.navWidth - width) <= 1, routeName + ' bottom-nav spans viewport at ' + width + ': ' + scale.navWidth);
+    assert.ok(scale.innerWidth > 720, routeName + ' intermediate inner track escapes old 720px cap at ' + width + ': ' + scale.innerWidth);
+    assert.ok(scale.itemWidth > 140, routeName + ' five-column item width uses available viewport at ' + width + ': ' + scale.itemWidth);
+    assert.ok(scale.navTarget.width >= 44 && scale.navTarget.height >= 44, routeName + ' bottom-nav touch target at ' + width);
+    assert.ok(scale.headerTarget.width >= 44 && scale.headerTarget.height >= 44, routeName + ' header touch target at ' + width);
+    const previous = NAV_METRICS_BY_ROUTE.get(routeName);
+    if (previous) {
+      assert.ok(scale.innerWidth > previous.innerWidth, routeName + ' inner width grows from ' + previous.width + ' to ' + width);
+      assert.ok(scale.itemWidth > previous.itemWidth, routeName + ' item width grows from ' + previous.width + ' to ' + width);
+      assert.ok(scale.navIcon > previous.navIcon, routeName + ' nav icon grows from ' + previous.width + ' to ' + width);
+      assert.ok(scale.headerIcon > previous.headerIcon, routeName + ' header icon grows from ' + previous.width + ' to ' + width);
+    }
+    NAV_METRICS_BY_ROUTE.set(routeName, { width, innerWidth: scale.innerWidth, itemWidth: scale.itemWidth, navIcon: scale.navIcon, headerIcon: scale.headerIcon });
+    console.log('TABLET_NAV_METRICS_' + routeName.toUpperCase() + '_' + width + '=' + JSON.stringify({ VIEWPORT: width, BOTTOM_NAV_WIDTH: scale.navWidth, INNER_WIDTH: scale.innerWidth, ITEM_WIDTH: scale.itemWidth, ICON_WIDTH: scale.navIcon, LABEL_FONT_SIZE: scale.navLabel, SEARCH_ICON_WIDTH: scale.searchIcon, CART_ICON_WIDTH: scale.cartIcon, BADGE_WIDTH: scale.badgeWidth }));
     assert.ok(scale.navTarget.width >= 44 && scale.navTarget.height >= 44, routeName + ' bottom-nav touch target at ' + width);
     assert.ok(scale.headerTarget.width >= 44 && scale.headerTarget.height >= 44, routeName + ' header touch target at ' + width);
     assert.ok(scale.tabletTokens.navIcon && scale.tabletTokens.navLabel && scale.tabletTokens.headerIcon, routeName + ' tablet scale tokens at ' + width);
@@ -191,6 +220,7 @@ async function inspect(page, routeName, width) {
   if (routeName === 'product') {
     assert.equal(state.productFound, true, 'product detail marker found');
     assert.equal(state.productDisplay === 'grid', width >= 1280, 'product 2-column grid starts at 1280');
+    if (width === 768) console.log('PRODUCT_DETAIL_768_BOTTOM_NAV=' + (state.bottomVisible && !state.sidebarVisible ? 'PASS' : 'FAIL'));
   }
   if (width === 390 && ['account','cart','outlet'].includes(routeName)) {
     console.log('MOBILE_SPACING_' + routeName.toUpperCase() + '=' + JSON.stringify({ bodyPaddingTop: state.bodyPaddingTop, spacing: state.spacing }));
