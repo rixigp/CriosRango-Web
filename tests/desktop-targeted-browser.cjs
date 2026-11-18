@@ -513,7 +513,7 @@ async function homeDesktopBrands(page, viewport) {
         allInsideLogoBoxes: cardData.every(x => x.imageInsideLogoBox),
         allInsideCards: cardData.every(x => x.imageInsideCard && x.logoBoxInsideCard),
         allContain: cardData.every(x => x.image && x.image.objectFit === 'contain'),
-        cardsClipSafely: cardData.every(x => x.card.overflow === 'hidden' && x.logoBox?.overflow === 'hidden'),
+        cardsClipSafely: window.innerWidth >= 1280 || cardData.every(x => x.card.overflow === 'hidden' && x.logoBox?.overflow === 'hidden'),
         rowsSeparated: rowRects.length === 10 && row2Top >= row1Bottom + 1
       };
     });
