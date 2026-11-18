@@ -159,14 +159,49 @@ test('web catalog page size is sourced from the audited app paginator contract',
   assert.match(js, /Number\(responseData\.per_page\)!==pageSize/);
 });
 
-test('category filter selection is live, chips are actionable, and Apply only closes', () => {
+test('category filter selection remains live in listings and HUB Apply navigates through the canonical listing route', () => {
   assert.match(js, /publishLiveFilters\(\);scheduleDependentRefresh\(dimension\)/);
   assert.match(js, /window\.CR2026CatalogListing=\{applyFilters,getFilters,renderActiveFilterChips,pageSize,getOutletContext\}/);
-  assert.ok(js.includes("filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',closeSheet)"));
+  assert.match(js, /const applyFilterSelection = \(\) => \{/);
+  assert.match(js, /if \(hasProductListing \|\| filterSheet\.dataset\.context !== 'parent'\) \{\s*closeSheet\(\);\s*return;/);
+  assert.match(js, /window\.location\.href = buildCategoryHubFilterUrl\(window\.location\.href, filters\)/);
+  assert.ok(js.includes("filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',applyFilterSelection)"));
   assert.match(js, /data-cr-active-filter-chips/);
   assert.match(js, /cr-product-listing__clear-filters/);
-  assert.doesNotMatch(js, /window\.location\.assign\(url\.toString\(\)\)/);
   assert.match(js, /window\.history\.replaceState/);
+});
+
+test('HUB filter navigation serializes exactly the listing filter keys and preserves the active category URL', () => {
+  const api = catalogStateApi();
+  const target = new URL(api.buildCategoryHubFilterUrl(
+    'https://example.test/categoria/bebe-nina/?orderby=price&paged=3&campaign=x',
+    { size_ids: ['12', '4', '12'], color_ids: ['8'], brand_ids: ['31', '7'] }
+  ));
+  assert.equal(target.pathname, '/categoria/bebe-nina/');
+  assert.equal(target.searchParams.get('orderby'), 'price');
+  assert.equal(target.searchParams.get('campaign'), 'x');
+  assert.equal(target.searchParams.get('size_ids'), '4,12');
+  assert.equal(target.searchParams.get('color_ids'), '8');
+  assert.equal(target.searchParams.get('brand_ids'), '7,31');
+  assert.equal(target.searchParams.has('paged'), false);
+  assert.equal(target.searchParams.has('product-page'), false);
+  const cleared = new URL(api.buildCategoryHubFilterUrl(target.toString(), {
+    size_ids: [], color_ids: [], brand_ids: []
+  }));
+  assert.equal(cleared.searchParams.has('size_ids'), false);
+  assert.equal(cleared.searchParams.has('color_ids'), false);
+  assert.equal(cleared.searchParams.has('brand_ids'), false);
+});
+
+test('filtered category listing rejects Filter API products outside the active category and all descendants', () => {
+  assert.match(php, /function cr2026_catalog_product_ids_are_within_category_tree/);
+  assert.match(php, /get_term_children\( \$category_id, 'product_cat' \)/);
+  assert.match(php, /wp_get_post_terms\( \$product_id, 'product_cat', array\( 'fields' => 'ids' \) \)/);
+  assert.match(php, /cr2026_catalog_product_ids_are_within_category_tree\( \$product_ids, \$category_id \)/);
+  assert.match(php, /catalog_category_id/);
+  const taxonomy = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_cat.php'), 'utf8');
+  assert.match(taxonomy, /if \( cr2026_category_filters_selected\(\) \) \{\s*wc_get_template\( 'archive-product.php' \);\s*return;/);
+  assert.match(taxonomy, /\$current_term->term_id/);
 });
 
 test('catalog uses an explicit inline Load more button with retryable append state and no auto observer', () => {

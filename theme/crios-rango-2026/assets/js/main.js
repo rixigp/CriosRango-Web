@@ -26,7 +26,19 @@
     Number.isInteger(entry.page) && entry.page >= 1 && Array.isArray(entry.pages) &&
     entry.pages.length === entry.page && entry.payload && typeof entry.payload.html === 'string'
   );
-  window.CR2026CatalogState = { toggleFacetSelection, sameOrderedIds, catalogCacheKey, isValidCatalogCacheEntry, CATALOG_SESSION_CACHE_VERSION, CATALOG_SESSION_CACHE_TTL_MS };
+  const buildCategoryHubFilterUrl = (href, filters) => {
+    const destination = new URL(href);
+    ['size_ids', 'color_ids', 'brand_ids'].forEach(key => {
+      const values = Array.from(new Set((filters && filters[key] || []).map(String).filter(Boolean)))
+        .sort((left, right) => left.localeCompare(right, 'en', { numeric: true }));
+      if (values.length) destination.searchParams.set(key, values.join(','));
+      else destination.searchParams.delete(key);
+    });
+    destination.searchParams.delete('paged');
+    destination.searchParams.delete('product-page');
+    return destination.toString();
+  };
+  window.CR2026CatalogState = { toggleFacetSelection, sameOrderedIds, catalogCacheKey, isValidCatalogCacheEntry, buildCategoryHubFilterUrl, CATALOG_SESSION_CACHE_VERSION, CATALOG_SESSION_CACHE_TTL_MS };
 
   const menuButton = document.querySelector('[data-cr-menu-toggle]');
   const mobileMenu = document.querySelector('[data-cr-mobile-menu]');
@@ -422,7 +434,24 @@
       generation++;activeControllers.forEach(c=>c.abort());activeControllers=[];
       render(activeDimension);publishLiveFilters();
     });
-    filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',closeSheet);
+    const applyFilterSelection = () => {
+      const hasProductListing = Boolean(document.querySelector('[data-cr-product-list]'));
+      if (hasProductListing || filterSheet.dataset.context !== 'parent') {
+        closeSheet();
+        return;
+      }
+      const filters = {
+        size_ids: draft.sizes.slice(),
+        color_ids: draft.colors.slice(),
+        brand_ids: draft.brands.slice()
+      };
+      if (!Object.values(filters).some(values => values.length)) {
+        closeSheet();
+        return;
+      }
+      window.location.href = buildCategoryHubFilterUrl(window.location.href, filters);
+    };
+    filterSheet.querySelector('[data-cr-filter-apply]').addEventListener('click',applyFilterSelection);
     document.addEventListener('keydown',event=>{if(!filterSheet.hidden&&event.key==='Escape')closeSheet();});
     window.CR2026CatalogFilterState={
       remove:(key,id)=>{const dimension=key==='size_ids'?'sizes':key==='color_ids'?'colors':'brands';draft[dimension]=draft[dimension].filter(value=>value!==String(id));render(activeDimension);publishLiveFilters();scheduleDependentRefresh(dimension);},

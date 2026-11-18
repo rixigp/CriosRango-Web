@@ -337,6 +337,39 @@ function cr2026_catalog_cache_store( $cache_key, $payload ) {
     return true;
 }
 
+/**
+ * Fail closed if Filter API returns a product outside the active product_cat
+ * term tree. get_term_children() includes every descendant, not only direct children.
+ */
+function cr2026_catalog_product_ids_are_within_category_tree( $product_ids, $category_id ) {
+    $category_id = absint( $category_id );
+    if ( ! $category_id || ! taxonomy_exists( 'product_cat' ) ) { return false; }
+
+    $descendant_ids = get_term_children( $category_id, 'product_cat' );
+    if ( is_wp_error( $descendant_ids ) || ! is_array( $descendant_ids ) ) { return false; }
+    $allowed_ids = array_fill_keys(
+        array_map( 'absint', array_merge( array( $category_id ), $descendant_ids ) ),
+        true
+    );
+
+    foreach ( $product_ids as $product_id ) {
+        $product_id = absint( $product_id );
+        if ( ! $product_id ) { return false; }
+        $assigned_ids = wp_get_post_terms( $product_id, 'product_cat', array( 'fields' => 'ids' ) );
+        if ( is_wp_error( $assigned_ids ) || ! is_array( $assigned_ids ) ) { return false; }
+
+        $inside_tree = false;
+        foreach ( $assigned_ids as $assigned_id ) {
+            if ( isset( $allowed_ids[ absint( $assigned_id ) ] ) ) {
+                $inside_tree = true;
+                break;
+            }
+        }
+        if ( ! $inside_tree ) { return false; }
+    }
+    return true;
+}
+
 function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $page = max( 1, absint( $request->get_param( 'page' ) ) );
     $per_page = CR2026_CATALOG_PAGE_SIZE;
@@ -353,6 +386,10 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $is_brand_context = $brand_id > 0;
     if ( $is_brand_context && ( ! $brand_term instanceof WP_Term || 'product_brand' !== $brand_term->taxonomy || $category_id > 0 || $is_outlet_scope ) ) {
         return new WP_Error( 'cr2026_catalog_brand', __( 'Contexto de marca no válido.', 'crios-rango-2026' ), array( 'status' => 400 ) );
+    }
+    $category_term = $category_id ? get_term( $category_id, 'product_cat' ) : null;
+    if ( $category_id > 0 && ( ! $category_term instanceof WP_Term || 'product_cat' !== $category_term->taxonomy ) ) {
+        return new WP_Error( 'cr2026_catalog_category', __( 'Categoría no válida.', 'crios-rango-2026' ), array( 'status' => 400 ) );
     }
     $raw_origin_ids = trim( (string) $request->get_param( 'origin_category_ids' ) );
     $origin_category_ids = array();
@@ -457,6 +494,10 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
             return new WP_Error( 'cr2026_catalog_duplicate_ids', __( 'Filter API devolvió IDs de producto duplicados.', 'crios-rango-2026' ), array( 'status' => 502 ) );
         }
         $product_ids = array_slice( $normalized_product_ids, 0, $per_page );
+        if ( $category_id > 0 && ! $is_outlet_scope && ! $is_brand_context
+            && ! cr2026_catalog_product_ids_are_within_category_tree( $product_ids, $category_id ) ) {
+            return new WP_Error( 'cr2026_catalog_category_scope', __( 'Filter API devolvió productos fuera del árbol de la categoría activa.', 'crios-rango-2026' ), array( 'status' => 502 ) );
+        }
         $filter_api_product_ids = $product_ids;
         if ( $product_ids ) {
             $products = wc_get_products( array(
@@ -497,10 +538,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
             $total = absint( $filter_payload['total_count'] );
         }
     } else {
-        $term = $category_id ? get_term( $category_id, 'product_cat' ) : null;
-        if ( $category_id > 0 && ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) ) {
-            return new WP_Error( 'cr2026_catalog_category', __( 'Categoría no válida.', 'crios-rango-2026' ), array( 'status' => 400 ) );
-        }
+        $term = $category_term;
         $sort_args = cr2026_catalog_sort_query_vars( $sort );
         $orderby = $sort_args['orderby'];
         $order = $sort_args['order'];
