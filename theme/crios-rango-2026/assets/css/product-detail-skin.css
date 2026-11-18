@@ -1921,3 +1921,23 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
     box-sizing: border-box;
   }
 }
+
+/* Reservarlo visual state follows the native functional disabled property. */
+body.cr-product-detail-app .cr-product-reserve:disabled {
+  background-color: transparent !important;
+  color: #AEB2AD !important;
+  opacity: 1;
+  cursor: not-allowed;
+}
+body.cr-product-detail-app .cr-product-reserve:not(:disabled),
+body.cr-product-detail-app .cr-product-reserve:not(:disabled):hover,
+body.cr-product-detail-app .cr-product-reserve:not(:disabled):focus,
+body.cr-product-detail-app .cr-product-reserve:not(:disabled):focus-visible {
+  background-color: #183B35 !important;
+  color: #FFFFFF !important;
+  opacity: 1;
+  cursor: pointer;
+}
+body.cr-product-detail-app .cr-product-reserve .cr-product-actions__icon {
+  color: inherit;
+}
