@@ -75,7 +75,7 @@ function cr2026_account_render_profile_home() {
     $base = wc_get_account_endpoint_url( 'edit-account' );
     $personal_url = add_query_arg( 'profile_view', 'personal', $base );
     $password_url = add_query_arg( 'profile_view', 'password', $base );
-    $address_url = wc_get_account_endpoint_url( 'edit-address' );
+    $address_url = wc_get_account_endpoint_url( 'edit-address', 'envio' );
     $delete_url = wc_get_account_endpoint_url( 'wpf-delete-account' );
     ?>
     <section class="cr-account-content cr-account-profile-home" aria-label="<?php esc_attr_e( 'Perfil', 'crios-rango-2026' ); ?>">
