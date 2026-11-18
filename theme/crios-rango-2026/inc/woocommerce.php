@@ -371,6 +371,50 @@ function cr2026_novelties_cohort_ids( $generation ) {
 }
 
 /**
+ * Sort only the already-frozen Novedades cohort in PHP. Keeping the sort as a
+ * separate in-memory step makes it impossible for an orderby query to widen
+ * the result universe beyond the 24 IDs selected above.
+ */
+function cr2026_novelties_sort_cohort_products( $products, $sort ) {
+    $sort = sanitize_key( (string) $sort );
+    usort( $products, static function ( $left, $right ) use ( $sort ) {
+        $left_id = $left->get_id();
+        $right_id = $right->get_id();
+        $comparison = 0;
+
+        if ( in_array( $sort, array( 'title_asc', 'title_desc' ), true ) ) {
+            $left_name = remove_accents( wp_strip_all_tags( $left->get_name() ) );
+            $right_name = remove_accents( wp_strip_all_tags( $right->get_name() ) );
+            $comparison = strnatcasecmp( $left_name, $right_name );
+            if ( 'title_desc' === $sort ) { $comparison *= -1; }
+        } elseif ( in_array( $sort, array( 'price_asc', 'price_desc' ), true ) ) {
+            $left_price = $left->get_price();
+            $right_price = $right->get_price();
+            $left_has_price = '' !== $left_price && is_numeric( $left_price );
+            $right_has_price = '' !== $right_price && is_numeric( $right_price );
+            if ( $left_has_price !== $right_has_price ) {
+                return $left_has_price ? -1 : 1;
+            }
+            if ( $left_has_price && $right_has_price ) {
+                $comparison = (float) $left_price <=> (float) $right_price;
+                if ( 'price_desc' === $sort ) { $comparison *= -1; }
+            }
+        } else {
+            $left_date = $left->get_date_created();
+            $right_date = $right->get_date_created();
+            $left_timestamp = $left_date ? $left_date->getTimestamp() : 0;
+            $right_timestamp = $right_date ? $right_date->getTimestamp() : 0;
+            $comparison = $left_timestamp <=> $right_timestamp;
+            if ( 'oldest' !== $sort ) { $comparison *= -1; }
+        }
+
+        return 0 !== $comparison ? $comparison : ( $left_id <=> $right_id );
+    } );
+
+    return $products;
+}
+
+/**
  * Fail closed if Filter API returns a product outside the active product_cat
  * term tree. get_term_children() includes every descendant, not only direct children.
  */
@@ -490,16 +534,17 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $total = null;
 
     if ( $is_novelties && ! $has_filters ) {
-        $sort_args = cr2026_catalog_sort_query_vars( $sort );
+        // Hydrate exactly the frozen 24 IDs without applying a catalogue-wide
+        // orderby. The complete cohort is sorted in memory before pagination.
         $cohort_products = $novelties_cohort_ids ? wc_get_products( array(
             'status' => 'publish',
             'visibility' => 'visible',
             'include' => $novelties_cohort_ids,
             'limit' => count( $novelties_cohort_ids ),
             'return' => 'objects',
-            'orderby' => $sort_args['orderby'],
-            'order' => $sort_args['order'],
+            'orderby' => 'include',
         ) ) : array();
+        $cohort_products = cr2026_novelties_sort_cohort_products( $cohort_products, $sort );
         $total = count( $cohort_products );
         $products = array_slice( $cohort_products, $page_offset, $page_limit );
         $product_ids = array_map( static function ( $product ) { return $product->get_id(); }, $products );
