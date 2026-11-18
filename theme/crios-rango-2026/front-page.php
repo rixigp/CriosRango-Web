@@ -89,7 +89,7 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
     $winter_image  = cr2026_home_outlet_image_url( 'winter' );
     $summer_image  = cr2026_home_outlet_image_url( 'summer' );
     $home_brands         = cr2026_home_brands();
-    $all_brand_pages = array( $home_brands );
+    $all_brand_pages = array_chunk( $home_brands, 10 );
     ?>
 
     <section class="cr-home-section cr-home-novedades" aria-labelledby="cr-home-novedades-title">
