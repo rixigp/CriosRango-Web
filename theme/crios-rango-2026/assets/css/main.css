@@ -1199,7 +1199,7 @@ body.home .cr-app-header {
   body.home .cr-home-brand-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
   body.home .cr-home-brand { height: 64px; }
 
-  /* Intermediate-only brand pager: fixed-size cards, fluid column capacity. */
+  /* Intermediate Home brands: fixed 5 x 2 pages of ten, using the single shared node set. */
   body.home .cr-home-brand-pager--mobile,
   body.home .cr-home-brand-dots--mobile { display: none !important; }
   body.home .cr-home-brand-pager--intermediate { display: flex !important; }
@@ -1213,33 +1213,34 @@ body.home .cr-app-header {
   body.home .cr-home-brands .cr-home-brand-grid {
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(96px, 96px));
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     grid-template-rows: repeat(2, 96px);
     grid-auto-rows: 96px;
-    grid-auto-flow: column;
-    grid-auto-columns: 96px;
-    justify-content: center;
-    gap: 12px;
+    grid-auto-flow: row;
+    column-gap: clamp(8px, 1vw, 12px);
+    row-gap: 16px;
+    justify-items: center;
   }
   body.home .cr-home-brands .cr-home-brand {
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 96px;
-    min-width: 96px;
-    max-width: 96px;
+    width: min(100%, 120px);
+    min-width: 0;
+    max-width: 120px;
     height: 96px !important;
     padding: 8px;
     overflow: hidden;
   }
   body.home .cr-home-brands .cr-home-brand__logo-box {
     display: flex;
-    flex: 0 0 64px;
+    flex: 0 1 64px;
     align-items: center;
     justify-content: center;
     width: 64px;
-    min-width: 64px;
+    max-width: 100%;
+    min-width: 0;
     height: 64px;
   }
   body.home .cr-home-brands .cr-home-brand__logo-box img {
@@ -3168,6 +3169,15 @@ body.cr-parent-category-view .cr-parent-category__grid,
 
 .cr-home-brand-pager--intermediate,
 .cr-home-brand-dots--intermediate { display: none; }
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  body.home .cr-home-brands .cr-home-brand-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 96px);
+    grid-auto-flow: row;
+    column-gap: clamp(8px, 1vw, 12px);
+  }
+}
 
 /* Home desktop brands: two fixed pages of ten cards (5 columns x 2 rows). */
 .cr-home-brand-pager--desktop,
