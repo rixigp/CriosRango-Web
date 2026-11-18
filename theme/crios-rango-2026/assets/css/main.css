@@ -1217,8 +1217,8 @@ body.home .cr-app-header {
     grid-template-rows: repeat(2, 96px);
     grid-auto-rows: 96px;
     grid-auto-flow: row;
-    column-gap: clamp(8px, 1vw, 12px);
-    row-gap: 16px;
+    column-gap: clamp(7px, 1vw, 12px);
+    row-gap: clamp(10px, 1.25vw, 16px);
     justify-items: center;
   }
   body.home .cr-home-brands .cr-home-brand {
@@ -1226,25 +1226,27 @@ body.home .cr-app-header {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: min(100%, 120px);
+    width: min(100%, clamp(88px, calc(5.7vw + 44px), 120px));
     min-width: 0;
     max-width: 120px;
-    height: 96px !important;
-    padding: 8px;
-    overflow: hidden;
+    height: clamp(72px, calc(4.8vw + 35px), 96px) !important;
+    padding: clamp(6px, .625vw, 8px);
+    overflow: visible;
   }
   body.home .cr-home-brands .cr-home-brand__logo-box {
     display: flex;
-    flex: 0 1 64px;
+    flex: 0 1 clamp(44px, calc(4vw + 13.3px), 64px);
     align-items: center;
     justify-content: center;
-    width: 64px;
+    width: clamp(44px, calc(4vw + 13.3px), 64px);
     max-width: 100%;
     min-width: 0;
-    height: 64px;
+    height: clamp(44px, calc(4vw + 13.3px), 64px);
+    overflow: visible;
   }
   body.home .cr-home-brands .cr-home-brand__logo-box img {
     display: block;
+    flex: 0 1 auto;
     width: auto !important;
     height: auto !important;
     max-width: 100%;
