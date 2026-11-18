@@ -3268,7 +3268,9 @@ body.cr-parent-category-view .cr-parent-category__grid,
   }
 
   .cr-app-header .cr-cart-count,
-  body:not(.home) .cr-header__actions .cr-app-icon-button .cr-cart-count {
+  body.home .cr-app-header .cr-home-topbar__actions .cr-app-icon-button .cr-cart-count,
+  body:not(.home) .cr-app-header .cr-home-topbar__actions .cr-app-icon-button .cr-cart-count,
+  body:not(.home) .cr-app-header .cr-header__actions .cr-app-icon-button .cr-cart-count {
     min-width: var(--cr-global-header-badge-size);
     height: var(--cr-global-header-badge-size);
     padding-inline: 5px;
