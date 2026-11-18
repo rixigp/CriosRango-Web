@@ -46,6 +46,7 @@ get_header( 'shop' );
     data-category-id="<?php echo esc_attr( $listing_category_id ); ?>"
     data-outlet-category-id="<?php echo esc_attr( $listing_outlet_category_id ); ?>"
     data-page-size="<?php echo esc_attr( CR2026_CATALOG_PAGE_SIZE ); ?>"
+    data-total-limit="<?php echo $is_novelties_view ? '24' : '0'; ?>"
     data-filter-api-url="<?php echo esc_url( rest_url( 'criosrango-filter/v1/query' ) ); ?>"
     data-products-url="<?php echo esc_url( rest_url( 'cr2026/v1/catalog-page' ) ); ?>">
     <div class="cr-product-listing__shell cr-shell">

@@ -269,7 +269,7 @@ function cr2026_catalog_cache_session_sensitive() {
         && is_callable( array( WC()->session, 'has_session' ) ) && WC()->session->has_session() ) { return true; }
     return false;
 }
-function cr2026_catalog_cache_key( $generation, $scope, $category_id, $brand_id, $outlet_category_id, $origin_category_ids, $filters, $sort, $page, $per_page ) {
+function cr2026_catalog_cache_key( $generation, $scope, $category_id, $brand_id, $outlet_category_id, $origin_category_ids, $filters, $sort, $page, $per_page, $novelties_limit = 0 ) {
     $state = array(
         'schema' => 1, 'generation' => (int) $generation, 'scope' => (string) $scope,
         'category_id' => (int) $category_id, 'brand_id' => (int) $brand_id,
@@ -279,6 +279,7 @@ function cr2026_catalog_cache_key( $generation, $scope, $category_id, $brand_id,
         'color_ids' => cr2026_catalog_cache_normalize_ids( $filters['color_ids'] ),
         'brand_ids' => cr2026_catalog_cache_normalize_ids( $filters['brand_ids'] ),
         'sort' => (string) $sort, 'page' => (int) $page, 'per_page' => (int) $per_page,
+        'novelties_limit' => max( 0, absint( $novelties_limit ) ),
         'locale' => function_exists( 'determine_locale' ) ? determine_locale() : get_locale(),
         'currency' => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '',
         'tax_display' => get_option( 'woocommerce_tax_display_shop', 'excl' ),
@@ -375,6 +376,10 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $per_page = CR2026_CATALOG_PAGE_SIZE;
     $category_id = absint( $request->get_param( 'catalog_category_id' ) );
     $brand_id = absint( $request->get_param( 'catalog_brand_id' ) );
+    $is_novelties = 1 === absint( $request->get_param( 'novelties' ) );
+    $novelties_limit = $is_novelties ? 24 : 0;
+    $page_offset = ( $page - 1 ) * $per_page;
+    $page_limit = $is_novelties ? max( 0, min( $per_page, $novelties_limit - $page_offset ) ) : $per_page;
     $scope = sanitize_key( (string) $request->get_param( 'scope' ) );
     if ( '' === $scope ) { $scope = 'catalog'; }
     $is_outlet_scope = 'outlet' === $scope;
@@ -410,6 +415,9 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     if ( ! $is_outlet_scope && ( $outlet_category_id > 0 || ! empty( $origin_category_ids ) ) ) {
         return new WP_Error( 'cr2026_catalog_outlet_context', __( 'Contexto Outlet no válido para catálogo general.', 'crios-rango-2026' ), array( 'status' => 400 ) );
     }
+    if ( $is_novelties && ( $category_id > 0 || $is_brand_context || $is_outlet_scope ) ) {
+        return new WP_Error( 'cr2026_catalog_novelties_context', __( 'El límite de Novedades solo es válido para el catálogo raíz.', 'crios-rango-2026' ), array( 'status' => 400 ) );
+    }
     $sort = sanitize_key( (string) $request->get_param( 'sort' ) );
     if ( ! in_array( $sort, array( 'newest', 'oldest', 'price_asc', 'price_desc', 'title_asc', 'title_desc', 'default' ), true ) ) {
         $sort = 'newest';
@@ -435,7 +443,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         foreach ( $filter_keys as $filter_key ) { $cache_filters[ $filter_key ] = $request->get_param( $filter_key ); }
         $catalog_cache_key = cr2026_catalog_cache_key(
             $generation, $scope, $category_id, $brand_id, $outlet_category_id,
-            $origin_category_ids, $cache_filters, $sort, $page, $per_page
+            $origin_category_ids, $cache_filters, $sort, $page, $per_page, $novelties_limit
         );
         $cache_result = cr2026_catalog_cache_lookup( $catalog_cache_key );
         if ( 'hit' === $cache_result['state'] || 'stale' === $cache_result['state'] ) {
@@ -493,7 +501,7 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         if ( count( $normalized_product_ids ) !== count( array_unique( $normalized_product_ids ) ) ) {
             return new WP_Error( 'cr2026_catalog_duplicate_ids', __( 'Filter API devolvió IDs de producto duplicados.', 'crios-rango-2026' ), array( 'status' => 502 ) );
         }
-        $product_ids = array_slice( $normalized_product_ids, 0, $per_page );
+        $product_ids = array_slice( $normalized_product_ids, 0, $page_limit );
         if ( $category_id > 0 && ! $is_outlet_scope && ! $is_brand_context
             && ! cr2026_catalog_product_ids_are_within_category_tree( $product_ids, $category_id ) ) {
             return new WP_Error( 'cr2026_catalog_category_scope', __( 'Filter API devolvió productos fuera del árbol de la categoría activa.', 'crios-rango-2026' ), array( 'status' => 502 ) );
@@ -537,6 +545,10 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         } elseif ( isset( $filter_payload['total_count'] ) ) {
             $total = absint( $filter_payload['total_count'] );
         }
+        if ( $is_novelties ) {
+            if ( null !== $total ) { $total = min( $total, $novelties_limit ); }
+            $has_more = $has_more && ( $page * $per_page < $novelties_limit );
+        }
     } else {
         $term = $category_term;
         $sort_args = cr2026_catalog_sort_query_vars( $sort );
@@ -554,6 +566,13 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         $products = isset( $catalog_result->products ) && is_array( $catalog_result->products ) ? $catalog_result->products : array();
         $total = isset( $catalog_result->total ) ? absint( $catalog_result->total ) : null;
         $max_num_pages = isset( $catalog_result->max_num_pages ) ? absint( $catalog_result->max_num_pages ) : 0;
+        if ( $is_novelties ) {
+            if ( null !== $total ) {
+                $total = min( $total, $novelties_limit );
+                $max_num_pages = min( $max_num_pages, (int) ceil( $total / $per_page ) );
+            }
+            $products = array_slice( $products, 0, $page_limit );
+        }
         $has_more = $page < $max_num_pages;
         $product_ids = array_map( static function ( $product ) { return $product->get_id(); }, $products );
     }

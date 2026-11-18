@@ -616,6 +616,8 @@
     const productsUrl = productListing.dataset.productsUrl;
     const pageSize = Number(productListing.dataset.pageSize || 0);
     if (!Number.isInteger(pageSize) || pageSize < 1) throw new Error('Invalid app catalog page size: '+productListing.dataset.pageSize);
+    const totalLimit = Number(productListing.dataset.totalLimit || 0);
+    if (!Number.isInteger(totalLimit) || totalLimit < 0) throw new Error('Invalid catalog total limit: '+productListing.dataset.totalLimit);
     const currentUrl = new URL(window.location.href);
     let orderby = ['date','price','price-desc','title'].includes(currentUrl.searchParams.get('orderby')) ? currentUrl.searchParams.get('orderby') : 'date';
     const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc',title:'title_asc'};
@@ -700,7 +702,37 @@
         return entry.key === cacheFullKey(cacheState()) ? entry : null;
       } catch (error) { return null; }
     };
+    const normalizeCatalogPage = (data, allowedCount = Infinity, loadedBefore = 0) => {
+      if (!totalLimit || !data || typeof data.html !== 'string') return data;
+      const template = document.createElement('template');
+      template.innerHTML = data.html;
+      const cards = Array.from(template.content.querySelectorAll('[data-product-id]'));
+      const keepCount = Number.isFinite(allowedCount) ? Math.max(0, allowedCount) : cards.length;
+      cards.slice(keepCount).forEach(card => card.remove());
+      const ids = Array.from(template.content.querySelectorAll('[data-product-id]')).map(card => String(card.getAttribute('data-product-id')));
+      const normalized = { ...data, html: template.innerHTML, product_ids: ids, rendered_product_ids: ids };
+      if (normalized.source === 'filter_api') normalized.filter_api_product_ids = ids;
+      if (normalized.total !== null && normalized.total !== undefined) normalized.total = Math.min(Number(normalized.total), totalLimit);
+      normalized.has_more = Boolean(normalized.has_more && loadedBefore + ids.length < totalLimit);
+      return normalized;
+    };
+    const normalizeCatalogPages = pages => {
+      if (!totalLimit || !Array.isArray(pages)) return Array.isArray(pages) ? pages.slice() : [];
+      const normalized = [];
+      let loaded = 0;
+      for (const data of pages) {
+        if (loaded >= totalLimit || !data || typeof data.html !== 'string') break;
+        const pageData = normalizeCatalogPage(data, totalLimit - loaded, loaded);
+        pageData.page = normalized.length + 1;
+        pageData.per_page = pageSize;
+        normalized.push(pageData);
+        loaded += pageData.product_ids.length;
+        if (!pageData.has_more) break;
+      }
+      return normalized;
+    };
     const writeCatalogCache = (scrollY = window.scrollY) => {
+      if (totalLimit) cachedCatalogPages = normalizeCatalogPages(cachedCatalogPages);
       if (!cachedCatalogPages.length || cachedCatalogPages.some(page => !page || typeof page.html !== 'string')) return;
       const state = cacheState(), key = cacheFullKey(state), baseKey = cacheStorageKey();
       const last = cachedCatalogPages[cachedCatalogPages.length - 1];
@@ -734,11 +766,27 @@
         if (data.source === 'filter_api' && !sameOrderedIds(Array.isArray(data.filter_api_product_ids) ? data.filter_api_product_ids.map(String) : [], endpoint)) return false;
         allIds.push(...rendered);
       }
-      return new Set(allIds).size === allIds.length;
+      return new Set(allIds).size === allIds.length && (!totalLimit || allIds.length <= totalLimit);
     };
     const restoreCatalogCache = () => {
       const entry = readCatalogCache();
       if (!entry) return false;
+      if (totalLimit) {
+        const pagesBefore = Array.isArray(entry.pages) ? entry.pages.length : 0;
+        entry.pages = normalizeCatalogPages(entry.pages);
+        if (!entry.pages.length) {
+          try { sessionStorage.removeItem(entry.baseKey); } catch (error) {}
+          return false;
+        }
+        entry.page = entry.pages.length;
+        entry.payload = { html: entry.pages.map(page => page.html || '').join('') };
+        const restoredCount = entry.pages.reduce((sum, page) => sum + page.product_ids.length, 0);
+        if (entry.total !== null && entry.total !== undefined) entry.total = Math.min(Number(entry.total), totalLimit);
+        entry.hasMore = Boolean(entry.pages[entry.pages.length - 1].has_more && restoredCount < totalLimit);
+        if (pagesBefore !== entry.pages.length || restoredCount >= totalLimit) {
+          try { sessionStorage.setItem(entry.baseKey, JSON.stringify(entry)); } catch (error) {}
+        }
+      }
       if (outletCategoryId) {
         selectedOutletBubbleKey = entry.state.outletBubbleKey || null;
         activeOutletOriginIds = Array.isArray(entry.state.outletOriginIds) ? entry.state.outletOriginIds.slice() : [];
@@ -756,6 +804,7 @@
       hasMore = Boolean(entry.hasMore);
       totalProducts = entry.total;
       cachedCatalogPages = entry.pages.slice();
+      if (totalLimit) writeCatalogCache(entry.scrollY);
       updateLoadMoreButton(false);
       if (outletNode) renderOutletBubbleSelection();
       window.requestAnimationFrame(() => window.scrollTo(0, Math.max(0, Number(entry.scrollY) || 0)));
@@ -769,13 +818,14 @@
       else if(outletCategoryId){params.set('outlet_category_id',String(outletCategoryId));if(activeOutletOriginIds.length)params.set('origin_category_ids',activeOutletOriginIds.join(','));}
       else if(categoryId!=='0')params.set('catalog_category_id',categoryId);
       filterKeys.forEach(key=>{const value=currentUrl.searchParams.get(key);if(value)params.set(key,value);});
+      if(totalLimit)params.set('novelties','1');
       return productsUrl+'?'+params.toString();
     };
     const revalidateCatalogCache = async entry => {
       const token = requestGeneration;
       const controller = new AbortController();
       const responses = [];
-      for (let page = 1; page <= entry.page; page++) {
+      for (let page = 1; page <= entry.page && (!totalLimit || (page - 1) * pageSize < totalLimit); page++) {
         const response = await fetch(buildCatalogPageUrl(page), {credentials:'same-origin',headers:{Accept:'application/json'},signal:controller.signal});
         if (token !== requestGeneration) return;
         if (!response.ok) throw new Error('Catalog background revalidation HTTP '+response.status);
@@ -808,9 +858,14 @@
         await loadPage(index + 1, index > 0, token, responses[index], true);
       }
     };
-    const updateLoadMoreButton = (isLoading = false) => { if(!loadMoreButton)return;loadMoreButton.disabled=isLoading;loadMoreButton.textContent=isLoading?'Cargando…':'Cargar más';loadMoreButton.hidden=!hasMore; };
+    const updateLoadMoreButton = (isLoading = false) => { if(!loadMoreButton)return;const count=grid.querySelectorAll('[data-product-id]').length;loadMoreButton.disabled=isLoading;loadMoreButton.textContent=isLoading?'Cargando…':'Cargar más';loadMoreButton.hidden=!hasMore||(totalLimit>0&&count>=totalLimit); };
     const loadPage = async (page, append, token=requestGeneration, preloadedData=null, background=false) => {
       if (append && loading) return;
+      if (totalLimit > 0 && (page - 1) * pageSize >= totalLimit) {
+        hasMore = false;
+        updateLoadMoreButton(false);
+        return;
+      }
       const controller=new AbortController();
       activeRequest=controller;loading=true;
       try {
@@ -823,6 +878,17 @@
         if(token!==requestGeneration)return;
         if (!responseData || Number(responseData.page) !== page) throw new Error('Catalog page mismatch: requested '+page+', received '+(responseData&&responseData.page));
         if(Number(responseData.per_page)!==pageSize)throw new Error('Catalog page size mismatch: app='+pageSize+', endpoint='+responseData.per_page);
+        const rawTemplate=document.createElement('template');rawTemplate.innerHTML=responseData.html||'';
+        const rawReturnedIds=Array.isArray(responseData.product_ids)?responseData.product_ids.map(String):[];
+        const rawEndpointIds=Array.isArray(responseData.rendered_product_ids)?responseData.rendered_product_ids.map(String):[];
+        const rawFilterApiIds=Array.isArray(responseData.filter_api_product_ids)?responseData.filter_api_product_ids.map(String):[];
+        const rawRenderedIds=Array.from(rawTemplate.content.querySelectorAll('[data-product-id]')).map(node=>String(node.getAttribute('data-product-id')));
+        if(!sameOrderedIds(rawReturnedIds,rawEndpointIds))throw new Error('Catalog endpoint ID/order mismatch: response='+JSON.stringify(rawReturnedIds)+' cards='+JSON.stringify(rawEndpointIds));
+        if(!sameOrderedIds(rawEndpointIds,rawRenderedIds))throw new Error('Catalog DOM ID/order mismatch: cards='+JSON.stringify(rawEndpointIds)+' DOM='+JSON.stringify(rawRenderedIds));
+        if(responseData.source==='filter_api'&&!sameOrderedIds(rawFilterApiIds,rawEndpointIds))throw new Error('Filter API ID/order mismatch: API='+JSON.stringify(rawFilterApiIds)+' cards='+JSON.stringify(rawEndpointIds));
+        const previousIds=append?Array.from(grid.querySelectorAll('[data-product-id]')).map(node=>String(node.getAttribute('data-product-id'))):[];
+        const loadedBefore=previousIds.length;
+        responseData=normalizeCatalogPage(responseData,totalLimit>0?Math.max(0,totalLimit-loadedBefore):Infinity,loadedBefore);
         const template=document.createElement('template');template.innerHTML=responseData.html||'';
         const returnedIds=Array.isArray(responseData.product_ids)?responseData.product_ids.map(String):[];
         const endpointIds=Array.isArray(responseData.rendered_product_ids)?responseData.rendered_product_ids.map(String):[];
@@ -832,7 +898,7 @@
         if(!sameOrderedIds(endpointIds,renderedIds))throw new Error('Catalog DOM ID/order mismatch: cards='+JSON.stringify(endpointIds)+' DOM='+JSON.stringify(renderedIds));
         if(responseData.source==='filter_api'&&!sameOrderedIds(filterApiIds,endpointIds))throw new Error('Filter API ID/order mismatch: API='+JSON.stringify(filterApiIds)+' cards='+JSON.stringify(endpointIds));
 
-        const previousIds=append?Array.from(grid.querySelectorAll('[data-product-id]')).map(node=>String(node.getAttribute('data-product-id'))):[];
+        
         const completeIds=previousIds.concat(renderedIds);
         const seenIds=new Set(),duplicates=[];
         completeIds.forEach(id=>{if(seenIds.has(id))duplicates.push(id);else seenIds.add(id);});
@@ -867,8 +933,8 @@
         if (append) cachedCatalogPages[page - 1] = responseData;
         else cachedCatalogPages = [responseData];
         currentPage = page;
-        hasMore = Boolean(responseData.has_more);
-        totalProducts=responseData.total===null||responseData.total===undefined?null:Number(responseData.total);
+        hasMore = Boolean(responseData.has_more && (!totalLimit || completeIds.length < totalLimit));
+        totalProducts=responseData.total===null||responseData.total===undefined?null:(totalLimit>0?Math.min(Number(responseData.total),totalLimit):Number(responseData.total));
         if(!hasMore&&totalProducts!==null&&totalProducts!==completeIds.length)throw new Error('Catalog total mismatch: loaded='+completeIds.length+' total='+totalProducts);
         writeCatalogCache();
         
@@ -904,7 +970,7 @@
       renderActiveFilterChips();
       resetAndLoad();
     };
-    window.CR2026CatalogListing={applyFilters,getFilters,renderActiveFilterChips,pageSize,getOutletContext};
+    window.CR2026CatalogListing={applyFilters,getFilters,renderActiveFilterChips,pageSize,totalLimit,getOutletContext};
     const renderOutletBubbleSelection=()=>{if(!outletNode)return;outletNode.querySelectorAll('[data-outlet-bubble-key]').forEach(button=>{const selected=button.dataset.outletBubbleKey===(selectedOutletBubbleKey||'');button.classList.toggle('is-selected',selected);button.setAttribute('aria-pressed',String(selected));});};
     const failClosedOutletBubbles=()=>{if(outletNode){outletNode.replaceChildren();outletNode.hidden=true;}};
     const initializeOutletBubbles=async()=>{
@@ -956,9 +1022,24 @@
     if(outletCategoryId)initializeOutletBubbles();
     resetAndLoad();
     window.addEventListener('pagehide', () => writeCatalogCache(window.scrollY), {once:true});
+    if (totalLimit > 0) {
+      window.addEventListener('pageshow', event => {
+        if (!event.persisted) return;
+        const cards = Array.from(grid.querySelectorAll('[data-product-id]'));
+        if (cards.length <= totalLimit) return;
+        cards.slice(totalLimit).forEach(card => card.remove());
+        cachedCatalogPages = normalizeCatalogPages(cachedCatalogPages);
+        currentPage = cachedCatalogPages.length;
+        hasMore = false;
+        totalProducts = totalProducts === null ? totalLimit : Math.min(totalProducts, totalLimit);
+        writeCatalogCache(window.scrollY);
+        updateLoadMoreButton(false);
+      });
+    }
     if(loadMoreButton){
       loadMoreButton.addEventListener('click',()=>{
-        if(!hasMore||loading||currentPage<1)return;
+        const loaded=grid.querySelectorAll('[data-product-id]').length;
+        if(!hasMore||loading||currentPage<1||(totalLimit>0&&loaded>=totalLimit))return;
         updateLoadMoreButton(true);
         loadPage(currentPage+1,true,requestGeneration);
       });

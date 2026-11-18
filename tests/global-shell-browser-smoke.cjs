@@ -463,6 +463,107 @@ async function inspect(page, routeName, width) {
     console.log('1280_CONSTRAINED_BY_VIEWPORT=YES');
     console.log('1440_REACHES_MAX=YES');
     console.log('1920_REACHES_MAX=YES');
+    // Novedades total cap: clean load, second page, reload, history and legacy multi-page cache.
+    const noveltiesPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    const noveltiesUrl = new URL('novedades/', BASE_URL + '/').toString();
+    const uniqueNoveltiesUrls = () => noveltiesPage.evaluate(() => new Set(
+      [...document.querySelectorAll('[data-cr-product-list] a[href*="/producto/"]')].map(a => a.href)
+    ).size);
+    const waitForNovelties = async () => {
+      await noveltiesPage.waitForFunction(() => {
+        const listing = document.querySelector('[data-cr-product-list]');
+        const grid = listing?.querySelector('[data-cr-product-grid]');
+        return !!listing && !!grid && grid.querySelectorAll('[data-product-id]').length > 0;
+      }, undefined, { timeout: 30000 });
+      await noveltiesPage.waitForTimeout(350);
+    };
+    await navigate(noveltiesPage, noveltiesUrl);
+    await waitForNovelties();
+    const noveltiesFreshCount = await uniqueNoveltiesUrls();
+    console.log('NOVEDADES_FRESH_COUNT=' + noveltiesFreshCount);
+    assert.ok(noveltiesFreshCount > 0 && noveltiesFreshCount <= 12, 'Novedades fresh load must be at most 12: ' + noveltiesFreshCount);
+    const noveltiesLoadMore = noveltiesPage.locator('[data-cr-product-load-more]');
+    assert.equal(await noveltiesLoadMore.isVisible(), true, 'Novedades must expose Load more when more than 12 products exist');
+    await noveltiesLoadMore.click();
+    await noveltiesPage.waitForFunction(() => new Set(
+      [...document.querySelectorAll('[data-cr-product-list] a[href*="/producto/"]')].map(a => a.href)
+    ).size >= 24, undefined, { timeout: 30000 });
+    const noveltiesAfterLoadMore = await uniqueNoveltiesUrls();
+    console.log('NOVEDADES_AFTER_LOAD_MORE=' + noveltiesAfterLoadMore);
+    assert.equal(noveltiesAfterLoadMore, 24, 'Novedades must stop at 24 after Load more');
+    await noveltiesPage.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
+    await waitForNovelties();
+    const noveltiesAfterReload = await uniqueNoveltiesUrls();
+    console.log('NOVEDADES_AFTER_RELOAD=' + noveltiesAfterReload);
+    assert.equal(noveltiesAfterReload, 24, 'Novedades reload must restore exactly the capped 24 products');
+    const firstProductUrl = await noveltiesPage.locator('[data-cr-product-grid] a[href*="/producto/"]').first().getAttribute('href');
+    assert.ok(firstProductUrl, 'Novedades must expose a product URL for history test');
+    await navigate(noveltiesPage, new URL(firstProductUrl, noveltiesUrl).toString());
+    await noveltiesPage.goBack({ waitUntil: 'domcontentloaded', timeout: 90000 });
+    await waitForNovelties();
+    const noveltiesAfterBack = await uniqueNoveltiesUrls();
+    console.log('NOVEDADES_AFTER_BACK=' + noveltiesAfterBack);
+    assert.ok(noveltiesAfterBack <= 24, 'Novedades exceeded 24 after browser back: ' + noveltiesAfterBack);
+    await noveltiesPage.goForward({ waitUntil: 'domcontentloaded', timeout: 90000 });
+    await noveltiesPage.goBack({ waitUntil: 'domcontentloaded', timeout: 90000 });
+    await waitForNovelties();
+    const noveltiesAfterForwardBack = await uniqueNoveltiesUrls();
+    console.log('NOVEDADES_AFTER_FORWARD_BACK=' + noveltiesAfterForwardBack);
+    assert.ok(noveltiesAfterForwardBack <= 24, 'Novedades exceeded 24 after forward/back: ' + noveltiesAfterForwardBack);
+
+    const legacyCache = await noveltiesPage.evaluate(async () => {
+      const cacheKey = Object.keys(sessionStorage).find(key => {
+        try {
+          const value = JSON.parse(sessionStorage.getItem(key) || 'null');
+          return value && Array.isArray(value.pages) && value.state && value.state.pathname.includes('/novedades/');
+        } catch (error) { return false; }
+      });
+      if (!cacheKey) throw new Error('NOVEDADES_SESSION_CACHE_KEY_MISSING');
+      const entry = JSON.parse(sessionStorage.getItem(cacheKey));
+      const endpoint = document.querySelector('[data-cr-product-list]').dataset.productsUrl;
+      const pages = [];
+      for (let page = 1; page <= 5; page++) {
+        const params = new URLSearchParams({ page: String(page), per_page: '12', scope: 'catalog', facet: 'none', sort: 'newest' });
+        const response = await fetch(endpoint + '?' + params.toString(), { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error('LEGACY_CACHE_PAGE_HTTP_' + page + '_' + response.status);
+        const data = await response.json();
+        pages.push(data);
+        if (!data.has_more) break;
+      }
+      if (pages.length < 5 || pages.reduce((sum, data) => sum + (data.product_ids || []).length, 0) < 60) {
+        throw new Error('LEGACY_CACHE_FIXTURE_DID_NOT_CONTAIN_60_PRODUCTS=' + pages.length);
+      }
+      entry.pages = pages;
+      entry.page = pages.length;
+      entry.hasMore = Boolean(pages[pages.length - 1].has_more);
+      entry.total = pages[pages.length - 1].total;
+      entry.payload = { html: pages.map(data => data.html || '').join('') };
+      entry.timestamp = Date.now();
+      sessionStorage.setItem(cacheKey, JSON.stringify(entry));
+      return { cacheKey, pagesBefore: pages.length };
+    });
+    console.log('CACHE_PAGES_BEFORE=' + legacyCache.pagesBefore);
+    await noveltiesPage.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
+    await waitForNovelties();
+    await noveltiesPage.waitForTimeout(700);
+    const noveltiesAfterCacheRestore = await uniqueNoveltiesUrls();
+    const cacheAfter = await noveltiesPage.evaluate(cacheKey => {
+      const entry = JSON.parse(sessionStorage.getItem(cacheKey) || 'null');
+      return {
+        pages: entry && Array.isArray(entry.pages) ? entry.pages.length : 0,
+        products: entry && entry.pages ? entry.pages.reduce((sum, data) => sum + (data.product_ids || []).length, 0) : 0
+      };
+    }, legacyCache.cacheKey);
+    console.log('NOVEDADES_AFTER_CACHE_RESTORE=' + noveltiesAfterCacheRestore);
+    console.log('CACHE_PAGES_AFTER=' + cacheAfter.pages);
+    console.log('CACHE_PRODUCTS_AFTER=' + cacheAfter.products);
+    assert.equal(noveltiesAfterCacheRestore, 24, 'Legacy Novedades cache restore must truncate to 24');
+    assert.ok(cacheAfter.pages <= 2 && cacheAfter.products <= 24, 'Novedades session cache was not truncated: ' + JSON.stringify(cacheAfter));
+    console.log('MAX_OBSERVED=' + Math.max(noveltiesFreshCount, noveltiesAfterLoadMore, noveltiesAfterReload, noveltiesAfterBack, noveltiesAfterForwardBack, noveltiesAfterCacheRestore));
+    console.log('EXPECTED_MAX=24');
+    console.log('NOVEDADES_TOTAL_LIMIT_BROWSER=PASS');
+    await noveltiesPage.close();
+
     console.log('SCROLLBAR_STABILITY=PASS');
     console.log('SIDEBAR_WIDTH=112px');
     console.log('NO_HORIZONTAL_OVERFLOW=PASS');
