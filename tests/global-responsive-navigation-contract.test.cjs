@@ -49,7 +49,7 @@ test('GLOBAL_PRIMARY_NAV_EXACTLY_ONE_MODE_AT_1280=PASS', () => {
 });
 
 test('GLOBAL_VIEWPORT_MATRIX=390,768,980,1100,1279,1280,1440,1920', () => {
-  for (const width of [390, 768, 980, 1100, 1279, 1280, 1440, 1920]) {
+  for (const width of [390, 430, 768, 980, 1100, 1200, 1279, 1280, 1440]) {
     const bottom = width < 1280;
     const sidebar = width >= 1280;
     assert.notEqual(bottom, sidebar, width + 'px must expose exactly one primary nav');
@@ -88,6 +88,18 @@ test('CANONICAL_BOTTOM_NAV_INTERMEDIATE_SCALE_ONLY=PASS', () => {
   assert.match(legacyTabletScale, /padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
   assert.match(legacyTabletScale, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav/);
   assert.doesNotMatch(intermediateScale, /tablet-bottom-nav|intermediate-bottom-nav|desktop-bottom-nav/);
+});
+
+test('TABLET_NAV_SCALE_ISOLATED_FROM_MOBILE_CONTENT_AND_DESKTOP=PASS', () => {
+  const marker = '/* TABLET GLOBAL NAVIGATION SCALE — visual-only; keep the 1280px mode switch intact. */';
+  const start = css.indexOf(marker);
+  assert.notEqual(start, -1, 'tablet navigation scale layer exists');
+  const layer = css.slice(start);
+  assert.match(layer, /^\/\* TABLET GLOBAL NAVIGATION SCALE[\s\S]*?@media \(min-width: 768px\) and \(max-width: 1279px\)/);
+  assert.doesNotMatch(layer, /\.cr-brand|\.custom-logo|\.cr-desktop-rail|\.cr-product|\.cr-account|\.cr-filter|\.woocommerce/);
+  assert.match(layer, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav/);
+  assert.match(layer, /\.cr-app-header \.cr-app-icon-button/);
+  assert.doesNotMatch(layer, /@media \(min-width:\s*1280px\)|@media \(max-width:\s*767px\)/);
 });
 
 test('ACCOUNT_INTERNAL_DESKTOP_NAV_STARTS_AT_1280=PASS', () => {
