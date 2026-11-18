@@ -117,16 +117,24 @@ async function inspect(page, routeName, width) {
     });
     await navigate(desktopPage, BASE_URL + '/');
     const discovered = await desktopPage.evaluate(() => {
-      const links = Array.from(document.querySelectorAll('a[href]')).map(a => a.href);
+      const anchors = Array.from(document.querySelectorAll('a[href]')).map(a => ({
+        href: a.href, text: (a.innerText || a.textContent || '').trim()
+      }));
       return {
-        category: links.find(href => /\/categoria-producto\//i.test(new URL(href).pathname)),
-        outlet: links.find(href => /\/outlet(?:\/|$)/i.test(new URL(href).pathname)),
-        product: links.find(href => /\/producto\//i.test(new URL(href).pathname))
+        category: anchors.find(a => /\\/categoria-producto\\//i.test(new URL(a.href).pathname))?.href,
+        outlet: anchors.find(a => /\\/outlet(?:\\/|$)/i.test(new URL(a.href).pathname))?.href,
+        product: anchors.find(a => /\\/producto\\//i.test(new URL(a.href).pathname))?.href,
+        newArrivals: anchors.find(a => /novedades|reci[eé]n llegad|new arrivals/i.test(a.text) || /\\/novedades(?:\\/|$)/i.test(new URL(a.href).pathname))?.href,
+        brands: anchors.find(a => /nuestras marcas|marcas/i.test(a.text) || /\\/marcas(?:\\/|$)/i.test(new URL(a.href).pathname))?.href,
+        contact: anchors.find(a => /contacto/i.test(a.text) || /\\/contacto(?:\\/|$)/i.test(new URL(a.href).pathname))?.href
       };
     });
     assert.ok(discovered.category, 'homepage must expose a product category route');
     assert.ok(discovered.outlet, 'homepage must expose the Outlet route');
     assert.ok(discovered.product, 'homepage must expose a product detail route');
+    const newArrivalsUrl = discovered.newArrivals || new URL('novedades/', BASE_URL + '/').toString();
+    const brandsUrl = discovered.brands || new URL('marcas/', BASE_URL + '/').toString();
+    const contactUrl = discovered.contact || new URL('contacto/', BASE_URL + '/').toString();
     await navigate(mobilePage, ACCOUNT_URL);
     const helpUrl = await mobilePage.evaluate(() => {
       const link = document.querySelector('.cr-account-home__tile--help[href]');
@@ -171,6 +179,61 @@ async function inspect(page, routeName, width) {
         await inspect(page, name, width);
       }
     }
+
+    // Verify the platform font actually used to paint title glyphs via Chrome DevTools Protocol.
+    const fontRoutes = [
+      ['CATEGORY', discovered.category],
+      ['NEW_ARRIVALS', newArrivalsUrl],
+      ['BRANDS', brandsUrl],
+      ['CONTACT', contactUrl],
+      ['LEGAL', LEGAL_URL],
+      ['ACCOUNT', ACCOUNT_URL]
+    ];
+    const fontPage = desktopPage;
+    await fontPage.setViewportSize({ width: 1440, height: 1000 });
+    const cdp = await fontPage.context().newCDPSession(fontPage);
+    await cdp.send('DOM.enable');
+    await cdp.send('CSS.enable');
+    for (const [name, url] of fontRoutes) {
+      await navigate(fontPage, url);
+      await fontPage.evaluate(async () => {
+        await document.fonts.load('300 21px "Roboto"');
+        await document.fonts.ready;
+      });
+      const cssState = await fontPage.evaluate(() => {
+        const title = document.querySelector('.cr-parent-category__title');
+        if (!title) return null;
+        const style = getComputedStyle(title);
+        const faces = Array.from(document.fonts)
+          .filter(face => face.family.replace(/["']/g, '') === 'Roboto' && /300/.test(face.weight))
+          .map(face => ({ weight: face.weight, status: face.status }));
+        return {
+          text: title.textContent.trim(), fontFamily: style.fontFamily,
+          fontWeight: style.fontWeight, fontSize: style.fontSize, lineHeight: style.lineHeight,
+          fontCheck300: document.fonts.check('300 21px "Roboto"'), faces
+        };
+      });
+      assert.ok(cssState, name + ' canonical title exists at ' + url);
+      assert.equal(cssState.fontWeight, '300', name + ' CSS/rendered weight');
+      assert.equal(cssState.fontSize, '21px', name + ' CSS font size');
+      assert.equal(cssState.lineHeight, '28px', name + ' CSS line height');
+      assert.equal(cssState.fontCheck300, true, name + ' Roboto 300 FontFaceSet check');
+      assert.ok(cssState.faces.some(face => face.status === 'loaded'), name + ' Roboto 300 face loaded');
+      const doc = await cdp.send('DOM.getDocument', { depth: -1, pierce: true });
+      const node = await cdp.send('DOM.querySelector', { nodeId: doc.root.nodeId, selector: '.cr-parent-category__title' });
+      assert.ok(node.nodeId, name + ' title node available through CDP');
+      const platform = await cdp.send('CSS.getPlatformFontsForNode', { nodeId: node.nodeId });
+      const rendered = (platform.fonts || []).filter(font => font.glyphCount > 0);
+      console.log('ROBOTO_RENDER_' + name + '=' + JSON.stringify({
+        url, title: cssState.text, cssFontFamily: cssState.fontFamily,
+        cssFontWeight: cssState.fontWeight, cssFontSize: cssState.fontSize,
+        cssLineHeight: cssState.lineHeight, fontCheck300: cssState.fontCheck300,
+        loadedRobotoFaces: cssState.faces, renderedPlatformFonts: rendered
+      }));
+      assert.ok(rendered.some(font => /Roboto/i.test(font.familyName)),
+        name + ' actual rendered platform font must be Roboto; got ' + JSON.stringify(rendered));
+    }
+    await cdp.detach();
 
     // Validate the one canonical desktop shell at the three requested widths on every public smoke route.
     const page = desktopPage;

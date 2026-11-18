@@ -9,11 +9,6 @@ function cr2026_asset_version( $relative_path ) {
 }
 
 function cr2026_enqueue_assets() {
-    $uses_app_category_components = is_front_page()
-        || ( function_exists( 'is_shop' ) && is_shop() )
-        || ( function_exists( 'is_product_category' ) && is_product_category() )
-        || ( function_exists( 'is_cart' ) && is_cart() );
-
     $uses_product_detail_skin = function_exists( 'is_product' ) && is_product();
     $uses_checkout_shell = function_exists( 'is_checkout' ) && is_checkout()
         && ( ! function_exists( 'is_order_received_page' ) || ! is_order_received_page() );
@@ -45,26 +40,15 @@ function cr2026_enqueue_assets() {
         }
     }
 
-    if ( $uses_product_detail_skin ) {
-        wp_enqueue_style(
-            'cr2026-roboto',
-            'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
-            array(),
-            null
-        );
-        $main_style_dependencies[] = 'cr2026-roboto';
-    }
-
-    if ( $uses_app_category_components || $uses_checkout_shell
-        || ( function_exists( 'is_account_page' ) && is_account_page() ) ) {
-        wp_enqueue_style(
-            'cr2026-roboto',
-            'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
-            array(),
-            null
-        );
-        $main_style_dependencies[] = 'cr2026-roboto';
-    }
+    // Canonical page titles are shared across catalogue, brand, content, legal and Account routes.
+    // Enqueue Roboto globally as an available font; inherited site typography remains unchanged.
+    wp_enqueue_style(
+        'cr2026-roboto',
+        'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap',
+        array(),
+        null
+    );
+    $main_style_dependencies[] = 'cr2026-roboto';
 
     wp_enqueue_style(
         'cr2026-main',

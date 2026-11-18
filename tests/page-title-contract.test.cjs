@@ -23,6 +23,7 @@ const productSkin = read('inc/product-skin.php');
 const login = read('inc/login.php');
 const notFound = read('404.php');
 const woocommerce = read('inc/woocommerce.php');
+const assets = read('inc/assets.php');
 
 const inventory = [
   ['Categorías','archive-product.php','cr2026_render_category_toolbar()',true],
@@ -60,6 +61,17 @@ test('complete inventory covers every known mobile page-title screen and documen
   assert.equal(inventory.filter(item => item[3]).length, 26);
   assert.equal(inventory.filter(item => !item[3]).length, 2);
   assert.equal(new Set(inventory.map(item => item[0])).size, inventory.length);
+});
+
+test('Roboto 300/400 is globally available before the shared canonical title styles', () => {
+  const mainEnqueue = assets.indexOf("wp_enqueue_style(\n        'cr2026-main'");
+  const fontEnqueue = assets.indexOf("wp_enqueue_style(\n        'cr2026-roboto'");
+  assert.ok(fontEnqueue >= 0 && fontEnqueue < mainEnqueue, 'Roboto stylesheet precedes main.css');
+  assert.match(assets, /fonts\.googleapis\.com\/css2\?family=Roboto:wght@300;400&display=swap/);
+  assert.match(assets, /\$main_style_dependencies\[\] = 'cr2026-roboto';/);
+  assert.doesNotMatch(assets.slice(0, mainEnqueue), /if\s*\([^)]*(?:is_front_page|is_shop|is_product_category|is_account_page|is_checkout|is_product)/s,
+    'Roboto must not be gated by route conditionals');
+  assert.match(mainCss, /\.cr-parent-category__title\s*\{[^}]*font:\s*300\s+21px\/28px\s+"Roboto",\s*Arial,\s*sans-serif/s);
 });
 
 test('the existing canonical renderer and class contract remain the single source of truth', () => {
