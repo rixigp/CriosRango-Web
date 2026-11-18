@@ -686,7 +686,7 @@ function cr2026_account_store_address_save_feedback( $user_id, $load_address ) {
     }
     cr2026_account_store_save_feedback( 'address' );
     // Core otherwise redirects to edit-address/ (the address index).
-    $url = wc_get_endpoint_url( 'edit-address', 'shipping', wc_get_page_permalink( 'myaccount' ) );
+    $url = wc_get_endpoint_url( 'edit-address', 'envio', wc_get_page_permalink( 'myaccount' ) );
     wp_safe_redirect( $url );
     exit;
 }
