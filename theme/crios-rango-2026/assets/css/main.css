@@ -3169,6 +3169,10 @@ body.cr-parent-category-view .cr-parent-category__grid,
 
 .cr-home-brand-pager--intermediate,
 .cr-home-brand-dots--intermediate { display: none; }
+@media (max-width: 767px) {
+  body.home .cr-home-brand-pager--mobile,
+  body.home .cr-home-brand-dots--mobile { display: flex !important; }
+}
 
 @media (min-width: 768px) and (max-width: 1279px) {
   body.home .cr-home-brands .cr-home-brand-grid {
