@@ -3230,3 +3230,49 @@ body.cr-parent-category-view .cr-parent-category__grid,
     padding-top: 0 !important;
   }
 }
+
+/* TABLET GLOBAL NAVIGATION SCALE — visual-only; keep the 1280px mode switch intact. */
+@media (min-width: 768px) and (max-width: 1279px) {
+  :root {
+    --cr-global-nav-icon-size: clamp(24px, calc(24px + (100vw - 768px) * .00944), 28px);
+    --cr-global-nav-label-size: clamp(13px, calc(13px + (100vw - 768px) * .00472), 14px);
+    --cr-global-header-icon-size: clamp(32px, calc(32px + (100vw - 768px) * .01338), 36px);
+    --cr-global-header-badge-size: clamp(20px, calc(20px + (100vw - 768px) * .00669), 22px);
+    --cr-global-header-badge-font-size: clamp(11px, calc(11px + (100vw - 768px) * .00335), 12px);
+  }
+
+  .cr-mobile-bottom-nav.cr-app-bottom-nav > .cr-mobile-bottom-nav__inner > a {
+    min-width: 44px;
+    min-height: 68px;
+    font-size: var(--cr-global-nav-label-size);
+    line-height: 1.2;
+  }
+
+  .cr-mobile-bottom-nav.cr-app-bottom-nav .cr-icon {
+    width: var(--cr-global-nav-icon-size);
+    height: var(--cr-global-nav-icon-size);
+  }
+
+  .cr-app-header .cr-app-icon-button,
+  body:not(.home) .cr-header__actions .cr-app-icon-button {
+    min-width: 50px;
+    min-height: 50px;
+  }
+
+  .cr-app-header .cr-app-icon-button .cr-icon,
+  body.home .cr-app-header .cr-home-topbar__actions .cr-app-icon-button .cr-icon,
+  body:not(.home) .cr-app-header .cr-home-topbar__actions .cr-app-icon-button .cr-icon,
+  body:not(.home) .cr-app-header .cr-header__actions .cr-app-icon-button .cr-icon {
+    width: var(--cr-global-header-icon-size);
+    height: var(--cr-global-header-icon-size);
+  }
+
+  .cr-app-header .cr-cart-count,
+  body:not(.home) .cr-header__actions .cr-app-icon-button .cr-cart-count {
+    min-width: var(--cr-global-header-badge-size);
+    height: var(--cr-global-header-badge-size);
+    padding-inline: 5px;
+    font-size: var(--cr-global-header-badge-font-size);
+    line-height: 1;
+  }
+}
