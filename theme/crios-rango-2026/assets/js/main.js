@@ -208,7 +208,8 @@
       const section = brandPager.closest('.cr-home-brands');
       const dotsContainer = section && section.querySelector('.cr-home-brand-dots--intermediate');
       const mobileMedia = window.matchMedia('(max-width: 767px)');
-      const modeForViewport = () => mobileMedia.matches ? 'mobile' : 'wide';
+      const intermediateMedia = window.matchMedia('(min-width: 768px) and (max-width: 1279px)');
+      const modeForViewport = () => mobileMedia.matches ? 'mobile' : (intermediateMedia.matches ? 'intermediate' : 'desktop');
       let renderedMode = '';
       let pageObserver = null;
 
@@ -231,8 +232,8 @@
           pageObserver = null;
         }
 
-        const perPage = mode === 'mobile' ? 8 : 10;
-        const visiblePageCount = mode === 'mobile' ? 2 : 2;
+        const perPage = mode === 'desktop' ? 10 : 8;
+        const visiblePageCount = mode === 'mobile' ? 2 : Math.ceil(brands.length / perPage);
         const pages = [];
         for (let offset = 0; offset < brands.length; offset += perPage) {
           const pageIndex = pages.length;
@@ -309,6 +310,11 @@
         mobileMedia.addEventListener('change', scheduleBrandRender);
       } else if (typeof mobileMedia.addListener === 'function') {
         mobileMedia.addListener(scheduleBrandRender);
+      }
+      if (typeof intermediateMedia.addEventListener === 'function') {
+        intermediateMedia.addEventListener('change', scheduleBrandRender);
+      } else if (typeof intermediateMedia.addListener === 'function') {
+        intermediateMedia.addListener(scheduleBrandRender);
       }
       return;
     }
