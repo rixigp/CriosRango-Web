@@ -75,7 +75,7 @@ function cr2026_account_render_profile_home() {
     $base = wc_get_account_endpoint_url( 'edit-account' );
     $personal_url = add_query_arg( 'profile_view', 'personal', $base );
     $password_url = add_query_arg( 'profile_view', 'password', $base );
-    $address_url = wc_get_account_endpoint_url( 'edit-address', 'envio' );
+    $address_url = wc_get_endpoint_url( 'edit-address', 'envio', wc_get_page_permalink( 'myaccount' ) );
     $delete_url = wc_get_account_endpoint_url( 'wpf-delete-account' );
     ?>
     <section class="cr-account-content cr-account-profile-home" aria-label="<?php esc_attr_e( 'Perfil', 'crios-rango-2026' ); ?>">
@@ -122,6 +122,15 @@ function cr2026_account_delete_endpoint_toolbar() {
     }
 }
 add_action( 'woocommerce_account_wpf-delete-account_endpoint', 'cr2026_account_delete_endpoint_toolbar', 1 );
+
+/** Map the public Spanish delivery endpoint value to WooCommerce's native shipping address key. */
+function cr2026_account_normalize_delivery_address_endpoint( $query_vars ) {
+    if ( isset( $query_vars['edit-address'] ) && 'envio' === $query_vars['edit-address'] ) {
+        $query_vars['edit-address'] = 'shipping';
+    }
+    return $query_vars;
+}
+add_filter( 'request', 'cr2026_account_normalize_delivery_address_endpoint', 20 );
 
 /** Native address editing stays on WooCommerce's edit-address endpoint. */
 function cr2026_account_address_endpoint_toolbar( $endpoint_value = '' ) {
