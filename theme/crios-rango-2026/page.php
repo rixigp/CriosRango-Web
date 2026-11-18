@@ -35,6 +35,9 @@ $is_cart_page = function_exists( 'is_cart' ) && is_cart();
                     ?>
                 <?php endif; ?>
             <?php endif; ?>
+                <?php if ( $is_help_page && function_exists( 'cr2026_account_render_endpoint_toolbar' ) ) : ?>
+                    <?php cr2026_account_render_endpoint_toolbar( __( 'Ayuda', 'crios-rango-2026' ) ); ?>
+                <?php endif; ?>
                 <div class="cr-prose">
                     <?php if ( $is_help_page && function_exists( 'cr2026_account_help_content' ) ) : ?>
                         <?php echo cr2026_account_help_content(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- controlled renderer escapes dynamic content. ?>

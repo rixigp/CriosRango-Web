@@ -433,7 +433,6 @@ function cr2026_account_help_content() {
     $email = $config['email'];
 
     ob_start();
-    cr2026_account_render_endpoint_toolbar( __( 'Ayuda', 'crios-rango-2026' ) );
     ?>
     <section class="cr-account-content cr-account-help" aria-label="<?php esc_attr_e( 'Contacto y ayuda', 'crios-rango-2026' ); ?>">
         <h2 class="cr-account-help__heading"><?php esc_html_e( 'Contacta con nosotros', 'crios-rango-2026' ); ?></h2>

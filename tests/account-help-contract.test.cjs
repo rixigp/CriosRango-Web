@@ -24,7 +24,12 @@ test('HELP_CONTACT_USES_ONE_UNIVERSAL_RENDERER_WITHOUT_READING_LEGACY_POST_CONTE
   assert.ok(renderer, 'Universal Help/Contact renderer exists');
   assert.doesNotMatch(renderer[1], /wp_is_mobile|return \$content/);
   assert.match(renderer[1], /return ob_get_clean\(\);/);
-  assert.match(renderer[1], /cr2026_account_render_endpoint_toolbar\( __\( 'Ayuda'/);
+  assert.doesNotMatch(renderer[1], /cr2026_account_render_endpoint_toolbar/);
+  const helpToolbar = page.indexOf("cr2026_account_render_endpoint_toolbar( __( 'Ayuda'");
+  const proseWrapper = page.indexOf('<div class="cr-prose">');
+  assert.ok(helpToolbar >= 0 && helpToolbar < proseWrapper, 'Help toolbar is a page-level sibling before the constrained prose wrapper');
+  assert.match(page, /<main id="primary" class="cr-main">/);
+  assert.match(page, /<div class="cr-shell cr-page-shell">/);
   assert.doesNotMatch(presentation, /add_filter\( 'the_content', 'cr2026_account_help_content'/);
   assert.match(presentation, /if \( ! \$back_url \) \{\s*\$back_url = wc_get_page_permalink\( 'myaccount' \);\s*\}/);
   assert.match(presentation, /cr2026_render_category_toolbar\( \$title, \$back_url, 'parent', false, '', \$title_id \)/);
