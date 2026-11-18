@@ -63,11 +63,11 @@ test('Novedades freezes the newest-24 cohort before applying every sort and isol
   assert.ok(archive.includes('value="title-desc"'));
   for (const marker of [
     'INITIAL_NOVELTY_IDS=',
-    'SORT_NEWEST_SET_MATCH=',
-    'SORT_NAME_ASC_SET_MATCH=',
-    'SORT_NAME_DESC_SET_MATCH=',
-    'SORT_PRICE_ASC_SET_MATCH=',
-    'SORT_PRICE_DESC_SET_MATCH=',
+    'SORT_NEWEST_SET_MATCH',
+    'SORT_NAME_ASC_SET_MATCH',
+    'SORT_NAME_DESC_SET_MATCH',
+    'SORT_PRICE_ASC_SET_MATCH',
+    'SORT_PRICE_DESC_SET_MATCH',
     'OUTSIDE_INITIAL_COHORT=',
     'MISSING_FROM_INITIAL_COHORT=',
     'CATALOG_PRODUCTS_LEAKED=0'
