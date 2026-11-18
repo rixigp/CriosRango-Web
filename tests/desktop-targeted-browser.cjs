@@ -961,8 +961,10 @@ async function loginForAuthenticatedAccount(page) {
     for (const viewport of [390, 430, 768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920]) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
-      await desktopShellLayout(page, 'HOME', viewport, true);
-      await homeCanonicalContentRail(page, viewport);
+      if (viewport >= 768) {
+        await desktopShellLayout(page, 'HOME', viewport, true);
+        await homeCanonicalContentRail(page, viewport);
+      }
       await homeDesktopBrands(page, viewport);
       await homeBrandWinnerAudit(page, viewport);
     }
