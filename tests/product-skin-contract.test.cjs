@@ -236,8 +236,8 @@ test('Color and Size cards render only real native options and preserve WooComme
 });
 
 test('Product Detail option cursors reflect enabled and disabled variation chips only', () => {
-  assert.match(skinCss, /body\\.cr-product-detail-app \\.cr-product-choice-chip:not\\(:disabled\\):not\\(\\[aria-disabled="true"\\]\\)\\s*\\{\\s*cursor:\\s*pointer;\\s*\\}/);
-  assert.match(skinCss, /body\\.cr-product-detail-app \\.cr-product-choice-chip:disabled,\\s*body\\.cr-product-detail-app \\.cr-product-choice-chip\\[aria-disabled="true"\\]\\s*\\{\\s*cursor:\\s*not-allowed;\\s*\\}/);
+  assert.ok(skinCss.includes('body.cr-product-detail-app .cr-product-choice-chip:not(:disabled):not([aria-disabled="true"]) {\n  cursor: pointer;\n}'));
+  assert.ok(skinCss.includes('body.cr-product-detail-app .cr-product-choice-chip:disabled,\nbody.cr-product-detail-app .cr-product-choice-chip[aria-disabled="true"] {\n  cursor: not-allowed;\n}'));
   assert.ok(productUiJs.includes('chip.disabled = !!option.disabled'));
   assert.ok(productUiJs.includes('chip.disabled = !option || !!option.disabled'));
 });
