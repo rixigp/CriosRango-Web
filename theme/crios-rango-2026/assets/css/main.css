@@ -3234,11 +3234,11 @@ body.cr-parent-category-view .cr-parent-category__grid,
 /* TABLET GLOBAL NAVIGATION SCALE — visual-only; keep the 1280px mode switch intact. */
 @media (min-width: 768px) and (max-width: 1279px) {
   :root {
-    --cr-global-nav-icon-size: clamp(24px, calc(24px + (100vw - 768px) * .00944), 28px);
-    --cr-global-nav-label-size: clamp(13px, calc(13px + (100vw - 768px) * .00472), 14px);
-    --cr-global-header-icon-size: clamp(32px, calc(32px + (100vw - 768px) * .01338), 36px);
-    --cr-global-header-badge-size: clamp(20px, calc(20px + (100vw - 768px) * .00669), 22px);
-    --cr-global-header-badge-font-size: clamp(11px, calc(11px + (100vw - 768px) * .00335), 12px);
+    --cr-global-nav-icon-size: clamp(24px, calc(.944vw + 16.75px), 28px);
+    --cr-global-nav-label-size: clamp(13px, calc(.472vw + 9.37px), 14px);
+    --cr-global-header-icon-size: clamp(32px, calc(1.338vw + 21.73px), 36px);
+    --cr-global-header-badge-size: clamp(20px, calc(.669vw + 14.86px), 22px);
+    --cr-global-header-badge-font-size: clamp(11px, calc(.335vw + 8.43px), 12px);
   }
 
   .cr-mobile-bottom-nav.cr-app-bottom-nav > .cr-mobile-bottom-nav__inner > a {
