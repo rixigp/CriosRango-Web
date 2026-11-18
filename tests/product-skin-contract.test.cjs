@@ -1675,6 +1675,13 @@ test('DESKTOP_PRODUCT_DETAIL_TWO_COLUMN_RAIL=PASS — grid geometry is desktop-o
 });
 
 
+test('Product Detail desktop does not add a legacy 88px top padding to #primary', () => {
+  const desktop = skinCss.slice(skinCss.lastIndexOf('Desktop Product Detail: keep the shared shell'));
+  assert.doesNotMatch(desktop, /\.cr-desktop-shell > #primary\s*\{[^}]*padding-top:/s);
+  const globalCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
+  assert.match(globalCss, /#primary:has\(\.cr-page-toolbar\),\s*\.cr-main:has\(\.cr-page-toolbar\)[\s\S]*?padding-top:\s*0 !important;/);
+});
+ 
 test('desktop Product Detail keeps the canonical toolbar in flow and moves the existing actions into summary', () => {
   const desktop = skinCss.slice(skinCss.lastIndexOf('Desktop Product Detail: reserve the real global-header height'));
   assert.match(desktop, /\.cr-desktop-shell > #primary \{[^}]*padding-top:\s*calc\(var\(--cr-admin-bar-offset,\s*0px\) \+ var\(--cr-app-topbar-height,\s*88px\)\)/s);

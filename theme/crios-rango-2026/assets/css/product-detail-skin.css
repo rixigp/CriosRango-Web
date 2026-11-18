@@ -1965,10 +1965,6 @@ body.cr-product-detail-app .cr-product-choice-chip[aria-disabled="true"] {
    .cr-page-toolbar parent rule zeroed #primary's top padding. Sticky displacement
    does not reserve flow space, so the following product composition rose beneath it. */
 @media (min-width: 1280px) {
-  body.cr-product-detail-app .cr-desktop-shell > #primary {
-    padding-top: calc(var(--cr-admin-bar-offset, 0px) + var(--cr-app-topbar-height, 88px)) !important;
-  }
-
   body.cr-product-detail-app .cr-product-detail-toolbar {
     position: static;
     top: auto;
