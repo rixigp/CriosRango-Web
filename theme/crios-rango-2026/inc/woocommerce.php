@@ -544,6 +544,18 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
             'return' => 'objects',
             'orderby' => 'include',
         ) ) : array();
+        // Defensively enforce exact membership after hydration as well as in SQL.
+        $cohort_id_lookup = array_fill_keys( $novelties_cohort_ids, true );
+        $cohort_products = array_values( array_filter( $cohort_products, static function ( $product ) use ( $cohort_id_lookup ) {
+            return $product instanceof WC_Product && isset( $cohort_id_lookup[ absint( $product->get_id() ) ] );
+        } ) );
+        $hydrated_cohort_ids = array_map( static function ( $product ) { return $product->get_id(); }, $cohort_products );
+        $expected_cohort_ids = $novelties_cohort_ids;
+        sort( $hydrated_cohort_ids, SORT_NUMERIC );
+        sort( $expected_cohort_ids, SORT_NUMERIC );
+        if ( $hydrated_cohort_ids !== $expected_cohort_ids ) {
+            return new WP_Error( 'cr2026_novelties_cohort_hydration', __( 'No se pudo hidratar exactamente el conjunto de Novedades.', 'crios-rango-2026' ), array( 'status' => 502 ) );
+        }
         $cohort_products = cr2026_novelties_sort_cohort_products( $cohort_products, $sort );
         $total = count( $cohort_products );
         $products = array_slice( $cohort_products, $page_offset, $page_limit );
