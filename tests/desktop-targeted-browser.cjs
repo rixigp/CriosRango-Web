@@ -947,7 +947,7 @@ async function outletListingGeometry(page, branchUrl) {
   });
 
   const baseline = new Map();
-  for (const viewport of [1280, 1440, 1920]) {
+  for (const viewport of [390, 430, 768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920]) {
     await page.setViewportSize({ width: viewport, height: 900 });
     await page.waitForTimeout(200);
     const state = await measure();
@@ -978,13 +978,14 @@ async function outletListingGeometry(page, branchUrl) {
   log('OUTLET_SELECTED_BUBBLE', selectedLabel);
   log('OUTLET_SELECTED_RESULT_COUNT', selectedCount);
 
-  for (const viewport of [1280, 1440, 1920]) {
+  for (const viewport of [390, 430, 768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920]) {
     await page.setViewportSize({ width: viewport, height: 900 });
     await page.waitForTimeout(200);
     const state = await measure();
     const normal = baseline.get(viewport);
     const aligned = Math.abs(state.delta) <= 1;
-    const fixedColumns = state.columns === 4;
+    const expectedColumns = viewport >= 1280 ? 4 : normal.columns;
+    const fixedColumns = state.columns === expectedColumns;
     const cardStable = Math.abs(state.cardWidth - normal.cardWidth) <= 1;
     const imageStable = Math.abs(state.imageWidth - normal.imageWidth) <= 1;
     log('OUTLET_BUBBLES_LEFT_' + viewport, state.bubbleLeft.toFixed(2));
@@ -1027,7 +1028,7 @@ async function outletListingGeometry(page, branchUrl) {
       return results;
     });
     for (const probe of probes) {
-      const pass = probe.columns === 4
+      const pass = probe.columns === expectedColumns
         && Math.abs(probe.cardWidth - normal.cardWidth) <= 1
         && Math.abs(probe.imageWidth - normal.imageWidth) <= 1;
       log('OUTLET_PROBE_' + viewport + '_RESULT_' + probe.resultCount, JSON.stringify(probe));
