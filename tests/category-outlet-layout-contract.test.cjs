@@ -26,7 +26,7 @@ test('OUTLET_BUBBLE_TRACK_MATCHES_ORDERING_GUTTER_AT_EACH_BREAKPOINT', () => {
   assert.match(browser, /390, 430, 768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920/);
   assert.match(browser, /OUTLET_VIEWPORT_/);
   assert.match(browser, /OUTLET_SELECTED_RESULT_COUNT/);
-  assert.match(browser, /OUTLET_BRANCH_NOT_ON_STAGING/);
+  assert.match(browser, /NOT_STAGING/);
   assert.match(browser, /OUTLET_BRANCH_CANDIDATE/);
   assert.match(browser, /OUTLET_PROBE_/);
 });
