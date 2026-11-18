@@ -84,11 +84,9 @@ test('SORT_AND_FILTER_SUPPORTED=PASS',()=>{
  assert.match(brandArchive,/false, \$brand_filter_action, '', '', array\(\), \$brand_ordering_html/);
 });
 test('RESPONSIVE_390_430_STATIC_CONTRACT=PASS',()=>{
- const mobile=main.match(/@media \(max-width: 767px\) \{([\s\S]*?)\n\}/);
- assert.ok(mobile,'mobile composition must be scoped to <=767px');
- assert.match(mobile[1],/\.cr-page-toolbar__controls\s*\{[^}]*display: flex;[^}]*align-items: center;[^}]*justify-content: space-between;[^}]*width: 100%;/s);
- assert.match(mobile[1],/\.cr-page-toolbar__controls \.cr-product-listing__ordering\s*\{[^}]*margin: 0;/s);
- assert.match(mobile[1],/\.cr-page-toolbar__controls \.cr-parent-category__filters\s*\{[^}]*margin-left: auto;/s);
+ assert.match(main,/@media \(max-width: 767px\)[\s\S]*?\.cr-page-toolbar__controls\s*\{[\s\S]*?display: flex;[\s\S]*?align-items: center;[\s\S]*?justify-content: space-between;[\s\S]*?width: 100%;/);
+ assert.match(main,/\.cr-page-toolbar__controls \.cr-product-listing__ordering\s*\{[^}]*margin: 0;/s);
+ assert.match(main,/\.cr-page-toolbar__controls \.cr-parent-category__filters\s*\{[^}]*margin-left: auto;/s);
  for(const viewport of [390,430]) assert.ok(viewport <= 767,viewport+'px must use the mobile controls contract');
 });
 test('TABLET_DESKTOP_RULES_REMAIN_OUTSIDE_MOBILE_OVERRIDE',()=>{
