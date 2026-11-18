@@ -20,7 +20,7 @@ test('HOME_BRANDS_SOURCE_AND_PUBLISHED_COUNT_ORDER=PASS',()=>{
 });
 
 test('HOME_BRANDS_RENDER_ONCE_WITH_MOBILE_16_OF_8_AND_WIDE_20_OF_10=PASS',()=>{
- assert.match(home,/\$all_brand_pages\s*=\s*array\(\s*\$home_brands\s*\)/);
+ assert.match(home,/\$all_brand_pages\s*=\s*array_chunk\(\s*\$home_brands,\s*10\s*\)/);
  assert.match(home,/\$render_brand_pager\(\s*\$all_brand_pages,\s*'unified'\s*\)/);
  assert.equal((home.match(/\$render_brand_pager\(/g)||[]).length,1);
  assert.match(home,/cr-home-brand-pager--mobile cr-home-brand-pager--desktop cr-home-brand-pager--intermediate/);
