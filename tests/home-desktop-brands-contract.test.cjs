@@ -19,27 +19,27 @@ test('HOME_BRANDS_SOURCE_AND_PUBLISHED_COUNT_ORDER=PASS',()=>{
  assert.doesNotMatch(query,/usort\s*\(|orderby'\s*=>\s*'date|menu_order/i);
 });
 
-test('HOME_DESKTOP_20_IN_TWO_PAGES_OF_10_AND_MOBILE_16_OF_8=PASS',()=>{
- assert.match(home,/\$desktop_brand_pages\s*=\s*array_chunk\(\s*\$home_brands,\s*10\s*\)/);
- assert.match(home,/\$mobile_brand_pages\s*=\s*array_chunk\(\s*array_slice\(\s*\$home_brands,\s*0,\s*16\s*\),\s*8\s*\)/);
- assert.match(home,/\$render_brand_pager\(\s*\$desktop_brand_pages,\s*'desktop'\s*\)/);
- assert.match(home,/\$render_brand_pager\(\s*\$mobile_brand_pages,\s*'mobile'\s*\)/);
+test('HOME_BRANDS_RENDER_ONCE_WITH_MOBILE_16_OF_8_AND_WIDE_20_OF_10=PASS',()=>{
+ assert.match(home,/\$all_brand_pages\s*=\s*array\(\s*\$home_brands\s*\)/);
+ assert.match(home,/\$render_brand_pager\(\s*\$all_brand_pages,\s*'unified'\s*\)/);
+ assert.equal((home.match(/\$render_brand_pager\(/g)||[]).length,2); // declaration plus one invocation
+ assert.match(home,/cr-home-brand-pager--mobile cr-home-brand-pager--desktop cr-home-brand-pager--intermediate/);
+ assert.match(home,/cr-home-brand-dots--mobile cr-home-brand-dots--desktop cr-home-brand-dots--intermediate/);
  assert.match(home,/Ver todas/);assert.match(home,/cr-home-brand__fallback/);
  assert.match(helpers,/wp_attachment_is_image\(\s*\$image_id\s*\)/);
 });
-test('HOME_INTERMEDIATE_BRANDS_USE_REAL_GRID_CAPACITY_WITH_STABLE_CARDS=PASS',()=>{
- assert.match(home,/\$intermediate_brand_pages\s*=\s*array\(\s*\$home_brands\s*\)/);
- assert.match(home,/\$render_brand_pager\(\s*\$intermediate_brand_pages,\s*'intermediate'\s*\)/);
- assert.match(home,/cr-home-brand-pager--intermediate/);
- assert.match(css,/@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1279px\)[\s\S]*?grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(96px,\s*96px\)\)/);
- assert.match(css,/grid-auto-flow:\s*column;[\s\S]*?grid-auto-columns:\s*96px/);
- assert.match(css,/width:\s*96px;[\s\S]*?max-width:\s*96px;[\s\S]*?height:\s*96px\s*!important/);
- assert.match(css,/width:\s*64px;[\s\S]*?height:\s*64px/);
- assert.match(css,/object-fit:\s*contain/);
- assert.match(js,/variant === 'intermediate'/);
- assert.match(js,/Math\.floor\(\(gridWidth \+ columnGap\) \/ \(cardWidth \+ columnGap\)\)/);
- assert.match(js,/const perPage = columns \* 2/);
- assert.match(js,/new ResizeObserver\(scheduleIntermediateRender\)/);
+test('HOME_INTERMEDIATE_BRANDS_FIXED_FIVE_BY_TWO_TEN_PER_PAGE_NO_DUPLICATE_RENDER=PASS',()=>{
+ const intermediate=css.match(/@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1279px\)\s*\{[\s\S]*?\/\* Intermediate Home brands:[\s\S]*?\n\s*\}/);
+ assert.ok(intermediate,'intermediate media block exists');
+ assert.match(intermediate[0],/grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)\s*!important/);
+ assert.match(intermediate[0],/grid-template-rows:\s*repeat\(2,\s*96px\)/);
+ assert.doesNotMatch(intermediate[0],/auto-fit|grid-auto-flow:\s*column|grid-auto-columns/);
+ assert.match(intermediate[0],/object-fit:\s*contain/);
+ assert.match(js,/variant === 'unified'/);
+ assert.match(js,/const perPage = mode === 'mobile' \? 8 : 10/);
+ assert.match(js,/brandPager\.replaceChildren\(\.\.\.pages\)/);
+ assert.match(js,/brands\.slice\(offset, offset \+ perPage\)\.forEach\(\(brand\) => grid\.appendChild\(brand\)\)/);
+ assert.doesNotMatch(js,/brands\.map\(.*cloneNode|brand\.cloneNode/);
 });
 test('HOME_DESKTOP_BRANDS_GRID_AND_PAGINATION_ARE_BREAKPOINT_SCOPED=PASS',()=>{
  assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
