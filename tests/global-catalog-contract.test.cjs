@@ -67,11 +67,11 @@ test('Novedades freezes newest-24 IDs, sorts only those hydrated products, then 
   assert.ok(archive.includes('value="title-desc"'));
   for (const marker of [
     'INITIAL_NOVELTY_IDS=',
-    'SORT_NEWEST_SET_MATCH=',
-    'SORT_NAME_ASC_SET_MATCH=',
-    'SORT_NAME_DESC_SET_MATCH=',
-    'SORT_PRICE_ASC_SET_MATCH=',
-    'SORT_PRICE_DESC_SET_MATCH=',
+    'SORT_NEWEST_SET_MATCH',
+    'SORT_NAME_ASC_SET_MATCH',
+    'SORT_NAME_DESC_SET_MATCH',
+    'SORT_PRICE_ASC_SET_MATCH',
+    'SORT_PRICE_DESC_SET_MATCH',
     'SORTED_NOVELTY_IDS=',
     'OUTSIDE_INITIAL_COHORT=',
     'MISSING_FROM_INITIAL_COHORT=',
