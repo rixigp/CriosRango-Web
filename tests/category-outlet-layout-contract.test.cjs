@@ -23,5 +23,6 @@ test('OUTLET_BUBBLE_TRACK_MATCHES_ORDERING_GUTTER_AT_EACH_BREAKPOINT', () => {
   assert.match(browser, /async function outletListingGeometry\(page, branchUrl\)/);
   assert.match(browser, /OUTLET_BUBBLES_SORT_ALIGNMENT_/);
   assert.match(browser, /OUTLET_VIEWPORT_/);
+  assert.match(browser, /OUTLET_SELECTED_RESULT_COUNT/);
   assert.match(browser, /OUTLET_PROBE_/);
 });
