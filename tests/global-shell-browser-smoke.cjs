@@ -277,6 +277,17 @@ async function inspect(page, routeName, width) {
       }
     }
 
+    // Explicitly request Checkout: the shared shell smoke does not otherwise visit this route.
+    const checkoutUrl = new URL('finalizar-compra/', BASE_URL + '/').toString();
+    const checkoutResponse = await desktopPage.goto(checkoutUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    assert.ok(checkoutResponse && checkoutResponse.status() < 400,
+      'checkout route failed: ' + checkoutUrl + ' status=' + (checkoutResponse && checkoutResponse.status()));
+    const checkoutBody = await desktopPage.locator('body').innerText();
+    assert.doesNotMatch(checkoutBody, /Ha habido un error crítico|There has been a critical error/i,
+      'checkout route must not render the WordPress critical-error page');
+    console.log('GLOBAL_SHELL_CHECKOUT_HTTP=' + checkoutResponse.status());
+    console.log('GLOBAL_SHELL_CHECKOUT_FINAL_URL=' + desktopPage.url());
+
     // Verify the platform font actually used to paint title glyphs via Chrome DevTools Protocol.
     const fontRoutes = [
       ['CATEGORY', discovered.category],
