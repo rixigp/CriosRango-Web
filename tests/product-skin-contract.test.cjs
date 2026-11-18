@@ -1683,8 +1683,8 @@ test('Product Detail desktop does not add a legacy 88px top padding to #primary'
 });
  
 test('desktop Product Detail keeps the canonical toolbar in flow and moves the existing actions into summary', () => {
-  const desktop = skinCss.slice(skinCss.lastIndexOf('Desktop Product Detail: reserve the real global-header height'));
-  assert.match(desktop, /\.cr-desktop-shell > #primary \{[^}]*padding-top:\s*calc\(var\(--cr-admin-bar-offset,\s*0px\) \+ var\(--cr-app-topbar-height,\s*88px\)\)/s);
+  const desktop = skinCss.slice(skinCss.lastIndexOf('Desktop Product Detail: keep the shared shell'));
+  assert.doesNotMatch(desktop, /\.cr-desktop-shell > #primary \{[^}]*padding-top:/s);
   assert.match(desktop, /\.cr-product-detail-toolbar \{[^}]*position:\s*static;/s);
   assert.match(productUiJs, /function initDesktopProductComposition\(\)/);
   assert.ok(productUiJs.includes("purchaseForm.insertAdjacentElement('afterend', actions)"));

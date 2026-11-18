@@ -1960,10 +1960,9 @@ body.cr-product-detail-app .cr-product-choice-chip[aria-disabled="true"] {
 }
 
 
-/* Desktop Product Detail: reserve the real global-header height in normal flow.
-   The product toolbar was sticky at the 88px header offset while the shared
-   .cr-page-toolbar parent rule zeroed #primary's top padding. Sticky displacement
-   does not reserve flow space, so the following product composition rose beneath it. */
+/* Desktop Product Detail: keep the shared shell's canonical top gap.
+   The former page-specific #primary padding duplicated the toolbar's own
+   .cr-page-toolbar spacing and pushed the entire product composition down. */
 @media (min-width: 1280px) {
   body.cr-product-detail-app .cr-product-detail-toolbar {
     position: static;
