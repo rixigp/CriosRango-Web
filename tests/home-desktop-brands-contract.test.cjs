@@ -50,7 +50,7 @@ test('HOME_INTERMEDIATE_BRANDS_FIXED_FOUR_BY_TWO_EIGHT_PER_PAGE_NO_DUPLICATE_REN
  assert.ok(intermediate.includes('object-fit: contain;'));
  assert.equal((intermediate.match(/overflow: hidden/g)||[]).length,2);
  assert.ok(!intermediate.includes('overflow: visible'));
- assert.ok(!css.includes('@media (min-width: 768px) and (max-width: 1279px)'));
+ assert.ok(!intermediate.includes('repeat(5,'));
  assert.ok(js.includes("const intermediateMedia = window.matchMedia('(min-width: 768px) and (max-width: 1279px)')"));
  assert.ok(js.includes("const perPage = mode === 'desktop' ? 10 : 8"));
  assert.ok(js.includes('Math.ceil(brands.length / perPage)'));
