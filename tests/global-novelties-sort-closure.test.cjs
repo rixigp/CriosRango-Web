@@ -18,4 +18,6 @@ test('NOVEDADES_PRICE_ASC_AND_DESC_VERIFY_THE_SAME_FROZEN_24_ID_SET', () => {
   assert.match(browser, /assert\.deepEqual\(new Set\(sortedAfterHistory\), new Set\(sortedBeforeReload\)/);
   assert.match(contract, /SORT_PRICE_ASC_SET_MATCH/);
   assert.match(contract, /SORT_PRICE_DESC_SET_MATCH/);
+  assert.ok(browser.indexOf('// Novedades total cap:') < browser.indexOf("await navigate(mobilePage, ACCOUNT_URL)"),
+    'Novedades cohort checks must run before independent shell routes');
 });
