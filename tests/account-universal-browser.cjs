@@ -93,7 +93,7 @@ const viewports=[390,430,768,1279,1280,1440,1920];
   const routes=[
    ['DASHBOARD',account,'.cr-account-home'],['ORDERS',account+'orders/','.cr-account-orders'],
    ['ADDRESS_OVERVIEW',account+'edit-address/','.cr-account-addresses'],['ADDRESS_BILLING',account+'edit-address/billing/','.woocommerce-address-fields'],
-   ['ADDRESS_SHIPPING',account+'edit-address/shipping/','.woocommerce-address-fields'],['PROFILE',account+'edit-account/','.cr-account-profile-home'],
+   ['ADDRESS_SHIPPING',account+'edit-address/envio/','.woocommerce-address-fields'],['PROFILE',account+'edit-account/','.cr-account-profile-home'],
    ['PERSONAL',account+'edit-account/?profile_view=personal','form.woocommerce-EditAccountForm'],['PASSWORD',account+'edit-account/?profile_view=password','form.woocommerce-EditAccountForm fieldset'],
    ['REWARDS',account+'loyalty_reward/','[data-cr-account-loyalty]'],['DOWNLOADS',account+'downloads/','.cr-account-downloads, .cr-account-empty-state']
   ];
@@ -140,7 +140,20 @@ const viewports=[390,430,768,1279,1280,1440,1920];
     if(!(await back.count()))throw Error('ACCOUNT_BACK_NAV_MISSING='+name+'@'+width);
     const backHref=await back.getAttribute('href');
     if(name==='ORDERS' && !backHref.includes('/mi-cuenta/'))throw Error('ORDERS_BACK_NAV_INVALID');
-    if(name==='ADDRESS_BILLING' || name==='ADDRESS_SHIPPING'){if(!backHref.includes('/edit-address/'))throw Error('ADDRESS_BACK_NAV_INVALID='+name);}
+    if(name==='ADDRESS_BILLING' && !backHref.includes('/edit-address/'))throw Error('ADDRESS_BACK_NAV_INVALID='+name);
+    if(name==='ADDRESS_SHIPPING'){
+      const expectedBackPath=new URL(account).pathname;
+      const actualBackPath=new URL(backHref,page.url()).pathname;
+      if(actualBackPath!==expectedBackPath)throw Error('SHIPPING_EDIT_BACK_TARGET_INVALID='+actualBackPath+' EXPECTED='+expectedBackPath);
+      console.log('ROUTE=/mi-cuenta/edit-address/envio/');
+      console.log('SHIPPING_EDIT_BACK_TARGET=/mi-cuenta/');
+      console.log('CLICK_BACK');
+      await back.click();
+      await page.waitForURL(url=>url.pathname===expectedBackPath,{timeout:10000});
+      if(new URL(page.url()).pathname!==expectedBackPath)throw Error('SHIPPING_EDIT_BACK_CLICK_FAILED='+page.url());
+      console.log('EXPECTED=/mi-cuenta/');
+      console.log('SHIPPING_EDIT_BACK=PASS');
+    }
     if(name==='PERSONAL' || name==='PASSWORD'){if(!backHref.includes('/edit-account/'))throw Error('PROFILE_BACK_NAV_INVALID='+name);}
     if(name==='DOWNLOADS' && !backHref.includes('/edit-account/'))throw Error('DOWNLOADS_BACK_NAV_INVALID');
     checks++;

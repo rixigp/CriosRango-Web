@@ -154,7 +154,9 @@ function cr2026_account_address_endpoint_toolbar( $endpoint_value = '' ) {
         ? __( 'Dirección de facturación', 'crios-rango-2026' )
         : ( 'shipping' === $address_type ? __( 'Dirección de envío', 'crios-rango-2026' ) : __( 'Dirección', 'crios-rango-2026' ) );
 
-    $back_url = '' === $address_type ? wc_get_page_permalink( 'myaccount' ) : wc_get_account_endpoint_url( 'edit-address' );
+    $back_url = 'shipping' === $address_type
+        ? wc_get_page_permalink( 'myaccount' )
+        : ( '' === $address_type ? wc_get_page_permalink( 'myaccount' ) : wc_get_account_endpoint_url( 'edit-address' ) );
     cr2026_account_render_endpoint_toolbar( $title, $back_url );
 }
 add_action( 'woocommerce_account_edit-address_endpoint', 'cr2026_account_address_endpoint_toolbar', 1 );
