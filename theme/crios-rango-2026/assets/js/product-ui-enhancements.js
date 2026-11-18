@@ -553,7 +553,7 @@
       if (!product || !summary || !description) return;
 
       var tabs = product.querySelector(':scope > .woocommerce-tabs');
-      var media = window.matchMedia('(min-width: 1280px)');
+      var media = window.matchMedia('(min-width: 768px)');
       function placeDescription() {
         if (media.matches) {
           if (description.parentElement !== product) product.insertBefore(description, tabs || null);
@@ -579,7 +579,7 @@
 
       var originalParent = actions.parentNode;
       var originalNext = actions.nextSibling;
-      var media = window.matchMedia('(min-width: 1280px)');
+      var media = window.matchMedia('(min-width: 768px)');
 
       function placeActions() {
         if (media.matches) {

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 
 const BASE_URL = (process.env.STAGING_BASE_URL || 'https://criosrango.es/prueba').replace(/\/+$/, '');
-const WIDTHS = [390, 430, 768, 980, 1100, 1200, 1279, 1280, 1440];
+const WIDTHS = [390, 430, 768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920];
 const ACCOUNT_URL = new URL('mi-cuenta/', BASE_URL + '/').toString();
 const LEGAL_URL = new URL('cambios-y-devoluciones/', BASE_URL + '/').toString();
 const NAV_METRICS_BY_ROUTE = new Map();
@@ -85,6 +85,27 @@ async function inspect(page, routeName, width) {
       scrollbarGutter: getComputedStyle(root).scrollbarGutter,
       accountInternalNavVisible: !!internalAccountNav && visible('body.woocommerce-account .woocommerce-MyAccount-navigation'),
       productDisplay: product ? getComputedStyle(product).display : null,
+      productLayout: (() => {
+        if (!product) return null;
+        const gallery = product.querySelector(':scope > .woocommerce-product-gallery');
+        const summary = product.querySelector(':scope > .summary');
+        const description = product.querySelector(':scope > .cr-product-description');
+        const actions = product.querySelector(':scope > .summary > .cr-product-actions');
+        const rect = el => {
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return { left: Math.round(r.left * 10) / 10, top: Math.round(r.top * 10) / 10,
+            right: Math.round(r.right * 10) / 10, bottom: Math.round(r.bottom * 10) / 10,
+            width: Math.round(r.width * 10) / 10, height: Math.round(r.height * 10) / 10 };
+        };
+        return {
+          columns: getComputedStyle(product).gridTemplateColumns,
+          product: rect(product), gallery: rect(gallery), summary: rect(summary),
+          description: rect(description),
+          descriptionParent: description && description.parentElement === product ? 'product' : description && description.parentElement === summary ? 'summary' : 'other',
+          actionsParent: actions && actions.parentElement === summary ? 'summary' : 'other'
+        };
+      })(),
       bodyPaddingTop: getComputedStyle(document.body).paddingTop,
       spacing: Object.fromEntries(['#primary','.cr-shell','.cr-page-shell','.cr-account-shell','.cr-account-content','.cr-parent-category__toolbar','.cr-cart-block','.wp-block-woocommerce-cart','.woocommerce-cart-form'].map(selector => {
         const el = document.querySelector(selector);
@@ -220,7 +241,30 @@ async function inspect(page, routeName, width) {
   }
   if (routeName === 'product') {
     assert.equal(state.productFound, true, 'product detail marker found');
-    assert.equal(state.productDisplay === 'grid', width >= 1280, 'product 2-column grid starts at 1280');
+    const layout = state.productLayout;
+    if (width >= 768) {
+      const columns = layout.columns.trim().split(/\s+/);
+      assert.equal(state.productDisplay, 'grid', 'Product Detail uses two columns from 768px at ' + width);
+      assert.equal(columns.length, 2, 'Product Detail has exactly two grid tracks at ' + width + ': ' + layout.columns);
+      assert.ok(layout.gallery && layout.summary, 'gallery and purchase summary are measurable at ' + width);
+      assert.ok(layout.gallery.right <= layout.summary.left + 1, 'summary sits beside gallery at ' + width);
+      assert.ok(Math.abs(layout.gallery.top - layout.summary.top) <= 2, 'gallery and summary share the first row at ' + width);
+      assert.ok(layout.gallery.width < layout.product.width * .7, 'gallery is not a full-width hero at ' + width + ': ' + layout.gallery.width + '/' + layout.product.width);
+      assert.equal(layout.actionsParent, 'summary', 'Share/Reserve actions stay in purchase column at ' + width);
+      assert.equal(layout.descriptionParent, 'product', 'description is relocated below both columns at ' + width);
+      assert.ok(layout.description && layout.description.top >= Math.max(layout.gallery.bottom, layout.summary.bottom) - 1,
+        'description begins below gallery and purchase summary at ' + width);
+      assert.equal(state.overflow, false, 'Product Detail has no horizontal overflow at ' + width);
+      assert.equal(state.bottomVisible, width < 1280, 'bottom-nav visibility remains on its independent 1280px breakpoint at ' + width);
+      assert.equal(state.sidebarVisible, width >= 1280, 'sidebar visibility remains on its independent 1280px breakpoint at ' + width);
+    } else {
+      assert.notEqual(state.productDisplay, 'grid', 'mobile Product Detail remains stacked at ' + width);
+      assert.ok(layout.gallery && layout.summary, 'mobile gallery and summary remain present at ' + width);
+      assert.ok(layout.summary.top >= layout.gallery.bottom - 1, 'mobile summary remains below gallery at ' + width);
+      assert.equal(layout.descriptionParent, 'summary', 'mobile description remains inside summary at ' + width);
+      assert.equal(state.overflow, false, 'mobile Product Detail has no horizontal overflow at ' + width);
+    }
+    console.log('PRODUCT_DETAIL_GEOMETRY_' + width + '=' + JSON.stringify(layout));
     if (width === 768) console.log('PRODUCT_DETAIL_768_BOTTOM_NAV=' + (state.bottomVisible && !state.sidebarVisible ? 'PASS' : 'FAIL'));
   }
   if (width === 390 && ['account','cart','outlet'].includes(routeName)) {

@@ -1841,7 +1841,80 @@ body.cr-product-detail-app .cr-product-choice-chips--size .cr-product-choice-chi
 }
 
 
-/* Desktop Product Detail: true two-column purchase rail; mobile/tablet remain unchanged. */
+/* Tablet/intermediate Product Detail: preserve the desktop two-column composition while global navigation uses bottom-nav. */
+@media (min-width: 768px) and (max-width: 1279px) {
+  body.cr-product-detail-app .cr-main--woocommerce div.product {
+    display: grid;
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+    align-items: start;
+    column-gap: clamp(16px, 2.2vw, 28px);
+    row-gap: 24px;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 20px 0 32px;
+    box-sizing: border-box;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > div.woocommerce-product-gallery {
+    grid-column: 1;
+    grid-row: 1;
+    float: none;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
+    align-self: start;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > * {
+    width: 100%;
+    min-width: 0;
+    margin: 0 !important;
+    padding-inline: clamp(0px, 1vw, 12px);
+    box-sizing: border-box;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > .cr-product-actions {
+    width: 100%;
+    min-width: 0;
+    margin: 0 !important;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .cr-product-description {
+    grid-column: 1 / -1;
+    order: 90;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding-inline: 0;
+    box-sizing: border-box;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .woocommerce-tabs {
+    grid-column: 1 / -1;
+    order: 100;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
+/* Desktop Product Detail: true two-column purchase rail. */
 @media (min-width: 1280px) {
   body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_add_to_cart_button {
     width: auto;
