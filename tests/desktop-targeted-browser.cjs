@@ -1082,6 +1082,32 @@ async function loginForAuthenticatedAccount(page) {
     const cartRoute=navDestinations.find(item=>item.label==='Carrito');
     if(!categoryRoute||!cartRoute)throw new Error('SHELL_ROUTE_LINKS_MISSING');
 
+    const outletDestination = navDestinations.find(item => item.label === 'Outlet');
+    if (!outletDestination || !outletDestination.href) throw new Error('OUTLET_ROUTE_MISSING');
+    await visit(page, outletDestination.href);
+    const outletBranchUrl = await page.evaluate(async () => {
+      const ids = [447, 476, 446, 475, 449, 478, 448, 477];
+      try {
+        const response = await fetch('/wp-json/wp/v2/product_cat?include=' + ids.join(',') + '&_fields=id,link');
+        if (response.ok) {
+          const terms = await response.json();
+          const preferred = terms.find(term => term.id === 447 || term.id === 476) || terms[0];
+          if (preferred && preferred.link) return preferred.link;
+        }
+      } catch (_) {}
+      const links = Array.from(document.querySelectorAll('a[href]'));
+      const currentPath = location.pathname.replace(/\/+$/, '');
+      const candidate = links.find(link => {
+        try {
+          const path = new URL(link.href).pathname.replace(/\/+$/, '');
+          return path !== currentPath && /outlet/i.test(path) && link.textContent.trim();
+        } catch (_) { return false; }
+      });
+      return candidate ? candidate.href : '';
+    });
+    if (!outletBranchUrl) throw new Error('OUTLET_BRANCH_ROUTE_NOT_FOUND');
+    await outletListingGeometry(page, outletBranchUrl);
+
     await visit(page, homeUrl);
     for (const viewport of [390, 430, 768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920]) {
       await page.setViewportSize({ width: viewport, height: 900 });
@@ -1117,32 +1143,6 @@ async function loginForAuthenticatedAccount(page) {
         await categoryToolbarTopMargin(page, destinationLabel === 'Categorías' ? 'CATEGORY' : 'OUTLET', viewport);
       }
     }
-
-    const outletDestination = navDestinations.find(item => item.label === 'Outlet');
-    if (!outletDestination || !outletDestination.href) throw new Error('OUTLET_ROUTE_MISSING');
-    await visit(page, outletDestination.href);
-    const outletBranchUrl = await page.evaluate(async () => {
-      const ids = [447, 476, 446, 475, 449, 478, 448, 477];
-      try {
-        const response = await fetch('/wp-json/wp/v2/product_cat?include=' + ids.join(',') + '&_fields=id,link');
-        if (response.ok) {
-          const terms = await response.json();
-          const preferred = terms.find(term => term.id === 447 || term.id === 476) || terms[0];
-          if (preferred && preferred.link) return preferred.link;
-        }
-      } catch (_) {}
-      const links = Array.from(document.querySelectorAll('a[href]'));
-      const currentPath = location.pathname.replace(/\/+$/, '');
-      const candidate = links.find(link => {
-        try {
-          const path = new URL(link.href).pathname.replace(/\/+$/, '');
-          return path !== currentPath && /outlet/i.test(path) && link.textContent.trim();
-        } catch (_) { return false; }
-      });
-      return candidate ? candidate.href : '';
-    });
-    if (!outletBranchUrl) throw new Error('OUTLET_BRANCH_ROUTE_NOT_FOUND');
-    await outletListingGeometry(page, outletBranchUrl);
 
     await visit(page,accountUrl);
     const legalRoutes=await accountInformationLinks(page,'SHELL_LEGAL',1280);
