@@ -1199,7 +1199,7 @@ body.home .cr-app-header {
   body.home .cr-home-brand-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
   body.home .cr-home-brand { height: 64px; }
 
-  /* Intermediate Home brands: fixed 5 x 2 pages of ten, using the single shared node set. */
+  /* Intermediate Home brands: fixed 4 x 2 pages of eight, using the single shared node set. */
   body.home .cr-home-brand-pager--mobile,
   body.home .cr-home-brand-dots--mobile { display: none !important; }
   body.home .cr-home-brand-pager--intermediate { display: flex !important; }
@@ -1208,17 +1208,17 @@ body.home .cr-app-header {
     width: 100%;
     min-width: 100%;
     flex: 0 0 100%;
-    padding-inline: 20px;
+    padding-inline: clamp(12px, 1.56vw, 20px);
   }
   body.home .cr-home-brands .cr-home-brand-grid {
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    grid-template-rows: repeat(2, 96px);
-    grid-auto-rows: 96px;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, clamp(66px, calc(3.9vw + 36px), 86px));
+    grid-auto-rows: clamp(66px, calc(3.9vw + 36px), 86px);
     grid-auto-flow: row;
-    column-gap: clamp(7px, 1vw, 12px);
-    row-gap: clamp(10px, 1.25vw, 16px);
+    column-gap: clamp(8px, 1vw, 13px);
+    row-gap: clamp(8px, 1vw, 13px);
     justify-items: center;
   }
   body.home .cr-home-brands .cr-home-brand {
@@ -1226,22 +1226,24 @@ body.home .cr-app-header {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: min(100%, clamp(88px, calc(5.7vw + 44px), 120px));
+    width: min(100%, clamp(112px, calc(6.5vw + 62px), 145px));
     min-width: 0;
-    max-width: 120px;
-    height: clamp(72px, calc(4.8vw + 35px), 96px) !important;
-    padding: clamp(6px, .625vw, 8px);
+    max-width: 145px;
+    height: clamp(66px, calc(3.9vw + 36px), 86px) !important;
+    padding: clamp(5px, .55vw, 7px);
     overflow: hidden;
   }
   body.home .cr-home-brands .cr-home-brand__logo-box {
+    box-sizing: border-box;
     display: flex;
-    flex: 0 1 clamp(44px, calc(4vw + 13.3px), 64px);
+    flex: 0 1 clamp(48px, calc(3.9vw + 18px), 68px);
     align-items: center;
     justify-content: center;
-    width: clamp(44px, calc(4vw + 13.3px), 64px);
+    width: clamp(48px, calc(3.9vw + 18px), 68px);
     max-width: 100%;
     min-width: 0;
-    height: clamp(44px, calc(4vw + 13.3px), 64px);
+    height: clamp(48px, calc(3.9vw + 18px), 68px);
+    min-height: 0;
     overflow: hidden;
   }
   body.home .cr-home-brands .cr-home-brand__logo-box img {
@@ -1249,6 +1251,8 @@ body.home .cr-app-header {
     flex: 0 1 auto;
     width: auto !important;
     height: auto !important;
+    min-width: 0;
+    min-height: 0;
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
@@ -3174,15 +3178,6 @@ body.cr-parent-category-view .cr-parent-category__grid,
 @media (max-width: 767px) {
   body.home .cr-home-brand-pager--mobile,
   body.home .cr-home-brand-dots--mobile { display: flex !important; }
-}
-
-@media (min-width: 768px) and (max-width: 1279px) {
-  body.home .cr-home-brands .cr-home-brand-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    grid-template-rows: repeat(2, 96px);
-    grid-auto-flow: row;
-    column-gap: clamp(8px, 1vw, 12px);
-  }
 }
 
 /* Home desktop brands: two fixed pages of ten cards (5 columns x 2 rows). */
