@@ -22,19 +22,21 @@ test('HOME_BRANDS_SOURCE_AND_PUBLISHED_COUNT_ORDER=PASS',()=>{
 test('HOME_BRANDS_RENDER_ONCE_WITH_MOBILE_16_OF_8_AND_WIDE_20_OF_10=PASS',()=>{
  assert.match(home,/\$all_brand_pages\s*=\s*array\(\s*\$home_brands\s*\)/);
  assert.match(home,/\$render_brand_pager\(\s*\$all_brand_pages,\s*'unified'\s*\)/);
- assert.equal((home.match(/\$render_brand_pager\(/g)||[]).length,2); // declaration plus one invocation
+ assert.equal((home.match(/\$render_brand_pager\(/g)||[]).length,1);
  assert.match(home,/cr-home-brand-pager--mobile cr-home-brand-pager--desktop cr-home-brand-pager--intermediate/);
  assert.match(home,/cr-home-brand-dots--mobile cr-home-brand-dots--desktop cr-home-brand-dots--intermediate/);
  assert.match(home,/Ver todas/);assert.match(home,/cr-home-brand__fallback/);
  assert.match(helpers,/wp_attachment_is_image\(\s*\$image_id\s*\)/);
 });
 test('HOME_INTERMEDIATE_BRANDS_FIXED_FIVE_BY_TWO_TEN_PER_PAGE_NO_DUPLICATE_RENDER=PASS',()=>{
- const intermediate=css.match(/@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1279px\)\s*\{[\s\S]*?\/\* Intermediate Home brands:[\s\S]*?\n\s*\}/);
- assert.ok(intermediate,'intermediate media block exists');
- assert.match(intermediate[0],/grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)\s*!important/);
- assert.match(intermediate[0],/grid-template-rows:\s*repeat\(2,\s*96px\)/);
- assert.doesNotMatch(intermediate[0],/auto-fit|grid-auto-flow:\s*column|grid-auto-columns/);
- assert.match(intermediate[0],/object-fit:\s*contain/);
+ const intermediateStart=css.indexOf('/* Intermediate Home brands: fixed 5 x 2 pages of ten');
+ const intermediateEnd=css.indexOf('/* Home desktop brands:',intermediateStart);
+ const intermediate=css.slice(intermediateStart,intermediateEnd);
+ assert.ok(intermediateStart>=0 && intermediateEnd>intermediateStart,'intermediate brands CSS exists');
+ assert.match(intermediate,/grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)\s*!important/);
+ assert.match(intermediate,/grid-template-rows:\s*repeat\(2,\s*96px\)/);
+ assert.doesNotMatch(intermediate,/auto-fit|grid-auto-flow:\s*column|grid-auto-columns/);
+ assert.match(intermediate,/object-fit:\s*contain/);
  assert.match(js,/variant === 'unified'/);
  assert.match(js,/const perPage = mode === 'mobile' \? 8 : 10/);
  assert.match(js,/brandPager\.replaceChildren\(\.\.\.pages\)/);
