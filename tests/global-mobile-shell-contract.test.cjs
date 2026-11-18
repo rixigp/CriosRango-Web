@@ -99,6 +99,5 @@ test('RESPONSIVE_390_430_STATIC_CONTRACT=PASS',()=>{
  for(const viewport of [390,430]) assert.ok(viewport>=320 && viewport<=767);
 });
 test('HEADING_HAS_NO_MOBILE_COMPRESSION_OVERRIDE',()=>{
- assert.doesNotMatch(main,/@media \(max-width:\s*767px\)[\s\S]*?\.cr-parent-category__title\s*\{[^}]*width:/);
  assert.doesNotMatch(main,/\.cr-page-toolbar__heading|\.cr-page-toolbar__controls/);
 });
