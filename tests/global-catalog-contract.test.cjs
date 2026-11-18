@@ -58,6 +58,9 @@ test('Novedades freezes newest-24 IDs, sorts only those hydrated products, then 
   assert.ok(php.includes('usort( $products, static function ( $left, $right ) use ( $sort )'));
   assert.ok(php.includes("'include' => $novelties_cohort_ids"));
   assert.ok(php.includes("'orderby' => 'include'"));
+  assert.ok(php.includes("$cohort_id_lookup = array_fill_keys( $novelties_cohort_ids, true );"));
+  assert.ok(php.includes("return $product instanceof WC_Product && isset( $cohort_id_lookup[ absint( $product->get_id() ) ] );"));
+  assert.ok(php.includes("$hydrated_cohort_ids !== $expected_cohort_ids"));
   assert.ok(php.includes("$cohort_products = cr2026_novelties_sort_cohort_products( $cohort_products, $sort );"));
   assert.ok(php.includes("'novelties_cohort_hash' =>"));
   assert.ok(php.includes("$products = array_slice( $cohort_products, $page_offset, $page_limit );"));
