@@ -1216,6 +1216,8 @@ body.home .cr-app-header {
     grid-template-columns: repeat(auto-fit, minmax(96px, 96px));
     grid-template-rows: repeat(2, 96px);
     grid-auto-rows: 96px;
+    grid-auto-flow: column;
+    grid-auto-columns: 96px;
     justify-content: center;
     gap: 12px;
   }
