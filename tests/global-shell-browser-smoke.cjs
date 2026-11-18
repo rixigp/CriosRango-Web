@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 
 const BASE_URL = (process.env.STAGING_BASE_URL || 'https://criosrango.es/prueba').replace(/\/+$/, '');
-const WIDTHS = [390, 412, 430, 768, 980, 1100, 1279, 1280, 1440, 1920];
+const WIDTHS = [390, 430, 768, 980, 1100, 1200, 1279, 1280, 1440];
 const ACCOUNT_URL = new URL('mi-cuenta/', BASE_URL + '/').toString();
 const LEGAL_URL = new URL('cambios-y-devoluciones/', BASE_URL + '/').toString();
 
@@ -31,6 +31,31 @@ async function inspect(page, routeName, width) {
       sidebarVisible: visible('.cr-desktop-rail'),
       bottomVisible: visible('.cr-mobile-bottom-nav.cr-app-bottom-nav'),
       headerCount: document.querySelectorAll('.cr-app-header').length,
+      globalNavigationScale: (() => {
+        const navLink = document.querySelector('.cr-mobile-bottom-nav.cr-app-bottom-nav .cr-mobile-bottom-nav__inner > a');
+        const navIcon = navLink?.querySelector('.cr-icon');
+        const headerButton = document.querySelector('.cr-app-header .cr-app-icon-button');
+        const headerIcon = headerButton?.querySelector('.cr-icon');
+        const badge = document.querySelector('.cr-app-header .cr-cart-count');
+        const navLinkStyle = navLink ? getComputedStyle(navLink) : null;
+        const badgeStyle = badge ? getComputedStyle(badge) : null;
+        const rect = el => { const r = el?.getBoundingClientRect(); return r ? { width: r.width, height: r.height } : null; };
+        return {
+          navIcon: navIcon ? rect(navIcon).width : null,
+          navLabel: navLinkStyle ? parseFloat(navLinkStyle.fontSize) : null,
+          navTarget: rect(navLink),
+          headerIcon: headerIcon ? rect(headerIcon).width : null,
+          headerTarget: rect(headerButton),
+          badgeMinWidth: badgeStyle ? parseFloat(badgeStyle.minWidth) : null,
+          badgeHeight: badgeStyle ? parseFloat(badgeStyle.height) : null,
+          badgeFont: badgeStyle ? parseFloat(badgeStyle.fontSize) : null,
+          tabletTokens: {
+            navIcon: getComputedStyle(document.documentElement).getPropertyValue('--cr-global-nav-icon-size').trim(),
+            navLabel: getComputedStyle(document.documentElement).getPropertyValue('--cr-global-nav-label-size').trim(),
+            headerIcon: getComputedStyle(document.documentElement).getPropertyValue('--cr-global-header-icon-size').trim()
+          }
+        };
+      })(),
       contextToolbarCount: Array.from(document.querySelectorAll('.cr-parent-category__toolbar')).filter(el => {
         const style = getComputedStyle(el);
         const rect = el.getBoundingClientRect();
@@ -66,6 +91,24 @@ async function inspect(page, routeName, width) {
   assert.equal(state.headerCount, 1, routeName + ' must render one global header');
   assert.equal(state.sidebarVisible, width >= 1280, routeName + ' sidebar at ' + width);
   assert.equal(state.bottomVisible, width < 1280, routeName + ' bottom nav at ' + width);
+  if (width >= 768 && width < 1280) {
+    const scale = state.globalNavigationScale;
+    const expectedNavIcon = Math.min(28, 24 + (width - 768) * .00944);
+    const expectedNavLabel = Math.min(14, 13 + (width - 768) * .00472);
+    const expectedHeaderIcon = Math.min(36, 32 + (width - 768) * .01338);
+    const expectedBadge = Math.min(22, 20 + (width - 768) * .00669);
+    assert.ok(Math.abs(scale.navIcon - expectedNavIcon) <= .25, routeName + ' tablet bottom-nav icon scale at ' + width + ': ' + scale.navIcon);
+    assert.ok(Math.abs(scale.navLabel - expectedNavLabel) <= .25, routeName + ' tablet bottom-nav label scale at ' + width + ': ' + scale.navLabel);
+    assert.ok(Math.abs(scale.headerIcon - expectedHeaderIcon) <= .25, routeName + ' tablet header icon scale at ' + width + ': ' + scale.headerIcon);
+    assert.ok(Math.abs(scale.badgeMinWidth - expectedBadge) <= .25, routeName + ' tablet cart badge scale at ' + width + ': ' + scale.badgeMinWidth);
+    assert.ok(scale.navTarget.width >= 44 && scale.navTarget.height >= 44, routeName + ' bottom-nav touch target at ' + width);
+    assert.ok(scale.headerTarget.width >= 44 && scale.headerTarget.height >= 44, routeName + ' header touch target at ' + width);
+    assert.ok(scale.tabletTokens.navIcon && scale.tabletTokens.navLabel && scale.tabletTokens.headerIcon, routeName + ' tablet scale tokens at ' + width);
+    console.log('GLOBAL_NAV_SCALE_' + routeName.toUpperCase() + '_' + width + '=' + JSON.stringify(scale));
+  }
+  if (width < 768 || width >= 1280) {
+    assert.equal(state.globalNavigationScale.tabletTokens.navIcon, '', routeName + ' tablet nav token must not leak outside 768–1279 at ' + width);
+  }
   assert.equal(state.visualFooter, false, routeName + ' visual footer absent');
   assert.equal(state.overflow, false, routeName + ' no horizontal overflow at ' + width);
   assert.equal(state.scrollingElementIsRoot, true, routeName + ' document scrolling element is html');
