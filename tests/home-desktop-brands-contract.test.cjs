@@ -61,7 +61,7 @@ test('HOME_INTERMEDIATE_BRANDS_CHROMIUM_MEASURES_ALL_LOGOS_AT_EVERY_REQUIRED_WID
  assert.ok(browser.includes('HOME_BRANDS_DESKTOP_UNCHANGED_'));
  assert.ok(browser.includes('HOME_INTERMEDIATE_IMAGE_INSIDE_LOGO_BOX_'));
  assert.ok(browser.includes('HOME_INTERMEDIATE_IMAGE_INSIDE_CARD_'));
- assert.ok(browser.includes('HOME_INTERMEDIATE_DOTS_SYNC_PAGE_3_'));
+ assert.ok(browser.includes('HOME_INTERMEDIATE_DOTS_SYNC_PAGE_' + index));
  assert.ok(browser.includes('HOME_INTERMEDIATE_VIEWPORT_AUDIT_768'));
  assert.ok(browser.includes('WINNING_CARD_SELECTOR'));
  assert.ok(browser.includes('WINNING_LOGO_BOX_SELECTOR'));
