@@ -89,9 +89,7 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
     $winter_image  = cr2026_home_outlet_image_url( 'winter' );
     $summer_image  = cr2026_home_outlet_image_url( 'summer' );
     $home_brands         = cr2026_home_brands();
-    $desktop_brand_pages      = array_chunk( $home_brands, 10 );
-    $mobile_brand_pages       = array_chunk( array_slice( $home_brands, 0, 16 ), 8 );
-    $intermediate_brand_pages = array( $home_brands );
+    $all_brand_pages = array( $home_brands );
     ?>
 
     <section class="cr-home-section cr-home-novedades" aria-labelledby="cr-home-novedades-title">
@@ -209,7 +207,7 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
                 <?php endif; ?>
                 <?php
             };
-            $render_brand_pager( array( $home_brands ), 'unified' );
+            $render_brand_pager( $all_brand_pages, 'unified' );
             ?>
         <?php endif; ?>
     
