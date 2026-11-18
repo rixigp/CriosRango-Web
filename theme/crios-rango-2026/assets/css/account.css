@@ -1558,7 +1558,7 @@ body.woocommerce-account .cr-account-home__grid { grid-template-columns:repeat(2
  body.woocommerce-account .cr-order-detail__product-name { font-size:14px; line-height:20px; }
  body.woocommerce-account .cr-order-detail__meta,
  body.woocommerce-account .cr-order-detail__address { font-size:13px; line-height:19px; }
- body.woocommerce-account .cr-account-loyalty__promotions-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+ body.woocommerce-account .cr-account-loyalty__promotions-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; }
 }
 @media (min-width:1280px) {
  body.woocommerce-account .cr-order-detail { gap:20px; }
@@ -1567,7 +1567,7 @@ body.woocommerce-account .cr-account-home__grid { grid-template-columns:repeat(2
  body.woocommerce-account .cr-order-detail__image { width:84px; height:84px; flex-basis:84px; }
  body.woocommerce-account .cr-account-loyalty__wallet-card { padding:22px; border-radius:20px; }
  body.woocommerce-account .cr-account-loyalty__wallet-value { font-size:24px; line-height:32px; }
- body.woocommerce-account .cr-account-loyalty__promotions-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+ body.woocommerce-account .cr-account-loyalty__promotions-grid { grid-template-columns:minmax(0,1fr); }
 }
 body.woocommerce-account .cr-order-detail__pay { display:inline-flex; align-items:center; justify-content:center; min-height:42px; margin-top:12px; padding:0 18px; border-radius:999px; background:#183b35; color:#fff; text-decoration:none; font:400 13px/18px "Roboto",Arial,sans-serif; }
 body.woocommerce-account .woocommerce-EditAccountForm,

@@ -74,6 +74,8 @@ test('APP_STRUCTURE_AND_SHARED_RAIL_STYLES_ARE_MOBILE_ENDPOINT_SCOPED', () => {
   assert.match(css, /cr-account-loyalty__progress/);
   assert.match(css, /cr-account-loyalty__rewards-card/);
   assert.match(css, /cr-account-loyalty__promotion-card/);
+  assert.match(css, /\.cr-account-loyalty__promotions-grid \{ display:grid; grid-template-columns:minmax\(0,1fr\); gap:14px; \}/);
+  assert.doesNotMatch(css, /cr-account-loyalty__promotions-grid \{[^}]*repeat\([23],minmax\(0,1fr\)\)/);
   assert.match(css, /cr-account-loyalty__apply/);
   assert.match(css, /background:\s*#EAF6F0/);
   assert.match(css, /background:\s*#FFFFFF/);
