@@ -26,6 +26,12 @@ const viewports=[390,430,768,1279,1280,1440,1920];
     const title=document.querySelectorAll('.cr-parent-category__title');
     const grid=document.querySelector('.cr-account-help__grid');
     const style=grid?getComputedStyle(grid):null;
+     const toolbar=document.querySelector('.cr-page-toolbar');
+     const helpContent=document.querySelector('.cr-account-help');
+     const contentWrapper=document.querySelector('body.cr-account-help-page .cr-page > .cr-prose');
+     const toolbarRect=toolbar?toolbar.getBoundingClientRect():null;
+     const helpRect=helpContent?helpContent.getBoundingClientRect():null;
+     const wrapperStyle=contentWrapper?getComputedStyle(contentWrapper):null;
     const bodyText=document.body.innerText||'';
     const shortcodeMatches=bodyText.match(/\[(?:\/?(?:vc_row|vc_column|nectar_gmap))\b/gi)||[];
     return {
@@ -33,6 +39,11 @@ const viewports=[390,430,768,1279,1280,1440,1920];
      cardCount:document.querySelectorAll('.cr-account-help__card').length,
      hoursCount:document.querySelectorAll('.cr-account-help__hours-row').length,
      gridDisplay:style?style.display:'none',gridColumns:style?style.gridTemplateColumns:'',
+      toolbarLeft:toolbarRect?Math.round(toolbarRect.left*10)/10:null,
+      helpContentLeft:helpRect?Math.round(helpRect.left*10)/10:null,
+      contentWrapperPaddingLeft:wrapperStyle?wrapperStyle.paddingLeft:null,
+      contentWrapperMarginLeft:wrapperStyle?wrapperStyle.marginLeft:null,
+      extraLeftInset:toolbarRect&&helpRect?Math.round((helpRect.left-toolbarRect.left)*10)/10:null,
      shortcodeTextCount:shortcodeMatches.length,
      visible:renderer.length===1&&getComputedStyle(renderer[0]).display!=='none'
     };
@@ -43,6 +54,10 @@ const viewports=[390,430,768,1279,1280,1440,1920];
    if(metrics.shortcodeTextCount!==0)throw Error('CONTACT_SHORTCODE_TEXT_COUNT='+metrics.shortcodeTextCount+'@'+width);
    if(!metrics.visible||metrics.gridDisplay!=='grid')throw Error('CONTACT_RENDERER_NOT_VISIBLE='+width);
    const cols=metrics.gridColumns.split(' ').length;
+    if(width>=1280){
+     if(metrics.extraLeftInset===null||Math.abs(metrics.extraLeftInset)>1)throw Error('CONTACT_CONTENT_RAIL_MISMATCH='+width+':'+metrics.extraLeftInset);
+     if(metrics.contentWrapperPaddingLeft!=='0px'||metrics.contentWrapperMarginLeft!=='0px')throw Error('CONTACT_CONTENT_WRAPPER_HAS_EXTRA_INSET='+width);
+    }
    if(width<=767&&cols!==1)throw Error('CONTACT_MOBILE_GRID_CHANGED='+width+':'+metrics.gridColumns);
    if(width>=768&&cols!==3)throw Error('CONTACT_DESKTOP_GRID_INVALID='+width+':'+metrics.gridColumns);
   }
