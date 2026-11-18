@@ -421,10 +421,9 @@ function cr2026_account_help_config() {
     );
 }
 
-/** Render mobile Help from controlled theme markup, never from page-builder content. */
+/** Render Help/Contact universally from controlled theme markup, never from page-builder content. */
 function cr2026_account_help_content( $content ) {
-    if ( is_admin() || ! is_main_query() || ! in_the_loop() || ! cr2026_account_is_help_page()
-        || ! function_exists( 'wp_is_mobile' ) || ! wp_is_mobile() ) {
+    if ( is_admin() || ! is_main_query() || ! in_the_loop() || ! cr2026_account_is_help_page() ) {
         return $content;
     }
 

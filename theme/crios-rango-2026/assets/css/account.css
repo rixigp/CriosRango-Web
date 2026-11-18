@@ -366,18 +366,17 @@
   body.woocommerce-account .woocommerce-Address-title h2 { margin: 0; color: #244436; font: 400 14px/20px "Roboto", Arial, sans-serif; }
 }
 
-/* Mobile Help screen: match the app contact cards and weekly hours. */
-@media (max-width: 767px) {
+/* Universal Help/Contact renderer: identical structure at every viewport. */
   body.cr-account-help-page .cr-page,
   body.cr-account-help-page .cr-page .cr-prose {
     width: 100%; max-width: none; margin: 0; background: transparent;
   }
-  .cr-account-help { margin-bottom: 18px; }
+  .cr-account-help { width: 100%; margin-bottom: 24px; }
   .cr-account-help__heading {
     margin: 0 0 14px; color: #183b35;
     font: 400 18px/25px "Roboto", Arial, sans-serif;
   }
-  .cr-account-help__grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .cr-account-help__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
   .cr-account-help__card {
     box-sizing: border-box; display: flex; align-items: center; gap: 12px;
     min-height: 76px; padding: 12px 14px;
@@ -411,9 +410,16 @@
     color: #66716a; font: 300 11px/16px "Roboto", Arial, sans-serif;
   }
   .cr-account-help__hours-row span:last-child { color: #303630; text-align: right; }
+@media (max-width: 767px) {
+  .cr-account-help { margin-bottom: 18px; }
+  .cr-account-help__grid { grid-template-columns: 1fr; gap: 10px; }
 }
-
-@media (min-width: 768px) { .cr-account-help { display: none !important; } }
+@media (min-width: 768px) and (max-width: 1279px) {
+  .cr-account-help__grid { gap: 12px; }
+}
+@media (min-width: 1440px) {
+  .cr-account-help__grid { gap: 18px; }
+}
 
 
 /* Mobile Profile home: native endpoints remain the source of all account actions. */

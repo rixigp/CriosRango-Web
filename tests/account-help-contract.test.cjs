@@ -11,15 +11,22 @@ const dashboard = fs.readFileSync(path.join(root, 'woocommerce/myaccount/dashboa
 const css = fs.readFileSync(path.join(root, 'assets/css/account.css'), 'utf8');
 const footer = fs.readFileSync(path.join(root, 'footer.php'), 'utf8');
 
-test('MOBILE_HELP_REPLACES_UNPROCESSED_PAGE_BUILDER_CONTENT', () => {
+test('HELP_CONTACT_USES_ONE_UNIVERSAL_RENDERER_AND_NEVER_PRINTS_LEGACY_PAGE_CONTENT', () => {
   assert.match(page, /the_content\(\)/);
-  assert.match(presentation, /wp_is_mobile\(\)/);
-  assert.match(presentation, /return ob_get_clean\(\);/);
-  assert.doesNotMatch(presentation, /return \$panel \. \$content/);
+  assert.match(page, /\$is_help_page = function_exists\( 'cr2026_account_is_help_page' \) && cr2026_account_is_help_page\(\);/);
+  assert.match(page, /! \$is_mobile_account && ! \$is_help_page/);
+  assert.doesNotMatch(page, /\$is_mobile_help|wp_is_mobile/);
+  const renderer = presentation.match(/function cr2026_account_help_content\( \$content \) \{([\s\S]*?)\n\}/);
+  assert.ok(renderer, 'Universal Help/Contact renderer exists');
+  assert.doesNotMatch(renderer[1], /wp_is_mobile/);
+  assert.match(renderer[1], /return ob_get_clean\(\);/);
+  assert.match(renderer[1], /cr2026_account_render_endpoint_toolbar\( __\( 'Ayuda'/);
   assert.match(presentation, /add_filter\( 'the_content', 'cr2026_account_help_content', 20 \)/);
   assert.match(presentation, /if \( ! \$back_url \) \{\s*\$back_url = wc_get_page_permalink\( 'myaccount' \);\s*\}/);
   assert.match(presentation, /cr2026_render_category_toolbar\( \$title, \$back_url, 'parent', false, '', \$title_id \)/);
   assert.match(dashboard, /cr2026_render_category_toolbar\( __\( 'Cuenta'/);
+  assert.match(css, /\.cr-account-help__grid \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\); gap: 14px; \}/);
+  assert.doesNotMatch(css, /\.cr-account-help \{ display: none !important; \}/);
 });
 
 test('HELP_CONTACTS_USE_ONE_CENTRAL_CONFIGURATION_AND_REAL_ACTIONS', () => {

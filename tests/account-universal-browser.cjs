@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const base=(process.env.STAGING_BASE_URL||'').replace(/\/$/,'');
 const email=process.env.STAGING_ACCOUNT_EMAIL||'', password=process.env.STAGING_ACCOUNT_PASSWORD||'';
-const viewports=[390,768,1279,1280,1440,1920];
+const viewports=[390,430,768,1279,1280,1440,1920];
 (async()=>{
  if(!base)throw Error('STAGING_BASE_URL_MISSING');
  const browser=await chromium.launch({headless:true}), context=await browser.newContext({viewport:{width:390,height:900}}), page=await context.newPage(), account=base+'/mi-cuenta/';
@@ -14,6 +14,43 @@ const viewports=[390,768,1279,1280,1440,1920];
    if(await page.locator('div.woocommerce').count())throw Error('ACCOUNT_LEGACY_WOOCOMMERCE_WRAPPER_PRESENT=GUEST_HOME@'+width);
    if(!(await page.locator('.cr-account-shell').count()))throw Error('ACCOUNT_SHELL_MISSING=GUEST_HOME@'+width);
   }
+  // Help/Contact is one universal renderer; legacy WPBakery post_content must never reach the DOM.
+  const contactUrl=base+'/contacto/';
+  await page.goto(contactUrl,{waitUntil:'domcontentloaded'});
+  await page.locator('.cr-account-help').first().waitFor({state:'attached',timeout:15000});
+  for(const width of viewports){
+   await page.setViewportSize({width,height:900});
+   const metrics=await page.evaluate(()=>{
+    const renderer=document.querySelectorAll('.cr-account-help');
+    const toolbars=document.querySelectorAll('.cr-page-toolbar');
+    const title=document.querySelectorAll('.cr-parent-category__title');
+    const grid=document.querySelector('.cr-account-help__grid');
+    const style=grid?getComputedStyle(grid):null;
+    const bodyText=document.body.innerText||'';
+    const shortcodeMatches=bodyText.match(/\[(?:\/?(?:vc_row|vc_column|nectar_gmap))\b/gi)||[];
+    return {
+     rendererCount:renderer.length,toolbarCount:toolbars.length,titleCount:title.length,
+     cardCount:document.querySelectorAll('.cr-account-help__card').length,
+     hoursCount:document.querySelectorAll('.cr-account-help__hours-row').length,
+     gridDisplay:style?style.display:'none',gridColumns:style?style.gridTemplateColumns:'',
+     shortcodeTextCount:shortcodeMatches.length,
+     visible:renderer.length===1&&getComputedStyle(renderer[0]).display!=='none'
+    };
+   });
+   console.log('CONTACT_RENDERER_'+width+'='+JSON.stringify(metrics));
+   if(metrics.rendererCount!==1||metrics.toolbarCount!==1||metrics.titleCount!==1)throw Error('CONTACT_RENDERER_DUPLICATION='+width);
+   if(metrics.cardCount!==3||metrics.hoursCount!==7)throw Error('CONTACT_CONTENT_INCOMPLETE='+width);
+   if(metrics.shortcodeTextCount!==0)throw Error('CONTACT_SHORTCODE_TEXT_COUNT='+metrics.shortcodeTextCount+'@'+width);
+   if(!metrics.visible||metrics.gridDisplay!=='grid')throw Error('CONTACT_RENDERER_NOT_VISIBLE='+width);
+   const cols=metrics.gridColumns.split(' ').length;
+   if(width<=767&&cols!==1)throw Error('CONTACT_MOBILE_GRID_CHANGED='+width+':'+metrics.gridColumns);
+   if(width>=768&&cols!==3)throw Error('CONTACT_DESKTOP_GRID_INVALID='+width+':'+metrics.gridColumns);
+  }
+  console.log('CONTACT_SINGLE_RENDERER=PASS');
+  console.log('CONTACT_SHORTCODE_TEXT_COUNT=0');
+  console.log('CONTACT_RENDERER_DUPLICATION=NO');
+  console.log('CONTACT_VIEWPORT_MATRIX=PASS');
+
   const loginUrl=account+'?cr-account-view=login';
   await page.goto(loginUrl,{waitUntil:'domcontentloaded'});
   await page.locator('.cr-account-shell').first().waitFor({state:'attached',timeout:15000});
