@@ -49,12 +49,16 @@ test('Novedades Playwright coverage includes fresh load, pagination, reload, his
   assert.ok(browser.includes('cacheAfter.pages <= 2 && cacheAfter.products <= 24'));
 });
 
-test('Novedades freezes the newest-24 cohort before applying every sort and isolates cache by cohort', () => {
+test('Novedades freezes newest-24 IDs, sorts only those hydrated products, then paginates', () => {
   assert.ok(php.includes('function cr2026_novelties_cohort_ids( $generation )'));
   assert.ok(php.includes("'limit' => 24"));
   assert.ok(php.includes("'return' => 'ids'"));
   assert.ok(php.includes("'orderby' => 'date'"));
+  assert.ok(php.includes('function cr2026_novelties_sort_cohort_products( $products, $sort )'));
+  assert.ok(php.includes('usort( $products, static function ( $left, $right ) use ( $sort )'));
   assert.ok(php.includes("'include' => $novelties_cohort_ids"));
+  assert.ok(php.includes("'orderby' => 'include'"));
+  assert.ok(php.includes("$cohort_products = cr2026_novelties_sort_cohort_products( $cohort_products, $sort );"));
   assert.ok(php.includes("'novelties_cohort_hash' =>"));
   assert.ok(php.includes("$products = array_slice( $cohort_products, $page_offset, $page_limit );"));
   assert.ok(php.includes("$has_more = ( $page_offset + count( $products ) ) < $total;"));
@@ -63,11 +67,11 @@ test('Novedades freezes the newest-24 cohort before applying every sort and isol
   assert.ok(archive.includes('value="title-desc"'));
   for (const marker of [
     'INITIAL_NOVELTY_IDS=',
-    'SORT_NEWEST_SET_MATCH',
-    'SORT_NAME_ASC_SET_MATCH',
-    'SORT_NAME_DESC_SET_MATCH',
-    'SORT_PRICE_ASC_SET_MATCH',
-    'SORT_PRICE_DESC_SET_MATCH',
+    'SORT_NEWEST_SET_MATCH=',
+    'SORT_NAME_ASC_SET_MATCH=',
+    'SORT_NAME_DESC_SET_MATCH=',
+    'SORT_PRICE_ASC_SET_MATCH=',
+    'SORT_PRICE_DESC_SET_MATCH=',
     'OUTSIDE_INITIAL_COHORT=',
     'MISSING_FROM_INITIAL_COHORT=',
     'CATALOG_PRODUCTS_LEAKED=0'
