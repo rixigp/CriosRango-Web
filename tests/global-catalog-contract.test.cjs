@@ -50,7 +50,7 @@ test('Novedades Playwright coverage includes fresh load, pagination, reload, his
 });
 
 test('Novedades freezes the newest-24 cohort before applying every sort and isolates cache by cohort', () => {
-  assert.match(php, /function cr2026_novelties_cohort_ids\\( \\$generation \\)/);
+  assert.ok(php.includes('function cr2026_novelties_cohort_ids( $generation )'));
   assert.ok(php.includes("'limit' => 24"));
   assert.ok(php.includes("'return' => 'ids'"));
   assert.ok(php.includes("'orderby' => 'date'"));
@@ -60,7 +60,7 @@ test('Novedades freezes the newest-24 cohort before applying every sort and isol
   assert.ok(php.includes("$has_more = ( $page_offset + count( $products ) ) < $total;"));
   assert.ok(js.includes("title:'title_asc','title-desc':'title_desc'"));
   assert.ok(js.includes("'title-desc'"));
-  assert.ok(archive.includes("value=\\"title-desc\\""));
+  assert.ok(archive.includes('value="title-desc"'));
   for (const marker of [
     'INITIAL_NOVELTY_IDS=',
     'SORT_NEWEST_SET_MATCH=',
