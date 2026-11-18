@@ -53,13 +53,6 @@ get_header( 'shop' );
         <?php
         ob_start();
         ?>
-        <?php
-        $listing_ordering_html = ob_get_clean();
-        cr2026_render_category_toolbar( $listing_title, $listing_back_url, $listing_context, true, '', '', '', array(), $listing_ordering_html );
-        ?>
-        <?php if ( $listing_outlet_category_id ) { cr2026_render_outlet_bubbles( $listing_outlet_category_id ); } ?>
-        <div class="cr-product-listing__active-filters" data-cr-active-filter-chips hidden aria-live="polite"></div>
-        <?php cr2026_render_category_filter_sheet( $listing_term, $listing_context ); ?>
         <div class="cr-product-listing__ordering">
             <label for="cr-product-order"><?php esc_html_e( 'Ordenar por', 'crios-rango-2026' ); ?></label>
             <span class="cr-product-listing__select-wrap">
@@ -72,6 +65,13 @@ get_header( 'shop' );
                 </select>
             </span>
         </div>
+        <?php
+        $listing_ordering_html = ob_get_clean();
+        cr2026_render_category_toolbar( $listing_title, $listing_back_url, $listing_context, true, '', '', '', array(), $listing_ordering_html );
+        ?>
+        <?php if ( $listing_outlet_category_id ) { cr2026_render_outlet_bubbles( $listing_outlet_category_id ); } ?>
+        <div class="cr-product-listing__active-filters" data-cr-active-filter-chips hidden aria-live="polite"></div>
+        <?php cr2026_render_category_filter_sheet( $listing_term, $listing_context ); ?>
         <div class="cr-product-grid" data-cr-product-grid aria-live="polite">
             <?php for ( $skeleton_index = 0; $skeleton_index < 4; $skeleton_index++ ) : ?>
                 <div class="cr-product-skeleton" aria-hidden="true"><span></span><i></i><b></b></div>

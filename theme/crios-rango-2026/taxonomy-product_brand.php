@@ -36,12 +36,10 @@ get_header( 'shop' );
     data-brand-term-count="<?php echo esc_attr( (int) $brand_term->count ); ?>">
     <div class="cr-product-listing__shell cr-brand-archive__shell cr-shell">
         <?php
-        <?php
         $brand_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
         if ( ! in_array( $brand_orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $brand_orderby = 'date'; }
         $brand_archive_url = get_term_link( $brand_term );
         if ( is_wp_error( $brand_archive_url ) ) { $brand_archive_url = home_url( '/' ); }
-        ?>
         $brand_filter_action = '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
         ob_start();
         ?>

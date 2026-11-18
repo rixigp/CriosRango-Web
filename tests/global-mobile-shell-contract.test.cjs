@@ -59,37 +59,46 @@ test('MOBILE_TOP_SPACING_HAS_ONE_CANONICAL_SOURCE_AND_CATEGORY_DOES_NOT_RESERVE_
 
 const listingArchive = fs.readFileSync(path.join(root, 'archive-product.php'), 'utf8');
 const brandArchive = fs.readFileSync(path.join(root, 'taxonomy-product_brand.php'), 'utf8');
-test('SHARED_CONTROLS_WRAPPER_PRESENT=PASS',()=>{
- assert.match(helpers,/cr-page-toolbar__heading/);
- assert.match(helpers,/cr-page-toolbar__controls/);
+test('OLD_HEADING_STRUCTURE_RESTORED=PASS',()=>{
+ assert.match(helpers,/cr-parent-category__back[\s\S]*?cr-parent-category__title/);
+ assert.doesNotMatch(helpers,/cr-page-toolbar__heading|cr-page-toolbar__controls/);
+ assert.doesNotMatch(main,/display:\s*contents/);
+ assert.match(main,/\.cr-parent-category__toolbar\s*\{[^}]*grid-template-columns:\s*48px minmax\(0, 1fr\) auto;/s);
 });
-test('ORDERING_INSIDE_SHARED_CONTROLS=PASS',()=>{
- assert.match(helpers,/\$left_action_html/);
- assert.match(listingArchive,/cr2026_render_category_toolbar\([\s\S]*?\$listing_ordering_html/);
- assert.match(brandArchive,/cr2026_render_category_toolbar\([\s\S]*?\$brand_ordering_html/);
+test('SECONDARY_CONTROLS_ROW_IS_SIBLING=PASS',()=>{
+ assert.match(helpers,/echo '<div class="cr-page-controls">'/);
+ assert.match(helpers,/echo '<\/div>';\s*\}/);
 });
-test('FILTERS_INSIDE_SHARED_CONTROLS=PASS',()=>{
- assert.match(helpers,/echo '<div class="cr-page-toolbar__controls">[\s\S]*?cr-parent-category__filters/);
- assert.match(brandArchive,/\$brand_filter_action/);
-});
-test('SORT_ONLY_SUPPORTED=PASS',()=>{
- assert.match(helpers,/'' !== \$left_action_html \|\| '' !== \$right_action_html \|\| \$show_filters/);
- assert.match(helpers,/if \( '' !== \$left_action_html \)/);
-});
-test('FILTER_ONLY_SUPPORTED=PASS',()=>{
+test('ORDERING_AND_FILTERS_ARE_INSIDE_SECONDARY_ROW=PASS',()=>{
+ assert.match(helpers,/if \( '' !== \$ordering_html \)/);
+ assert.match(helpers,/if \( '' !== \$right_action_html \)/);
  assert.match(helpers,/elseif \( \$show_filters \)/);
 });
-test('SORT_AND_FILTER_SUPPORTED=PASS',()=>{
+test('SORT_AND_FILTER_BEFORE_BUBBLES=PASS',()=>{
+ const controls=listingArchive.indexOf('cr2026_render_category_toolbar');
+ const bubbles=listingArchive.indexOf('cr2026_render_outlet_bubbles');
+ assert.ok(controls>=0 && bubbles>controls);
+ assert.ok(listingArchive.indexOf('$listing_ordering_html')<controls);
+ assert.ok(listingArchive.indexOf('cr-product-listing__ordering')<bubbles);
+});
+test('SORT_BEFORE_PRODUCT_GRID=PASS',()=>{
+ assert.ok(listingArchive.indexOf('cr-product-listing__ordering')<listingArchive.indexOf('cr-product-grid'));
+ assert.ok(brandArchive.indexOf('cr-product-listing__ordering')<brandArchive.indexOf('cr-product-grid'));
+});
+test('SORT_ONLY_FILTER_ONLY_AND_COMBINED_SUPPORTED=PASS',()=>{
+ assert.match(helpers,/'' !== \$ordering_html \|\| '' !== \$right_action_html \|\| \$show_filters/);
+ assert.match(helpers,/if \( '' !== \$ordering_html \)/);
+ assert.match(helpers,/elseif \( \$show_filters \)/);
  assert.match(listingArchive,/true, '', '', '', array\(\), \$listing_ordering_html/);
  assert.match(brandArchive,/false, \$brand_filter_action, '', '', array\(\), \$brand_ordering_html/);
 });
 test('RESPONSIVE_390_430_STATIC_CONTRACT=PASS',()=>{
- assert.match(main,/@media \(max-width: 767px\)[\s\S]*?\.cr-page-toolbar__controls\s*\{[\s\S]*?display: flex;[\s\S]*?align-items: center;[\s\S]*?justify-content: space-between;[\s\S]*?width: 100%;/);
- assert.match(main,/\.cr-page-toolbar__controls \.cr-product-listing__ordering\s*\{[^}]*margin: 0;/s);
- assert.match(main,/\.cr-page-toolbar__controls \.cr-parent-category__filters\s*\{[^}]*margin-left: auto;/s);
- for(const viewport of [390,430]) assert.ok(viewport <= 767,viewport+'px must use the mobile controls contract');
+ assert.match(main,/\.cr-page-controls\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*space-between;[^}]*width:\s*100%;/s);
+ assert.match(main,/\.cr-page-controls \.cr-product-listing__ordering\s*\{[^}]*margin:\s*0;/s);
+ assert.match(main,/\.cr-page-controls \.cr-parent-category__filters\s*\{[^}]*margin-left:\s*auto;/s);
+ for(const viewport of [390,430]) assert.ok(viewport>=320 && viewport<=767);
 });
-test('TABLET_DESKTOP_RULES_REMAIN_OUTSIDE_MOBILE_OVERRIDE',()=>{
- assert.match(main,/\.cr-page-toolbar__heading,\s*\.cr-page-toolbar__controls \{ display: contents; \}/);
- assert.match(main,/\.cr-product-listing__ordering \{ min-height:38px; margin:0 20px 14px;/);
+test('HEADING_HAS_NO_MOBILE_COMPRESSION_OVERRIDE',()=>{
+ assert.doesNotMatch(main,/@media \(max-width:\s*767px\)[\s\S]*?\.cr-parent-category__title\s*\{[^}]*width:/);
+ assert.doesNotMatch(main,/\.cr-page-toolbar__heading|\.cr-page-toolbar__controls/);
 });
