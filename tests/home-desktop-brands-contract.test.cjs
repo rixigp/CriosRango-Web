@@ -27,6 +27,19 @@ test('HOME_DESKTOP_20_IN_TWO_PAGES_OF_10_AND_MOBILE_16_OF_8=PASS',()=>{
  assert.match(home,/Ver todas/);assert.match(home,/cr-home-brand__fallback/);
  assert.match(helpers,/wp_attachment_is_image\(\s*\$image_id\s*\)/);
 });
+test('HOME_INTERMEDIATE_BRANDS_USE_REAL_GRID_CAPACITY_WITH_STABLE_CARDS=PASS',()=>{
+ assert.match(home,/\$intermediate_brand_pages\s*=\s*array\(\s*\$home_brands\s*\)/);
+ assert.match(home,/\$render_brand_pager\(\s*\$intermediate_brand_pages,\s*'intermediate'\s*\)/);
+ assert.match(home,/cr-home-brand-pager--intermediate/);
+ assert.match(css,/@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1279px\)[\s\S]*?grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(96px,\s*96px\)\)/);
+ assert.match(css,/width:\s*96px;[\s\S]*?max-width:\s*96px;[\s\S]*?height:\s*96px\s*!important/);
+ assert.match(css,/width:\s*64px;[\s\S]*?height:\s*64px/);
+ assert.match(css,/object-fit:\s*contain/);
+ assert.match(js,/variant === 'intermediate'/);
+ assert.match(js,/Math\.floor\(\(gridWidth \+ columnGap\) \/ \(cardWidth \+ columnGap\)\)/);
+ assert.match(js,/const perPage = columns \* 2/);
+ assert.match(js,/new ResizeObserver\(scheduleIntermediateRender\)/);
+});
 test('HOME_DESKTOP_BRANDS_GRID_AND_PAGINATION_ARE_BREAKPOINT_SCOPED=PASS',()=>{
  assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
  assert.match(css,/@media\s*\(min-width:\s*1280px\)[\s\S]*?grid-template-rows:\s*repeat\(2,\s*96px\)/);
