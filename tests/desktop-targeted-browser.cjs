@@ -957,6 +957,17 @@ async function loginForAuthenticatedAccount(page) {
     const cartRoute=navDestinations.find(item=>item.label==='Carrito');
     if(!categoryRoute||!cartRoute)throw new Error('SHELL_ROUTE_LINKS_MISSING');
 
+    await visit(page, homeUrl);
+    for (const viewport of [390, 430, 768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920]) {
+      await page.setViewportSize({ width: viewport, height: 900 });
+      await page.waitForTimeout(250);
+      await desktopShellLayout(page, 'HOME', viewport, true);
+      await homeCanonicalContentRail(page, viewport);
+      await homeDesktopBrands(page, viewport);
+      await homeBrandWinnerAudit(page, viewport);
+    }
+
+
     await visit(page, productUrl);
     for (const viewport of RESPONSIVE_VIEWPORTS) {
       await page.setViewportSize({ width: viewport, height: 900 });
@@ -979,17 +990,6 @@ async function loginForAuthenticatedAccount(page) {
         await categoryToolbarTopMargin(page, destinationLabel === 'Categorías' ? 'CATEGORY' : 'OUTLET', viewport);
       }
     }
-
-    await visit(page, homeUrl);
-    for (const viewport of [390, 430, 768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920]) {
-      await page.setViewportSize({ width: viewport, height: 900 });
-      await page.waitForTimeout(250);
-      await desktopShellLayout(page, 'HOME', viewport, true);
-      await homeCanonicalContentRail(page, viewport);
-      await homeDesktopBrands(page, viewport);
-      await homeBrandWinnerAudit(page, viewport);
-    }
-
 
     await visit(page,accountUrl);
     const legalRoutes=await accountInformationLinks(page,'SHELL_LEGAL',1280);
