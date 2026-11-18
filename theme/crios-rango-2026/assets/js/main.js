@@ -203,12 +203,13 @@
   document.querySelectorAll('[data-cr-brand-pager]').forEach((brandPager) => {
     const variant = brandPager.dataset.crBrandPagerVariant || 'mobile';
 
-    if (variant === 'intermediate') {
+    if (variant === 'unified') {
       const brands = Array.from(brandPager.querySelectorAll('.cr-home-brand'));
       const section = brandPager.closest('.cr-home-brands');
       const dotsContainer = section && section.querySelector('.cr-home-brand-dots--intermediate');
-      const intermediateMedia = window.matchMedia('(min-width: 768px) and (max-width: 1279px)');
-      let renderedPerPage = 0;
+      const mobileMedia = window.matchMedia('(max-width: 767px)');
+      const modeForViewport = () => mobileMedia.matches ? 'mobile' : 'wide';
+      let renderedMode = '';
       let pageObserver = null;
 
       brands.forEach((brand) => {
@@ -221,31 +222,25 @@
         }, { once: true });
       });
 
-      const renderIntermediatePages = () => {
-        if (!intermediateMedia.matches) return;
-        const measureGrid = brandPager.querySelector('.cr-home-brand-grid');
-        if (!measureGrid) return;
-        const gridWidth = measureGrid.clientWidth;
-        const gridStyle = window.getComputedStyle(measureGrid);
-        const columnGap = Number.parseFloat(gridStyle.columnGap) || 0;
-        const cardWidth = 96;
-        const columns = Math.max(1, Math.floor((gridWidth + columnGap) / (cardWidth + columnGap)));
-        const perPage = columns * 2;
-        if (perPage === renderedPerPage) return;
-        renderedPerPage = perPage;
-
+      const renderBrandPages = () => {
+        const mode = modeForViewport();
+        if (mode === renderedMode) return;
+        renderedMode = mode;
         if (pageObserver) {
           pageObserver.disconnect();
           pageObserver = null;
         }
 
+        const perPage = mode === 'mobile' ? 8 : 10;
+        const visiblePageCount = mode === 'mobile' ? 2 : 2;
         const pages = [];
         for (let offset = 0; offset < brands.length; offset += perPage) {
           const pageIndex = pages.length;
           const page = document.createElement('div');
           page.className = 'cr-home-brand-page';
           page.setAttribute('data-cr-brand-page', '');
-          page.setAttribute('aria-label', 'Página ' + (pageIndex + 1) + ' de ' + Math.ceil(brands.length / perPage));
+          page.setAttribute('aria-label', 'Página ' + (pageIndex + 1) + ' de ' + visiblePageCount);
+          if (mode === 'mobile' && pageIndex >= visiblePageCount) page.hidden = true;
           const grid = document.createElement('div');
           grid.className = 'cr-home-brand-grid';
           brands.slice(offset, offset + perPage).forEach((brand) => grid.appendChild(brand));
@@ -256,8 +251,9 @@
 
         if (!dotsContainer) return;
         dotsContainer.replaceChildren();
-        dotsContainer.hidden = pages.length < 2;
-        const dots = pages.map((page, index) => {
+        dotsContainer.hidden = false;
+        const visiblePages = pages.slice(0, visiblePageCount);
+        const dots = visiblePages.map((page, index) => {
           const dot = document.createElement('button');
           dot.type = 'button';
           dot.className = 'cr-home-brand-dot' + (index === 0 ? ' is-active' : '');
@@ -276,7 +272,7 @@
         };
         dots.forEach((dot, index) => {
           dot.addEventListener('click', () => {
-            const page = pages[index];
+            const page = visiblePages[index];
             if (page) brandPager.scrollTo({
               left: page.offsetLeft - brandPager.offsetLeft,
               behavior: 'smooth'
@@ -287,32 +283,32 @@
           pageObserver = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
               if (!entry.isIntersecting) return;
-              const index = pages.indexOf(entry.target);
+              const index = visiblePages.indexOf(entry.target);
               if (index >= 0) setActivePage(index);
             });
           }, { root: brandPager, threshold: 0.6 });
-          pages.forEach((page) => pageObserver.observe(page));
+          visiblePages.forEach((page) => pageObserver.observe(page));
         } else {
           brandPager.onscroll = () => {
             const pageWidth = brandPager.clientWidth || 1;
-            setActivePage(Math.min(pages.length - 1, Math.round(brandPager.scrollLeft / pageWidth)));
+            setActivePage(Math.min(visiblePages.length - 1, Math.round(brandPager.scrollLeft / pageWidth)));
           };
         }
         brandPager.scrollTo({ left: 0, behavior: 'auto' });
       };
 
-      const scheduleIntermediateRender = () => window.requestAnimationFrame(renderIntermediatePages);
-      scheduleIntermediateRender();
+      const scheduleBrandRender = () => window.requestAnimationFrame(renderBrandPages);
+      scheduleBrandRender();
       if ('ResizeObserver' in window) {
-        const brandResizeObserver = new ResizeObserver(scheduleIntermediateRender);
+        const brandResizeObserver = new ResizeObserver(scheduleBrandRender);
         brandResizeObserver.observe(brandPager);
       } else {
-        window.addEventListener('resize', scheduleIntermediateRender, { passive: true });
+        window.addEventListener('resize', scheduleBrandRender, { passive: true });
       }
-      if (typeof intermediateMedia.addEventListener === 'function') {
-        intermediateMedia.addEventListener('change', scheduleIntermediateRender);
-      } else if (typeof intermediateMedia.addListener === 'function') {
-        intermediateMedia.addListener(scheduleIntermediateRender);
+      if (typeof mobileMedia.addEventListener === 'function') {
+        mobileMedia.addEventListener('change', scheduleBrandRender);
+      } else if (typeof mobileMedia.addListener === 'function') {
+        mobileMedia.addListener(scheduleBrandRender);
       }
       return;
     }
