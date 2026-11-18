@@ -562,6 +562,71 @@ async function inspect(page, routeName, width) {
     console.log('MAX_OBSERVED=' + Math.max(noveltiesFreshCount, noveltiesAfterLoadMore, noveltiesAfterReload, noveltiesAfterBack, noveltiesAfterForwardBack, noveltiesAfterCacheRestore));
     console.log('EXPECTED_MAX=24');
     console.log('NOVEDADES_TOTAL_LIMIT_BROWSER=PASS');
+
+    // Every sort must reorder the exact same server-frozen newest-24 cohort.
+    const noveltiesSortPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    const sortUrl = new URL('novedades/', BASE_URL + '/').toString();
+    const waitForSortPage = async () => {
+      await noveltiesSortPage.waitForFunction(() => {
+        const grid = document.querySelector('[data-cr-product-grid]');
+        return !!grid && grid.querySelectorAll('[data-product-id]').length === 12;
+      }, undefined, { timeout: 30000 });
+    };
+    const loadSecondSortPage = async () => {
+      const button = noveltiesSortPage.locator('[data-cr-product-load-more]');
+      await noveltiesSortPage.waitForFunction(() => {
+        const button = document.querySelector('[data-cr-product-load-more]');
+        return !!button && !button.hidden && !button.disabled;
+      }, undefined, { timeout: 30000 });
+      await button.click();
+      await noveltiesSortPage.waitForFunction(() =>
+        document.querySelectorAll('[data-cr-product-grid] [data-product-id]').length === 24,
+      undefined, { timeout: 30000 });
+    };
+    const readSortedNoveltyIds = () => noveltiesSortPage.locator('[data-cr-product-grid] [data-product-id]').evaluateAll(nodes =>
+      nodes.map(node => String(node.getAttribute('data-product-id')))
+    );
+    await navigate(noveltiesSortPage, sortUrl);
+    await waitForSortPage();
+    await loadSecondSortPage();
+    const initialNoveltyIds = await readSortedNoveltyIds();
+    assert.equal(initialNoveltyIds.length, 24, 'initial Novedades cohort must contain 24 cards');
+    assert.equal(new Set(initialNoveltyIds).size, 24, 'initial Novedades cohort must contain 24 unique IDs');
+    const initialNoveltySet = new Set(initialNoveltyIds);
+    console.log('INITIAL_NOVELTY_IDS=' + JSON.stringify(initialNoveltyIds));
+    const sortCases = [
+      ['newest','date','SORT_NEWEST_SET_MATCH'],
+      ['name_asc','title','SORT_NAME_ASC_SET_MATCH'],
+      ['name_desc','title-desc','SORT_NAME_DESC_SET_MATCH'],
+      ['price_asc','price','SORT_PRICE_ASC_SET_MATCH'],
+      ['price_desc','price-desc','SORT_PRICE_DESC_SET_MATCH']
+    ];
+    for (const [label,value,marker] of sortCases) {
+      if (value !== 'date') {
+        await noveltiesSortPage.locator('[data-cr-product-order]').selectOption(value);
+        await waitForSortPage();
+        await loadSecondSortPage();
+      }
+      const sortedIds = await readSortedNoveltyIds();
+      const sortedSet = new Set(sortedIds);
+      const outside = sortedIds.filter(id => !initialNoveltySet.has(id));
+      const missing = initialNoveltyIds.filter(id => !sortedSet.has(id));
+      const uniqueCount = sortedSet.size;
+      const setMatch = sortedIds.length === 24 && uniqueCount === 24 && outside.length === 0 && missing.length === 0;
+      console.log(marker + '=' + (setMatch ? 'PASS' : 'FAIL'));
+      console.log('SORT_' + label.toUpperCase() + '_IDS=' + JSON.stringify(sortedIds));
+      console.log('SORT_' + label.toUpperCase() + '_COUNT=' + sortedIds.length);
+      console.log('SORT_' + label.toUpperCase() + '_UNIQUE=' + uniqueCount);
+      console.log('OUTSIDE_INITIAL_COHORT=' + outside.length);
+      console.log('MISSING_FROM_INITIAL_COHORT=' + missing.length);
+      assert.equal(sortedIds.length, 24, label + ' must contain exactly 24 products');
+      assert.equal(uniqueCount, 24, label + ' must contain 24 unique products');
+      assert.equal(outside.length, 0, label + ' introduced products outside initial cohort: ' + outside.join(','));
+      assert.equal(missing.length, 0, label + ' omitted products from initial cohort: ' + missing.join(','));
+    }
+    console.log('CATALOG_PRODUCTS_LEAKED=0');
+    console.log('NOVEDADES_SORT_COHORT_BROWSER=PASS');
+    await noveltiesSortPage.close();
     await noveltiesPage.close();
 
     console.log('SCROLLBAR_STABILITY=PASS');

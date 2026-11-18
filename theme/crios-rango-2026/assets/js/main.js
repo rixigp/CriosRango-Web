@@ -619,8 +619,8 @@
     const totalLimit = Number(productListing.dataset.totalLimit || 0);
     if (!Number.isInteger(totalLimit) || totalLimit < 0) throw new Error('Invalid catalog total limit: '+productListing.dataset.totalLimit);
     const currentUrl = new URL(window.location.href);
-    let orderby = ['date','price','price-desc','title'].includes(currentUrl.searchParams.get('orderby')) ? currentUrl.searchParams.get('orderby') : 'date';
-    const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc',title:'title_asc'};
+    let orderby = ['date','price','price-desc','title','title-desc'].includes(currentUrl.searchParams.get('orderby')) ? currentUrl.searchParams.get('orderby') : 'date';
+    const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc',title:'title_asc','title-desc':'title_desc'};
     const filterKeys = brandContext ? ['size_ids','color_ids'] : ['size_ids','color_ids','brand_ids'];
     const taxonomyByKey = {size_ids:'pa_tallas',color_ids:'pa_color',brand_ids:'product_tag'};
     const labelByKey = {size_ids:'Talla',color_ids:'',brand_ids:''};
@@ -1060,7 +1060,7 @@
       };
       fitOrderControl();
       orderControl.addEventListener('change',()=>{
-        orderby=['date','price','price-desc','title'].includes(orderControl.value)?orderControl.value:'date';
+        orderby=['date','price','price-desc','title','title-desc'].includes(orderControl.value)?orderControl.value:'date';
         fitOrderControl();
         if(orderby==='date')currentUrl.searchParams.delete('orderby');else currentUrl.searchParams.set('orderby',orderby);
         window.history.replaceState({},'',currentUrl.toString());

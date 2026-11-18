@@ -62,6 +62,7 @@ get_header( 'shop' );
                     <option value="price"<?php selected( 'price', $listing_orderby ); ?>><?php esc_html_e( 'Precio: menor a mayor', 'crios-rango-2026' ); ?></option>
                     <option value="price-desc"<?php selected( 'price-desc', $listing_orderby ); ?>><?php esc_html_e( 'Precio: mayor a menor', 'crios-rango-2026' ); ?></option>
                     <option value="title"<?php selected( 'title', $listing_orderby ); ?>><?php esc_html_e( 'Nombre A-Z', 'crios-rango-2026' ); ?></option>
+                    <option value="title-desc"<?php selected( 'title-desc', $listing_orderby ); ?>><?php esc_html_e( 'Nombre Z-A', 'crios-rango-2026' ); ?></option>
                 </select>
             </span>
         </div>

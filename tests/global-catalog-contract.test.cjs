@@ -48,3 +48,28 @@ test('Novedades Playwright coverage includes fresh load, pagination, reload, his
   assert.ok(browser.includes('pages.length < 5'));
   assert.ok(browser.includes('cacheAfter.pages <= 2 && cacheAfter.products <= 24'));
 });
+
+test('Novedades freezes the newest-24 cohort before applying every sort and isolates cache by cohort', () => {
+  assert.match(php, /function cr2026_novelties_cohort_ids\\( \\$generation \\)/);
+  assert.ok(php.includes("'limit' => 24"));
+  assert.ok(php.includes("'return' => 'ids'"));
+  assert.ok(php.includes("'orderby' => 'date'"));
+  assert.ok(php.includes("'include' => $novelties_cohort_ids"));
+  assert.ok(php.includes("'novelties_cohort_hash' =>"));
+  assert.ok(php.includes("$products = array_slice( $cohort_products, $page_offset, $page_limit );"));
+  assert.ok(php.includes("$has_more = ( $page_offset + count( $products ) ) < $total;"));
+  assert.ok(js.includes("title:'title_asc','title-desc':'title_desc'"));
+  assert.ok(js.includes("'title-desc'"));
+  assert.ok(archive.includes("value=\\"title-desc\\""));
+  for (const marker of [
+    'INITIAL_NOVELTY_IDS=',
+    'SORT_NEWEST_SET_MATCH=',
+    'SORT_NAME_ASC_SET_MATCH=',
+    'SORT_NAME_DESC_SET_MATCH=',
+    'SORT_PRICE_ASC_SET_MATCH=',
+    'SORT_PRICE_DESC_SET_MATCH=',
+    'OUTSIDE_INITIAL_COHORT=',
+    'MISSING_FROM_INITIAL_COHORT=',
+    'CATALOG_PRODUCTS_LEAKED=0'
+  ]) assert.ok(browser.includes(marker), 'missing cohort sort browser assertion/log: ' + marker);
+});

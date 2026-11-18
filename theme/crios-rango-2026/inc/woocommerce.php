@@ -269,7 +269,7 @@ function cr2026_catalog_cache_session_sensitive() {
         && is_callable( array( WC()->session, 'has_session' ) ) && WC()->session->has_session() ) { return true; }
     return false;
 }
-function cr2026_catalog_cache_key( $generation, $scope, $category_id, $brand_id, $outlet_category_id, $origin_category_ids, $filters, $sort, $page, $per_page, $novelties_limit = 0 ) {
+function cr2026_catalog_cache_key( $generation, $scope, $category_id, $brand_id, $outlet_category_id, $origin_category_ids, $filters, $sort, $page, $per_page, $novelties_limit = 0, $novelties_cohort_ids = array() ) {
     $state = array(
         'schema' => 1, 'generation' => (int) $generation, 'scope' => (string) $scope,
         'category_id' => (int) $category_id, 'brand_id' => (int) $brand_id,
@@ -280,6 +280,7 @@ function cr2026_catalog_cache_key( $generation, $scope, $category_id, $brand_id,
         'brand_ids' => cr2026_catalog_cache_normalize_ids( $filters['brand_ids'] ),
         'sort' => (string) $sort, 'page' => (int) $page, 'per_page' => (int) $per_page,
         'novelties_limit' => max( 0, absint( $novelties_limit ) ),
+        'novelties_cohort_hash' => $novelties_cohort_ids ? md5( implode( ',', array_map( 'absint', $novelties_cohort_ids ) ) ) : '',
         'locale' => function_exists( 'determine_locale' ) ? determine_locale() : get_locale(),
         'currency' => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '',
         'tax_display' => get_option( 'woocommerce_tax_display_shop', 'excl' ),
@@ -336,6 +337,37 @@ function cr2026_catalog_cache_store( $cache_key, $payload ) {
     set_transient( $cache_key, $payload, 300 );
     set_transient( $cache_key . '_stale', $payload, 1800 );
     return true;
+}
+
+/**
+ * Freeze the Novedades universe per catalogue generation. Every sort and page
+ * reads this same newest-24 ID set; sorting is applied only after inclusion.
+ */
+function cr2026_novelties_cohort_ids( $generation ) {
+    $cache_key = 'cr2026_novelties_cohort_v1_' . absint( $generation );
+    $cached = get_transient( $cache_key );
+    if ( is_array( $cached ) ) {
+        $cached_ids = array_values( array_map( 'absint', $cached ) );
+        if ( count( $cached_ids ) <= 24 && ! in_array( 0, $cached_ids, true )
+            && count( $cached_ids ) === count( array_unique( $cached_ids ) ) ) {
+            return $cached_ids;
+        }
+        delete_transient( $cache_key );
+    }
+
+    $ids = wc_get_products( array(
+        'status' => 'publish',
+        'visibility' => 'visible',
+        'limit' => 24,
+        'return' => 'ids',
+        'orderby' => 'date',
+        'order' => 'DESC',
+    ) );
+    $ids = is_array( $ids ) ? array_values( array_map( 'absint', $ids ) ) : array();
+    $ids = array_values( array_filter( $ids ) );
+    $ids = array_slice( array_values( array_unique( $ids ) ), 0, 24 );
+    set_transient( $cache_key, $ids, DAY_IN_SECONDS );
+    return $ids;
 }
 
 /**
@@ -435,15 +467,16 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $product_ids = array();
     $filter_api_product_ids = array();
 
+    $generation = cr2026_catalog_cache_generation();
+    $novelties_cohort_ids = $is_novelties ? cr2026_novelties_cohort_ids( $generation ) : array();
     $cache_bypass = cr2026_catalog_cache_session_sensitive();
     if ( $cache_bypass ) {
     } else {
-        $generation = cr2026_catalog_cache_generation();
         $cache_filters = array();
         foreach ( $filter_keys as $filter_key ) { $cache_filters[ $filter_key ] = $request->get_param( $filter_key ); }
         $catalog_cache_key = cr2026_catalog_cache_key(
             $generation, $scope, $category_id, $brand_id, $outlet_category_id,
-            $origin_category_ids, $cache_filters, $sort, $page, $per_page, $novelties_limit
+            $origin_category_ids, $cache_filters, $sort, $page, $per_page, $novelties_limit, $novelties_cohort_ids
         );
         $cache_result = cr2026_catalog_cache_lookup( $catalog_cache_key );
         if ( 'hit' === $cache_result['state'] || 'stale' === $cache_result['state'] ) {
@@ -456,7 +489,22 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $has_more = false;
     $total = null;
 
-    if ( $has_filters ) {
+    if ( $is_novelties && ! $has_filters ) {
+        $sort_args = cr2026_catalog_sort_query_vars( $sort );
+        $cohort_products = $novelties_cohort_ids ? wc_get_products( array(
+            'status' => 'publish',
+            'visibility' => 'visible',
+            'include' => $novelties_cohort_ids,
+            'limit' => count( $novelties_cohort_ids ),
+            'return' => 'objects',
+            'orderby' => $sort_args['orderby'],
+            'order' => $sort_args['order'],
+        ) ) : array();
+        $total = count( $cohort_products );
+        $products = array_slice( $cohort_products, $page_offset, $page_limit );
+        $product_ids = array_map( static function ( $product ) { return $product->get_id(); }, $products );
+        $has_more = ( $page_offset + count( $products ) ) < $total;
+    } elseif ( $has_filters ) {
         $filter_request = new WP_REST_Request( 'GET', '/criosrango-filter/v1/query' );
         $filter_params = array(
             'scope' => $is_outlet_scope ? 'outlet' : 'catalog',
