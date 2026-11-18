@@ -172,8 +172,8 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
                 if ( empty( $brand_pages ) ) {
                     return;
                 }
-                $pager_class = 'desktop' === $variant ? 'cr-home-brand-pager--desktop' : ( 'intermediate' === $variant ? 'cr-home-brand-pager--intermediate' : 'cr-home-brand-pager--mobile' );
-                $dots_class  = 'desktop' === $variant ? 'cr-home-brand-dots--desktop' : ( 'intermediate' === $variant ? 'cr-home-brand-dots--intermediate' : 'cr-home-brand-dots--mobile' );
+                $pager_class = 'unified' === $variant ? 'cr-home-brand-pager--mobile cr-home-brand-pager--desktop cr-home-brand-pager--intermediate' : ( 'desktop' === $variant ? 'cr-home-brand-pager--desktop' : 'cr-home-brand-pager--mobile' );
+                $dots_class  = 'unified' === $variant ? 'cr-home-brand-dots--mobile cr-home-brand-dots--desktop cr-home-brand-dots--intermediate' : ( 'desktop' === $variant ? 'cr-home-brand-dots--desktop' : 'cr-home-brand-dots--mobile' );
                 ?>
                 <div class="cr-home-brand-pager <?php echo esc_attr( $pager_class ); ?>" data-cr-brand-pager data-cr-brand-pager-variant="<?php echo esc_attr( $variant ); ?>">
                     <?php foreach ( $brand_pages as $page_index => $page_brands ) : ?>
@@ -200,8 +200,8 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
                         </div>
                     <?php endforeach; ?>
                 </div>
-                <?php if ( count( $brand_pages ) > 1 || 'intermediate' === $variant ) : ?>
-                    <div class="cr-home-brand-dots <?php echo esc_attr( $dots_class ); ?>" data-cr-brand-dots aria-label="Páginas de marcas"<?php echo 'intermediate' === $variant ? ' hidden' : ''; ?>>
+                <?php if ( count( $brand_pages ) > 1 || 'unified' === $variant ) : ?>
+                    <div class="cr-home-brand-dots <?php echo esc_attr( $dots_class ); ?>" data-cr-brand-dots aria-label="Páginas de marcas"<?php echo 'unified' === $variant ? ' hidden' : ''; ?>>
                         <?php foreach ( $brand_pages as $page_index => $unused_page ) : ?>
                             <button type="button" class="cr-home-brand-dot<?php echo 0 === $page_index ? ' is-active' : ''; ?>" data-cr-brand-dot="<?php echo esc_attr( $page_index ); ?>" aria-label="<?php echo esc_attr( sprintf( 'Ir a página %d', $page_index + 1 ) ); ?>" aria-current="<?php echo 0 === $page_index ? 'true' : 'false'; ?>"></button>
                         <?php endforeach; ?>
@@ -209,9 +209,7 @@ $category_assets_url = trailingslashit( get_template_directory_uri() ) . 'assets
                 <?php endif; ?>
                 <?php
             };
-            $render_brand_pager( $desktop_brand_pages, 'desktop' );
-            $render_brand_pager( $mobile_brand_pages, 'mobile' );
-            $render_brand_pager( $intermediate_brand_pages, 'intermediate' );
+            $render_brand_pager( array( $home_brands ), 'unified' );
             ?>
         <?php endif; ?>
     
