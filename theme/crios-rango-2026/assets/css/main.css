@@ -1231,7 +1231,7 @@ body.home .cr-app-header {
     max-width: 120px;
     height: clamp(72px, calc(4.8vw + 35px), 96px) !important;
     padding: clamp(6px, .625vw, 8px);
-    overflow: visible;
+    overflow: hidden;
   }
   body.home .cr-home-brands .cr-home-brand__logo-box {
     display: flex;
@@ -1242,7 +1242,7 @@ body.home .cr-app-header {
     max-width: 100%;
     min-width: 0;
     height: clamp(44px, calc(4vw + 13.3px), 64px);
-    overflow: visible;
+    overflow: hidden;
   }
   body.home .cr-home-brands .cr-home-brand__logo-box img {
     display: block;

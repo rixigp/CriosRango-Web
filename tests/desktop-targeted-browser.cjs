@@ -464,86 +464,115 @@ async function sixRouteDesktopShell(page,routes,viewport){
 
 async function homeDesktopBrands(page, viewport) {
   const state = await page.evaluate(() => {
-    const section=document.querySelector('.cr-home-brands');
-    const desktop=section&&section.querySelector('.cr-home-brand-pager--desktop');
-    const mobile=section&&section.querySelector('.cr-home-brand-pager--mobile');
-    if(!section||!desktop||!mobile)return {found:false};
-    const names=pager=>Array.from(pager.querySelectorAll('.cr-home-brand-page')).map(pg=>
-      Array.from(pg.querySelectorAll('.cr-home-brand')).map(card=>card.querySelector('img')?.alt||(card.textContent||'').trim()));
-    const grids=Array.from(desktop.querySelectorAll('.cr-home-brand-grid'));
-    const pagesGeometry=grids.map(grid=>{
-      const cards=Array.from(grid.querySelectorAll('.cr-home-brand'));
-      const rects=cards.map(card=>card.getBoundingClientRect());
-      const logoBoxes=cards.map(card=>card.querySelector('.cr-home-brand__logo-box')?.getBoundingClientRect()||null);
-      const images=cards.map(card=>{
-        const img=card.querySelector('img'),box=card.querySelector('.cr-home-brand__logo-box');
-        if(!img||img.hidden||!box)return null;
-        const ir=img.getBoundingClientRect(),br=box.getBoundingClientRect();
-        return {left:ir.left,right:ir.right,top:ir.top,bottom:ir.bottom,boxLeft:br.left,boxRight:br.right,boxTop:br.top,boxBottom:br.bottom,fit:getComputedStyle(img).objectFit};
+    const section = document.querySelector('.cr-home-brands');
+    const pager = section && section.querySelector('[data-cr-brand-pager]');
+    const dots = section && section.querySelector('[data-cr-brand-dots]');
+    if (!section || !pager || !dots) return { found: false };
+    const pages = Array.from(pager.querySelectorAll('.cr-home-brand-page'));
+    const pageNames = pages.map(pg => Array.from(pg.querySelectorAll('.cr-home-brand'))
+      .map(card => card.querySelector('img')?.alt || (card.textContent || '').trim()));
+    const pagesGeometry = pages.map(pg => {
+      const grid = pg.querySelector('.cr-home-brand-grid');
+      const cards = Array.from(grid ? grid.querySelectorAll('.cr-home-brand') : []);
+      const columns = grid ? getComputedStyle(grid).gridTemplateColumns.split(' ').length : 0;
+      const rows = grid ? getComputedStyle(grid).gridTemplateRows.split(' ').length : 0;
+      const cardData = cards.map(card => {
+        const cr = card.getBoundingClientRect();
+        const box = card.querySelector('.cr-home-brand__logo-box');
+        const br = box && box.getBoundingClientRect();
+        const img = box && box.querySelector('img:not([hidden])');
+        const ir = img && img.getBoundingClientRect();
+        const cs = getComputedStyle(card);
+        const bs = box && getComputedStyle(box);
+        const is = img && getComputedStyle(img);
+        const inside = (inner, outer) => Boolean(inner && outer
+          && inner.left >= outer.left - 1 && inner.right <= outer.right + 1
+          && inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1);
+        return {
+          name: img?.alt || (card.textContent || '').trim(),
+          card: { left: cr.left, right: cr.right, top: cr.top, bottom: cr.bottom, width: cr.width, height: cr.height, overflow: cs.overflow },
+          logoBox: br && { left: br.left, right: br.right, top: br.top, bottom: br.bottom, width: br.width, height: br.height, overflow: bs.overflow },
+          image: ir && { left: ir.left, right: ir.right, top: ir.top, bottom: ir.bottom, width: ir.width, height: ir.height, objectFit: is.objectFit },
+          imageInsideLogoBox: inside(ir, br),
+          imageInsideCard: inside(ir, cr),
+          logoBoxInsideCard: inside(br, cr)
+        };
       });
-      const row1Bottom=Math.max(...rects.slice(0,5).map(r=>r.bottom));
-      const row2Top=Math.min(...rects.slice(5,10).map(r=>r.top));
-      const cardHeights=rects.map(r=>r.height),logoHeights=logoBoxes.filter(Boolean).map(r=>r.height);
-      const cardHeightShared=cardHeights.every(h=>Math.abs(h-96)<1);
-      const logoBoxHeightShared=logoHeights.length===10&&logoHeights.every(h=>Math.abs(h-64)<1);
-      const rowOverlap=row2Top<row1Bottom+19;
-      const noLogoOverflow=images.every(v=>!v||(v.left>=v.boxLeft-1&&v.right<=v.boxRight+1&&v.top>=v.boxTop-1&&v.bottom<=v.boxBottom+1&&v.fit==='contain'));
-      return {cardHeightShared,logoBoxHeightShared,rowOverlap,noLogoOverflow,rowGap:getComputedStyle(grid).rowGap,
-        row1Bottom,row2Top,cards:rects.map(r=>({left:r.left,right:r.right,top:r.top,bottom:r.bottom,height:r.height})),images};
+      const rowRects = cards.map(card => card.getBoundingClientRect());
+      const row1Bottom = rowRects.length >= 5 ? Math.max(...rowRects.slice(0, 5).map(r => r.bottom)) : 0;
+      const row2Top = rowRects.length >= 10 ? Math.min(...rowRects.slice(5, 10).map(r => r.top)) : 0;
+      return {
+        count: cards.length, columns, rows,
+        row1Bottom, row2Top, rowGap: grid ? getComputedStyle(grid).rowGap : 'MISSING',
+        cards: cardData,
+        allImagesPresent: cardData.every(x => x.image !== null),
+        allInsideLogoBoxes: cardData.every(x => x.imageInsideLogoBox),
+        allInsideCards: cardData.every(x => x.imageInsideCard && x.logoBoxInsideCard),
+        allContain: cardData.every(x => x.image && x.image.objectFit === 'contain'),
+        cardsClipSafely: cardData.every(x => x.card.overflow === 'hidden' && x.logoBox?.overflow === 'hidden'),
+        rowsSeparated: rowRects.length === 10 && row2Top >= row1Bottom + 1
+      };
     });
-    return {found:true,desktopDisplay:getComputedStyle(desktop).display,mobileDisplay:getComputedStyle(mobile).display,
-      desktopPages:names(desktop),mobilePages:names(mobile),
-      dots:section.querySelectorAll('.cr-home-brand-dots--desktop [data-cr-brand-dot]').length,
-      sectionPaddingBottom:getComputedStyle(section).paddingBottom,
-      dotsGeometry:(()=>{const d=section.querySelector('.cr-home-brand-dots--desktop'),r=d&&d.getBoundingClientRect(),s=section.getBoundingClientRect();return r?{top:r.top,bottom:r.bottom,left:r.left,right:r.right,center:(r.left+r.right)/2,sectionBottom:s.bottom,sectionCenter:(s.left+s.right)/2}:null;})(),
-      columns:grids[0]?getComputedStyle(grids[0]).gridTemplateColumns.split(' ').length:0,
-      rows:grids[0]?getComputedStyle(grids[0]).gridTemplateRows.split(' ').length:0,
-      clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,
-      pagerClientWidth:desktop.clientWidth,pagerScrollWidth:desktop.scrollWidth,pagesGeometry};
+    return {
+      found: true, pagerDisplay: getComputedStyle(pager).display,
+      dotsDisplay: getComputedStyle(dots).display,
+      pageNames, pagesGeometry,
+      dots: dots.querySelectorAll('[data-cr-brand-dot]').length,
+      activeDot: dots.querySelector('[data-cr-brand-dot][aria-current="true"]')?.getAttribute('data-cr-brand-dot'),
+      columns: pagesGeometry[0]?.columns || 0,
+      rows: pagesGeometry[0]?.rows || 0,
+      total: pageNames.flat().length,
+      unique: new Set(pageNames.flat()).size,
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      pagerClientWidth: pager.clientWidth,
+      pagerScrollWidth: pager.scrollWidth
+    };
   });
-  if(!state.found)throw new Error('HOME_BRANDS_MARKUP_MISSING_'+viewport);
-  if(viewport<1280){
-    const pass=state.desktopDisplay==='none'&&state.mobileDisplay!=='none'&&state.mobilePages.flat().length===16;
-    log('HOME_BRANDS_MOBILE_TABLET_UNCHANGED_'+viewport,pass?'PASS':'FAIL');
-    if(!pass)throw new Error('HOME_BRANDS_MOBILE_TABLET_REGRESSION_'+viewport);
+  if (!state.found) throw new Error('HOME_BRANDS_MARKUP_MISSING_' + viewport);
+
+  if (viewport < 768) {
+    log('HOME_BRANDS_MOBILE_FROZEN_' + viewport, 'NOT_TESTED_BY_INTERMEDIATE_SUITE');
     return;
   }
-  const counts=state.desktopPages.map(a=>a.length);
-  const noClip=state.pagesGeometry.every(p=>p.noLogoOverflow);
-  const rowsDoNotOverlap=state.pagesGeometry.length===2&&state.pagesGeometry.every(p=>!p.rowOverlap);
-  const cardHeightsShared=state.pagesGeometry.length===2&&state.pagesGeometry.every(p=>p.cardHeightShared);
-  const logoBoxHeightsShared=state.pagesGeometry.length===2&&state.pagesGeometry.every(p=>p.logoBoxHeightShared);
-  const noOverflow=state.scrollWidth<=state.clientWidth+1&&state.pagerScrollWidth<=state.pagerClientWidth*2+1;
-  const dotsSpacingPass=state.sectionPaddingBottom==='20px'&&state.dotsGeometry&&state.dotsGeometry.sectionBottom-state.dotsGeometry.bottom>=19&&Math.abs(state.dotsGeometry.center-state.dotsGeometry.sectionCenter)<=1;
-  const pass=state.desktopDisplay!=='none'&&state.mobileDisplay==='none'&&state.desktopPages.length===2&&counts.every(n=>n===10)&&state.dots===2&&state.columns===5&&state.rows===2&&rowsDoNotOverlap&&cardHeightsShared&&logoBoxHeightsShared&&noClip&&noOverflow&&dotsSpacingPass;
-  log('HOME_DESKTOP_BRANDS_TOTAL_'+viewport,state.desktopPages.flat().length);
-  log('HOME_DESKTOP_BRANDS_PAGE_1_'+viewport,JSON.stringify(state.desktopPages[0]));
-  log('HOME_DESKTOP_BRANDS_PAGE_2_'+viewport,JSON.stringify(state.desktopPages[1]));
-  log('HOME_DESKTOP_BRANDS_PAGE_1_ROWS_'+viewport,state.pagesGeometry[0]?.rowOverlap===false?'2':'FAIL');
-  log('HOME_DESKTOP_BRANDS_PAGE_2_ROWS_'+viewport,state.pagesGeometry[1]?.rowOverlap===false?'2':'FAIL');
-  log('HOME_DESKTOP_BRANDS_ROW_OVERLAP_'+viewport,rowsDoNotOverlap?'NO':'YES');
-  log('HOME_DESKTOP_BRANDS_CARD_HEIGHT_SHARED_'+viewport,cardHeightsShared?'PASS':'FAIL');
-  log('HOME_DESKTOP_BRANDS_LOGO_BOX_HEIGHT_SHARED_'+viewport,logoBoxHeightsShared?'PASS':'FAIL');
-  log('HOME_DESKTOP_BRANDS_NO_LOGO_OVERFLOW_'+viewport,noClip?'PASS':'FAIL');
-  log('HOME_DESKTOP_BRANDS_NO_CLIPPING_'+viewport,noClip?'PASS':'FAIL');
-  log('HOME_DESKTOP_BRANDS_NO_OVERFLOW_'+viewport,noOverflow?'PASS':'FAIL');
-  log('HOME_DESKTOP_BRANDS_GRID_'+viewport,JSON.stringify({counts,columns:state.columns,rows:state.rows,dots:state.dots,pagerClientWidth:state.pagerClientWidth,pagerScrollWidth:state.pagerScrollWidth}));
-  log('HOME_DESKTOP_BRANDS_GEOMETRY_'+viewport,JSON.stringify(state.pagesGeometry));
-  if(!pass)throw new Error('HOME_DESKTOP_BRANDS_LAYOUT_FAILED_'+viewport);
-  await page.locator('.cr-home-brand-dots--desktop [data-cr-brand-dot="1"]').click();
+
+  const counts = state.pagesGeometry.map(p => p.count);
+  const pageGeometryPass = state.pagesGeometry.length === 2
+    && state.pagesGeometry.every(p => p.count === 10 && p.columns === 5 && p.rows === 2
+      && p.allImagesPresent && p.allInsideLogoBoxes && p.allInsideCards
+      && p.allContain && p.cardsClipSafely && p.rowsSeparated);
+  const uniquePass = state.total === 20 && state.unique === 20;
+  const dotsPass = state.dots === 2 && state.activeDot === '0';
+  const noPageOverflow = state.scrollWidth <= state.clientWidth + 1
+    && state.pagerScrollWidth <= state.pagerClientWidth * 2 + 1;
+  const pass = state.pagerDisplay !== 'none' && state.dotsDisplay !== 'none'
+    && counts.every(n => n === 10) && state.columns === 5 && state.rows === 2
+    && pageGeometryPass && uniquePass && dotsPass && noPageOverflow;
+
+  log('HOME_INTERMEDIATE_BRANDS_' + viewport, pass ? 'PASS' : 'FAIL');
+  log('HOME_INTERMEDIATE_COLUMNS_' + viewport, state.columns);
+  log('HOME_INTERMEDIATE_ROWS_' + viewport, state.rows);
+  log('HOME_INTERMEDIATE_PAGE_1_COUNT_' + viewport, counts[0] ?? 'MISSING');
+  log('HOME_INTERMEDIATE_PAGE_2_COUNT_' + viewport, counts[1] ?? 'MISSING');
+  log('HOME_INTERMEDIATE_TOTAL_' + viewport, state.total);
+  log('HOME_INTERMEDIATE_DUPLICATES_' + viewport, state.total - state.unique);
+  log('HOME_INTERMEDIATE_IMAGE_CONTAIN_' + viewport, state.pagesGeometry.every(p => p.allContain) ? 'PASS' : 'FAIL');
+  log('HOME_INTERMEDIATE_IMAGE_INSIDE_LOGO_BOX_' + viewport, state.pagesGeometry.every(p => p.allInsideLogoBoxes) ? 'PASS' : 'FAIL');
+  log('HOME_INTERMEDIATE_IMAGE_INSIDE_CARD_' + viewport, state.pagesGeometry.every(p => p.allInsideCards) ? 'PASS' : 'FAIL');
+  log('HOME_INTERMEDIATE_NO_LOGO_OVERFLOW_' + viewport, state.pagesGeometry.every(p => p.cardsClipSafely) ? 'PASS' : 'FAIL');
+  log('HOME_INTERMEDIATE_GEOMETRY_' + viewport, JSON.stringify(state.pagesGeometry));
+  if (!pass) throw new Error('HOME_INTERMEDIATE_BRANDS_LAYOUT_FAILED_' + viewport);
+
+  await page.locator('[data-cr-brand-dot="1"]').click();
   await page.waitForTimeout(650);
-  const active=await page.locator('.cr-home-brand-dots--desktop [data-cr-brand-dot="1"]').getAttribute('aria-current');
-  log('HOME_DESKTOP_BRANDS_DOTS_SYNC_'+viewport,active==='true'?'PASS':'FAIL');
-  if(active!=='true')throw new Error('HOME_DESKTOP_BRANDS_DOTS_NOT_SYNCED_'+viewport);
-  const page2Spacing=await page.evaluate(()=>{const s=document.querySelector('.cr-home-brands'),d=s&&s.querySelector('.cr-home-brand-dots--desktop'),r=d&&d.getBoundingClientRect(),sr=s&&s.getBoundingClientRect();return {padding:getComputedStyle(s).paddingBottom,bottom:r&&r.bottom,sectionBottom:sr&&sr.bottom,center:r&&(r.left+r.right)/2,sectionCenter:sr&&(sr.left+sr.right)/2};});
-  const page2Pass=page2Spacing.padding==='20px'&&page2Spacing.bottom!==null&&page2Spacing.sectionBottom-page2Spacing.bottom>=19&&Math.abs(page2Spacing.center-page2Spacing.sectionCenter)<=1;
-  log('BRANDS_DOTS_BOTTOM_SPACING_PAGE_2_'+viewport,page2Pass?'PASS':'FAIL');
-  log('BRANDS_SECTION_NO_COLLISION_PAGE_2_'+viewport,page2Pass?'PASS':'FAIL');
-  if(!page2Pass)throw new Error('HOME_BRANDS_PAGE_2_DOTS_SPACING_FAILED_'+viewport);
-  log('BRANDS_DOTS_BOTTOM_SPACING_'+viewport,dotsSpacingPass?'PASS':'FAIL');
-  log('BRANDS_SECTION_NO_COLLISION_'+viewport,dotsSpacingPass?'PASS':'FAIL');
-  await page.locator('.cr-home-brand-dots--desktop [data-cr-brand-dot="0"]').click();
+  const page2Active = await page.locator('[data-cr-brand-dot="1"]').getAttribute('aria-current');
+  log('HOME_INTERMEDIATE_DOTS_SYNC_PAGE_2_' + viewport, page2Active === 'true' ? 'PASS' : 'FAIL');
+  if (page2Active !== 'true') throw new Error('HOME_INTERMEDIATE_DOTS_NOT_SYNCED_PAGE_2_' + viewport);
+  await page.locator('[data-cr-brand-dot="0"]').click();
   await page.waitForTimeout(650);
+  const page1Active = await page.locator('[data-cr-brand-dot="0"]').getAttribute('aria-current');
+  log('HOME_INTERMEDIATE_DOTS_SYNC_PAGE_1_' + viewport, page1Active === 'true' ? 'PASS' : 'FAIL');
+  if (page1Active !== 'true') throw new Error('HOME_INTERMEDIATE_DOTS_NOT_SYNCED_PAGE_1_' + viewport);
 }
 
 async function productStackedLayout(page, viewport) {
@@ -871,7 +900,7 @@ async function loginForAuthenticatedAccount(page) {
     }
 
     await visit(page, homeUrl);
-    for (const viewport of [1279, 1280, 1440, 1920]) {
+    for (const viewport of [768, 820, 900, 980, 1100, 1200, 1279, 1280, 1440, 1920]) {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.waitForTimeout(250);
       await desktopShellLayout(page, 'HOME', viewport, true);

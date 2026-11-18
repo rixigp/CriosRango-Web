@@ -37,7 +37,14 @@ test('HOME_INTERMEDIATE_BRANDS_FIXED_FIVE_BY_TWO_TEN_PER_PAGE_NO_DUPLICATE_RENDE
  assert.match(intermediate,/grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)\s*!important/);
  assert.match(intermediate,/grid-template-rows:\s*repeat\(2,\s*96px\)/);
  assert.doesNotMatch(intermediate,/auto-fit|grid-auto-flow:\s*column|grid-auto-columns/);
+ assert.match(intermediate,/width:\s*min\(100%,\s*clamp\(88px,/);
+ assert.match(intermediate,/height:\s*clamp\(72px,/);
+ assert.match(intermediate,/width:\s*clamp\(44px,/);
+ assert.match(intermediate,/max-width:\s*100%/);
+ assert.match(intermediate,/max-height:\s*100%/);
  assert.match(intermediate,/object-fit:\s*contain/);
+ assert.equal((intermediate.match(/overflow:\s*hidden/g)||[]).length,2);
+ assert.doesNotMatch(intermediate,/overflow:\s*visible/);
  assert.match(js,/variant === 'unified'/);
  assert.match(js,/const perPage = mode === 'mobile' \? 8 : 10/);
  assert.match(js,/brandPager\.replaceChildren\(\.\.\.pages\)/);
