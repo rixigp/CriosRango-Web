@@ -1,5 +1,7 @@
 name: Deploy Crios & Rango Web
 
+# CI trigger: validate restored mobile catalog toolbar
+
 on:
   workflow_dispatch:
   push:
