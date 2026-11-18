@@ -151,8 +151,8 @@ test('generic WordPress pages use only the canonical toolbar at every viewport',
 
 test('Account information and guest login templates use the canonical toolbar without duplicate page titles', () => {
   assert.match(page, /if \( \$is_mobile_account && function_exists\( 'cr2026_is_account_information_page' \)/);
-  assert.match(page, /\$is_mobile_help = function_exists\( 'cr2026_account_is_help_page' \)/);
-  assert.match(page, /elseif \( ! \$is_mobile_account && ! \$is_mobile_help \)/);
+  assert.match(page, /\$is_help_page = function_exists\( 'cr2026_account_is_help_page' \)/);
+  assert.match(page, /elseif \( ! \$is_mobile_account && ! \$is_help_page \)/);
   assert.doesNotMatch(page, /is_account_page\(\) && ! is_user_logged_in\(\)/);
   assert.equal((guestHome.match(/cr2026_render_category_toolbar\s*\(/g) || []).length, 1);
   assert.equal((dashboard.match(/cr2026_render_category_toolbar\s*\(/g) || []).length, 1);
@@ -163,7 +163,8 @@ test('Account information and guest login templates use the canonical toolbar wi
 test('one mobile PAGE TITLE is emitted per route and Product Detail remains excluded', () => {
   assert.doesNotMatch(orders, /cr-account-orders__toolbar/);
   assert.match(page, /cr2026_account_is_help_page\(\)/);
-  assert.match(page, /! \$is_mobile_help/);
+  assert.match(page, /! \$is_help_page/);
+  assert.doesNotMatch(page, /\$is_mobile_help/);
   assert.equal((account.match(/function cr2026_account_help_content[\s\S]*?cr2026_account_render_endpoint_toolbar\( __\( 'Ayuda'/) || []).length, 1);
   assert.match(account, /woocommerce_account_view-order_endpoint/);
   assert.match(productSkin, /cr2026_render_category_toolbar\([\s\S]*?'cr-product-detail-toolbar'/);
