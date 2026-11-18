@@ -2732,7 +2732,7 @@ body.cr-parent-category-view .cr-parent-category__grid,
   body.cr-product-listing-view .cr-product-grid {
     width: 100% !important;
     max-width: none !important;
-    grid-template-columns: repeat(auto-fit, minmax(var(--cr-desktop-card-min), 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: clamp(24px, 1.7vw, 32px) !important;
   }
   body.cr-product-listing-view .cr-product-card__name { font-size: var(--cr-desktop-label-size) !important; line-height: 1.45; min-height: 2.8em; }
