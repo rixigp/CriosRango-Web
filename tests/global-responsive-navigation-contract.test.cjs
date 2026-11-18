@@ -29,6 +29,7 @@ function mediaBlock(source, query) {
 
 const tablet = mediaBlock(css, 'max-width: 1279px');
 const intermediateScale = mediaBlock(css, 'min-width: 768px) and (max-width: 1279px');
+const legacyTabletScale = css.slice(css.indexOf('/* Intermediate viewport scale:'), css.indexOf('/* Canonical desktop shell:'));
 const desktop = mediaBlock(css, 'min-width: 1280px');
 
 test('GLOBAL_SHELL_PRESENT_FOR_ALL_NORMAL_PUBLIC_REQUESTS=PASS', () => {
@@ -68,8 +69,8 @@ test('ONE_CANONICAL_BOTTOM_NAV_COMPONENT_AND_SHARED_MOBILE_STYLES=PASS', () => {
 
 
 test('CANONICAL_BOTTOM_NAV_INTERMEDIATE_SCALE_ONLY=PASS', () => {
-  assert.match(intermediateScale, /--cr-bottom-nav:\s*88px/);
-  assert.match(intermediateScale, /padding:\s*8px\s+8px\s+env\(safe-area-inset-bottom\)/);
+  assert.match(legacyTabletScale, /--cr-bottom-nav:\s*88px/);
+  assert.match(legacyTabletScale, /padding:\s*8px\s+8px\s+env\(safe-area-inset-bottom\)/);
   assert.match(intermediateScale, /min-height:\s*68px/);
   assert.match(intermediateScale, /--cr-global-nav-icon-size:\s*clamp\(24px,[^;]+28px\)/);
   assert.match(intermediateScale, /--cr-global-nav-label-size:\s*clamp\(13px,[^;]+14px\)/);
@@ -84,8 +85,8 @@ test('CANONICAL_BOTTOM_NAV_INTERMEDIATE_SCALE_ONLY=PASS', () => {
   assert.match(intermediateScale, /min-width:\s*var\(--cr-global-header-badge-size\)[\s\S]*?height:\s*var\(--cr-global-header-badge-size\)/);
   assert.match(intermediateScale, /\.cr-app-header \.cr-app-icon-button/);
   assert.match(intermediateScale, /\.cr-cart-count/);
-  assert.match(intermediateScale, /padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
-  assert.match(intermediateScale, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav/);
+  assert.match(legacyTabletScale, /padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\)/);
+  assert.match(legacyTabletScale, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav/);
   assert.doesNotMatch(intermediateScale, /tablet-bottom-nav|intermediate-bottom-nav|desktop-bottom-nav/);
 });
 
