@@ -30,7 +30,8 @@ test('HOME_BRANDS_RENDER_ONCE_WITH_MOBILE_16_OF_8_AND_WIDE_20_OF_10=PASS',()=>{
 });
 test('HOME_INTERMEDIATE_BRANDS_FIXED_FIVE_BY_TWO_TEN_PER_PAGE_NO_DUPLICATE_RENDER=PASS',()=>{
  const intermediateStart=css.indexOf('/* Intermediate Home brands: fixed 5 x 2 pages of ten');
- const intermediateEnd=css.indexOf('/* Home desktop brands:',intermediateStart);
+ const dotsRule=css.indexOf('body.home .cr-home-brand-dots--intermediate { display: flex; }',intermediateStart);
+ const intermediateEnd=css.indexOf('\\n}',dotsRule);
  const intermediate=css.slice(intermediateStart,intermediateEnd);
  assert.ok(intermediateStart>=0 && intermediateEnd>intermediateStart,'intermediate brands CSS exists');
  assert.match(intermediate,/grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)\s*!important/);
