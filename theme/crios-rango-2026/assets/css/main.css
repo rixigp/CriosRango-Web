@@ -3,6 +3,8 @@
   --cr-green: #355f4b;
   --cr-sale-coral: #E58B78;
   --cr-green-dark: #244436;
+  --cr-actionable-hover-background: #183B35;
+  --cr-actionable-hover-color: #FFFFFF;
   --cr-cream: #f7f3eb;
   --cr-app-canvas: #FCFAF7;
   --cr-sand: #ebe2d4;
@@ -1924,12 +1926,27 @@ body.cr-parent-category-view .cr-app-header .cr-home-topbar {
 .cr-category-filter-sheet__clear{border:1px solid #183B35;color:#183B35;background:transparent}
 .cr-category-filter-sheet__apply{border:1px solid #183B35;color:#FCFAF7;background:#183B35}
 body.cr-category-filter-open{overflow:hidden}
-.cr-parent-category__filters,
-.cr-parent-category__filters:hover,
-.cr-parent-category__filters:focus,
-.cr-parent-category__filters:active{box-sizing:border-box;min-height:38px;padding:0 16px;border:1px solid #d8d9d5;border-radius:999px;background:transparent;color:#777b77;font:300 14px/20px "Roboto",Arial,sans-serif;opacity:1;cursor:pointer;text-decoration:none!important}
+.cr-parent-category__filters{box-sizing:border-box;min-height:38px;padding:0 16px;border:1px solid #d8d9d5;border-radius:999px;background:transparent;color:#777b77;font:300 14px/20px "Roboto",Arial,sans-serif;opacity:1;cursor:pointer;text-decoration:none!important}
 .cr-parent-category__filters::before,
 .cr-parent-category__filters::after{content:none!important;display:none!important}
+/* Shared actionable hover primitive. Apply only to genuine, non-destructive actions;
+   never apply it to disabled controls, badges, labels or informational elements. */
+.cr-actionable,
+.cr-parent-category__filters,
+body.cr-product-detail-app .cr-product-share{cursor:pointer}
+.cr-actionable:not(:disabled):not(.disabled):not([aria-disabled="true"]):hover,
+.cr-parent-category__filters:not(:disabled):not(.disabled):not([aria-disabled="true"]):hover,
+body.cr-product-detail-app .cr-product-share:not(:disabled):not(.disabled):not([aria-disabled="true"]):hover{
+  background:var(--cr-actionable-hover-background);
+  border-color:var(--cr-actionable-hover-background);
+  color:var(--cr-actionable-hover-color);
+}
+body.cr-product-detail-app .cr-product-share:not(:disabled):not(.disabled):not([aria-disabled="true"]):hover .cr-product-actions__icon{
+  color:var(--cr-actionable-hover-color);
+}
+body.cr-product-detail-app .cr-product-reserve:is(:disabled,.disabled,[aria-disabled="true"]){
+  cursor:not-allowed;
+}
 .cr-category-filter-sheet__trigger--archive{display:inline-flex;align-items:center;min-height:38px;padding:0 16px;border:1px solid #D8D8D3;border-radius:999px;background:#FCFAF7;color:#183B35;font:400 14px/20px "Roboto",Arial,sans-serif;cursor:pointer;text-decoration:none!important}
 @media(max-width:767px){.cr-category-filter-sheet:not([hidden]){align-items:end}.cr-category-filter-sheet__dialog{width:100%;max-height:82dvh;border-radius:24px 24px 0 0}}
 
