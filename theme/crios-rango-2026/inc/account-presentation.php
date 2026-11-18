@@ -422,9 +422,9 @@ function cr2026_account_help_config() {
 }
 
 /** Render Help/Contact universally from controlled theme markup, never from page-builder content. */
-function cr2026_account_help_content( $content ) {
+function cr2026_account_help_content() {
     if ( is_admin() || ! is_main_query() || ! in_the_loop() || ! cr2026_account_is_help_page() ) {
-        return $content;
+        return '';
     }
 
     $config = cr2026_account_help_config();
@@ -473,7 +473,6 @@ function cr2026_account_help_content( $content ) {
     <?php
     return ob_get_clean();
 }
-add_filter( 'the_content', 'cr2026_account_help_content', 20 );
 
 
 

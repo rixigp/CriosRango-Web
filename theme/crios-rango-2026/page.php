@@ -35,7 +35,13 @@ $is_cart_page = function_exists( 'is_cart' ) && is_cart();
                     ?>
                 <?php endif; ?>
             <?php endif; ?>
-                <div class="cr-prose"><?php the_content(); ?></div>
+                <div class="cr-prose">
+                    <?php if ( $is_help_page && function_exists( 'cr2026_account_help_content' ) ) : ?>
+                        <?php echo cr2026_account_help_content(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- controlled renderer escapes dynamic content. ?>
+                    <?php else : ?>
+                        <?php the_content(); ?>
+                    <?php endif; ?>
+                </div>
             </article>
         <?php endwhile; ?>
     </div>

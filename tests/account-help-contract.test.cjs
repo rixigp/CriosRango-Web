@@ -11,17 +11,21 @@ const dashboard = fs.readFileSync(path.join(root, 'woocommerce/myaccount/dashboa
 const css = fs.readFileSync(path.join(root, 'assets/css/account.css'), 'utf8');
 const footer = fs.readFileSync(path.join(root, 'footer.php'), 'utf8');
 
-test('HELP_CONTACT_USES_ONE_UNIVERSAL_RENDERER_AND_NEVER_PRINTS_LEGACY_PAGE_CONTENT', () => {
-  assert.match(page, /the_content\(\)/);
+test('HELP_CONTACT_USES_ONE_UNIVERSAL_RENDERER_WITHOUT_READING_LEGACY_POST_CONTENT', () => {
   assert.match(page, /\$is_help_page = function_exists\( 'cr2026_account_is_help_page' \) && cr2026_account_is_help_page\(\);/);
+  assert.match(page, /if \( \$is_help_page && function_exists\( 'cr2026_account_help_content' \) \)/);
+  assert.match(page, /echo cr2026_account_help_content\(\);/);
   assert.match(page, /! \$is_mobile_account && ! \$is_help_page/);
   assert.doesNotMatch(page, /\$is_mobile_help|wp_is_mobile/);
-  const renderer = presentation.match(/function cr2026_account_help_content\( \$content \) \{([\s\S]*?)\n\}/);
+  const helpBranch = page.match(/if \( \$is_help_page && function_exists\( 'cr2026_account_help_content' \) \)([\s\S]*?)else : \?>/);
+  assert.ok(helpBranch, 'Help page has a dedicated template render branch');
+  assert.doesNotMatch(helpBranch[1], /the_content\(\)/, 'Help must bypass legacy post_content entirely');
+  const renderer = presentation.match(/function cr2026_account_help_content\(\) \{([\s\S]*?)\n\}/);
   assert.ok(renderer, 'Universal Help/Contact renderer exists');
-  assert.doesNotMatch(renderer[1], /wp_is_mobile/);
+  assert.doesNotMatch(renderer[1], /wp_is_mobile|return \$content/);
   assert.match(renderer[1], /return ob_get_clean\(\);/);
   assert.match(renderer[1], /cr2026_account_render_endpoint_toolbar\( __\( 'Ayuda'/);
-  assert.match(presentation, /add_filter\( 'the_content', 'cr2026_account_help_content', 20 \)/);
+  assert.doesNotMatch(presentation, /add_filter\( 'the_content', 'cr2026_account_help_content'/);
   assert.match(presentation, /if \( ! \$back_url \) \{\s*\$back_url = wc_get_page_permalink\( 'myaccount' \);\s*\}/);
   assert.match(presentation, /cr2026_render_category_toolbar\( \$title, \$back_url, 'parent', false, '', \$title_id \)/);
   assert.match(dashboard, /cr2026_render_category_toolbar\( __\( 'Cuenta'/);
