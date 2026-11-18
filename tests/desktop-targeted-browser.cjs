@@ -496,7 +496,7 @@ async function homeDesktopBrands(page, viewport) {
           name: img?.alt || (card.textContent || '').trim(),
           card: { left: cr.left, right: cr.right, top: cr.top, bottom: cr.bottom, width: cr.width, height: cr.height, overflow: cs.overflow },
           logoBox: br && { left: br.left, right: br.right, top: br.top, bottom: br.bottom, width: br.width, height: br.height, overflow: bs.overflow },
-          image: ir && { left: ir.left, right: ir.right, top: ir.top, bottom: ir.bottom, width: ir.width, height: ir.height, objectFit: is.objectFit },
+          image: ir && { left: ir.left, right: ir.right, top: ir.top, bottom: ir.bottom, width: ir.width, height: ir.height, objectFit: is.objectFit, loaded: img.complete && img.naturalWidth > 0 },
           imageInsideLogoBox: inside(ir, br),
           imageInsideCard: inside(ir, cr),
           logoBoxInsideCard: inside(br, cr)
