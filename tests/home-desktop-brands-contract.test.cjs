@@ -32,6 +32,7 @@ test('HOME_INTERMEDIATE_BRANDS_USE_REAL_GRID_CAPACITY_WITH_STABLE_CARDS=PASS',()
  assert.match(home,/\$render_brand_pager\(\s*\$intermediate_brand_pages,\s*'intermediate'\s*\)/);
  assert.match(home,/cr-home-brand-pager--intermediate/);
  assert.match(css,/@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1279px\)[\s\S]*?grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(96px,\s*96px\)\)/);
+ assert.match(css,/grid-auto-flow:\s*column;[\s\S]*?grid-auto-columns:\s*96px/);
  assert.match(css,/width:\s*96px;[\s\S]*?max-width:\s*96px;[\s\S]*?height:\s*96px\s*!important/);
  assert.match(css,/width:\s*64px;[\s\S]*?height:\s*64px/);
  assert.match(css,/object-fit:\s*contain/);
