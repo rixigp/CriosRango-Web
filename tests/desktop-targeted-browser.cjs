@@ -1132,10 +1132,10 @@ async function loginForAuthenticatedAccount(page) {
         }
       } catch (_) {}
       const links = Array.from(document.querySelectorAll('a[href]'));
-      const currentPath = location.pathname.replace(/\\/+$/, '');
+      const currentPath = location.pathname.replace(/\/+$/, '');
       const candidate = links.find(link => {
         try {
-          const path = new URL(link.href).pathname.replace(/\\/+$/, '');
+          const path = new URL(link.href).pathname.replace(/\/+$/, '');
           return path !== currentPath && /outlet/i.test(path) && link.textContent.trim();
         } catch (_) { return false; }
       });
