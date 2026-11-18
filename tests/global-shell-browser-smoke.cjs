@@ -89,6 +89,39 @@ async function inspect(page, routeName, width) {
   if (width < 768 && routeName === 'cart') {
     assert.match(state.contextTitle || '', /Tu carrito/, 'Cart has one Tu carrito title');
   }
+  if (routeName === 'contact') {
+    const contact = await page.evaluate(() => {
+      const renderer = document.querySelectorAll('.cr-account-help');
+      const toolbars = document.querySelectorAll('.cr-page-toolbar');
+      const titles = document.querySelectorAll('.cr-parent-category__title');
+      const grid = document.querySelector('.cr-account-help__grid');
+      const style = grid ? getComputedStyle(grid) : null;
+      const text = document.body.innerText || '';
+      const shortcodeMatches = text.match(/\[(?:\/?(?:vc_row|vc_column|nectar_gmap))\b/gi) || [];
+      return {
+        rendererCount: renderer.length,
+        toolbarCount: toolbars.length,
+        titleCount: titles.length,
+        cardCount: document.querySelectorAll('.cr-account-help__card').length,
+        hoursCount: document.querySelectorAll('.cr-account-help__hours-row').length,
+        gridDisplay: style ? style.display : 'none',
+        gridColumns: style ? style.gridTemplateColumns : '',
+        shortcodeTextCount: shortcodeMatches.length,
+        visible: renderer.length === 1 && getComputedStyle(renderer[0]).display !== 'none'
+      };
+    });
+    console.log('CONTACT_RENDERER_' + width + '=' + JSON.stringify(contact));
+    assert.equal(contact.rendererCount, 1, 'Contact must use one renderer at ' + width);
+    assert.equal(contact.toolbarCount, 1, 'Contact must use one toolbar at ' + width);
+    assert.equal(contact.titleCount, 1, 'Contact must use one page title at ' + width);
+    assert.equal(contact.cardCount, 3, 'Contact must render three action cards at ' + width);
+    assert.equal(contact.hoursCount, 7, 'Contact must render seven opening-hour rows at ' + width);
+    assert.equal(contact.shortcodeTextCount, 0, 'Contact must never expose WPBakery/Salient shortcode text at ' + width);
+    assert.equal(contact.visible, true, 'Contact renderer must be visible at ' + width);
+    assert.equal(contact.gridDisplay, 'grid', 'Contact cards use the shared responsive grid at ' + width);
+    assert.equal(contact.gridColumns.trim().split(/\s+/).length, width < 768 ? 1 : 3, 'Contact grid columns at ' + width);
+    console.log('CONTACT_SINGLE_RENDERER_' + width + '=PASS');
+  }
   if (routeName === 'account' && width < 1280) {
     assert.equal(state.accountInternalNavVisible, false, 'account internal desktop nav hidden below 1280');
   }
@@ -168,6 +201,7 @@ async function inspect(page, routeName, width) {
       ['account', ACCOUNT_URL],
       ['login', loginUrl],
       ['help', helpUrl],
+      ['contact', contactUrl],
       ['cart', cartUrl],
       ['legal', LEGAL_URL]
     ];
