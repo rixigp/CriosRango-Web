@@ -174,3 +174,11 @@ test('SHIPPING_SELECTS_USE_SHARED_MATERIAL3_TOKENS_AND_TRAILING_ARROW',()=>{
   assert.match(controlsCss,/--cr-control-height:\s*58px/); assert.match(controlsCss,/--cr-control-select-radius:\s*3px/);
   assert.doesNotMatch(accountCss,/padding-inline-start:\s*13px !important/); assert.doesNotMatch(accountCss,/Final shipping-select content-axis override/);
 });
+
+test('SHIPPING_ADDRESS_FORM_USES_THE_CANONICAL_ACCOUNT_LEFT_RAIL', () => {
+  const rule = parseAccountCssRules(accountCss).find(item => item.selector === 'body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content');
+  assert.ok(rule, 'shipping address parent wrapper has an explicit scoped rail reset');
+  assert.equal(cssPaddingLeft(rule), '0');
+  assert.match(mainCss, /\\.woocommerce-account \\.woocommerce-MyAccount-content[\\s\\S]*?padding:\\s*20px/);
+  assert.match(accountCss, /body\\.woocommerce-account\\.woocommerce-edit-address \\.woocommerce-MyAccount-content \\{\\s*padding:\\s*0 !important/);
+});

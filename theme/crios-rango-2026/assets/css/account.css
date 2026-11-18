@@ -1686,3 +1686,9 @@ body.woocommerce-account .cr-account-profile-home { width:100%; max-width:760px;
 @media (max-width: 767px) {
   body.woocommerce-account .cr-account-orders__list { gap: 10px; }
 }
+
+/* Shipping-address endpoint: remove the legacy Woo content-card inset so the form
+   shares the same left rail as the Account page toolbar and canonical profile. */
+body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content {
+  padding: 0 !important;
+}
