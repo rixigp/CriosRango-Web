@@ -3199,8 +3199,8 @@ body.cr-parent-category-view .cr-parent-category__grid,
   .cr-home-brands { padding-bottom: 20px; }
   .cr-home-brand-pager--mobile,
   .cr-home-brand-dots--mobile { display: none !important; }
-  .cr-home-brand-pager--desktop { display: flex; }
-  .cr-home-brand-dots--desktop { display: flex; }
+  .cr-home-brand-pager--desktop { display: flex !important; }
+  .cr-home-brand-dots--desktop { display: flex !important; }
   body.home .cr-home-brands .cr-home-brand-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     grid-template-rows: repeat(2, 96px);
