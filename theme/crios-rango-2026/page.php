@@ -19,7 +19,7 @@ $is_cart_page = function_exists( 'is_cart' ) && is_cart();
                     cr2026_render_category_toolbar( __( 'Tu carrito', 'crios-rango-2026' ), wc_get_page_permalink( 'shop' ), 'cart', false, $cart_empty_action, 'cr-cart-title' );
                     ?>
                 <?php elseif ( ( ! function_exists( 'is_cart' ) || ! is_cart() ) && ! $is_checkout_form ) : ?>
-                <?php if ( $is_mobile_account && function_exists( 'cr2026_is_account_information_page' ) && cr2026_is_account_information_page() ) : ?>
+                <?php if ( is_page( array( 'cambios-y-devoluciones', 'condiciones-generales-de-contratacion', 'politica-de-privacidad', 'aviso-legal', 'politica-de-cookies' ) ) : ?>
                     <?php
                     $account_back_url = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : '';
                     if ( ! $account_back_url ) { $account_back_url = home_url( '/mi-cuenta/' ); }
