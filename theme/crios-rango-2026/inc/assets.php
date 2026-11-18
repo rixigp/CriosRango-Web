@@ -144,6 +144,13 @@ function cr2026_enqueue_assets() {
             true
         );
         wp_enqueue_script(
+            'cr2026-checkout-desktop-layout',
+            CR2026_URI . '/assets/js/checkout-desktop-layout.js',
+            array( 'jquery' ),
+            cr2026_asset_version( 'assets/js/checkout-desktop-layout.js' ),
+            true
+        );
+        wp_enqueue_script(
             'cr2026-checkout-payment',
             CR2026_URI . '/assets/js/checkout-payment.js',
             array(),
