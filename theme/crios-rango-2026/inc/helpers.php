@@ -361,10 +361,15 @@ function cr2026_account_information_links() {
     return $links;
 }
 
+/** Identify the five published Information pages independently of viewport/device. */
+function cr2026_is_information_page() {
+    return function_exists( 'is_page' )
+        && is_page( cr2026_account_information_page_slugs() );
+}
+
 /** Identify these pages only in the mobile app-style Account context. */
 function cr2026_is_account_information_page() {
-    return function_exists( 'is_page' )
-        && is_page( cr2026_account_information_page_slugs() )
+    return cr2026_is_information_page()
         && function_exists( 'wp_is_mobile' ) && wp_is_mobile();
 }
 

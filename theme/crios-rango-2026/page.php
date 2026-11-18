@@ -4,6 +4,7 @@ $is_checkout_form = function_exists( 'is_checkout' ) && is_checkout()
     && ( ! function_exists( 'is_order_received_page' ) || ! is_order_received_page() );
 $is_mobile_account = ( function_exists( 'is_account_page' ) && is_account_page() )
     || ( function_exists( 'cr2026_is_account_information_page' ) && cr2026_is_account_information_page() );
+$is_information_page = function_exists( 'cr2026_is_information_page' ) && cr2026_is_information_page();
 $is_help_page = function_exists( 'cr2026_account_is_help_page' ) && cr2026_account_is_help_page();
 /* Page-level ownership covers both the Cart block and the classic cart shortcode. */
 $is_cart_page = function_exists( 'is_cart' ) && is_cart();
@@ -19,7 +20,7 @@ $is_cart_page = function_exists( 'is_cart' ) && is_cart();
                     cr2026_render_category_toolbar( __( 'Tu carrito', 'crios-rango-2026' ), wc_get_page_permalink( 'shop' ), 'cart', false, $cart_empty_action, 'cr-cart-title' );
                     ?>
                 <?php elseif ( ( ! function_exists( 'is_cart' ) || ! is_cart() ) && ! $is_checkout_form ) : ?>
-                <?php if ( $is_mobile_account && function_exists( 'cr2026_is_account_information_page' ) && cr2026_is_account_information_page() ) : ?>
+                <?php if ( $is_information_page ) : ?>
                     <?php
                     $account_back_url = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : '';
                     if ( ! $account_back_url ) { $account_back_url = home_url( '/mi-cuenta/' ); }

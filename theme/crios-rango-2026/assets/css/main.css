@@ -2635,7 +2635,11 @@ body.search .cr-search-form__submit.is-loading::before,
   }
 
   .cr-page-shell { padding-block: var(--cr-desktop-section-gap); }
-  .cr-prose { max-width: var(--cr-desktop-reading-max); margin-inline: auto; font-size: var(--cr-desktop-body-size); }
+  body:not(.cr-legal-information-page) .cr-prose {
+    max-width: var(--cr-desktop-reading-max);
+    margin-inline: auto;
+    font-size: var(--cr-desktop-body-size);
+  }
   .cr-prose p, .cr-prose li { line-height: 1.78; }
 
   /* Shared desktop typography scale for the page, section, catalog and navigation hierarchy. */
@@ -2748,13 +2752,15 @@ body.cr-parent-category-view .cr-parent-category__grid,
 
 }
 
-/* Legal and informational pages use the canonical page shell plus a comfortable reading measure. */
+/* The five Information pages share the toolbar's rail while retaining a 920px reading measure. */
 @media (min-width: 1280px) {
-  body.page:not(.woocommerce-account):not(.home) .cr-page .cr-prose,
-  body.page:not(.woocommerce-account):not(.home) main#primary .cr-prose {
+  body.page.cr-legal-information-page .cr-page .cr-prose,
+  body.page.cr-legal-information-page main#primary .cr-prose {
+    box-sizing: border-box;
     width: min(100%, var(--cr-desktop-reading-max));
     max-width: var(--cr-desktop-reading-max);
-    margin-inline: auto;
+    margin-left: 0;
+    margin-right: auto;
     font-size: var(--cr-desktop-body-size);
   }
 }

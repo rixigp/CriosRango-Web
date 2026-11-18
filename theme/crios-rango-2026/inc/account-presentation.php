@@ -376,8 +376,11 @@ function cr2026_account_information_page_content( $content ) {
 }
 add_filter( 'the_content', 'cr2026_account_information_page_content', 30 );
 
-/** Mark only the five mobile Information pages for their shared app shell. */
+/** Mark the five Information pages globally; keep the Account shell marker mobile-only. */
 function cr2026_account_information_body_class( $classes ) {
+    if ( function_exists( 'cr2026_is_information_page' ) && cr2026_is_information_page() ) {
+        $classes[] = 'cr-legal-information-page';
+    }
     if ( cr2026_is_account_information_page() ) {
         $classes[] = 'cr-account-information-page';
     }

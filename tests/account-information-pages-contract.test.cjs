@@ -15,6 +15,7 @@ const controlsCss = read('assets/css/controls.css');
 const mainCss = read('assets/css/main.css');
 const mainJs = read('assets/js/main.js');
 const footer = read('footer.php');
+const visualSystem = read('assets/css/visual-system.css');
 
 const slugs = [
   'cambios-y-devoluciones',
@@ -76,6 +77,25 @@ test('ALL_FIVE_PAGES_USE_ONE_WORDPRESS_CONTENT_RENDERER_AND_CANONICAL_TOOLBAR', 
   for (const className of ['cr-parent-category__toolbar','cr-parent-category__back','cr-parent-category__title']) {
     assert.ok(mainCss.includes('.' + className), 'canonical toolbar class ' + className);
   }
+});
+
+
+test('LEGAL_INFORMATION_DESKTOP_PROSE_IS_LEFT_ALIGNED_WITHOUT_CHANGING_OTHER_PROSE_PAGES', () => {
+  assert.match(helpers, /function cr2026_is_information_page\(\)[\s\S]*?cr2026_account_information_page_slugs\(\)/);
+  assert.match(page, /\$is_information_page = function_exists\( 'cr2026_is_information_page' \) && cr2026_is_information_page\(\)/);
+  assert.match(presentation, /'cr-legal-information-page'/);
+  assert.match(mainCss, /body:not\(\.cr-legal-information-page\) \.cr-prose\s*\{[^}]*margin-inline:\s*auto;/s);
+  assert.match(mainCss, /body\.page\.cr-legal-information-page \.cr-page \.cr-prose,[\s\S]*?margin-left:\s*0;[\s\S]*?margin-right:\s*auto;/);
+  assert.doesNotMatch(mainCss, /body\.page:not\(\.woocommerce-account\):not\(\.home\) \.cr-page \.cr-prose/);
+  assert.match(mainCss, /--cr-desktop-reading-max:\s*920px/);
+  assert.match(visualSystem, /\.cr-page-shell \.cr-prose\s*\{[^}]*max-width:\s*920px;/s);
+});
+
+test('LEGAL_INFORMATION_BACK_TARGET_IS_ACCOUNT_FOR_ALL_FIVE_PAGES_ON_DESKTOP_AND_MOBILE', () => {
+  assert.match(page, /\$is_information_page[\s\S]*?\$account_back_url = function_exists\( 'wc_get_page_permalink' \) \? wc_get_page_permalink\( 'myaccount' \)/);
+  assert.match(page, /if \( ! \$account_back_url \) \{ \$account_back_url = home_url\( '\/mi-cuenta\/' \); \}/);
+  assert.match(page, /cr2026_render_category_toolbar\( get_the_title\(\), \$account_back_url, 'parent', false \)/);
+  assert.match(helpers, /function cr2026_account_information_page_slugs\(\)/);
 });
 
 test('WORDPRESS_CONTENT_IS_PRESERVED_AND_LEGAL_COPY_IS_NOT_HARDCODED', () => {

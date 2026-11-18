@@ -414,6 +414,50 @@ async function inspect(page, routeName, width) {
       assert.ok(widths.every(value=>Math.abs(value-expectedSharedWidth)<=1),'all desktop routes share one '+expectedSharedWidth+'px shell at '+width);
       console.log('ALL_DESKTOP_ROUTES_SHARE_SAME_SHELL_WIDTH_'+width+'=PASS');
     }
+
+    // The five Information pages must align their 920px reading measure with the canonical toolbar.
+    const legalPages = [
+      ['CHANGES', 'cambios-y-devoluciones/'],
+      ['CONDITIONS', 'condiciones-generales-de-contratacion/'],
+      ['PRIVACY', 'politica-de-privacidad/'],
+      ['LEGAL_NOTICE', 'aviso-legal/'],
+      ['COOKIES', 'politica-de-cookies/']
+    ];
+    for (const width of [1280, 1440, 1920]) {
+      await page.setViewportSize({ width, height: 1200 });
+      for (const [name, slug] of legalPages) {
+        const url = new URL(slug, BASE_URL + '/').toString();
+        await navigate(page, url);
+        const metrics = await page.evaluate(() => {
+          const toolbar = document.querySelector('.cr-parent-category__toolbar');
+          const prose = document.querySelector('.cr-prose');
+          const back = toolbar?.querySelector('.cr-parent-category__back');
+          const tr = toolbar?.getBoundingClientRect();
+          const pr = prose?.getBoundingClientRect();
+          const style = prose ? getComputedStyle(prose) : null;
+          return {
+            bodyClass: document.body.className,
+            toolbarLeft: tr ? tr.left : null,
+            proseLeft: pr ? pr.left : null,
+            proseWidth: pr ? pr.width : null,
+            extraLeftInset: tr && pr ? pr.left - tr.left : null,
+            maxWidth: style ? style.maxWidth : null,
+            marginLeft: style ? style.marginLeft : null,
+            marginRight: style ? style.marginRight : null,
+            backHref: back ? back.href : null
+          };
+        });
+        assert.match(metrics.bodyClass, /(?:^|\s)cr-legal-information-page(?:\s|$)/, name + ' legal-page marker at ' + width);
+        assert.ok(metrics.toolbarLeft !== null && metrics.proseLeft !== null, name + ' toolbar/prose measurable at ' + width);
+        assert.ok(Math.abs(metrics.extraLeftInset) <= 1, name + ' prose aligns to toolbar at ' + width + ': ' + metrics.extraLeftInset);
+        assert.ok(metrics.proseWidth <= 920 + 1, name + ' prose stays within 920px at ' + width + ': ' + metrics.proseWidth);
+        assert.equal(metrics.marginLeft, '0px', name + ' prose has no centering left margin at ' + width);
+        assert.equal(metrics.backHref, new URL('mi-cuenta/', BASE_URL + '/').toString(), name + ' back target is Account at ' + width);
+        console.log('LEGAL_GEOMETRY_' + width + '_' + name + '=' + JSON.stringify(metrics));
+        console.log('LEGAL_BACK_TARGET_' + name + '=PASS');
+      }
+    }
+    console.log('LEGAL_PAGES_VALIDATED=5/5');
     console.log('PRIMARY_MAX_TOKEN=1120px');
     console.log('SHELL_MAX_TOKEN=1232px');
     console.log('1280_CONSTRAINED_BY_VIEWPORT=YES');
