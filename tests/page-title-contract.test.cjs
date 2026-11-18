@@ -77,7 +77,7 @@ test('Roboto 300/400 is globally available before the shared canonical title sty
 test('the existing canonical renderer and class contract remain the single source of truth', () => {
   assert.match(helpers, /function\s+cr2026_render_category_toolbar\s*\(/);
   assert.ok(helpers.includes("if ( '' !== $back_url )"), 'back link is conditional on an actual destination');
-  assert.ok(helpers.includes("echo '<h1 class=\\"cr-parent-category__title\\"'"), 'renderer owns the canonical title element');
+  assert.ok(helpers.includes("echo '<h1 class=\"cr-parent-category__title\"'"), 'renderer owns the canonical title element');
   for (const className of ['cr-parent-category__toolbar','cr-parent-category__back','cr-parent-category__title']) {
     assert.ok(helpers.includes(className), 'missing canonical class ' + className);
   }
