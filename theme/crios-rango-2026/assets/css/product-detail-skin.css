@@ -1958,3 +1958,133 @@ body.cr-product-detail-app .cr-product-choice-chip:disabled,
 body.cr-product-detail-app .cr-product-choice-chip[aria-disabled="true"] {
   cursor: not-allowed;
 }
+
+
+/* Desktop Product Detail: reserve the real global-header height in normal flow.
+   The product toolbar was sticky at the 88px header offset while the shared
+   .cr-page-toolbar parent rule zeroed #primary's top padding. Sticky displacement
+   does not reserve flow space, so the following product composition rose beneath it. */
+@media (min-width: 1280px) {
+  body.cr-product-detail-app .cr-desktop-shell > #primary {
+    padding-top: calc(var(--cr-admin-bar-offset, 0px) + var(--cr-app-topbar-height, 88px)) !important;
+  }
+
+  body.cr-product-detail-app .cr-product-detail-toolbar {
+    position: static;
+    top: auto;
+    z-index: auto;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product {
+    padding-top: 0;
+  }
+
+  /* The existing actions node is relocated into .summary after the native cart form. */
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > .cr-product-actions {
+    width: 100%;
+    min-width: 0;
+    margin: 0 !important;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .summary > form.cart {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin: 0 !important;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .cr-product-quantity-label {
+    display: none !important;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_variation_wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_variation_wrap .woocommerce-variation-add-to-cart {
+    display: grid;
+    grid-template-columns: 116px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_variation_wrap .quantity.cr-product-quantity-row {
+    display: contents !important;
+    margin: 0 !important;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .cr-product-quantity-stepper {
+    grid-column: 1;
+    display: inline-flex;
+    width: 116px;
+    min-width: 116px;
+    height: 58px;
+    min-height: 58px;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .cr-product-quantity-stepper button {
+    flex: 0 0 40px;
+    width: 40px;
+    min-width: 40px;
+    height: 56px;
+    min-height: 40px;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .cr-product-quantity-stepper input.qty {
+    flex: 0 0 34px;
+    width: 34px !important;
+    min-width: 34px;
+    height: 56px !important;
+    min-height: 40px !important;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product form.cart .single_variation_wrap .single_add_to_cart_button {
+    grid-column: 2;
+    width: 100%;
+    min-width: 0;
+    height: 58px;
+    min-height: 58px;
+    margin: 0 !important;
+  }
+
+  /* Simple products have no variation wrapper; use the same two-column purchase row. */
+  body.cr-product-detail-app .cr-main--woocommerce div.product.product-type-simple form.cart {
+    display: grid;
+    grid-template-columns: 116px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product.product-type-simple form.cart .quantity.cr-product-quantity-row {
+    display: contents !important;
+    margin: 0 !important;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product.product-type-simple form.cart .cr-product-quantity-stepper {
+    grid-column: 1;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product.product-type-simple form.cart .single_add_to_cart_button {
+    grid-column: 2;
+    width: 100%;
+    min-width: 0;
+    height: 58px;
+    min-height: 58px;
+    margin: 0 !important;
+  }
+
+  body.cr-product-detail-app .cr-main--woocommerce div.product > .cr-product-description {
+    grid-column: 1 / -1;
+  }
+}

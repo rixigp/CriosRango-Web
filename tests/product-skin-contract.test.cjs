@@ -1671,3 +1671,32 @@ test('DESKTOP_PRODUCT_DETAIL_TWO_COLUMN_RAIL=PASS — grid geometry is desktop-o
   assert.match(layer, /div\.product\s*>\s*\.cr-product-actions\s*\{\s*grid-column:\s*1;/);
   assert.doesNotMatch(layer, /transform:\s*|\bzoom\s*:/);
 });
+
+
+test('desktop Product Detail keeps the canonical toolbar in flow and moves the existing actions into summary', () => {
+  const desktop = skinCss.slice(skinCss.lastIndexOf('Desktop Product Detail: reserve the real global-header height'));
+  assert.match(desktop, /\.cr-desktop-shell > #primary \{[^}]*padding-top:\s*calc\(var\(--cr-admin-bar-offset,\s*0px\) \+ var\(--cr-app-topbar-height,\s*88px\)\)/s);
+  assert.match(desktop, /\.cr-product-detail-toolbar \{[^}]*position:\s*static;/s);
+  assert.match(productUiJs, /function initDesktopProductComposition\(\)/);
+  assert.ok(productUiJs.includes("purchaseForm.insertAdjacentElement('afterend', actions)"));
+  assert.ok(productUiJs.includes('originalParent.insertBefore(actions, originalNext)'));
+  assert.ok(productUiJs.includes("matchMedia('(min-width: 1280px)'"));
+  assert.match(desktop, /summary > \.cr-product-actions/);
+  assert.match(desktop, /div\.product > \.cr-product-description \{[^}]*grid-column:\s*1 \/ -1;/s);
+});
+
+test('desktop purchase row hides the visual quantity label but names the native input accessibly', () => {
+  assert.ok(productUiJs.includes("input.setAttribute('aria-label', 'Cantidad')"));
+  const desktop = skinCss.slice(skinCss.lastIndexOf('Desktop Product Detail: reserve the real global-header height'));
+  assert.match(desktop, /form\.cart \.cr-product-quantity-label \{\s*display:\s*none !important;/s);
+  assert.match(desktop, /single_variation_wrap \.woocommerce-variation-add-to-cart \{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*116px minmax\(0, 1fr\)/s);
+  assert.match(desktop, /product-type-simple form\.cart \{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*116px minmax\(0, 1fr\)/s);
+  assert.match(desktop, /single_variation_wrap \.single_add_to_cart_button \{[^}]*grid-column:\s*2;[^}]*height:\s*58px;/s);
+  assert.match(desktop, /product-type-simple form\.cart \.single_add_to_cart_button \{[^}]*grid-column:\s*2;[^}]*height:\s*58px;/s);
+});
+
+test('Reservarlo follows the native disabled property and only applies green emphasis on enabled hover', () => {
+  assert.match(skinCss, /cr-product-reserve:disabled:hover[\s\S]*?background-color:\s*transparent !important;[\s\S]*?color:\s*#AEB2AD !important;/);
+  assert.match(skinCss, /cr-product-reserve:not\(:disabled\) \{[^}]*background-color:\s*transparent !important;[^}]*color:\s*#183B35 !important;/s);
+  assert.match(skinCss, /cr-product-reserve:not\(:disabled\):hover[\s\S]*?background-color:\s*#183B35 !important;[\s\S]*?color:\s*#FFFFFF !important;/);
+});
