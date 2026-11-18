@@ -417,11 +417,11 @@ test('Outlet bubbles are positioned between toolbar and active filter chips',()=
   const outletCss=fs.readFileSync(path.join(root,'theme/crios-rango-2026/assets/css/outlet-bubbles.css'),'utf8');
   assert.ok(outletCss.includes('overflow-x:auto'));
   assert.ok(outletCss.includes('.cr-outlet-bubbles__pill.is-selected{background:#163B35;color:#FFFFFF}'));
-  assert.match(outletCss, /@media \\(min-width:768px\\) and \\(max-width:1279px\\)\\{\\.cr-outlet-bubbles\\{padding-inline:32px\\}\\}/);
-  assert.match(outletCss, /@media \\(min-width:1280px\\)\\{\\.cr-outlet-bubbles\\{padding-inline:0\\}\\}/);
-  const desktopGrid = css.match(/body\\.cr-product-listing-view \\.cr-product-grid\\s*\\{([^}]*)\\}/s);
+  assert.ok(outletCss.includes('@media (min-width:768px) and (max-width:1279px){.cr-outlet-bubbles{padding-inline:32px}}'));
+  assert.ok(outletCss.includes('@media (min-width:1280px){.cr-outlet-bubbles{padding-inline:0}}'));
+  const desktopGrid = css.match(/body\.cr-product-listing-view \.cr-product-grid\s*\{([^}]*)\}/s);
   assert.ok(desktopGrid, 'desktop product grid override is present');
-  assert.match(desktopGrid[1], /grid-template-columns:\\s*repeat\\(4,\\s*minmax\\(0,\\s*1fr\\)\\)\\s*!important/);
+  assert.match(desktopGrid[1], /grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)\s*!important/);
   assert.doesNotMatch(desktopGrid[1], /auto-fit|auto-fill/);
 });
 
