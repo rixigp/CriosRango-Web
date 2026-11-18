@@ -932,7 +932,7 @@ async function outletListingGeometry(page, branchUrl) {
     const sortLeft = sortLabel.getBoundingClientRect().left;
     const cardWidth = card.getBoundingClientRect().width;
     const imageWidth = image.getBoundingClientRect().width;
-    const columns = getComputedStyle(grid).gridTemplateColumns.trim().split(/\\s+/).filter(Boolean).length;
+    const columns = getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length;
     return {
       found: true,
       bubbleLeft,
@@ -963,7 +963,7 @@ async function outletListingGeometry(page, branchUrl) {
     await page.locator('[data-cr-outlet-bubbles] .cr-outlet-bubbles__pill').nth(index).click();
     await page.waitForTimeout(1100);
     const count = await page.locator('[data-cr-product-grid] > .cr-product-card').count();
-    log('OUTLET_FILTER_RESULT_' + labels[index].trim().replace(/\\s+/g, '_'), count);
+    log('OUTLET_FILTER_RESULT_' + labels[index].trim().replace(/\s+/g, '_'), count);
     if (count > 0 && (!selectedLabel || count <= 4)) {
       selectedLabel = labels[index].trim();
       selectedCount = count;
@@ -1015,7 +1015,7 @@ async function outletListingGeometry(page, branchUrl) {
         probe.replaceChildren(...Array.from({ length: count }, () => sourceCard.cloneNode(true)));
         const card = probe.querySelector('.cr-product-card');
         const image = card && card.querySelector('.cr-product-card__image');
-        const columns = getComputedStyle(probe).gridTemplateColumns.trim().split(/\\s+/).filter(Boolean).length;
+        const columns = getComputedStyle(probe).gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length;
         results.push({
           resultCount: count,
           columns,
