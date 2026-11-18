@@ -562,8 +562,8 @@ async function homeDesktopBrands(page, viewport) {
     log('HOME_INTERMEDIATE_DUPLICATES_' + viewport, state.total - state.unique);
     log('HOME_INTERMEDIATE_LOGOS_FULLY_VISIBLE_' + viewport, state.pagesGeometry.every(p => p.allInsideLogoBoxes && p.allInsideCards) ? 'YES' : 'NO');
     log('HOME_INTERMEDIATE_LOGOS_NOT_DISTORTED_' + viewport, state.pagesGeometry.every(p => p.allNotDistorted) ? 'YES' : 'NO');
-    log('HOME_INTERMEDIATE_LOGOS_CROPPED_' + viewport, logosPass ? 'NO' : 'YES');
-    log('HOME_INTERMEDIATE_LOGOS_OVERFLOW_CARD_' + viewport, state.pagesGeometry.every(p => p.allInsideCards) ? 'NO' : 'YES');
+    log('HOME_INTERMEDIATE_LOGOS_CROPPED_' + viewport, state.pagesGeometry.every(p => p.allInsideLogoBoxes && p.allInsideCards && p.allContain) ? 'NO' : 'YES');
+    log('HOME_INTERMEDIATE_LOGOS_OVERFLOW_CARD_' + viewport, state.pagesGeometry.every(p => p.allInsideCards && p.cardsClipSafely) ? 'NO' : 'YES');
     log('HOME_INTERMEDIATE_GEOMETRY_' + viewport, JSON.stringify(state.pagesGeometry));
     if (!pass) throw new Error('HOME_INTERMEDIATE_BRANDS_LAYOUT_FAILED_' + viewport);
     for (const index of [1, 2, 0]) {
