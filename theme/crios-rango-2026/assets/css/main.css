@@ -2189,7 +2189,7 @@ body.cr-product-listing-view .cr-product-listing { box-sizing:border-box; }
 
 .cr-product-listing__ordering { min-height:38px; margin:0 20px 14px; display:flex; align-items:center; gap:9px; color:#777b77; font:300 13px/20px "Roboto",Arial,sans-serif; }
 @media (max-width: 767px) {
-  .cr-parent-category__toolbar {
+  .cr-page-toolbar {
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -2203,7 +2203,7 @@ body.cr-product-listing-view .cr-product-listing { box-sizing:border-box; }
     width: 100%;
     min-height: 64px;
   }
-  .cr-parent-category__toolbar--no-back .cr-page-toolbar__heading {
+  .cr-page-toolbar--no-back .cr-page-toolbar__heading {
     grid-template-columns: minmax(0, 1fr);
   }
   .cr-page-toolbar__controls {
