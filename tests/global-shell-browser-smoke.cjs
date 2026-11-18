@@ -48,6 +48,7 @@ async function inspect(page, routeName, width) {
         const rect = el => { const r = el?.getBoundingClientRect(); return r ? { width: r.width, height: r.height } : null; };
         return {
           navWidth: rect(nav)?.width ?? null,
+          layoutWidth: document.documentElement.clientWidth,
           innerWidth: rect(inner)?.width ?? null,
           itemWidth: rect(navLink)?.width ?? null,
           navIcon: navIcon ? rect(navIcon).width : null,
@@ -116,7 +117,7 @@ async function inspect(page, routeName, width) {
     assert.ok(Math.abs(scale.headerIcon - expectedHeaderIcon) <= .3, routeName + ' tablet header search icon scale at ' + width + ': ' + scale.headerIcon);
     assert.ok(Math.abs(scale.cartIcon - expectedHeaderIcon) <= .3, routeName + ' tablet header cart icon scale at ' + width + ': ' + scale.cartIcon);
     assert.ok(Math.abs(scale.badgeMinWidth - expectedBadge) <= .3, routeName + ' tablet cart badge scale at ' + width + ': ' + scale.badgeMinWidth);
-    assert.ok(Math.abs(scale.navWidth - width) <= 1, routeName + ' bottom-nav spans viewport at ' + width + ': ' + scale.navWidth);
+    assert.ok(Math.abs(scale.navWidth - scale.layoutWidth) <= 1, routeName + ' bottom-nav spans available layout width at ' + width + ': ' + scale.navWidth + ' vs ' + scale.layoutWidth);
     assert.ok(scale.innerWidth > 720, routeName + ' intermediate inner track escapes old 720px cap at ' + width + ': ' + scale.innerWidth);
     assert.ok(scale.itemWidth > 140, routeName + ' five-column item width uses available viewport at ' + width + ': ' + scale.itemWidth);
     assert.ok(scale.navTarget.width >= 44 && scale.navTarget.height >= 44, routeName + ' bottom-nav touch target at ' + width);
