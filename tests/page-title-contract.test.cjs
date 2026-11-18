@@ -115,7 +115,7 @@ test('classic Cart template and WooCommerce Cart block share exactly one toolbar
 
 test('shipping address uses exactly one canonical delivery title', () => {
   assert.match(account, /function cr2026_account_address_endpoint_toolbar[\s\S]*?\$title = 'billing' === \$address_type[\s\S]*?__\( 'Dirección de envío'/);
-  assert.match(account, /\$back_url = '' === \$address_type \? wc_get_page_permalink\( 'myaccount' \) : wc_get_account_endpoint_url\( 'edit-address' \)/);
+  assert.match(account, /\$back_url = 'shipping' === \$address_type\s*\? wc_get_page_permalink\( 'myaccount' \)/);
   assert.match(account, /cr2026_account_render_endpoint_toolbar\( \$title, \$back_url \)/);
   assert.match(account, /function cr2026_account_edit_address_title[\s\S]*?return '';/);
 });
