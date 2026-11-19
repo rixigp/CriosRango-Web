@@ -2244,6 +2244,9 @@ body.cr-product-listing-view .cr-product-card__price bdi { display:inline-flex; 
 /* Catalog parity: disabled facet options remain visible but cannot be chosen. */
 body.cr-product-listing-view .cr-category-filter-sheet__option:disabled { opacity:.42!important; cursor:not-allowed!important; }
 body.cr-product-listing-view .cr-product-listing__active-filters { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 20px 10px; }
+@media (max-width:767px) {
+  body.cr-product-listing-view .cr-product-listing__active-filters { margin-inline:0; }
+}
 body.cr-product-listing-view .cr-product-listing__active-filters[hidden] { display:none!important; }
 body.cr-product-listing-view .cr-product-listing__active-filter-chip { display:inline-flex; align-items:center; gap:6px; min-height:28px; padding:4px 9px; border:1px solid #D8D9D5; border-radius:999px; background:#E4EFEA; color:#183B35; font:400 12px/16px "Roboto",Arial,sans-serif; cursor:pointer; }
 body.cr-product-listing-view .cr-product-listing__active-filter-chip .cr-filter-remove { font-size:16px; line-height:12px; }

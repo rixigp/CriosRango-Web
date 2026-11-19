@@ -184,23 +184,27 @@ function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context
         }
     }
 
-    // Keep the established heading DOM and grid items unchanged. Secondary actions
-    // are rendered as a sibling row so they cannot participate in the heading grid.
+    // With filters as the only secondary action, use the toolbar's existing
+    // right-hand grid column. Keep sort + filters together in the controls row.
+    $filters_in_toolbar = $show_filters && '' === $ordering_html && '' === $right_action_html;
     echo '<div class="' . esc_attr( $toolbar_class ) . '">';
     if ( '' !== $back_url ) {
         echo '<a class="cr-parent-category__back" href="' . esc_url( $back_url ) . '"' . $back_attribute_html . ' aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
     }
     echo '<h1 class="cr-parent-category__title"' . $title_id_attribute . '>' . esc_html( $title ) . '</h1>';
+    if ( $filters_in_toolbar ) {
+        echo '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
+    }
     echo '</div>';
 
-    if ( '' !== $ordering_html || '' !== $right_action_html || $show_filters ) {
+    if ( '' !== $ordering_html || '' !== $right_action_html || ( $show_filters && ! $filters_in_toolbar ) ) {
         echo '<div class="cr-page-controls">';
         if ( '' !== $ordering_html ) {
             echo $ordering_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- locally generated ordering control.
         }
         if ( '' !== $right_action_html ) {
             echo $right_action_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- locally generated filter control.
-        } elseif ( $show_filters ) {
+        } elseif ( $show_filters && ! $filters_in_toolbar ) {
             echo '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
         }
         echo '</div>';
