@@ -184,18 +184,19 @@ function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context
         }
     }
 
-    // With filters as the only secondary action, use the toolbar's existing
-    // right-hand grid column. Keep sort + filters together in the controls row.
+    // Filter-only headings use one shared flex row. Sort + filters retain
+    // their established secondary controls row below the heading.
     $filters_in_toolbar = $show_filters && '' === $ordering_html && '' === $right_action_html;
+    if ( $filters_in_toolbar ) {
+        $toolbar_class .= ' cr-page-controls cr-page-toolbar--title-filters';
+    }
     echo '<div class="' . esc_attr( $toolbar_class ) . '">';
     if ( '' !== $back_url ) {
         echo '<a class="cr-parent-category__back" href="' . esc_url( $back_url ) . '"' . $back_attribute_html . ' aria-label="' . esc_attr__( 'Volver', 'crios-rango-2026' ) . '">' . cr2026_icon( 'arrow' ) . '</a>';
     }
     echo '<h1 class="cr-parent-category__title"' . $title_id_attribute . '>' . esc_html( $title ) . '</h1>';
     if ( $filters_in_toolbar ) {
-        echo '<div class="cr-page-controls">';
         echo '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
-        echo '</div>';
     }
     echo '</div>';
 

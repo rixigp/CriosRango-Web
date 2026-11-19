@@ -77,3 +77,18 @@ test('CANONICAL_DESKTOP_CONTEXT_GAP_HAS_ONE_SOURCE_AND_NO_ROUTE_OVERRIDES', () =
   assert.match(main, /\.cr-parent-category__toolbar\s*\{[^}]*margin: 0 0 14px;/s,
     'mobile/tablet base spacing remains unchanged');
 });
+
+test('FILTER_ONLY_TOOLBAR_USES_ONE_SHARED_TITLE_AND_FILTERS_ROW', () => {
+  assert.match(helpers, /\$filters_in_toolbar = \$show_filters && '' === \$ordering_html && '' === \$right_action_html/);
+  assert.match(helpers, /if \( \$filters_in_toolbar \) \{\s*\$toolbar_class \.= ' cr-page-controls cr-page-toolbar--title-filters';/);
+  assert.match(helpers, /if \( \$filters_in_toolbar \) \{\s*echo '<button type="button" class="cr-parent-category__filters"/);
+  assert.doesNotMatch(helpers, /if \( \$filters_in_toolbar \) \{\s*echo '<div class="cr-page-controls">/,
+    'filter-only markup must not create a nested second controls row');
+  assert.match(helpers, /if \( '' !== \$ordering_html \|\| '' !== \$right_action_html \|\| \( \$show_filters && ! \$filters_in_toolbar \) \)/,
+    'sort + filters must continue through the established secondary controls row');
+
+  const main = read('assets/css/main.css');
+  assert.match(main, /\.cr-page-toolbar--title-filters \{[^}]*display: flex;[^}]*align-items: center;[^}]*justify-content: space-between;[^}]*gap: 4px;/s);
+  assert.match(main, /\.cr-page-toolbar--title-filters \.cr-parent-category__back \{[^}]*flex: 0 0 48px;/s);
+  assert.match(main, /\.cr-page-toolbar--title-filters \.cr-parent-category__title \{[^}]*flex: 1 1 auto;/s);
+});
