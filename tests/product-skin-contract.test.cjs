@@ -1675,7 +1675,7 @@ test('CART_REMOVE_PRODUCT_NOTICE_SUPPRESSED=PASS; CART_REMOVE_PRODUCT_UNDO_NOT_R
 
 
 test('DESKTOP_PRODUCT_DETAIL_TWO_COLUMN_RAIL=PASS — grid geometry is desktop-only and description spans the rail', () => {
-  const railDeclaration = skinCss.indexOf('grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr)');
+  const railDeclaration = skinCss.lastIndexOf('grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr)');
   assert.ok(railDeclaration >= 0, 'desktop two-column rail declaration exists');
   const start = skinCss.lastIndexOf('@media (min-width: 1280px) {', railDeclaration);
   assert.ok(start >= 0, 'desktop-only Product Detail rail layer exists');
@@ -1728,6 +1728,7 @@ test('desktop Product Detail keeps the canonical toolbar in flow and moves the e
 });
 
 test('desktop purchase row hides the visual quantity label but names the native input accessibly', () => {
+  const desktop = skinCss.slice(skinCss.lastIndexOf('@media (min-width: 1280px) {'));
   assert.ok(productUiJs.includes("input.setAttribute('aria-label', 'Cantidad')"));
   assert.match(skinCss, /div\.product form\.cart \.cr-product-quantity-label \{\s*display:\s*none !important;/s);
   assert.match(desktop, /single_variation_wrap \.woocommerce-variation-add-to-cart \{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*116px minmax\(0, 1fr\)/s);
