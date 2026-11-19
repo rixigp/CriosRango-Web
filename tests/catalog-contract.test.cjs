@@ -861,7 +861,7 @@ test('Novedades route renders all products through the shared catalog listing wi
   assert.match(archive, /! get_query_var\( 'cr2026_novelties' \)/);
   assert.match(archive, /\$listing_category_id = \$listing_term \? \(int\) \$listing_term->term_id : 0/);
   assert.match(archive, /\$is_novelties_view \? __\( 'Novedades'/);
-  assert.match(archive, /\$listing_orderby = isset\( \$_GET\['orderby'\] \).*: 'date'/s);
+  assert.match(archive, /\$default_listing_orderby = \$is_novelties_view \? 'date' : 'title'/);
   assert.match(archive, /cr2026_render_category_filter_sheet\( \$listing_term, \$listing_context \)/);
   assert.match(js, /scope:outletCategoryId\?'outlet':'catalog'/);
   assert.match(archive, /data-cr-product-load-more/);
@@ -1262,3 +1262,59 @@ test('facet cache is context-scoped, deduplicates in-flight requests and records
   assert.match(js, /scheduleDeferredPrefetch/);
   for (const metric of ['FILTER_MODAL_OPEN_T0','FILTER_REQUEST_START','FILTER_RESPONSE_RECEIVED','FILTER_OPTIONS_RENDERED','FILTER_API_DURATION_MS','FILTER_RENDER_DURATION_MS','TOTAL_FILTER_READY_MS']) assert.ok(js.includes(metric));
 });
+
+
+test('DEFAULT_PRODUCT_ORDER=TITLE_ASC for category, subcategory, brand, Outlet and equivalent catalog listings', () => {
+  assert.match(php, /function cr2026_catalog_default_sort\( \$is_novelties = false \)[\s\S]*?return \$is_novelties \? 'newest' : 'title_asc'/);
+  assert.match(php, /\$orderby = 'title';\s*\$order = 'ASC';/);
+  assert.match(php, /\$products_query = array\([\s\S]*?'orderby' => \$orderby, 'order' => \$order/);
+  assert.match(php, /\$filter_params = array\([\s\S]*?'sort' => \$sort/);
+  assert.match(archive, /\$default_listing_orderby = \$is_novelties_view \? 'date' : 'title'/);
+  assert.match(brandTemplateSource(), /\$brand_orderby = isset\( \$_GET\['orderby'\] \).*: 'title'/s);
+  assert.match(js, /const defaultOrderby = totalLimit \? 'date' : 'title'/);
+  assert.match(js, /sortMap = \{date:'newest'.*title:'title_asc'/);
+  const childFn = helpers.slice(helpers.indexOf('function cr2026_product_cat_children'), helpers.indexOf('function cr2026_product_cat_display_name'));
+  assert.match(childFn, /'orderby'\s*=>\s*'name'/);
+  assert.match(childFn, /'order'\s*=>\s*'ASC'/);
+});
+
+test('CATEGORY_PRODUCTS=A_TO_Z and SUBCATEGORY_PRODUCTS=A_TO_Z use WooCommerce title ASC query ordering', () => {
+  const sortFn = php.slice(php.indexOf('function cr2026_catalog_sort_query_vars'), php.indexOf('function cr2026_product_listing_main_query'));
+  assert.match(sortFn, /\$orderby = 'title';\s*\$order = 'ASC';/);
+  const catalogFn = php.slice(php.indexOf('function cr2026_catalog_page_rest_response'), php.indexOf('function cr2026_woocommerce_wrappers'));
+  assert.match(catalogFn, /\$sort_args = cr2026_catalog_sort_query_vars\( \$sort \)/);
+  assert.match(catalogFn, /'orderby' => \$orderby, 'order' => \$order/);
+  assert.match(catalogFn, /\$sort = \$default_sort/);
+  assert.doesNotMatch(catalogFn, /usort\s*\(/);
+});
+
+test('BRAND_PRODUCTS=A_TO_Z uses title ASC as the native archive default and sends title_asc to Filter API', () => {
+  const mainQuery = php.match(/function cr2026_product_listing_main_query\( \$query \)[\s\S]*?\n\}/)?.[0] || '';
+  assert.match(mainQuery, /\$default_sort = cr2026_catalog_default_sort\( \$is_novelties_query \)/);
+  assert.match(mainQuery, /\$query->set\( 'orderby', \$sort_args\['orderby'\] \)/);
+  assert.match(mainQuery, /\$query->set\( 'order', \$sort_args\['order'\] \)/);
+  assert.match(brandTemplateSource(), /\$brand_orderby = isset\( \$_GET\['orderby'\] \).*: 'title'/s);
+  assert.match(js, /const defaultOrderby = totalLimit \? 'date' : 'title'/);
+  assert.match(php, /'sort' => \$sort/);
+});
+
+test('OUTLET_PRODUCTS=A_TO_Z passes title_asc through the server-side Filter API query', () => {
+  assert.match(js, /sort:sortMap\[orderby\]/);
+  assert.match(js, /scope:outletCategoryId\?'outlet':'catalog'/);
+  assert.match(js, /params\.set\('outlet_category_id',String\(outletCategoryId\)\)/);
+  assert.match(php, /\$filter_params\['outlet_category_id'\] = \$outlet_category_id/);
+  assert.match(php, /'sort' => \$sort/);
+  assert.match(js, /title:'title_asc'/);
+});
+
+test('NEW_PRODUCTS_ORDER=DATE_DESC and Novedades keeps the newest cohort first', () => {
+  assert.match(php, /return \$is_novelties \? 'newest' : 'title_asc'/);
+  assert.match(php, /'orderby' => 'date',[\s\S]*?'order' => 'DESC'/);
+  assert.match(php, /\$is_novelties \? max\( 0, min\( \$per_page, \$novelties_limit - \$page_offset \) \) : \$per_page/);
+  assert.match(archive, /\$default_listing_orderby = \$is_novelties_view \? 'date' : 'title'/);
+  assert.match(js, /const defaultOrderby = totalLimit \? 'date' : 'title'/);
+});
+
+function brandTemplateSource() {
+  return fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
+}
