@@ -1178,46 +1178,42 @@ body.woocommerce-cart .cr-cart-promotions :is(.cr-cart-apply-button, .cr-account
 }
 
 /* Secondary destructive action belongs below the cart's primary checkout CTA. */
-body.woocommerce-cart .cr-cart-summary > .cr-cart-empty-form {
-  display:flex;
-  align-items:stretch;
-  justify-content:stretch;
+body.woocommerce-cart .cr-cart-empty-form {
   width:100%;
-  max-width:100%;
-  min-width:0;
-  margin-top:10px;
+  margin-top:8px;
   box-sizing:border-box;
 }
-body.woocommerce-cart .cr-cart-summary > .cr-cart-empty-form button {
+body.woocommerce-cart .cr-cart-empty-form button {
   display:inline-flex;
   align-items:center;
   justify-content:center;
   gap:7px;
   width:100%;
-  min-height:44px;
+  min-height:40px;
+  height:40px;
   margin:0;
-  padding:0 16px;
+  padding:0 14px;
   box-sizing:border-box;
   border:1px solid #CFA8A1;
   border-radius:999px;
   background:transparent;
   color:#8F4A40;
-  font:500 13px/18px "Roboto",Arial,sans-serif;
+  font:500 12px/16px "Roboto",Arial,sans-serif;
   text-decoration:none;
   box-shadow:none;
   cursor:pointer;
 }
-body.woocommerce-cart .cr-cart-summary > .cr-cart-empty-form button:hover,
-body.woocommerce-cart .cr-cart-summary > .cr-cart-empty-form button:focus-visible {
+body.woocommerce-cart .cr-cart-empty-form button:hover,
+body.woocommerce-cart .cr-cart-empty-form button:focus-visible {
   background:#F8ECE9;
   border-color:#B96D60;
   color:#7C3F36;
 }
-body.woocommerce-cart .cr-cart-summary > .cr-cart-empty-form button:focus-visible {
+body.woocommerce-cart .cr-cart-empty-form button:focus-visible {
   outline:2px solid rgba(185,109,96,.28);
   outline-offset:2px;
 }
-body.woocommerce-cart .cr-cart-summary > .cr-cart-empty-form button svg {
+body.woocommerce-cart .cr-cart-empty-form button svg {
   display:block;
   width:16px;
   height:16px;
