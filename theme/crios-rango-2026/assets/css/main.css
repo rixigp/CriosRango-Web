@@ -1665,7 +1665,6 @@ body.cr-parent-category-view .cr-parent-category__canvas { flex: 1 0 auto; paddi
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
-  column-gap: 4px;
 }
 .cr-parent-category__back {
   width: 48px;

@@ -42,7 +42,7 @@
 .cr-parent-category__toolbar {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
-  column-gap: 10px;
+  column-gap: 4px;
   min-height: 64px;
   margin: 0 0 14px;
   padding-block: 0;
