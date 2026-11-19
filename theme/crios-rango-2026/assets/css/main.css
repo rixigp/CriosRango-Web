@@ -1693,6 +1693,9 @@ body.cr-parent-category-view .cr-parent-category__canvas { flex: 1 0 auto; paddi
 .cr-parent-category__toolbar--no-back { grid-template-columns: minmax(0, 1fr) auto; }
 
 @media (max-width: 767px) {
+  .cr-parent-category__toolbar {
+    column-gap: 4px;
+  }
   .cr-page__header { display: none !important; }
   .cr-empty-state > h1 { display: none !important; }
 }
