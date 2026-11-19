@@ -13,10 +13,10 @@ test('PAGE_SPECIFIC_PAGE_SHELL_TOP_PADDING=0',()=>{
   const shellTopOverrides=offenders.filter(x=>/page-shell|cr-main/.test(x.selector)&&/padding|margin-top/.test(x.property));
   const isApprovedZeroReset=x=>
     x.property==='padding-top' &&
-    /^0\\b/.test(x.value) &&
-    /body\\.woocommerce-cart/.test(x.selector) &&
-    /body\\.woocommerce-account/.test(x.selector) &&
-    /\\.cr-page-shell/.test(x.selector);
+    x.value.trim().startsWith('0') &&
+    x.selector.includes('body.woocommerce-cart') &&
+    x.selector.includes('body.woocommerce-account') &&
+    x.selector.includes('.cr-page-shell');
   // Cart and Account intentionally cancel the shared mobile top gap.
   // Any positive/other page-specific shell offset remains forbidden.
   assert.ok(shellTopOverrides.some(isApprovedZeroReset));
