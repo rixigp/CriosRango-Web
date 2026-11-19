@@ -41,8 +41,7 @@ jobs:
           DOWNLOAD_SCRIPT="$(mktemp)"
           trap 'rm -f "$ROOT_SCRIPT" "$DOWNLOAD_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
 
-          # The FTP account is confirmed to be chrooted directly at wp-content.
-          # Do not cd to the configured legacy absolute path or prefix any path.
+          # FTP user is chrooted directly at wp-content. Use only relative paths.
           BASE_PATH="."
           {
             printf 'set ftp:ssl-force true\n'
@@ -63,13 +62,12 @@ jobs:
 
           echo "FTP_CONNECTION=OK"
           echo "FTP_ROOT=wp-content"
-          echo "FTP_INITIAL_PWD=/ (FTP chroot root; host/port suppressed)"
+          echo "FTP_INITIAL_PWD=/ (chroot root; host/port suppressed)"
           echo "WP_CONTENT_FTP_PATH_RESOLVED=."
           echo "FTP_ROOT_CONTENTS_BEGIN"
           sed -E '/^[^ ]+:[0-9]+\/?$/d; s#ftp://[^ ]+#ftp://[redacted]#g' /tmp/wp-content-root.log
           echo "FTP_ROOT_CONTENTS_END"
 
-          # Validate only the two confirmed relative directories.
           {
             printf 'set ftp:ssl-force true\n'
             printf 'set ftp:ssl-protect-data true\n'
@@ -91,7 +89,7 @@ jobs:
           sed -E '/^[^ ]+:[0-9]+\/?$/d; s#ftp://[^ ]+#ftp://[redacted]#g' /tmp/wp-content-dir-listing.log | head -n 200
           echo "RELATIVE_PLUGIN_LISTINGS_END"
 
-          # Download PHP files only; no remote write commands are issued.
+          # Include directories so lftp descends recursively, but transfer PHP files only.
           {
             printf 'set ftp:ssl-force true\n'
             printf 'set ftp:ssl-protect-data true\n'
@@ -102,8 +100,8 @@ jobs:
             printf 'set cmd:fail-exit yes\n'
             printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
             printf 'cd .\n'
-            printf 'mirror --verbose=0 --include-glob=*.php --exclude-glob=* plugins "$WORK/plugins"\n'
-            printf 'mirror --verbose=0 --include-glob=*.php --exclude-glob=* mu-plugins "$WORK/mu-plugins"\n'
+            printf 'mirror --verbose=0 --include-glob=*/ --include-glob=*.php --exclude-glob=* plugins "$WORK/plugins"\n'
+            printf 'mirror --verbose=0 --include-glob=*/ --include-glob=*.php --exclude-glob=* mu-plugins "$WORK/mu-plugins"\n'
             printf 'bye\n'
           } > "$DOWNLOAD_SCRIPT"
           lftp -f "$DOWNLOAD_SCRIPT"
