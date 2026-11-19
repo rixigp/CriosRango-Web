@@ -1533,7 +1533,7 @@ test('CART_HEADER_VERTICAL_FLOW_INHERITS_GLOBAL_HEADER_AND_SHELL',()=>{
 });
 test('CART_HEADER_USES_CANONICAL_SHELL_GEOMETRY',()=>{
  const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8');
- assert.match(m,/\.cr-parent-category__toolbar[\s\S]*?min-height: 64px;[\s\S]*?margin: 0 0 14px;[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;[\s\S]*?column-gap: 10px;/);
+ assert.match(m,/\.cr-parent-category__toolbar[\s\S]*?min-height: 64px;[\s\S]*?margin: 0 0 14px;[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;/);
  assert.match(m,/\.cr-parent-category__back \{[\s\S]*?width: 48px;[\s\S]*?height: 48px;/);
  assert.match(m,/\.cr-parent-category__title \{[\s\S]*?font: 300 21px\/28px "Roboto", Arial, sans-serif;/);
 });
@@ -1731,10 +1731,10 @@ test('desktop purchase row hides the visual quantity label but names the native 
   const desktop = skinCss.slice(skinCss.lastIndexOf('@media (min-width: 1280px) {'));
   assert.ok(productUiJs.includes("input.setAttribute('aria-label', 'Cantidad')"));
   assert.match(skinCss, /div\.product form\.cart \.cr-product-quantity-label \{\s*display:\s*none !important;/s);
-  assert.match(desktop, /single_variation_wrap \.woocommerce-variation-add-to-cart \{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*116px minmax\(0, 1fr\)/s);
-  assert.match(desktop, /product-type-simple form\.cart \{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*116px minmax\(0, 1fr\)/s);
-  assert.match(desktop, /single_variation_wrap \.single_add_to_cart_button \{[^}]*grid-column:\s*2;[^}]*height:\s*58px;/s);
-  assert.match(desktop, /product-type-simple form\.cart \.single_add_to_cart_button \{[^}]*grid-column:\s*2;[^}]*height:\s*58px;/s);
+  assert.match(desktop, /single_variation_wrap \.woocommerce-variation-add-to-cart \{[^}]*display:\s*flex;[^}]*flex-direction:\s*row;[^}]*flex-wrap:\s*nowrap;[^}]*gap:\s*8px;/s);
+  assert.match(desktop, /product-type-simple form\.cart \{[^}]*display:\s*flex;[^}]*flex-direction:\s*row;[^}]*flex-wrap:\s*nowrap;[^}]*gap:\s*8px;/s);
+  assert.match(desktop, /single_variation_wrap \.single_add_to_cart_button \{[^}]*flex:\s*1 1 auto;[^}]*height:\s*58px;/s);
+  assert.match(desktop, /product-type-simple form\.cart \.single_add_to_cart_button \{[^}]*flex:\s*1 1 auto;[^}]*height:\s*58px;/s);
 });
 
 test('Reservarlo follows the native disabled property and only applies green emphasis on enabled hover', () => {
