@@ -1784,3 +1784,78 @@ body.woocommerce-account:not(.logged-in) .cr-account-register-cta__button {
 @media (max-width: 767px) {
   body.woocommerce-account:not(.logged-in) .cr-account-register .cr-account-register__row { margin-bottom: 14px !important; }
 }
+
+/* Lost-password endpoint: mirror the guest login form without replacing WooCommerce markup. */
+body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password {
+  box-sizing: border-box;
+  display: block;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--cr-ink, #183b35);
+  font-family: "Roboto", Arial, sans-serif;
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password > p:not(.form-row):not(.woocommerce-form-row) {
+  margin: 0 0 16px;
+  color: var(--cr-ink, #183b35);
+  font: 300 13px/20px "Roboto", Arial, sans-serif;
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password > .clear {
+  display: none !important;
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password .form-row {
+  box-sizing: border-box;
+  float: none;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 0;
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password .woocommerce-Button {
+  display: block !important;
+  float: none !important;
+  width: 100% !important;
+  min-height: 48px;
+  margin: 0 !important;
+  padding: 12px 18px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #183b35 !important;
+  color: #fff !important;
+  font: 400 14px/20px "Roboto", Arial, sans-serif !important;
+  box-shadow: none !important;
+  text-align: center;
+}
+body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password .woocommerce-Button:hover,
+body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password .woocommerce-Button:focus {
+  background: #244436 !important;
+  color: #fff !important;
+}
+@media (min-width: 768px) {
+  body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password {
+    max-width: 520px !important;
+  }
+}
+@media (min-width: 1280px) {
+  body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password {
+    width: min(100%, 560px) !important;
+    max-width: 560px !important;
+  }
+  body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password > p:not(.form-row):not(.woocommerce-form-row),
+  body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password .form-row {
+    margin-bottom: 20px !important;
+  }
+  body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password .woocommerce-Button {
+    min-height: 56px;
+    font-size: 16px !important;
+  }
+}
+@media (max-width: 767px) {
+  body.woocommerce-account:not(.logged-in) .woocommerce-ResetPassword.lost_reset_password .form-row {
+    margin-bottom: 14px !important;
+  }
+}
