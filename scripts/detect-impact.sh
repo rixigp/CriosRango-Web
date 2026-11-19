@@ -46,6 +46,14 @@ elif [ "$DO_CATEGORY" = true ]; then SCOPE=CATEGORY_ONLY
 elif [ "$DO_PRODUCT" = true ]; then SCOPE=PRODUCT_DETAIL
 elif [ "$DO_CHECKOUT" = true ]; then SCOPE=CHECKOUT_ONLY
 else FULL=true; SCOPE=FULL; fi
+# main.css is the global presentation layer; changes require the complete regression matrix.
+for p in "${RUNTIME_FILES[@]}"; do
+  if [ "$p" = "theme/crios-rango-2026/assets/css/main.css" ]; then
+    FULL=true
+    SCOPE=FULL
+    break
+  fi
+done
 if [ "$FULL" = true ]; then DO_ACCOUNT=true; DO_HOME=true; DO_CATEGORY=true; DO_PRODUCT=true; DO_CHECKOUT=true; DO_SHARED=true; DO_PHP=true; fi
 RUN_CATALOG_BENCHMARK=false; if [ "$DO_CATALOG" = true ] || [ "$FULL" = true ]; then RUN_CATALOG_BENCHMARK=true; fi
 RUN_GLOBAL_SHELL="$DO_SHARED"; if [ "$DO_ACCOUNT" = true ] || [ "$DO_CHECKOUT" = true ] || [ "$DO_PHP" = true ] || [ "$FULL" = true ]; then DO_PHP=true; fi

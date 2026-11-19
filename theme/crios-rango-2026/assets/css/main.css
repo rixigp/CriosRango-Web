@@ -3324,24 +3324,26 @@ body.cr-parent-category-view .cr-parent-category__grid,
   }
 }
 
-/* Filter-only category headings: title/back and Filtros share one real row. */
+/* Filter-only category headings: back, title and filters occupy one three-column grid row. */
 .cr-page-toolbar--title-filters {
-  display: flex;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 4px;
   min-height: 64px;
   margin: 0 0 14px;
 }
 .cr-page-toolbar--title-filters > a:first-child {
-  flex: 0 0 48px;
+  grid-column: 1;
 }
 .cr-page-toolbar--title-filters > h1 {
-  flex: 1 1 auto;
+  grid-column: 2;
 }
-.cr-page-toolbar--title-filters .cr-parent-category__filters {
-  flex: 0 0 auto;
-  margin-left: auto;
+.cr-page-toolbar--title-filters > .cr-parent-category__filters {
+  grid-column: 3;
+  align-self: center;
+  justify-self: end;
+  margin: 0;
 }
 @media (min-width: 1280px) {
   .cr-page-toolbar--title-filters {

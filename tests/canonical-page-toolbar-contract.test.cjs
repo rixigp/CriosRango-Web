@@ -88,7 +88,12 @@ test('FILTER_ONLY_TOOLBAR_USES_ONE_SHARED_TITLE_AND_FILTERS_ROW', () => {
     'sort + filters must continue through the established secondary controls row');
 
   const main = read('assets/css/main.css');
-  assert.match(main, /\.cr-page-toolbar--title-filters \{[^}]*display: flex;[^}]*align-items: center;[^}]*justify-content: space-between;[^}]*gap: 4px;/s);
-  assert.match(main, /\.cr-page-toolbar--title-filters > a:first-child \{[^}]*flex: 0 0 48px;/s);
-  assert.match(main, /\.cr-page-toolbar--title-filters > h1 \{[^}]*flex: 1 1 auto;/s);
+  assert.match(main, /\.cr-page-toolbar--title-filters \{[^}]*display: grid;[^}]*grid-template-columns: 48px minmax\(0, 1fr\) auto;[^}]*align-items: center;[^}]*gap: 4px;/s);
+  assert.match(main, /\.cr-page-toolbar--title-filters > a:first-child \{[^}]*grid-column: 1;/s);
+  assert.match(main, /\.cr-page-toolbar--title-filters > h1 \{[^}]*grid-column: 2;/s);
+  assert.match(main, /\.cr-page-toolbar--title-filters > \.cr-parent-category__filters \{[^}]*grid-column: 3;[^}]*align-self: center;[^}]*justify-self: end;[^}]*margin: 0;/s);
+  assert.doesNotMatch(main, /\.cr-page-toolbar--title-filters \{[^}]*display: flex;/s);
+  assert.doesNotMatch(main, /\.cr-page-toolbar--title-filters[^}]*position:\s*(?:absolute|fixed)|\.cr-page-toolbar--title-filters[^}]*margin(?:-top)?:\s*-/s);
+  assert.match(helpers, /echo '<h1 class="cr-parent-category__title"[^;]*;[\s\S]*?if \( \$filters_in_toolbar \) \{\s*echo '<button type="button" class="cr-parent-category__filters"/,
+    'Filtros must be emitted after the title as the toolbar third child');
 });
