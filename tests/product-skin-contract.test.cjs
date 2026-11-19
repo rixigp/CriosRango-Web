@@ -134,7 +134,11 @@ test('long product description is a single accessible accordion with responsive 
   assert.ok(descriptionPlacement.includes("media.addEventListener('change', placeDescription)"));
   assert.equal((skin.match(/add_action\( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 \)/g) || []).length, 1);
   assert.equal((skin.match(/function cr2026_product_skin_description_accordion\(/g) || []).length, 1);
-  assert.doesNotMatch(descriptionPlacement, /cloneNode|appendChild\(description\)\s*;[\s\S]*?insertBefore/);
+  assert.equal((descriptionPlacement.match(/var description = summary\.querySelector\(':scope > \.cr-product-description'\)/g) || []).length, 1, 'DESCRIPTION_NODE_CREATED_ONCE=PASS');
+  assert.match(descriptionPlacement, /product\.insertBefore\(description, tabs \|\| null\)/, 'DESCRIPTION_REUSED_ACROSS_BRANCHES=PASS (desktop)');
+  assert.match(descriptionPlacement, /summary\.insertBefore\(description, purchaseForm\)/, 'DESCRIPTION_REUSED_ACROSS_BRANCHES=PASS (mobile)');
+  assert.match(descriptionPlacement, /summary\.appendChild\(description\)/, 'DESCRIPTION_REUSED_ACROSS_BRANCHES=PASS (mobile fallback)');
+  assert.doesNotMatch(descriptionPlacement, /cloneNode\s*\(|document\.createElement\s*\(/, 'DESCRIPTION_NOT_CLONED=PASS');
   assert.ok(productUiJs.includes('initProductDescriptionPlacement();'));
   assert.ok(productUiJs.includes('function initProductDescriptionAccordion()'));
   assert.ok(productUiJs.includes("toggle.addEventListener('click'"));
