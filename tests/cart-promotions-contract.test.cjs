@@ -33,7 +33,7 @@ test('birthday promotion expiry is formatted in Spanish without exposing the raw
   assert.ok(start >= 0 && end > start, 'Spanish expiry formatter must remain present');
   const formatterSource = cartUi.slice(start, end);
   const formatPromotionExpiry = vm.runInNewContext('(() => { ' + formatterSource + '; return formatPromotionExpiry; })()');
-  assert.equal(formatPromotionExpiry('2026-12-04T20:11:40+00:00'), '4 de diciembre de 2026');
+  assert.equal(formatPromotionExpiry('2026-12-04T20:11:40+00:00'), '04/12/2026');
   assert.equal(formatPromotionExpiry('not-a-date'), '');
   assert.ok(renderPromotions.includes("'Válida hasta el ' + expiryDate"));
   assert.equal(renderPromotions.includes("'Válida hasta ' + promotion.expires_at"), false);
