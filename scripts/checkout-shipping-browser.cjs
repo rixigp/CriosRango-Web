@@ -12,7 +12,7 @@ async function addPurchasableProduct(page) {
   const productUrls = await page.evaluate(() => {
     const links = Array.from(document.querySelectorAll('a[href]'));
     return Array.from(new Set(links
-      .filter(link => /\\/(producto|product)\\//i.test(link.href))
+      .filter(link => /\/(producto|product)\//i.test(link.href))
       .map(link => link.href)))
       .slice(0, 12);
   });
