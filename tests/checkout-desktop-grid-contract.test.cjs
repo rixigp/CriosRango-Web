@@ -51,8 +51,12 @@ test('layout grouping puts the real additional-info node immediately after the s
 });
 
 test('order notes textarea has a full-height 88px minimum without reducing typography or clipping', () => {
-  const shell = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel .cr-control-shell:has(textarea#order_comments)');
-  const textarea = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel textarea#order_comments');
+  const shellMatch = checkoutCss.match(/body\\.woocommerce-checkout:not\\(\\.woocommerce-order-received\\) \\.cr-checkout-additional-info__panel \\.cr-control-shell:has\\(textarea#order_comments\\)\\s*\\{([^}]*)\\}/);
+  const textareaMatch = checkoutCss.match(/body\\.woocommerce-checkout:not\\(\\.woocommerce-order-received\\) \\.cr-checkout-additional-info__panel textarea#order_comments\\s*\\{([^}]*)\\}/);
+  assert.ok(shellMatch, 'textarea control shell rule exists');
+  assert.ok(textareaMatch, 'order comments textarea rule exists');
+  const shell = shellMatch[1];
+  const textarea = textareaMatch[1];
   assert.match(shell, /height:\s*auto\s*!important/);
   assert.match(shell, /min-height:\s*88px\s*!important/);
   assert.match(textarea, /min-height:\s*88px\s*!important/);
