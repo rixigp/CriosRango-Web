@@ -27,7 +27,8 @@ test('Promociones disponibles is removed at its theme-owned render source', () =
 });
 
 test('promotion cards, title, description and apply action remain rendered', () => {
-  assert.ok(renderPromotions.includes("node('article', 'cr-cart-promo-card'"));
+  assert.ok(renderPromotions.includes("const cardClass = 'cr-cart-promo-card'"));
+  assert.ok(renderPromotions.includes("node('article', cardClass)"));
   assert.ok(renderPromotions.includes("node('h4', 'cr-cart-promo-card__title', promotion.title)"));
   assert.ok(renderPromotions.includes("node('p', 'cr-cart-promo-card__description', promotion.description)"));
   assert.ok(renderPromotions.includes("createButton('Aplicar', 'cr-cart-apply-button'"));

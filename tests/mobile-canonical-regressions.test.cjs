@@ -46,7 +46,7 @@ test('Downloads are absent from Account UI while WooCommerce endpoint remains re
 test('Account address overview uses shipping as the canonical Account presentation', () => {
   const address = read('woocommerce/myaccount/my-address.php');
   assert.match(address, /wc_get_account_formatted_address\( 'shipping', \$customer_id \)/);
-  assert.match(address, /wc_get_endpoint_url\( 'edit-address', 'shipping'/);
+  assert.match(address, /wc_get_endpoint_url\( 'edit-address', 'envio'/);
   assert.doesNotMatch(address, /billing|woocommerce_my_account_get_addresses/);
 });
 

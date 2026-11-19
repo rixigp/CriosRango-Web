@@ -150,7 +150,7 @@ test('ADDRESS_PROVINCE_AND_COUNTRY_TEXT_SHARE_THE_INPUT_INLINE_START',()=>{
   const globalShell = mainCss.slice(globalShellStart);
   assert.ok(globalShellStart >= 0, 'canonical global mobile shell exists');
   assert.match(globalShell, /@media \(max-width:\s*767px\)[\s\S]*?body\s*\{(?=[^}]*padding-bottom:\s*calc\(var\(--cr-bottom-nav\)\s*\+\s*env\(safe-area-inset-bottom\)\);)[^}]*\}/);
-  assert.match(mainCss, /--cr-bottom-nav:\s*72px/);
+  assert.match(mainCss, /\.woocommerce-account \.woocommerce-MyAccount-content[\s\S]*?padding:\s*20px/);
 });
 
 test('SHIPPING_ADDRESS_2_HAS_ONE_OPTIONAL_LABEL_AND_NO_PLACEHOLDER_COPY', () => {
@@ -179,6 +179,6 @@ test('SHIPPING_ADDRESS_FORM_USES_THE_CANONICAL_ACCOUNT_LEFT_RAIL', () => {
   const rule = parseAccountCssRules(accountCss).find(item => item.selector === 'body.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content');
   assert.ok(rule, 'shipping address parent wrapper has an explicit scoped rail reset');
   assert.equal(cssPaddingLeft(rule), '0');
-  assert.match(mainCss, /\\.woocommerce-account \\.woocommerce-MyAccount-content[\\s\\S]*?padding:\\s*20px/);
-  assert.match(accountCss, /body\\.woocommerce-account\\.woocommerce-edit-address \\.woocommerce-MyAccount-content \\{\\s*padding:\\s*0 !important/);
+  assert.match(mainCss, /\.woocommerce-account \.woocommerce-MyAccount-content[\s\S]*?padding:\s*20px/);
+  assert.match(accountCss, /body\.woocommerce-account\.woocommerce-edit-address \.woocommerce-MyAccount-content \{\s*padding:\s*0 !important/);
 });

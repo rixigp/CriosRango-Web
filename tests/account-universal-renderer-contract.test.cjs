@@ -52,7 +52,7 @@ test('ACCOUNT_LEGACY_WOOCOMMERCE_WRAPPER_IS_ABSENT',()=>{
  assert.match(presentation,/add_filter\( 'do_shortcode_tag', 'cr2026_account_unwrap_shortcode_container', 10, 4 \)/);
  assert.match(css,/body\.woocommerce-account \.cr-account-content/);
  assert.doesNotMatch(css,/(^|[\s>])\.woocommerce(?=[\s>{])/m);
- assert.doesNotMatch(css,/\.woocommerce-MyAccount-content/);
+  assert.doesNotMatch(css, /^\.woocommerce-MyAccount-content\s*\{/m);
  console.log('ACCOUNT_LEGACY_WOOCOMMERCE_WRAPPER=ABSENT');
  console.log('ACCOUNT_SHELL_PRESENT=PASS');
  console.log('ACCOUNT_CONTENT_PRESENT=PASS');

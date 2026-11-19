@@ -119,7 +119,8 @@ test('WOOCOMMERCE_VALIDATION_ERRORS_BLOCK_SUCCESS_MARKER_CREATION', () => {
 });
 
 test('ADDRESS_SUCCESS_RETURNS_TO_THE_SHIPPING_EDITOR', () => {
-  assert.match(php, /wc_get_endpoint_url\(\s*'edit-address',\s*'shipping',\s*wc_get_page_permalink\(\s*'myaccount'\s*\)\s*\)/);
+  assert.match(php, /wc_get_endpoint_url\(\s*'edit-address',\s*'envio',\s*wc_get_page_permalink\(\s*'myaccount'\s*\)\s*\)/);
+  assert.match(php, /'envio' === \$query_vars\['edit-address'\]/);
   assert.match(php, /'shipping' !== \$load_address/);
 });
 
