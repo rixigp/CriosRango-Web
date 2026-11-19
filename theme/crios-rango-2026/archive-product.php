@@ -36,8 +36,9 @@ $listing_back_url = $listing_term ? cr2026_category_back_url( $listing_term ) : 
 $listing_category_id = $listing_term ? (int) $listing_term->term_id : 0;
 $listing_outlet_category_id = cr2026_is_outlet_context_category($listing_category_id)?$listing_category_id:0;
 $listing_filtered = cr2026_category_filters_selected();
-$listing_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
-if ( ! in_array( $listing_orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $listing_orderby = 'date'; }
+$default_listing_orderby = $is_novelties_view ? 'date' : 'title';
+$listing_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : $default_listing_orderby;
+if ( ! in_array( $listing_orderby, array( 'date', 'price', 'price-desc', 'title' ), true ) ) { $listing_orderby = $default_listing_orderby; }
 $remove_filter_url = remove_query_arg( array( 'size_ids', 'color_ids', 'brand_ids' ) );
 get_header( 'shop' );
 ?>
