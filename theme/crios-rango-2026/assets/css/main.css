@@ -3336,7 +3336,7 @@ body.cr-parent-category-view .cr-parent-category__grid,
 .cr-page-toolbar--title-filters > a:first-child {
   flex: 0 0 48px;
 }
-.cr-page-toolbar--title-filters .cr-parent-category__title {
+.cr-page-toolbar--title-filters > h1 {
   flex: 1 1 auto;
 }
 .cr-page-toolbar--title-filters .cr-parent-category__filters {
