@@ -60,7 +60,7 @@ test('layout grouping preserves native review and payment fragments across check
 
 test('shipping fragment refresh replaces the moved section instead of accumulating stale copies', () => {
   assert.match(checkoutLayoutJs, /function removeStaleShippingSections\(currentSection\)/);
-  assert.match(checkoutLayoutJs, /shippingColumn\.querySelectorAll\(':scope > \.cr-checkout-shipping-section'\)/);
+  assert.match(checkoutLayoutJs, /shippingColumn\.querySelectorAll\('\.cr-checkout-shipping-section'\)/);
   assert.match(checkoutLayoutJs, /if \(existingSection !== currentSection\) existingSection\.remove\(\)/);
   assert.match(checkoutLayoutJs, /reviewTable\.dataset\.crCheckoutShippingLayoutProcessed = 'true'/);
   assert.match(checkoutLayoutJs, /reviewTable\.dataset\.crCheckoutShippingLayoutProcessed !== 'true'/);

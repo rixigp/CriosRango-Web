@@ -46,7 +46,7 @@
     var shippingRow = reviewTable && reviewTable.querySelector('.cr-checkout-shipping-section-row');
     var shippingSection = shippingRow && shippingRow.querySelector('.cr-checkout-shipping-section');
     function removeStaleShippingSections(currentSection) {
-      Array.prototype.slice.call(shippingColumn.querySelectorAll(':scope > .cr-checkout-shipping-section'))
+      Array.prototype.slice.call(shippingColumn.querySelectorAll('.cr-checkout-shipping-section'))
         .forEach(function (existingSection) {
           if (existingSection !== currentSection) existingSection.remove();
         });
