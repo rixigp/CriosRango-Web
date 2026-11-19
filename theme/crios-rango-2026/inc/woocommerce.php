@@ -32,16 +32,26 @@ if ( ! defined( 'CR2026_CATALOG_PAGE_SIZE' ) ) {
 }
 
 /**
- * Canonical sort mapping shared by catalogue REST pages and native product
- * archive main queries. Price ordering is completed by the shared
- * cr2026_catalog_price_sort_post_clauses() posts_clauses filter below.
+ * One default for every product listing; only Novedades opts into newest-first.
+ */
+function cr2026_catalog_default_sort( $is_novelties = false ) {
+    return $is_novelties ? 'newest' : 'title_asc';
+}
+
+/**
+ * Canonical WooCommerce query mapping shared by native archives and REST pages.
+ * Price ordering is completed by the shared posts_clauses filter below.
  */
 function cr2026_catalog_sort_query_vars( $sort ) {
     $sort = sanitize_key( (string) $sort );
-    $orderby = 'date';
-    $order = 'DESC';
+    $orderby = 'title';
+    $order = 'ASC';
 
-    if ( 'oldest' === $sort ) {
+    if ( in_array( $sort, array( 'newest', 'date' ), true ) ) {
+        $orderby = 'date';
+        $order = 'DESC';
+    } elseif ( 'oldest' === $sort ) {
+        $orderby = 'date';
         $order = 'ASC';
     } elseif ( in_array( $sort, array( 'price', 'price_asc' ), true ) ) {
         $orderby = 'cr2026_price_asc';
@@ -49,9 +59,6 @@ function cr2026_catalog_sort_query_vars( $sort ) {
     } elseif ( in_array( $sort, array( 'price-desc', 'price_desc' ), true ) ) {
         $orderby = 'cr2026_price_desc';
         $order = 'DESC';
-    } elseif ( 'title_asc' === $sort || 'title' === $sort ) {
-        $orderby = 'title';
-        $order = 'ASC';
     } elseif ( 'title_desc' === $sort ) {
         $orderby = 'title';
         $order = 'DESC';
@@ -71,24 +78,27 @@ function cr2026_product_listing_main_query( $query ) {
     $is_brand_query = $query->is_tax( 'product_brand' );
     if ( ! $is_shop_query && ! $is_category_query && ! $is_brand_query ) { return; }
 
+    $is_novelties_query = ! $is_category_query && ! $is_brand_query
+        && function_exists( 'get_query_var' ) && (bool) get_query_var( 'cr2026_novelties' );
+    $default_sort = cr2026_catalog_default_sort( $is_novelties_query );
+    $default_orderby = 'newest' === $default_sort ? 'date' : 'title';
+    $requested_sort = isset( $_GET['orderby'] )
+        ? sanitize_key( wp_unslash( $_GET['orderby'] ) )
+        : $default_orderby;
+    if ( ! in_array( $requested_sort, array( 'date', 'price', 'price-desc', 'title' ), true ) ) {
+        $requested_sort = $default_orderby;
+    }
+    $sort_args = cr2026_catalog_sort_query_vars( $requested_sort );
+    $query->set( 'orderby', $sort_args['orderby'] );
+    $query->set( 'order', $sort_args['order'] );
+
     if ( $is_brand_query ) {
         // Brand archives render the existing product_brand main query directly.
-        // Read the same public orderby token used by the category selector,
-        // then apply the canonical catalogue mapping and shared SQL clauses.
-        $requested_sort = isset( $_GET['orderby'] )
-            ? sanitize_key( wp_unslash( $_GET['orderby'] ) )
-            : 'date';
-        if ( ! in_array( $requested_sort, array( 'date', 'price', 'price-desc', 'title' ), true ) ) {
-            $requested_sort = 'date';
-        }
-        $sort_args = cr2026_catalog_sort_query_vars( $requested_sort );
-        $query->set( 'orderby', $sort_args['orderby'] );
-        $query->set( 'order', $sort_args['order'] );
         return;
     }
 
     // The Shop/category listing is hydrated page-by-page by catalog-page.
-    // Do not let the archive's WP_Query produce a differently sorted first page.
+    // Keep its native query aligned with the same server-side default.
     $query->set( 'posts_per_page', 1 );
     $query->set( 'no_found_rows', true );
 }
@@ -120,9 +130,18 @@ add_action( 'rest_api_init', 'cr2026_register_product_list_route' );
 function cr2026_product_list_rest_response( WP_REST_Request $request ) {
     $page = max( 1, absint( $request->get_param( 'page' ) ) );
     $per_page = CR2026_CATALOG_PAGE_SIZE;
-    $orderby = sanitize_key( (string) $request->get_param( 'orderby' ) );
-    $order = 'price-desc' === $orderby ? 'DESC' : ( 'price' === $orderby ? 'ASC' : 'DESC' );
-    $query_orderby = ( 'price' === $orderby || 'price-desc' === $orderby ) ? 'price' : 'date';
+    $requested_orderby = sanitize_key( (string) $request->get_param( 'orderby' ) );
+    $sort_map = array(
+        'date' => 'newest',
+        'price' => 'price_asc',
+        'price-desc' => 'price_desc',
+        'title' => 'title_asc',
+    );
+    $sort_args = cr2026_catalog_sort_query_vars(
+        isset( $sort_map[ $requested_orderby ] ) ? $sort_map[ $requested_orderby ] : 'title_asc'
+    );
+    $query_orderby = $sort_args['orderby'];
+    $order = $sort_args['order'];
     $raw_ids = (string) $request->get_param( 'product_ids' );
     $products = array();
     $has_more = false;
@@ -495,8 +514,9 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
         return new WP_Error( 'cr2026_catalog_novelties_context', __( 'El límite de Novedades solo es válido para el catálogo raíz.', 'crios-rango-2026' ), array( 'status' => 400 ) );
     }
     $sort = sanitize_key( (string) $request->get_param( 'sort' ) );
-    if ( ! in_array( $sort, array( 'newest', 'oldest', 'price_asc', 'price_desc', 'title_asc', 'title_desc', 'default' ), true ) ) {
-        $sort = 'newest';
+    $default_sort = cr2026_catalog_default_sort( $is_novelties );
+    if ( 'default' === $sort || ! in_array( $sort, array( 'newest', 'oldest', 'price_asc', 'price_desc', 'title_asc', 'title_desc' ), true ) ) {
+        $sort = $default_sort;
     }
     $filter_keys = array( 'size_ids', 'color_ids', 'brand_ids' );
     $has_filters = $is_outlet_scope || $is_brand_context;
