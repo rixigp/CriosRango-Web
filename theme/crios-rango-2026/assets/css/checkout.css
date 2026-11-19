@@ -648,12 +648,21 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-addition
   min-width: 0;
   box-sizing: border-box;
 }
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel .cr-control-shell:has(textarea#order_comments) {
+  height: auto !important;
+  min-height: 88px !important;
+}
+
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel textarea#order_comments {
   display: block;
   width: 100%;
   max-width: none;
   min-width: 0;
-  box-sizing: border-box;
+  height: 100% !important;
+  min-height: 88px !important;
+  box-sizing: border-box !important;
+  padding: 12px 16px !important;
+  line-height: 24px !important;
   resize: vertical;
 }
 

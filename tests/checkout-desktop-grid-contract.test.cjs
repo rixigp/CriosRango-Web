@@ -40,13 +40,29 @@ test('checkout remains vertical below 1280px and keeps shipping before summary b
   assert.match(checkoutCss.slice(desktopStart), /@media \(min-width: 1280px\)/);
 });
 
-test('layout grouping puts native shipping fields and additional information in column 2', () => {
+test('layout grouping puts the real additional-info node immediately after the shipping section', () => {
   assert.match(checkoutLayoutJs, /directChild\(customerDetails, '\.col-2'\)/);
   assert.match(checkoutLayoutJs, /shippingColumn\.appendChild\(customerShipping\)/);
   assert.match(checkoutLayoutJs, /shippingColumn\.insertBefore\(shippingSection/);
-  assert.match(checkoutLayoutJs, /customerShipping/);
+  assert.match(checkoutLayoutJs, /var additionalInfo = form\.querySelector\('\.woocommerce-additional-fields'\)/);
+  assert.match(checkoutLayoutJs, /var activeShippingSection = shippingColumn\.querySelector\('\.cr-checkout-shipping-section'\)/);
+  assert.match(checkoutLayoutJs, /shippingColumn\.insertBefore\(additionalInfo, activeShippingSection\.nextSibling\)/);
+  assert.doesNotMatch(checkoutLayoutJs, /cloneNode\s*\(/);
 });
 
+test('order notes textarea has a full-height 88px minimum without reducing typography or clipping', () => {
+  const shell = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel .cr-control-shell:has(textarea#order_comments)');
+  const textarea = cssRuleBody(checkoutCss, 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel textarea#order_comments');
+  assert.match(shell, /height:\s*auto\s*!important/);
+  assert.match(shell, /min-height:\s*88px\s*!important/);
+  assert.match(textarea, /min-height:\s*88px\s*!important/);
+  assert.match(textarea, /height:\s*100%\s*!important/);
+  assert.match(textarea, /line-height:\s*24px\s*!important/);
+  assert.match(textarea, /padding:\s*12px 16px\s*!important/);
+  assert.match(textarea, /box-sizing:\s*border-box\s*!important/);
+  assert.doesNotMatch(textarea, /font-size:\s*(?:[0-9]|[.]?[0-9])/);
+  assert.doesNotMatch(textarea, /overflow:\s*hidden|transform:|margin[^;]*-/);
+});
 test('layout grouping preserves native review and payment fragments across checkout AJAX refreshes', () => {
   assert.match(checkoutLayoutJs, /\.woocommerce-checkout-review-order-table/);
   assert.match(checkoutLayoutJs, /\.cr-checkout-shipping-section-row/);

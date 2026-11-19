@@ -33,6 +33,7 @@
     if (!form || !customerDetails || !orderReview) return;
 
     var customerShipping = directChild(customerDetails, '.col-2');
+    var additionalInfo = form.querySelector('.woocommerce-additional-fields');
     var shippingColumn = ensureWrapper(orderReview, 'cr-checkout-layout__shipping');
     var summaryColumn = ensureWrapper(orderReview, 'cr-checkout-layout__summary');
     var paymentColumn = ensureWrapper(orderReview, 'cr-checkout-layout__payment');
@@ -64,6 +65,14 @@
       // A fresh fragment with no shipping row means shipping is no longer required.
       removeStaleShippingSections(null);
       reviewTable.dataset.crCheckoutShippingLayoutProcessed = 'true';
+    }
+
+    // Move WooCommerce's real order-notes block directly after the shipping methods.
+    // Core emits this block after #customer_details, which otherwise places it
+    // before the custom shipping column in the mobile/tablet document flow.
+    var activeShippingSection = shippingColumn.querySelector('.cr-checkout-shipping-section');
+    if (additionalInfo && activeShippingSection && activeShippingSection.nextElementSibling !== additionalInfo) {
+      shippingColumn.insertBefore(additionalInfo, activeShippingSection.nextSibling);
     }
 
     // Payment stays native; its fragment can still be replaced by WooCommerce.
