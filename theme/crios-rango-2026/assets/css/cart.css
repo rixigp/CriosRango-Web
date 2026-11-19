@@ -1239,11 +1239,3 @@ body.woocommerce-cart .cr-cart-empty-form button svg {
   height:16px;
   flex:0 0 16px;
 }
-
-/* Mobile promotion cards share one 12px vertical rhythm. */
-@media (max-width: 767px) {
-  body.woocommerce-cart .cr-cart-promotions__available:not([hidden]) {
-    display: grid;
-    gap: 12px;
-  }
-}
