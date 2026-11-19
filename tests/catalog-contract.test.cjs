@@ -1249,7 +1249,7 @@ test('OUTLET_ROOT_445_USES_OUTLET_SCOPE_AND_ROOT_TREE_NOT_GENERAL_CATALOG', () =
 test('account address renderer exposes only shipping address and shipping editor', () => {
   const template = fs.readFileSync(path.join(root, 'theme/crios-rango-2026/woocommerce/myaccount/my-address.php'), 'utf8');
   assert.match(template, /wc_get_account_formatted_address\( 'shipping', \$customer_id \)/);
-  assert.match(template, /wc_get_endpoint_url\( 'edit-address', 'shipping'/);
+  assert.match(template, /wc_get_endpoint_url\( 'edit-address', 'envio'/);
   assert.match(template, /esc_html_e\( 'Dirección'/);
   assert.doesNotMatch(template, /billing|woocommerce_my_account_get_addresses/);
 });
