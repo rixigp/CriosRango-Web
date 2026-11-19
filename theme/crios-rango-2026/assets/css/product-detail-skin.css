@@ -366,7 +366,7 @@ body.cr-product-detail-app .cr-product-gallery-dots {
   align-items: center;
   gap: 8px;
   min-height: 22px;
-  margin: -12px 0 14px;
+  margin: 8px 0 14px;
 }
 body.cr-product-detail-app .cr-product-gallery-dot {
   width: 6px;

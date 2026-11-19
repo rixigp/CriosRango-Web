@@ -184,7 +184,26 @@
         });
         dots.appendChild(dot);
       });
-      gallery.insertAdjacentElement('afterend', dots);
+      function placeDotsInsideGallery() {
+        var viewport = gallery.querySelector('.flex-viewport');
+        if (viewport) {
+          if (viewport.nextElementSibling !== dots) {
+            viewport.insertAdjacentElement('afterend', dots);
+          }
+          return true;
+        }
+        // Keep the same node inside the gallery while FlexSlider creates its viewport.
+        if (dots.parentNode !== gallery) gallery.appendChild(dots);
+        return false;
+      }
+      var dotsPlacedAfterViewport = placeDotsInsideGallery();
+      if (!dotsPlacedAfterViewport && window.MutationObserver) {
+        var viewportObserver = new MutationObserver(function () {
+          if (placeDotsInsideGallery()) viewportObserver.disconnect();
+        });
+        viewportObserver.observe(gallery, { childList: true, subtree: true });
+        added.push({ cleanup: function () { viewportObserver.disconnect(); } });
+      }
       var sync = function () {
         var active = gallery.querySelector('.woocommerce-product-gallery__image.flex-active-slide');
         var index = active ? Array.prototype.indexOf.call(slides, active) : 0;
