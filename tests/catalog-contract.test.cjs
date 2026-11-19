@@ -1318,3 +1318,16 @@ test('NEW_PRODUCTS_ORDER=DATE_DESC and Novedades keeps the newest cohort first',
 function brandTemplateSource() {
   return fs.readFileSync(path.join(root, 'theme/crios-rango-2026/taxonomy-product_brand.php'), 'utf8');
 }
+
+
+test('NORMAL_CATALOG_SELECTOR=A_Z and NEW_PRODUCTS_SELECTOR=MAS_RECIENTES', () => {
+  assert.match(js, /const isNoveltiesListing = totalLimit > 0/);
+  assert.match(js, /const defaultOrderby = isNoveltiesListing \? 'date' : 'title'/);
+  assert.match(js, /const requestedOrderby = currentUrl\.searchParams\.get\('orderby'\)/);
+  assert.match(js, /if \(orderControl\) orderControl\.value = orderby/);
+  assert.match(js, /:defaultOrderby;/);
+  assert.match(archive, /\$default_listing_orderby = \$is_novelties_view \? 'date' : 'title'/);
+  assert.match(archive, /value="title".*Nombre A-Z/s);
+  assert.match(archive, /value="date".*Más recientes/s);
+  assert.match(php, /return \$is_novelties \? 'newest' : 'title_asc'/);
+});
