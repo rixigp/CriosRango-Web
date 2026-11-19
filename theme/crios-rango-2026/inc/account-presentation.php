@@ -792,6 +792,12 @@ function cr2026_account_guest_login_view() {
         && 'login' === sanitize_key( wp_unslash( $_GET['cr-account-view'] ) );
 }
 
+function cr2026_account_guest_register_view() {
+    return ! is_user_logged_in()
+        && isset( $_GET['cr-account-view'] )
+        && 'register' === sanitize_key( wp_unslash( $_GET['cr-account-view'] ) );
+}
+
 function cr2026_account_guest_login_url( $redirect_to = '' ) {
     $url = add_query_arg( 'cr-account-view', 'login', wc_get_page_permalink( 'myaccount' ) );
     if ( $redirect_to ) {
@@ -805,7 +811,7 @@ function cr2026_account_guest_home_template( $template, $template_name, $templat
         || is_user_logged_in()
         || ! function_exists( 'is_account_page' )
         || ! is_account_page()
-        || cr2026_account_guest_login_view() ) {
+        || cr2026_account_guest_login_view() || cr2026_account_guest_register_view() ) {
         return $template;
     }
 
@@ -903,6 +909,10 @@ function cr2026_account_guest_login_shell_open() {
 add_action( 'woocommerce_before_customer_login_form', 'cr2026_account_guest_login_shell_open', 1 );
 
 function cr2026_account_guest_login_toolbar() {
+    if ( cr2026_account_guest_register_view() ) {
+        cr2026_account_render_endpoint_toolbar( __( 'Crear cuenta', 'crios-rango-2026' ), cr2026_account_guest_login_url() );
+        return;
+    }
     cr2026_account_render_endpoint_toolbar( __( 'Acceder', 'crios-rango-2026' ), wc_get_page_permalink( 'myaccount' ) );
 }
 add_action( 'woocommerce_before_customer_login_form', 'cr2026_account_guest_login_toolbar', 2 );
