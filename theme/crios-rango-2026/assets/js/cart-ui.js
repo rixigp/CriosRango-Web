@@ -72,7 +72,8 @@
     const paths = {
       wallet: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 8h18M15 13h3"/></svg>',
       info: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg>',
-      tag: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-7 7L3 12Z"/><circle cx="8" cy="8" r="1"/></svg>'
+      tag: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-7 7L3 12Z"/><circle cx="8" cy="8" r="1"/></svg>',
+      cake: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16v8H4zM4 16h16M8 12V9a2 2 0 0 1 4 0v3M14 12V8a2 2 0 0 1 4 0v4"/><path d="M10 5v1m6-2v1M4 20h16"/></svg>'
     };
     icon.innerHTML = paths[name] || '';
     return icon;
@@ -210,9 +211,12 @@
     visible.slice().sort((a, b) => Number(b.priority || 0) - Number(a.priority || 0)).forEach((promotion) => {
       const identity = text(promotion.title) + ' ' + text(promotion.description) + ' ' + text(promotion.code);
       const isWelcome = /bienvenida|welcome/i.test(identity);
-      const card = node('article', 'cr-cart-promo-card' + (isWelcome ? ' cr-cart-promo-card--welcome' : ''));
+      const isBirthday = /cumple|birthday/i.test(identity);
+      const cardClass = 'cr-cart-promo-card' + (isWelcome ? ' cr-cart-promo-card--welcome' : '') + (isBirthday ? ' cr-cart-promo-card--birthday' : '');
+      const card = node('article', cardClass);
       const body = node('div', 'cr-cart-promo-card__body');
       if (isWelcome) card.appendChild(cartIcon('tag', 'cr-cart-promo-card__icon'));
+      else if (isBirthday) card.appendChild(cartIcon('cake', 'cr-cart-promo-card__icon'));
       body.appendChild(node('h4', 'cr-cart-promo-card__title', promotion.title));
       if (promotion.description) body.appendChild(node('p', 'cr-cart-promo-card__description', promotion.description));
       if (promotion.expires_at) body.appendChild(node('p', 'cr-cart-promo-card__expiry', 'Válida hasta ' + promotion.expires_at));

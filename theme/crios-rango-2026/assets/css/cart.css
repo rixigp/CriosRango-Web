@@ -1117,6 +1117,26 @@ body.woocommerce-cart .cr-cart-promo-card--welcome > .cr-cart-promo-card__icon s
   width:21px;
   height:21px;
 }
+/* Birthday offer uses the same left icon / copy composition as the welcome card. */
+body.woocommerce-cart .cr-cart-promo-card--birthday {
+  background:#F8EEE8;
+}
+body.woocommerce-cart .cr-cart-promo-card--birthday > .cr-cart-promo-card__icon {
+  box-sizing:border-box;
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:#F1DDD1;
+  color:#183B35;
+}
+body.woocommerce-cart .cr-cart-promo-card--birthday > .cr-cart-promo-card__icon svg {
+  width:21px;
+  height:21px;
+}
 
 
 /* Cart product-card row is the first inner surface: inherit only the canonical shell rail. */
