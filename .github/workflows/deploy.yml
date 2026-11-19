@@ -22,13 +22,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && 'crios-rango-staging' || 'crios-rango-production' }}
+  group: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && 'crios-rango-staging' || 'crios-rango-production' }}
   cancel-in-progress: false
 
 jobs:
   validate-and-deploy:
-    # This workflow is staging-only. Production (main) is deliberately excluded.
-    if: github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin'
+    # Production deploy is enabled for main and Product Detail App Skin; the other feature branches remain staging-only.
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/style/product-detail-app-skin' || github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding'
     runs-on: ubuntu-latest
 
     steps:
@@ -589,7 +589,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ github.ref == 'refs/heads/style/product-detail-app-skin' && '/public/wp-content/themes/crios-rango-2026/' || ((github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH) }}
         run: |
           set -euo pipefail
 
@@ -629,7 +629,7 @@ jobs:
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: ${{ (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH }}
+          SFTP_PATH: ${{ github.ref == 'refs/heads/style/product-detail-app-skin' && '/public/wp-content/themes/crios-rango-2026/' || ((github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH) }}
           HEAD_SHA: ${{ github.sha }}
           BUILD_BRANCH: ${{ github.ref_name }}
           GITHUB_REF: ${{ github.ref }}
@@ -647,7 +647,7 @@ jobs:
           IS_STAGING=false
 
           case "$GITHUB_REF" in
-            refs/heads/fix/catalog-runtime-parity|refs/heads/fix/category-grid-app-parity|refs/heads/feat/outlet-bubbles|refs/heads/feat/wp-login-branding|refs/heads/style/product-detail-app-skin)
+            refs/heads/fix/catalog-runtime-parity|refs/heads/fix/category-grid-app-parity|refs/heads/feat/outlet-bubbles|refs/heads/feat/wp-login-branding)
               IS_STAGING=true
               ;;
           esac
@@ -819,14 +819,12 @@ jobs:
 
           # A build manifest represents deployed runtime, not an arbitrary repository commit.
           # Preserve it byte-for-byte when the diff contains no runtime changes.
-          if [ "$IS_STAGING" = true ]; then
-            if [ "$DEPLOY_MODE" = "FULL" ] || [ "${#UPLOAD_FILES[@]}" -gt 0 ] || [ "${#DELETE_FILES[@]}" -gt 0 ]; then
+          if [ "$DEPLOY_MODE" = "FULL" ] || [ "${#UPLOAD_FILES[@]}" -gt 0 ] || [ "${#DELETE_FILES[@]}" -gt 0 ]; then
               node -e 'const fs=require("fs");const branch=process.env.BUILD_BRANCH;const pr=branch==="feat/wp-login-branding"?16:branch==="style/product-detail-app-skin"?null:15;fs.writeFileSync(process.argv[1],JSON.stringify({sha:process.env.HEAD_SHA,branch,pr},null,2)+"\n");' "$LOCAL_ROOT/build.json"
               UPLOAD_FILES+=("$THEME_ROOT/build.json")
               THEME_DEPLOY_SHA="$HEAD_SHA"
-            else
-              THEME_DEPLOY_SHA="$REMOTE_SHA"
-            fi
+          else
+            THEME_DEPLOY_SHA="$REMOTE_SHA"
           fi
 
           # De-duplicate paths while preserving deterministic output.
@@ -938,15 +936,15 @@ jobs:
             echo "BUILD_SHA_UPDATED=NO_RUNTIME_CHANGE"
           fi
 
-      - name: Verify remote staging build.json SHA
-        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && steps.staging-head.outputs.current == 'true' && steps.impact.outputs.scope != 'TEST_ONLY' && steps.impact.outputs.scope != 'CI_VALIDATION'
+      - name: Verify remote deployed build.json SHA
+        if: (github.ref == 'refs/heads/style/product-detail-app-skin' && steps.deploy.outcome == 'success') || ((github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && steps.staging-head.outputs.current == 'true' && steps.impact.outputs.scope != 'TEST_ONLY' && steps.impact.outputs.scope != 'CI_VALIDATION')
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          SFTP_PATH: /public/prueba/wp-content/themes/crios-rango-2026/
+          SFTP_PATH: ${{ github.ref == 'refs/heads/style/product-detail-app-skin' && '/public/wp-content/themes/crios-rango-2026/' || ((github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding') && '/public/prueba/wp-content/themes/crios-rango-2026/' || secrets.SFTP_PATH) }}
           EXPECTED_THEME_SHA: ${{ steps.deploy.outputs.theme_deploy_sha }}
         run: |
           set -euo pipefail
@@ -955,9 +953,9 @@ jobs:
           BASE_URL="ftp://${SFTP_HOST}:${SFTP_PORT}/${REMOTE_ROOT}"
           curl --silent --show-error --fail --ssl-reqd --ftp-pasv --connect-timeout 20 --retry 2 \
             --user "${SFTP_USER}:${SFTP_PASSWORD}" "${BASE_URL}/build.json" --output /tmp/criosrango-build.json
-          node -e 'const fs=require("fs");const manifest=JSON.parse(fs.readFileSync("/tmp/criosrango-build.json","utf8"));if(manifest.sha!==process.env.EXPECTED_THEME_SHA){console.error("STAGING_BUILD_SHA mismatch: "+manifest.sha+" != "+process.env.EXPECTED_THEME_SHA);process.exit(1)}console.log("STAGING_BUILD_SHA="+manifest.sha);console.log("REPOSITORY_HEAD="+process.env.GITHUB_SHA);console.log("THEME_DEPLOY_SHA="+manifest.sha);'
+          node -e 'const fs=require("fs");const manifest=JSON.parse(fs.readFileSync("/tmp/criosrango-build.json","utf8"));if(manifest.sha!==process.env.EXPECTED_THEME_SHA){console.error("REMOTE_BUILD_SHA mismatch: "+manifest.sha+" != "+process.env.EXPECTED_THEME_SHA);process.exit(1)}console.log("REMOTE_BUILD_SHA="+manifest.sha);console.log("REPOSITORY_HEAD="+process.env.GITHUB_SHA);console.log("THEME_DEPLOY_SHA="+manifest.sha);'
       - name: Install cached Playwright Chromium
-        if: (steps.impact.outputs.run_account_browser == 'true' || steps.impact.outputs.run_home_browser == 'true' || steps.impact.outputs.run_category_browser == 'true' || steps.impact.outputs.run_product_browser == 'true' || steps.impact.outputs.run_checkout_browser == 'true' || steps.impact.outputs.run_global_shell == 'true') && steps.staging-head.outputs.current == 'true'
+        if: (steps.impact.outputs.run_account_browser == 'true' || steps.impact.outputs.run_home_browser == 'true' || steps.impact.outputs.run_category_browser == 'true' || steps.impact.outputs.run_product_browser == 'true' || steps.impact.outputs.run_checkout_browser == 'true' || steps.impact.outputs.run_global_shell == 'true') && github.ref != 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -965,7 +963,7 @@ jobs:
           npx playwright install chromium
 
       - name: Run Account browser suite
-        if: steps.impact.outputs.run_account_browser == 'true' && steps.staging-head.outputs.current == 'true'
+        if: steps.impact.outputs.run_account_browser == 'true' && github.ref != 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
           STAGING_BASE_URL: https://criosrango.es/prueba
@@ -974,7 +972,7 @@ jobs:
         run: node tests/account-universal-browser.cjs
 
       - name: Run affected page browser suite
-        if: (steps.impact.outputs.run_home_browser == 'true' || steps.impact.outputs.run_category_browser == 'true' || steps.impact.outputs.run_product_browser == 'true' || steps.impact.outputs.run_checkout_browser == 'true') && steps.staging-head.outputs.current == 'true'
+        if: (steps.impact.outputs.run_home_browser == 'true' || steps.impact.outputs.run_category_browser == 'true' || steps.impact.outputs.run_product_browser == 'true' || steps.impact.outputs.run_checkout_browser == 'true') && github.ref != 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
           STAGING_BASE_URL: https://criosrango.es/prueba
@@ -983,20 +981,20 @@ jobs:
         run: node tests/desktop-targeted-browser.cjs
 
       - name: Run Checkout shipping fragment browser regression
-        if: ${{ always() && !cancelled() && steps.impact.outputs.run_checkout_browser == 'true' && steps.staging-head.outputs.current == 'true' }}
+        if: ${{ always() && !cancelled() && steps.impact.outputs.run_checkout_browser == 'true' && github.ref != 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true' }}
         shell: bash
         env:
           STAGING_BASE_URL: https://criosrango.es/prueba
         run: node scripts/checkout-shipping-browser.cjs
 
       - name: Run global shell browser smoke
-        if: steps.impact.outputs.run_global_shell == 'true' && steps.staging-head.outputs.current == 'true'
+        if: steps.impact.outputs.run_global_shell == 'true' && github.ref != 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
         shell: bash
         env:
           STAGING_BASE_URL: https://criosrango.es/prueba
         run: node tests/global-shell-browser-smoke.cjs
       - name: Benchmark staging catalog endpoint (3 cold + 3 warm requests)
-        if: steps.impact.outputs.run_catalog_benchmark == 'true' && steps.staging-head.outputs.current == 'true'
+        if: steps.impact.outputs.run_catalog_benchmark == 'true' && github.ref != 'refs/heads/style/product-detail-app-skin' && steps.staging-head.outputs.current == 'true'
         shell: bash
         run: |
           set -euo pipefail
