@@ -1,9 +1,7 @@
 <?php
 /**
- * Theme account authentication view.
- *
- * Keep authentication processing, nonce verification, customer creation and
- * login redirects in WooCommerce. This template only selects the guest view.
+ * Theme account authentication view. WooCommerce retains ownership of
+ * registration processing, nonce verification, customer creation and login.
  *
  * @package WooCommerce\\Templates
  * @version 9.2.0
@@ -20,7 +18,7 @@ $is_register_view = function_exists( 'cr2026_account_guest_register_view' )
 
 <?php if ( $is_register_view ) : ?>
 
-    <?php if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) : ?>
+<?php if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) : ?>
         <form method="post" class="woocommerce-form woocommerce-form-register register cr-account-register" <?php do_action( 'woocommerce_register_form_tag' ); ?> aria-label="<?php esc_attr_e( 'Crear cuenta', 'crios-rango-2026' ); ?>">
             <?php do_action( 'woocommerce_register_form_start' ); ?>
 
@@ -63,43 +61,59 @@ $is_register_view = function_exists( 'cr2026_account_guest_register_view' )
             <?php do_action( 'woocommerce_register_form_end' ); ?>
         </form>
         <p class="cr-account-register__login"><?php esc_html_e( '¿Ya tienes cuenta?', 'crios-rango-2026' ); ?> <a href="<?php echo esc_url( cr2026_account_guest_login_url() ); ?>"><?php esc_html_e( 'Acceder', 'crios-rango-2026' ); ?></a></p>
-    <?php else : ?>
-        <p class="woocommerce-info"><?php esc_html_e( 'El registro de clientes no está disponible en este momento.', 'crios-rango-2026' ); ?></p>
-    <?php endif; ?>
 
 <?php else : ?>
 
-    <form class="woocommerce-form woocommerce-form-login login" method="post" aria-label="<?php esc_attr_e( 'Acceder', 'crios-rango-2026' ); ?>">
-        <?php do_action( 'woocommerce_login_form_start' ); ?>
 
-        <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-            <label for="username"><?php esc_html_e( 'Usuario/correo', 'crios-rango-2026' ); ?>&nbsp;<span class="required" aria-hidden="true">*</span><span class="screen-reader-text"><?php esc_html_e( 'Required', 'woocommerce' ); ?></span></label>
-            <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="username" id="username" autocomplete="username" value="<?php echo ( ! empty( $_POST['username'] ) ) ? esc_attr( wp_unslash( $_POST['username'] ) ) : ''; ?>" required aria-required="true" />
-        </p>
-        <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-            <label for="password"><?php esc_html_e( 'Contraseña', 'crios-rango-2026' ); ?>&nbsp;<span class="required" aria-hidden="true">*</span><span class="screen-reader-text"><?php esc_html_e( 'Required', 'woocommerce' ); ?></span></label>
-            <input class="woocommerce-Input woocommerce-Input--text input-text" type="password" name="password" id="password" autocomplete="current-password" required aria-required="true" />
-        </p>
 
-        <?php do_action( 'woocommerce_login_form' ); ?>
+<?php if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) : ?>
 
-        <p class="form-row">
-            <label class="woocommerce-form__label woocommerce-form__label-for-checkbox woocommerce-form-login__rememberme">
-                <input class="woocommerce-form__input woocommerce-form__input-checkbox" name="rememberme" type="checkbox" id="rememberme" value="forever" /> <span><?php esc_html_e( 'Recuérdame', 'crios-rango-2026' ); ?></span>
-            </label>
-            <?php wp_nonce_field( 'woocommerce-login', 'woocommerce-login-nonce' ); ?>
-            <button type="submit" class="woocommerce-button button woocommerce-form-login__submit<?php echo esc_attr( wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '' ); ?>" name="login" value="<?php esc_attr_e( 'Acceder', 'crios-rango-2026' ); ?>"><?php esc_html_e( 'Acceder', 'crios-rango-2026' ); ?></button>
-        </p>
-        <p class="woocommerce-LostPassword lost_password">
-            <a href="<?php echo esc_url( wp_lostpassword_url() ); ?>"><?php esc_html_e( '¿Olvidaste la contraseña?', 'crios-rango-2026' ); ?></a>
-        </p>
-        <div class="cr-account-register-cta">
-            <p><?php esc_html_e( '¿Aún no tienes cuenta?', 'crios-rango-2026' ); ?></p>
-            <a class="woocommerce-button button cr-account-register-cta__button" href="<?php echo esc_url( add_query_arg( 'cr-account-view', 'register', wc_get_page_permalink( 'myaccount' ) ) ); ?>"><?php esc_html_e( 'Crear cuenta', 'crios-rango-2026' ); ?></a>
-        </div>
+<div class="u-columns col2-set" id="customer_login">
 
-        <?php do_action( 'woocommerce_login_form_end' ); ?>
-    </form>
+	<div class="u-column1 col-1">
+
+<?php endif; ?>
+
+
+		<form class="woocommerce-form woocommerce-form-login login" method="post" aria-label="<?php esc_attr_e( 'Acceder', 'crios-rango-2026' ); ?>">
+
+			<?php do_action( 'woocommerce_login_form_start' ); ?>
+
+			<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+				<label for="username"><?php esc_html_e( 'Username or email address', 'woocommerce' ); ?>&nbsp;<span class="required" aria-hidden="true">*</span><span class="screen-reader-text"><?php esc_html_e( 'Required', 'woocommerce' ); ?></span></label>
+				<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="username" id="username" autocomplete="username" value="<?php echo ( ! empty( $_POST['username'] ) ) ? esc_attr( wp_unslash( $_POST['username'] ) ) : ''; ?>" required aria-required="true" /><?php // @codingStandardsIgnoreLine ?>
+			</p>
+			<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+				<label for="password"><?php esc_html_e( 'Password', 'woocommerce' ); ?>&nbsp;<span class="required" aria-hidden="true">*</span><span class="screen-reader-text"><?php esc_html_e( 'Required', 'woocommerce' ); ?></span></label>
+				<input class="woocommerce-Input woocommerce-Input--text input-text" type="password" name="password" id="password" autocomplete="current-password" required aria-required="true" />
+			</p>
+
+			<?php do_action( 'woocommerce_login_form' ); ?>
+
+			<p class="form-row">
+				<label class="woocommerce-form__label woocommerce-form__label-for-checkbox woocommerce-form-login__rememberme">
+					<input class="woocommerce-form__input woocommerce-form__input-checkbox" name="rememberme" type="checkbox" id="rememberme" value="forever" /> <span><?php esc_html_e( 'Remember me', 'woocommerce' ); ?></span>
+				</label>
+				<?php wp_nonce_field( 'woocommerce-login', 'woocommerce-login-nonce' ); ?>
+				<button type="submit" class="woocommerce-button button woocommerce-form-login__submit<?php echo esc_attr( wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '' ); ?>" name="login" value="<?php esc_attr_e( 'Log in', 'woocommerce' ); ?>"><?php esc_html_e( 'Log in', 'woocommerce' ); ?></button>
+			</p>
+			<p class="woocommerce-LostPassword lost_password">
+				<a href="<?php echo esc_url( wp_lostpassword_url() ); ?>"><?php esc_html_e( 'Lost your password?', 'woocommerce' ); ?></a>
+			</p>
+
+			<div class="cr-account-register-cta">
+                <p><?php esc_html_e( '¿Aún no tienes cuenta?', 'crios-rango-2026' ); ?></p>
+                <a class="woocommerce-button button cr-account-register-cta__button" href="<?php echo esc_url( add_query_arg( 'cr-account-view', 'register', wc_get_page_permalink( 'myaccount' ) ) ); ?>"><?php esc_html_e( 'Crear cuenta', 'crios-rango-2026' ); ?></a>
+            </div>
+
+            <?php do_action( 'woocommerce_login_form_end' ); ?>
+
+		</form>
+
+<?php if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) : ?>
+    </div>
+</div>
+<?php endif; ?>
 
 <?php endif; ?>
 
