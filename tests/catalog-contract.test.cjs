@@ -141,10 +141,10 @@ test('ordered IDs are validated at API, card endpoint and DOM boundaries', () =>
   assert.match(js, /Catalog duplicate product IDs across pages/);
   assert.match(js, /Catalog total mismatch/);
   const handlerStart = php.indexOf('function cr2026_catalog_page_rest_response');
-  const handlerEnd = php.indexOf('\\nfunction ', handlerStart + 1);
+  const handlerEnd = php.indexOf('\nfunction ', handlerStart + 1);
   const handler = php.slice(handlerStart, handlerEnd === -1 ? php.length : handlerEnd);
   assert.ok(handlerStart !== -1, 'catalog endpoint handler exists');
-  assert.doesNotMatch(handler, /usort\\s*\\(/);
+  assert.doesNotMatch(handler, /usort\s*\(/);
 });
 
 test('product cards expose their real product IDs and EUR uses a non-breaking space', () => {
@@ -823,7 +823,7 @@ test('unfiltered root Novedades reuses direct WooCommerce while filtered context
   assert.match(php, /if \( \$is_novelties && ! \$has_filters \) \{/);
   assert.match(php, /'include' => \$novelties_cohort_ids/);
   assert.match(php, /'orderby' => 'include'/);
-  assert.match(php, /cr2026_novelties_sort_cohort_products\\( \$cohort_products, \$sort \\)/);
+  assert.match(php, /cr2026_novelties_sort_cohort_products\( \$cohort_products, \$sort \)/);
   assert.match(php, /'status' => 'publish'/);
   assert.match(php, /'visibility' => 'visible'/);
   assert.doesNotMatch(php, /is_purchasable\(\)/);
