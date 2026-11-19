@@ -982,6 +982,13 @@ jobs:
           STAGING_ACCOUNT_PASSWORD: ${{ secrets.STAGING_ACCOUNT_PASSWORD }}
         run: node tests/desktop-targeted-browser.cjs
 
+      - name: Run Checkout shipping fragment browser regression
+        if: steps.impact.outputs.run_checkout_browser == 'true' && steps.staging-head.outputs.current == 'true'
+        shell: bash
+        env:
+          STAGING_BASE_URL: https://criosrango.es/prueba
+        run: node scripts/checkout-shipping-browser.cjs
+
       - name: Run global shell browser smoke
         if: steps.impact.outputs.run_global_shell == 'true' && steps.staging-head.outputs.current == 'true'
         shell: bash
