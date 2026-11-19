@@ -1504,7 +1504,11 @@ function cr2026_account_is_registration_request() {
 
 /** Enable native registration only on the dedicated registration view/request. */
 function cr2026_account_registration_native_options( $pre_option ) {
-    return cr2026_account_is_registration_request() ? 'yes' : $pre_option;
+    if ( ! is_user_logged_in() && function_exists( 'is_account_page' ) && is_account_page() ) {
+        return cr2026_account_is_registration_request() ? 'yes' : 'no';
+    }
+
+    return $pre_option;
 }
 add_filter( 'pre_option_woocommerce_enable_myaccount_registration', 'cr2026_account_registration_native_options', 1 );
 
