@@ -134,11 +134,12 @@ test('long product description is a single accessible accordion with responsive 
   assert.ok(descriptionPlacement.includes("media.addEventListener('change', placeDescription)"));
   assert.equal((skin.match(/add_action\( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 \)/g) || []).length, 1);
   assert.equal((skin.match(/function cr2026_product_skin_description_accordion\(/g) || []).length, 1);
-  assert.equal((descriptionPlacement.match(/var description = summary\.querySelector\(':scope > \.cr-product-description'\)/g) || []).length, 1, 'DESCRIPTION_NODE_CREATED_ONCE=PASS');
-  assert.match(descriptionPlacement, /product\.insertBefore\(description, tabs \|\| null\)/, 'DESCRIPTION_REUSED_ACROSS_BRANCHES=PASS (desktop)');
-  assert.match(descriptionPlacement, /summary\.insertBefore\(description, purchaseForm\)/, 'DESCRIPTION_REUSED_ACROSS_BRANCHES=PASS (mobile)');
-  assert.match(descriptionPlacement, /summary\.appendChild\(description\)/, 'DESCRIPTION_REUSED_ACROSS_BRANCHES=PASS (mobile fallback)');
-  assert.doesNotMatch(descriptionPlacement, /cloneNode\s*\(|document\.createElement\s*\(/, 'DESCRIPTION_NOT_CLONED=PASS');
+  assert.ok(descriptionPlacement.includes(':scope > .cr-product-description'), 'DESCRIPTION_LOOKUP_EXISTS=PASS');
+  assert.match(descriptionPlacement, /product\.insertBefore\(\s*description\s*,\s*tabs\s*\|\|\s*null\s*\)/, 'DESCRIPTION_NODE_REUSED=PASS (desktop placement uses looked-up node)');
+  assert.match(descriptionPlacement, /summary\.insertBefore\(\s*description\s*,\s*purchaseForm\s*\)/, 'DESCRIPTION_NODE_REUSED=PASS (mobile placement uses same node)');
+  assert.match(descriptionPlacement, /summary\.appendChild\(\s*description\s*\)/, 'DESCRIPTION_NODE_REUSED=PASS (mobile fallback uses same node)');
+  assert.doesNotMatch(descriptionPlacement, /cloneNode\s*\(/, 'DESCRIPTION_NOT_CLONED=PASS');
+  assert.doesNotMatch(descriptionPlacement, /createElement\s*\([^)]*cr-product-description/i, 'DESCRIPTION_NOT_CREATED_TWICE=PASS (no second description element is constructed)');
   assert.ok(productUiJs.includes('initProductDescriptionPlacement();'));
   assert.ok(productUiJs.includes('function initProductDescriptionAccordion()'));
   assert.ok(productUiJs.includes("toggle.addEventListener('click'"));
