@@ -3406,3 +3406,11 @@ body.cr-parent-category-view .cr-parent-category__grid,
 /* CI trigger: deploy pending shared toolbar runtime */
 
 /* CI staging trigger: shared toolbar conditional layout. */
+
+/* Cart and account: remove mobile top padding only; preserve bottom spacing. */
+@media (max-width: 767px) {
+  body.woocommerce-cart .cr-page-shell,
+  body.woocommerce-account .cr-page-shell {
+    padding-top: 0 !important;
+  }
+}
