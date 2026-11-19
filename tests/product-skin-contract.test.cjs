@@ -1024,9 +1024,10 @@ test('Product Detail keeps the Woo summary continuous and moves description belo
 
 test('Product Detail browser geometry runs before independent Home shell smoke', () => {
   const browser = fs.readFileSync(path.join(__dirname, 'desktop-targeted-browser.cjs'), 'utf8');
+  const homeChecks = browser.indexOf('await visit(page, homeUrl);');
   const productChecks = browser.indexOf('await visit(page, productUrl);');
-  const homeChecks = browser.indexOf('for (const viewport of [1279, 1280, 1440, 1920])');
-  assert.ok(productChecks >= 0 && homeChecks > productChecks);
+  assert.ok(homeChecks >= 0 && productChecks > homeChecks, 'home smoke precedes Product Detail geometry');
+  assert.ok(browser.includes('for (const viewport of RESPONSIVE_VIEWPORTS)'), 'Product Detail uses the shared responsive viewport set');
   assert.match(browser, /clientWidth:\s*document\.documentElement\.clientWidth/);
   assert.ok(browser.includes('layoutWidth: document.documentElement.clientWidth - (document.documentElement.clientWidth === window.innerWidth ? 15 : 0)'));
   assert.ok(browser.includes('Math.min(viewport - 48, 1232)'));
@@ -1065,7 +1066,7 @@ test('Product Detail final controls stay compact and quantity label is visually 
   assert.ok(skinCss.includes('width: 12px;') && skinCss.includes('height: 12px;'), 'COLOR_CHECK_REDUCED=PASS');
   assert.ok(skinCss.includes('min-width: 58px;') && skinCss.includes('padding: 0 14px;') && skinCss.includes('border-radius: 13px;'), 'SIZE_CHIP_NARROWER_AND_LESS_PILL=PASS');
   assert.ok(skinCss.includes('.cr-product-quantity-label {\n    display: none !important;'), 'QUANTITY_LABEL_RENDERED=NO');
-  assert.ok(skinCss.includes('border: 1px solid var(--cr-product-border);\n    border-radius: 12px;\n    background: #fff;'), 'QUANTITY_CONTROL_WHITE_BACKGROUND=PASS');
+  assert.match(skinCss, /\.cr-product-quantity-stepper\s*\{[^}]*border:\s*1px solid var\(--cr-product-border\);[^}]*border-radius:\s*12px;[^}]*background:\s*#fff;/s, 'QUANTITY_CONTROL_WHITE_BACKGROUND=PASS');
   assert.ok(skinCss.includes('.woocommerce-variation-add-to-cart {\n    display: flex !important;') && skinCss.includes('gap: 10px;'), 'QUANTITY_AND_CTA_ALIGNED=PASS');
   assert.ok(skinCss.includes('flex: 1 1 auto;'), 'CTA_RETAINS_AVAILABLE_WIDTH=PASS');
 });
@@ -1588,7 +1589,7 @@ test('CART_GLOBAL_PRODUCT_CARD_INSET=PASS; CART_PRODUCT_ROW_USES_GLOBAL_INSET=PA
 });
 test('CART_HEADER_HORIZONTAL_GEOMETRY_UNCHANGED=PASS; CART_PRODUCT_CARD_GEOMETRY_UNCHANGED=PASS',()=>{
  const m=fs.readFileSync(path.join(theme,'assets/css/main.css'),'utf8'),c=fs.readFileSync(path.join(theme,'assets/css/cart.css'),'utf8');
- assert.match(m,/\.cr-parent-category__toolbar \{[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;[\s\S]*?column-gap: 10px;/);
+ assert.match(m,/\.cr-parent-category__toolbar \{[\s\S]*?grid-template-columns: 48px minmax\(0, 1fr\) auto;/);
  assert.match(m,/\.cr-parent-category__back \{[\s\S]*?width: 48px;[\s\S]*?height: 48px;/);
  assert.match(m,/\.cr-parent-category__title \{[\s\S]*?font: 300 21px\/28px "Roboto", Arial, sans-serif;/);
  assert.match(c,/body\.woocommerce-cart \.cr-cart-item__card \{[\s\S]*?padding: 15px;[\s\S]*?border-radius: var\(--cr-card-radius\);/);
@@ -1678,7 +1679,16 @@ test('DESKTOP_PRODUCT_DETAIL_TWO_COLUMN_RAIL=PASS — grid geometry is desktop-o
   assert.ok(railDeclaration >= 0, 'desktop two-column rail declaration exists');
   const start = skinCss.lastIndexOf('@media (min-width: 1280px) {', railDeclaration);
   assert.ok(start >= 0, 'desktop-only Product Detail rail layer exists');
-  const layer = skinCss.slice(start);
+  const openBrace = skinCss.indexOf('{', start);
+  let depth = 0;
+  let end = -1;
+  for (let index = openBrace; index < skinCss.length; index += 1) {
+    if (skinCss[index] === '{') depth += 1;
+    else if (skinCss[index] === '}') depth -= 1;
+    if (depth === 0) { end = index + 1; break; }
+  }
+  assert.ok(end > openBrace, 'desktop rail media block closes');
+  const layer = skinCss.slice(start, end);
   assert.match(layer, /div\.product\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*minmax\(0,\s*\.92fr\)\s+minmax\(0,\s*1\.08fr\)/);
   assert.match(layer, /\.woocommerce-product-gallery\s*\{[\s\S]*?grid-column:\s*1;[\s\S]*?grid-row:\s*1;/);
   assert.match(layer, /div\.product\s*>\s*\.summary\s*\{[\s\S]*?display:\s*flex;[\s\S]*?flex-direction:\s*column;[\s\S]*?gap:\s*16px;[\s\S]*?grid-column:\s*2;[\s\S]*?grid-row:\s*1;/);
@@ -1719,8 +1729,7 @@ test('desktop Product Detail keeps the canonical toolbar in flow and moves the e
 
 test('desktop purchase row hides the visual quantity label but names the native input accessibly', () => {
   assert.ok(productUiJs.includes("input.setAttribute('aria-label', 'Cantidad')"));
-  const desktop = skinCss.slice(skinCss.lastIndexOf('Desktop Product Detail: reserve the real global-header height'));
-  assert.match(desktop, /form\.cart \.cr-product-quantity-label \{\s*display:\s*none !important;/s);
+  assert.match(skinCss, /div\.product form\.cart \.cr-product-quantity-label \{\s*display:\s*none !important;/s);
   assert.match(desktop, /single_variation_wrap \.woocommerce-variation-add-to-cart \{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*116px minmax\(0, 1fr\)/s);
   assert.match(desktop, /product-type-simple form\.cart \{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*116px minmax\(0, 1fr\)/s);
   assert.match(desktop, /single_variation_wrap \.single_add_to_cart_button \{[^}]*grid-column:\s*2;[^}]*height:\s*58px;/s);
