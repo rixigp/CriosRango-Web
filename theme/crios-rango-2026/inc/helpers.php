@@ -193,7 +193,9 @@ function cr2026_render_category_toolbar( $title, $back_url = '', $filter_context
     }
     echo '<h1 class="cr-parent-category__title"' . $title_id_attribute . '>' . esc_html( $title ) . '</h1>';
     if ( $filters_in_toolbar ) {
+        echo '<div class="cr-page-controls">';
         echo '<button type="button" class="cr-parent-category__filters" data-cr-filter-open aria-haspopup="dialog">' . esc_html__( 'Filtros', 'crios-rango-2026' ) . '</button>';
+        echo '</div>';
     }
     echo '</div>';
 

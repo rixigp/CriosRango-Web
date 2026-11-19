@@ -87,7 +87,9 @@ test('SORT_BEFORE_PRODUCT_GRID=PASS',()=>{
 });
 test('SORT_ONLY_FILTER_ONLY_AND_COMBINED_SUPPORTED=PASS',()=>{
  assert.match(helpers,/\$filters_in_toolbar = \$show_filters && '' === \$ordering_html && '' === \$right_action_html/);
- assert.match(helpers,/if \( \$filters_in_toolbar \)/);
+ assert.match(helpers,/if \( \$filters_in_toolbar \) \{\s*echo '<div class="cr-page-controls">';[\s\S]*?cr-parent-category__filters/);
+ assert.match(fs.readFileSync(path.join(root,'assets','css','main.css'),'utf8'),/\.cr-parent-category__toolbar > \.cr-page-controls \{\s*grid-column: 1 \/ -1;\s*\}/);
+ assert.match(fs.readFileSync(path.join(root,'assets','css','main.css'),'utf8'),/@media \(max-width:767px\) \{\s*\.cr-parent-category__toolbar > \.cr-page-controls \{\s*display: contents;\s*\}\s*\}/);
  assert.match(helpers,/'' !== \$ordering_html \|\| '' !== \$right_action_html \|\| \( \$show_filters && ! \$filters_in_toolbar \)/);
  assert.match(helpers,/if \( '' !== \$ordering_html \)/);
  assert.match(helpers,/elseif \( \$show_filters && ! \$filters_in_toolbar \)/);
