@@ -15,7 +15,7 @@ test('PAGE_SPECIFIC_PAGE_SHELL_TOP_PADDING=0',()=>{
     x.file==='main.css' &&
     x.selector==='body.woocommerce-cart .cr-page-shell, body.woocommerce-account .cr-page-shell' &&
     x.property==='padding-top' &&
-    /^0(?:\\s*!important)?$/i.test(x.value)
+    /^0(?:\s*!important)?$/i.test(x.value)
   );
   // Cart and Account intentionally cancel the shared mobile top gap.
   // Any positive/other page-specific shell offset remains forbidden.
