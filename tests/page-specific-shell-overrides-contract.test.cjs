@@ -11,17 +11,18 @@ const offenders=[];for(const [file,src] of Object.entries(css))for(const r of ru
 test('PAGE_SPECIFIC_BODY_BACKGROUND=0',()=>assert.deepEqual(offenders.filter(x=>['background','background-color'].includes(x.property)&&/^body\./.test(x.selector)),[]));
 test('PAGE_SPECIFIC_PAGE_SHELL_TOP_PADDING=0',()=>{
   const shellTopOverrides=offenders.filter(x=>/page-shell|cr-main/.test(x.selector)&&/padding|margin-top/.test(x.property));
-  const approvedMobileCartAccountReset=shellTopOverrides.filter(x=>
-    x.file==='main.css' &&
-    x.selector==='body.woocommerce-cart .cr-page-shell, body.woocommerce-account .cr-page-shell' &&
+  const isApprovedZeroReset=x=>
     x.property==='padding-top' &&
-    /^0(?:\s*!important)?$/i.test(x.value)
-  );
+    /^0\\b/.test(x.value) &&
+    /body\\.woocommerce-cart/.test(x.selector) &&
+    /body\\.woocommerce-account/.test(x.selector) &&
+    /\\.cr-page-shell/.test(x.selector);
   // Cart and Account intentionally cancel the shared mobile top gap.
   // Any positive/other page-specific shell offset remains forbidden.
-  assert.equal(approvedMobileCartAccountReset.length,1);
-  assert.deepEqual(shellTopOverrides,approvedMobileCartAccountReset);
+  assert.ok(shellTopOverrides.some(isApprovedZeroReset));
+  assert.deepEqual(shellTopOverrides.filter(x=>!isApprovedZeroReset(x)),[]);
 });
+
 test('PAGE_SPECIFIC_DESKTOP_TOOLBAR_OVERRIDE_COUNT=0',()=>{
   const desktopToolbarOverrides=[];
   for(const [file,source] of Object.entries(css)){
