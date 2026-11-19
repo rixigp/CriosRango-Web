@@ -72,7 +72,7 @@ test('SECONDARY_CONTROLS_ROW_IS_SIBLING=PASS',()=>{
 test('ORDERING_AND_FILTERS_ARE_INSIDE_SECONDARY_ROW=PASS',()=>{
  assert.match(helpers,/if \( '' !== \$ordering_html \)/);
  assert.match(helpers,/if \( '' !== \$right_action_html \)/);
- assert.match(helpers,/elseif \( \$show_filters \)/);
+ assert.match(helpers,/elseif \( \$show_filters && ! \$filters_in_toolbar \)/);
 });
 test('SORT_AND_FILTER_BEFORE_BUBBLES=PASS',()=>{
  const controls=listingArchive.indexOf('cr2026_render_category_toolbar( $listing_title');
@@ -86,9 +86,11 @@ test('SORT_BEFORE_PRODUCT_GRID=PASS',()=>{
  assert.ok(brandArchive.indexOf('cr-product-listing__ordering')<brandArchive.indexOf('cr-product-grid'));
 });
 test('SORT_ONLY_FILTER_ONLY_AND_COMBINED_SUPPORTED=PASS',()=>{
- assert.match(helpers,/'' !== \$ordering_html \|\| '' !== \$right_action_html \|\| \$show_filters/);
+ assert.match(helpers,/\$filters_in_toolbar = \$show_filters && '' === \$ordering_html && '' === \$right_action_html/);
+ assert.match(helpers,/if \( \$filters_in_toolbar \)/);
+ assert.match(helpers,/'' !== \$ordering_html \|\| '' !== \$right_action_html \|\| \( \$show_filters && ! \$filters_in_toolbar \)/);
  assert.match(helpers,/if \( '' !== \$ordering_html \)/);
- assert.match(helpers,/elseif \( \$show_filters \)/);
+ assert.match(helpers,/elseif \( \$show_filters && ! \$filters_in_toolbar \)/);
  assert.match(listingArchive,/true, '', '', '', array\(\), \$listing_ordering_html/);
  assert.match(brandArchive,/false, \$brand_filter_action, '', '', array\(\), \$brand_ordering_html/);
 });
