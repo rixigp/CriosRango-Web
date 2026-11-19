@@ -29,10 +29,10 @@ test('Promociones disponibles is removed at its theme-owned render source', () =
 
 test('birthday promotion expiry is formatted in Spanish without exposing the raw ISO value', () => {
   const start = cartUi.indexOf('const formatPromotionExpiry = (value) => {');
-  const end = cartUi.indexOf('\\n  };', start) + 4;
+  const end = cartUi.indexOf('\n  const formatWalletAmount', start);
   assert.ok(start >= 0 && end > start, 'Spanish expiry formatter must remain present');
   const formatterSource = cartUi.slice(start, end);
-  const formatPromotionExpiry = vm.runInNewContext(`(() => { ${formatterSource}; return formatPromotionExpiry; })()`);
+  const formatPromotionExpiry = vm.runInNewContext('(() => { ' + formatterSource + '; return formatPromotionExpiry; })()');
   assert.equal(formatPromotionExpiry('2026-12-04T20:11:40+00:00'), '4 de diciembre de 2026');
   assert.equal(formatPromotionExpiry('not-a-date'), '');
   assert.ok(renderPromotions.includes("'Válida hasta el ' + expiryDate"));
@@ -44,11 +44,11 @@ test('birthday promotion keeps its cake icon', () => {
 });
 
 test('promotion cards have a 12px sibling gap without changing the promotions container display', () => {
-  assert.match(cartCss, /\\.cr-cart-promo-card \\+ \\.cr-cart-promo-card\\s*\\{\\s*margin-top:\\s*12px;\\s*\\}/);
+  assert.match(cartCss, /\.cr-cart-promo-card \+ \.cr-cart-promo-card\s*\{\s*margin-top:\s*12px;\s*\}/);
   const containerStart = cartCss.indexOf('body.woocommerce-cart .cr-cart-promotions__available {');
   const containerEnd = cartCss.indexOf('}', containerStart);
   assert.ok(containerStart >= 0 && containerEnd > containerStart, 'promotions container rule must remain present');
-  assert.doesNotMatch(cartCss.slice(containerStart, containerEnd), /display\\s*:/);
+  assert.doesNotMatch(cartCss.slice(containerStart, containerEnd), /display\s*:/);
 });
 
 test('promotion cards, title, description and apply action remain rendered', () => {
