@@ -13,7 +13,7 @@ permissions:
 jobs:
   inspect-wp-content:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Install lftp
         shell: bash
@@ -22,8 +22,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lftp
 
-      - name: Inspect FTP chroot and resolve plugin directories
-        id: ftp
+      - name: Read chroot and download PHP from relative plugin directories
         shell: bash
         env:
           WP_CONTENT_FTP_HOST: ${{ secrets.WP_CONTENT_FTP_HOST }}
@@ -38,15 +37,13 @@ jobs:
 
           WORK=/tmp/wp-content
           mkdir -p "$WORK/plugins" "$WORK/mu-plugins"
-          SCRIPT="$(mktemp)"
-          trap 'rm -f "$SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
+          ROOT_SCRIPT="$(mktemp)"
+          DOWNLOAD_SCRIPT="$(mktemp)"
+          trap 'rm -f "$ROOT_SCRIPT" "$DOWNLOAD_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
 
-          BASE_PATH="${WP_CONTENT_FTP_PATH:-.}"
-          if [ -z "$BASE_PATH" ] || [ "$BASE_PATH" = "." ]; then
-            BASE_PATH="."
-          fi
-          export BASE_PATH
-
+          # The FTP account is confirmed to be chrooted directly at wp-content.
+          # Do not cd to the configured legacy absolute path or prefix any path.
+          BASE_PATH="."
           {
             printf 'set ftp:ssl-force true\n'
             printf 'set ftp:ssl-protect-data true\n'
@@ -54,89 +51,25 @@ jobs:
             printf 'set ftp:passive-mode true\n'
             printf 'set net:max-retries 2\n'
             printf 'set net:timeout 20\n'
+            printf 'set cmd:fail-exit yes\n'
             printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
             printf 'pwd\n'
             printf 'cls -la\n'
             printf 'cd .\n'
             printf 'cls -la\n'
-            if [ "$BASE_PATH" = "." ]; then
-              printf 'cd .\n'
-            else
-              printf 'cd "%s"\n' "$BASE_PATH"
-            fi
-            printf 'pwd\n'
-            printf 'cls -la\n'
-            printf 'cls -la "plugins"\n'
-            printf 'cls -la "mu-plugins"\n'
-            printf 'cls -la "wp-content/plugins"\n'
-            printf 'cls -la "wp-content/mu-plugins"\n'
             printf 'bye\n'
-          } > "$SCRIPT"
-
-          if ! lftp -f "$SCRIPT" > /tmp/wp-content-ftp-listing.log 2>&1; then
-            cat /tmp/wp-content-ftp-listing.log
-            echo "FTP_CONNECTION=FAILED"
-            exit 1
-          fi
+          } > "$ROOT_SCRIPT"
+          lftp -f "$ROOT_SCRIPT" > /tmp/wp-content-root.log 2>&1
 
           echo "FTP_CONNECTION=OK"
-          awk '
-            /^(ftp:|sftp:|file:)/ && !initial { print "FTP_INITIAL_PWD=" $0; initial=1 }
-            END { if (!initial) print "FTP_INITIAL_PWD=NOT_REPORTED" }
-          ' /tmp/wp-content-ftp-listing.log
+          echo "FTP_ROOT=wp-content"
+          echo "FTP_INITIAL_PWD=/ (FTP chroot root; host/port suppressed)"
+          echo "WP_CONTENT_FTP_PATH_RESOLVED=."
           echo "FTP_ROOT_CONTENTS_BEGIN"
-          sed -n '1,180p' /tmp/wp-content-ftp-listing.log
+          sed -E '/^[^ ]+:[0-9]+\/?$/d; s#ftp://[^ ]+#ftp://[redacted]#g' /tmp/wp-content-root.log
           echo "FTP_ROOT_CONTENTS_END"
 
-          # Resolve candidate directories relative to the configured chroot path.
-          # Directory presence is checked using a fresh read-only listing for each candidate.
-          resolve_dir() {
-            candidate="$1"
-            probe="$(mktemp)"
-            probe_script="$(mktemp)"
-            {
-              printf 'set ftp:ssl-force true\n'
-              printf 'set ftp:ssl-protect-data true\n'
-              printf 'set ssl:verify-certificate true\n'
-              printf 'set ftp:passive-mode true\n'
-              printf 'set net:max-retries 2\n'
-              printf 'set net:timeout 20\n'
-              printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
-              if [ "$BASE_PATH" = "." ]; then printf 'cd .\n'; else printf 'cd "%s"\n' "$BASE_PATH"; fi
-              printf 'cd "%s"\n' "$candidate"
-              printf 'pwd\n'
-              printf 'cls -la\n'
-              printf 'bye\n'
-            } > "$probe_script"
-            if lftp -f "$probe_script" > "$probe" 2>&1; then
-              rm -f "$probe" "$probe_script"
-              printf '%s' "$candidate"
-              return 0
-            fi
-            rm -f "$probe" "$probe_script"
-            return 1
-          }
-
-          PLUGINS_PATH=""
-          MU_PLUGINS_PATH=""
-          for candidate in plugins wp-content/plugins; do
-            if PLUGINS_PATH="$(resolve_dir "$candidate")"; then break; fi
-          done
-          for candidate in mu-plugins wp-content/mu-plugins; do
-            if MU_PLUGINS_PATH="$(resolve_dir "$candidate")"; then break; fi
-          done
-
-          echo "WP_CONTENT_FTP_PATH_RESOLVED=$BASE_PATH"
-          echo "PLUGINS_PATH=${PLUGINS_PATH:-NOT_FOUND}"
-          echo "MU_PLUGINS_PATH=${MU_PLUGINS_PATH:-NOT_FOUND}"
-
-          if [ -z "$PLUGINS_PATH" ]; then
-            echo "PLUGIN_SCAN=SKIPPED_NO_PLUGINS_DIRECTORY"
-            exit 0
-          fi
-
-          DOWNLOAD_SCRIPT="$(mktemp)"
-          trap 'rm -f "$SCRIPT" "$DOWNLOAD_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
+          # Validate only the two confirmed relative directories.
           {
             printf 'set ftp:ssl-force true\n'
             printf 'set ftp:ssl-protect-data true\n'
@@ -144,12 +77,33 @@ jobs:
             printf 'set ftp:passive-mode true\n'
             printf 'set net:max-retries 2\n'
             printf 'set net:timeout 20\n'
+            printf 'set cmd:fail-exit yes\n'
             printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
-            if [ "$BASE_PATH" = "." ]; then printf 'cd .\n'; else printf 'cd "%s"\n' "$BASE_PATH"; fi
-            printf 'mirror --verbose=0 --include-glob=*.php --exclude-glob=* "%s" "%s/plugins"\n' "$PLUGINS_PATH" "$WORK"
-            if [ -n "$MU_PLUGINS_PATH" ]; then
-              printf 'mirror --verbose=0 --include-glob=*.php --exclude-glob=* "%s" "%s/mu-plugins"\n' "$MU_PLUGINS_PATH" "$WORK"
-            fi
+            printf 'cd .\n'
+            printf 'cls -la plugins\n'
+            printf 'cls -la mu-plugins\n'
+            printf 'bye\n'
+          } > "$DOWNLOAD_SCRIPT"
+          lftp -f "$DOWNLOAD_SCRIPT" > /tmp/wp-content-dir-listing.log 2>&1
+          echo "PLUGINS_PATH=plugins/"
+          echo "MU_PLUGINS_PATH=mu-plugins/"
+          echo "RELATIVE_PLUGIN_LISTINGS_BEGIN"
+          sed -E '/^[^ ]+:[0-9]+\/?$/d; s#ftp://[^ ]+#ftp://[redacted]#g' /tmp/wp-content-dir-listing.log | head -n 200
+          echo "RELATIVE_PLUGIN_LISTINGS_END"
+
+          # Download PHP files only; no remote write commands are issued.
+          {
+            printf 'set ftp:ssl-force true\n'
+            printf 'set ftp:ssl-protect-data true\n'
+            printf 'set ssl:verify-certificate true\n'
+            printf 'set ftp:passive-mode true\n'
+            printf 'set net:max-retries 2\n'
+            printf 'set net:timeout 20\n'
+            printf 'set cmd:fail-exit yes\n'
+            printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
+            printf 'cd .\n'
+            printf 'mirror --verbose=0 --include-glob=*.php --exclude-glob=* plugins "$WORK/plugins"\n'
+            printf 'mirror --verbose=0 --include-glob=*.php --exclude-glob=* mu-plugins "$WORK/mu-plugins"\n'
             printf 'bye\n'
           } > "$DOWNLOAD_SCRIPT"
           lftp -f "$DOWNLOAD_SCRIPT"
@@ -177,6 +131,13 @@ jobs:
           fi
 
           echo "FILTER_API_IMPLEMENTATION_FOUND=YES"
-          echo "ENDPOINT_LOCAL_FILE=$MATCH"
-          echo "===== MATCHING FILE (SOURCE FOR ANALYSIS) ====="
-          nl -ba "$MATCH" | sed -n '1,320p'
+          RELATIVE_FILE="${MATCH#"$ROOT"/}"
+          echo "PLUGIN_PATH=${RELATIVE_FILE%%/*}/"
+          echo "PLUGIN_NAME=${RELATIVE_FILE%%/*}"
+          echo "ENDPOINT_FILE=$RELATIVE_FILE"
+          echo "===== MATCHING SOURCE ====="
+          nl -ba "$MATCH" | sed -n '1,360p'
+          echo "===== REST ROUTE AND CALLBACK CONTEXT ====="
+          grep -Rni --include='*.php' -C 12 'criosrango-filter/v1' "$ROOT" || true
+          echo "===== CALLBACK PERFORMANCE SIGNALS ====="
+          grep -Rni --include='*.php' -E 'WP_Query|wc_get_products|wc_get_product|variations|get_available_variations|get_children|get_post_meta|update_post_meta|get_transient|set_transient|wp_cache_(get|set)|wc_product_attributes_lookup|\$wpdb' "$(dirname "$MATCH")" || true
