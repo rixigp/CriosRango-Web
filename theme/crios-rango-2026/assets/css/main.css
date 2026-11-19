@@ -3333,7 +3333,7 @@ body.cr-parent-category-view .cr-parent-category__grid,
   min-height: 64px;
   margin: 0 0 14px;
 }
-.cr-page-toolbar--title-filters .cr-parent-category__back {
+.cr-page-toolbar--title-filters > a:first-child {
   flex: 0 0 48px;
 }
 .cr-page-toolbar--title-filters .cr-parent-category__title {

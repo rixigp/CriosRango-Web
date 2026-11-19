@@ -89,6 +89,6 @@ test('FILTER_ONLY_TOOLBAR_USES_ONE_SHARED_TITLE_AND_FILTERS_ROW', () => {
 
   const main = read('assets/css/main.css');
   assert.match(main, /\.cr-page-toolbar--title-filters \{[^}]*display: flex;[^}]*align-items: center;[^}]*justify-content: space-between;[^}]*gap: 4px;/s);
-  assert.match(main, /\.cr-page-toolbar--title-filters \.cr-parent-category__back \{[^}]*flex: 0 0 48px;/s);
+  assert.match(main, /\.cr-page-toolbar--title-filters > a:first-child \{[^}]*flex: 0 0 48px;/s);
   assert.match(main, /\.cr-page-toolbar--title-filters \.cr-parent-category__title \{[^}]*flex: 1 1 auto;/s);
 });
