@@ -41,15 +41,13 @@ jobs:
           SCRIPT="$(mktemp)"
           trap 'rm -f "$SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
 
-          BASE="${WP_CONTENT_FTP_PATH%/}"
-          case "$BASE" in
-            */wp-content) ;;
-            *) BASE="$BASE/wp-content" ;;
-          esac
-          export BASE
+          # WP_CONTENT_FTP_PATH is listed verbatim first; production wp-content is then
+          # resolved from the documented production root (/public/wp-content).
+          CONFIGURED_PATH="${WP_CONTENT_FTP_PATH%/}"
+          BASE=/public/wp-content
+          export BASE CONFIGURED_PATH
 
           {
-            printf 'set cmd:fail-exit yes\n'
             printf 'set ftp:ssl-force true\n'
             printf 'set ftp:ssl-protect-data true\n'
             printf 'set ssl:verify-certificate true\n'
@@ -57,6 +55,8 @@ jobs:
             printf 'set net:max-retries 2\n'
             printf 'set net:timeout 20\n'
             printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
+            printf 'cls -la /public\n'
+            printf 'cls -la "%s"\n' "$CONFIGURED_PATH"
             printf 'cls -la "%s"\n' "$BASE"
             printf 'cls -la "%s/plugins"\n' "$BASE"
             printf 'cls -la "%s/mu-plugins"\n' "$BASE"
