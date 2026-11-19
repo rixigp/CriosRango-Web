@@ -15,7 +15,7 @@ $cart_empty_action = cr2026_cart_empty_action_markup();
 <section class="cr-cart-page" aria-labelledby="cr-cart-title">
     <div class="cr-cart-header-shell">
         <?php if ( empty( $GLOBALS['cr2026_cart_toolbar_rendered_by_page'] ) ) : ?>
-            <?php cr2026_render_category_toolbar( __( 'Tu carrito', 'crios-rango-2026' ), wc_get_page_permalink( 'shop' ), 'cart', false, $cart_empty_action, 'cr-cart-title' ); ?>
+            <?php cr2026_render_category_toolbar( __( 'Tu carrito', 'crios-rango-2026' ), wc_get_page_permalink( 'shop' ), 'cart', false, '', 'cr-cart-title' ); ?>
         <?php endif; ?>
     </div>
     <div class="cr-cart-content">
@@ -185,6 +185,7 @@ $cart_empty_action = cr2026_cart_empty_action_markup();
                 <?php do_action( 'woocommerce_before_cart_collaterals' ); ?>
                 <aside class="cart-collaterals cr-cart-summary" aria-label="<?php esc_attr_e( 'Resumen del carrito', 'crios-rango-2026' ); ?>">
                     <?php do_action( 'woocommerce_cart_collaterals' ); ?>
+                    <?php echo $cart_empty_action; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 </aside>
             </div>
         </div>
