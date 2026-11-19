@@ -1002,6 +1002,7 @@ body.woocommerce-cart .cr-cart-promotions__available {
   margin: 0;
 }
 
+/* Consecutive promotion cards own their 12px separation; the list layout stays unchanged. */
 .cr-cart-promo-card + .cr-cart-promo-card {
   margin-top: 12px;
 }
