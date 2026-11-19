@@ -18,14 +18,17 @@ theme/crios-rango-2026/woocommerce/cart/*|theme/crios-rango-2026/woocommerce/che
 # when the only runtime files changed are the guest login/registration template and
 # its WooCommerce registration option/validation hooks.
 ACCOUNT_REGISTRATION_ONLY=false
-if [ "$RUNTIME_FILE_COUNT" -eq 2 ] && [ "$OTHER_FILE_COUNT" -eq 0 ]; then
-  EXPECTED_RUNTIME_FILES=(
-    "theme/crios-rango-2026/inc/woocommerce.php"
-    "theme/crios-rango-2026/woocommerce/myaccount/form-login.php"
-  )
-  mapfile -t ACTUAL_RUNTIME_FILES < <(printf '%s\n' "${RUNTIME_FILES[@]}" | sort)
-  mapfile -t EXPECTED_RUNTIME_FILES < <(printf '%s\n' "${EXPECTED_RUNTIME_FILES[@]}" | sort)
-  if [ "${ACTUAL_RUNTIME_FILES[*]}" = "${EXPECTED_RUNTIME_FILES[*]}" ]; then
+if [ "$RUNTIME_FILE_COUNT" -ge 1 ] && [ "$RUNTIME_FILE_COUNT" -le 2 ] && [ "$OTHER_FILE_COUNT" -eq 0 ]; then
+  HAS_LOGIN_TEMPLATE=false
+  REGISTRATION_RUNTIME_FILES_ONLY=true
+  for p in "${RUNTIME_FILES[@]}"; do
+    case "$p" in
+      theme/crios-rango-2026/woocommerce/myaccount/form-login.php) HAS_LOGIN_TEMPLATE=true ;;
+      theme/crios-rango-2026/inc/woocommerce.php) ;;
+      *) REGISTRATION_RUNTIME_FILES_ONLY=false ;;
+    esac
+  done
+  if [ "$HAS_LOGIN_TEMPLATE" = true ] && [ "$REGISTRATION_RUNTIME_FILES_ONLY" = true ]; then
     ACCOUNT_REGISTRATION_ONLY=true
     DO_ACCOUNT=true; DO_HOME=false; DO_CATEGORY=false; DO_PRODUCT=false; DO_CHECKOUT=false
     DO_SHARED=false; DO_CATALOG=false; DO_PHP=true

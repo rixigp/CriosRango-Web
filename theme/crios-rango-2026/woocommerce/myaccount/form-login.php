@@ -18,6 +18,7 @@ $is_register_view = function_exists( 'cr2026_account_guest_register_view' )
 
 <?php if ( $is_register_view ) : ?>
 
+<!-- Keep the native registration form confined to the dedicated Create Account view. -->
 <?php if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) : ?>
     <form method="post" class="woocommerce-form woocommerce-form-register register cr-account-register" <?php do_action( 'woocommerce_register_form_tag' ); ?> aria-label="<?php esc_attr_e( 'Crear cuenta', 'crios-rango-2026' ); ?>">
         <?php do_action( 'woocommerce_register_form_start' ); ?>

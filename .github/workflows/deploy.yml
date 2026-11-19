@@ -448,6 +448,8 @@ jobs:
             if [ -z "${SEEN[$file]+x}" ]; then TESTS+=("$file"); SEEN[$file]=1; fi
           done <<< "$SELECTED_TEST_FILES"
 
+          [ "$ACCOUNT_REGISTRATION_ONLY" = true ] && add_glob 'tests/account-registration-view-contract.test.cjs'
+
           if [ "$FULL_REGRESSION" = true ]; then
             mapfile -t TESTS < <(find tests -maxdepth 1 -type f -name '*.test.cjs' | sort)
           else
