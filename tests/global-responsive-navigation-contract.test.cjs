@@ -96,8 +96,9 @@ test('TABLET_NAV_SCALE_ISOLATED_FROM_MOBILE_CONTENT_AND_DESKTOP=PASS', () => {
   const marker = '/* TABLET GLOBAL NAVIGATION SCALE — visual-only; keep the 1280px mode switch intact. */';
   const start = css.indexOf(marker);
   assert.notEqual(start, -1, 'tablet navigation scale layer exists');
-  const layer = css.slice(start);
-  assert.match(layer, /^\/\* TABLET GLOBAL NAVIGATION SCALE[\s\S]*?@media \(min-width: 768px\) and \(max-width: 1279px\)/);
+  // Inspect only the tablet media block. Slicing to EOF also captured later,
+  // unrelated desktop/account/product rules and produced false positives.
+  const layer = intermediateScale;
   assert.doesNotMatch(layer, /\.cr-brand|\.custom-logo|\.cr-desktop-rail|\.cr-product|\.cr-account|\.cr-filter|\.woocommerce/);
   assert.match(layer, /\.cr-mobile-bottom-nav\.cr-app-bottom-nav/);
   assert.match(layer, /\.cr-app-header \.cr-app-icon-button/);

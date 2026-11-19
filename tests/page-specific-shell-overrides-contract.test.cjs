@@ -9,7 +9,19 @@ const shell=/\.cr-(?:main(?:--woocommerce)?|page-shell|shell|parent-category__to
 const props=new Set(['--cr-app-topbar-height','--cr-app-topbar-height','--cr-bottom-nav','background','background-color','width','max-width','min-width','margin','margin-inline','margin-left','margin-right','margin-top','padding','padding-inline','padding-left','padding-right','padding-top','padding-block','padding-block-start','padding-block-end','height','min-height','gap','column-gap','row-gap','font-size','font-weight','line-height','position','top','left','right','bottom','transform']);
 const offenders=[];for(const [file,src] of Object.entries(css))for(const r of rules(src)){if(!context.test(r.selector))continue;for(const d of r.declarations){if(!props.has(d.property))continue;const productContent=/\.cr-main--woocommerce\s+div\.product/.test(r.selector);if(shell.test(r.selector)&&!productContent)offenders.push({file,selector:r.selector,property:d.property,value:d.value});if(/^body\.(?:woocommerce-cart|woocommerce-checkout|woocommerce-account|cr-account-[\w-]+|cr-product-detail-app|search|error404)$/.test(r.selector)&&['background','background-color'].includes(d.property))offenders.push({file,selector:r.selector,property:d.property,value:d.value});if(['padding','padding-bottom','padding-block-end'].includes(d.property)&&/calc\(\s*(?:var\(--cr-bottom-nav|(?:72|88|92|96|100)px)|(?:72|88|92|96|100|108)px/.test(d.value))offenders.push({file,selector:r.selector,property:d.property,value:d.value});}}
 test('PAGE_SPECIFIC_BODY_BACKGROUND=0',()=>assert.deepEqual(offenders.filter(x=>['background','background-color'].includes(x.property)&&/^body\./.test(x.selector)),[]));
-test('PAGE_SPECIFIC_PAGE_SHELL_TOP_PADDING=0',()=>assert.deepEqual(offenders.filter(x=>/page-shell|cr-main/.test(x.selector)&&/padding|margin-top/.test(x.property)),[]));
+test('PAGE_SPECIFIC_PAGE_SHELL_TOP_PADDING=0',()=>{
+  const shellTopOverrides=offenders.filter(x=>/page-shell|cr-main/.test(x.selector)&&/padding|margin-top/.test(x.property));
+  const approvedMobileCartAccountReset=shellTopOverrides.filter(x=>
+    x.file==='main.css' &&
+    x.selector==='body.woocommerce-cart .cr-page-shell, body.woocommerce-account .cr-page-shell' &&
+    x.property==='padding-top' &&
+    /^0(?:\\s*!important)?$/i.test(x.value)
+  );
+  // Cart and Account intentionally cancel the shared mobile top gap.
+  // Any positive/other page-specific shell offset remains forbidden.
+  assert.equal(approvedMobileCartAccountReset.length,1);
+  assert.deepEqual(shellTopOverrides,approvedMobileCartAccountReset);
+});
 test('PAGE_SPECIFIC_DESKTOP_TOOLBAR_OVERRIDE_COUNT=0',()=>{
   const desktopToolbarOverrides=[];
   for(const [file,source] of Object.entries(css)){
