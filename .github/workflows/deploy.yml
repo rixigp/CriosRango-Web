@@ -15,6 +15,7 @@ on:
     paths:
       - "theme/**"
       - "tests/**"
+      - "scripts/**"
       - ".github/workflows/deploy.yml"
 
 permissions:
@@ -43,195 +44,19 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-
           HEAD_SHA="$GITHUB_SHA"
           BASE_SHA="$EVENT_BEFORE"
           ZERO_SHA="0000000000000000000000000000000000000000"
-          FORCE_FULL=false
-          WORKFLOW_CHANGED=false
-          DIFF_FAILED=false
-
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            FORCE_FULL=true
-            BASE_SHA="MANUAL_FULL"
-          elif [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "$ZERO_SHA" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
-            FORCE_FULL=true
-            DIFF_FAILED=true
-            BASE_SHA="SAFE_FULL_FALLBACK"
-          fi
-
-          if [ "$FORCE_FULL" = true ]; then
             mapfile -t CHANGED < <(git ls-files | sort -u)
+          elif [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "$ZERO_SHA" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            echo "ERROR: changed-file baseline unavailable; refusing classification."; exit 1
           else
-            if ! CHANGED_TEXT="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"; then
-              FORCE_FULL=true
-              DIFF_FAILED=true
-              BASE_SHA="SAFE_FULL_FALLBACK"
-              mapfile -t CHANGED < <(git ls-files | sort -u)
-            else
-              mapfile -t CHANGED < <(printf '%s\n' "$CHANGED_TEXT" | sed '/^$/d' | sort -u)
-            fi
+            mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | sed '/^$/d' | sort -u)
           fi
-
-          if [ "${#CHANGED[@]}" -eq 0 ]; then
-            CHANGED=("NO_FILES_CHANGED")
-            FORCE_FULL=true
-            DIFF_FAILED=true
-          fi
-
-          DO_ACCOUNT=false
-          DO_HOME=false
-          DO_CATEGORY=false
-          DO_PRODUCT=false
-          DO_CHECKOUT=false
-          DO_SHARED=false
-          DO_CATALOG=false
-          DO_PHP=false
-          for path in "${CHANGED[@]}"; do
-            [ "$path" = "NO_FILES_CHANGED" ] && continue
-            case "$path" in
-              .github/workflows/*)
-                WORKFLOW_CHANGED=true
-                ;;
-              theme/crios-rango-2026/assets/css/main.css|theme/crios-rango-2026/assets/css/visual-system.css|theme/crios-rango-2026/assets/css/controls.css|theme/crios-rango-2026/functions.php|theme/crios-rango-2026/inc/assets.php|theme/crios-rango-2026/inc/navigation.php|theme/crios-rango-2026/inc/*shell*|theme/crios-rango-2026/inc/*header*|theme/crios-rango-2026/inc/*sidebar*|theme/crios-rango-2026/inc/*navigation*|theme/crios-rango-2026/header.php|theme/crios-rango-2026/sidebar.php|theme/crios-rango-2026/navigation.php|theme/crios-rango-2026/template-parts/*header*|theme/crios-rango-2026/template-parts/*sidebar*|theme/crios-rango-2026/template-parts/*shell*|theme/crios-rango-2026/assets/css/*header*.css|theme/crios-rango-2026/assets/css/*sidebar*.css|theme/crios-rango-2026/assets/css/*shell*.css|tests/global-*|tests/canonical-controls-contract.test.cjs|tests/page-title-contract.test.cjs|tests/desktop-geometry-contract.test.cjs|tests/canonical-customer-shell-contract.test.cjs|tests/page-specific-shell-overrides-contract.test.cjs)
-                DO_SHARED=true
-                ;;
-              theme/crios-rango-2026/woocommerce/myaccount/*|theme/crios-rango-2026/inc/account-*.php|theme/crios-rango-2026/assets/css/account.css|theme/crios-rango-2026/assets/js/account-*.js|tests/account-*)
-                DO_ACCOUNT=true
-                ;;
-              theme/crios-rango-2026/front-page.php|theme/crios-rango-2026/assets/css/home*.css|theme/crios-rango-2026/assets/js/home*.js|tests/home-*)
-                DO_HOME=true
-                ;;
-              theme/crios-rango-2026/woocommerce/single-product/*|theme/crios-rango-2026/woocommerce/content-single-product.php|theme/crios-rango-2026/assets/css/product-detail*.css|theme/crios-rango-2026/assets/js/product-*.js|tests/product-*)
-                DO_PRODUCT=true
-                ;;
-              theme/crios-rango-2026/woocommerce/archive-product.php|theme/crios-rango-2026/woocommerce/taxonomy-product_cat.php|theme/crios-rango-2026/woocommerce/content-product.php|theme/crios-rango-2026/inc/catalog-*|theme/crios-rango-2026/inc/product-query*|theme/crios-rango-2026/inc/*catalog*|theme/crios-rango-2026/assets/js/catalog*.js|theme/crios-rango-2026/assets/css/catalog*.css|theme/crios-rango-2026/woocommerce/loop/*|tests/catalog-*)
-                DO_CATALOG=true
-                DO_CATEGORY=true
-                DO_PRODUCT=true
-                ;;
-              theme/crios-rango-2026/assets/css/category*.css|theme/crios-rango-2026/assets/js/category*.js|tests/category-*)
-                DO_CATEGORY=true
-                ;;
-              theme/crios-rango-2026/woocommerce/cart/*|theme/crios-rango-2026/woocommerce/checkout/*|theme/crios-rango-2026/assets/css/checkout*.css|theme/crios-rango-2026/assets/js/checkout*.js|tests/checkout-*|tests/cart-promotions-contract.test.cjs)
-                DO_CHECKOUT=true
-                ;;
-              *.php)
-                DO_PHP=true
-                DO_SHARED=true
-                ;;
-              *)
-                # Unknown paths are conservative SHARED changes, never fatal.
-                DO_SHARED=true
-                ;;
-            esac
-          done
-
-          DOMAIN_COUNT=0
-          for flag in "$DO_ACCOUNT" "$DO_HOME" "$DO_CATEGORY" "$DO_PRODUCT" "$DO_CHECKOUT"; do
-            if [ "$flag" = true ]; then DOMAIN_COUNT=$((DOMAIN_COUNT + 1)); fi
-          done
-
-          FULL=false
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$WORKFLOW_CHANGED" = true ] || [ "$FORCE_FULL" = true ] || [ "$DOMAIN_COUNT" -gt 1 ]; then
-            FULL=true
-          fi
-
-          if [ "$FULL" = true ]; then
-            if [ "$WORKFLOW_CHANGED" = true ]; then
-              SCOPE="CI_VALIDATION/FULL"
-            else
-              SCOPE="FULL"
-            fi
-            DO_ACCOUNT=true
-            DO_HOME=true
-            DO_CATEGORY=true
-            DO_PRODUCT=true
-            DO_CHECKOUT=true
-            DO_SHARED=true
-            DO_PHP=true
-          elif [ "$DO_SHARED" = true ]; then
-            SCOPE="SHARED"
-          elif [ "$DO_ACCOUNT" = true ]; then SCOPE="ACCOUNT_ONLY"
-          elif [ "$DO_HOME" = true ]; then SCOPE="HOME_ONLY"
-          elif [ "$DO_CATEGORY" = true ]; then SCOPE="CATEGORY_ONLY"
-          elif [ "$DO_PRODUCT" = true ]; then SCOPE="PRODUCT_ONLY"
-          elif [ "$DO_CHECKOUT" = true ]; then SCOPE="CHECKOUT_ONLY"
-          else
-            SCOPE="SHARED"
-            DO_SHARED=true
-          fi
-
-          RUN_CATALOG_BENCHMARK=false
-          if [ "$DO_CATALOG" = true ] || [ "$FULL" = true ]; then RUN_CATALOG_BENCHMARK=true; fi
-          RUN_GLOBAL_SHELL="$DO_SHARED"
-          if [ "$DO_ACCOUNT" = true ] || [ "$DO_CHECKOUT" = true ] || [ "$DO_PHP" = true ] || [ "$FULL" = true ]; then DO_PHP=true; fi
-
-          {
-            echo "base_sha=$BASE_SHA"
-            echo "head_sha=$HEAD_SHA"
-            echo "scope=$SCOPE"
-            echo "run_account=$DO_ACCOUNT"
-            echo "run_home=$DO_HOME"
-            echo "run_category=$DO_CATEGORY"
-            echo "run_product=$DO_PRODUCT"
-            echo "run_checkout=$DO_CHECKOUT"
-            echo "run_global_shell=$RUN_GLOBAL_SHELL"
-            echo "run_php=$DO_PHP"
-            echo "run_catalog_benchmark=$RUN_CATALOG_BENCHMARK"
-            echo "full_regression=$FULL"
-            echo "workflow_changed=$WORKFLOW_CHANGED"
-            echo "run_account_browser=$DO_ACCOUNT"
-            echo "run_home_browser=$DO_HOME"
-            echo "run_category_browser=$DO_CATEGORY"
-            echo "run_product_browser=$DO_PRODUCT"
-            echo "run_checkout_browser=$DO_CHECKOUT"
-            echo "changed_files<<CRIOS_CHANGED_FILES"
-            printf '%s\n' "${CHANGED[@]}"
-            echo "CRIOS_CHANGED_FILES"
-          } >> "$GITHUB_OUTPUT"
-
-          echo "BASE_SHA=$BASE_SHA"
-          echo "HEAD=$HEAD_SHA"
-          printf 'CHANGED_FILES=%s\n' "$(printf '%s,' "${CHANGED[@]}" | sed 's/,$//')"
-          echo "CI_SCOPE=$SCOPE"
-          echo "RUN_ACCOUNT=$DO_ACCOUNT"
-          echo "RUN_HOME=$DO_HOME"
-          echo "RUN_CATEGORY=$DO_CATEGORY"
-          echo "RUN_PRODUCT=$DO_PRODUCT"
-          echo "RUN_CHECKOUT=$DO_CHECKOUT"
-          echo "RUN_GLOBAL_SHELL=$RUN_GLOBAL_SHELL"
-          echo "RUN_PHP=$DO_PHP"
-          echo "RUN_CATALOG_BENCHMARK=$RUN_CATALOG_BENCHMARK"
-          echo "FULL_REGRESSION=$FULL"
-
-          RUN=()
-          SKIPPED=()
-          [ "$DO_ACCOUNT" = true ] && RUN+=(account-contracts account-browser) || SKIPPED+=(account)
-          [ "$DO_HOME" = true ] && RUN+=(home-contracts home-browser) || SKIPPED+=(home)
-          [ "$DO_CATEGORY" = true ] && RUN+=(category-contracts category-browser) || SKIPPED+=(category)
-          [ "$DO_PRODUCT" = true ] && RUN+=(product-contracts product-browser) || SKIPPED+=(product)
-          [ "$DO_CHECKOUT" = true ] && RUN+=(checkout-contracts checkout-browser) || SKIPPED+=(checkout)
-          [ "$RUN_GLOBAL_SHELL" = true ] && RUN+=(global-shell global-shell-browser) || SKIPPED+=(global-shell)
-          [ "$DO_PHP" = true ] && RUN+=(php) || SKIPPED+=(php)
-          [ "$RUN_CATALOG_BENCHMARK" = true ] && RUN+=(catalog-benchmark) || SKIPPED+=(benchmark)
-          [ "$FULL" = true ] && RUN+=(full-regression)
-          RUN+=(theme-structure deploy sha)
-          RUN_LIST="$(IFS=,; printf '%s' "${RUN[*]}")"
-          SKIPPED_LIST="$(IFS=,; printf '%s' "${SKIPPED[*]}")"
-
-          echo "BASE_SHA=$BASE_SHA"
-          echo "HEAD=$HEAD_SHA"
-          echo "WORKFLOW_CHANGED=$WORKFLOW_CHANGED"
-          echo "CI_SCOPE=$SCOPE" >> "$GITHUB_STEP_SUMMARY"
-          echo "RUN=[$RUN_LIST]" >> "$GITHUB_STEP_SUMMARY"
-          echo "SKIPPED=[$SKIPPED_LIST]" >> "$GITHUB_STEP_SUMMARY"
-          echo "BASE_SHA=$BASE_SHA" >> "$GITHUB_STEP_SUMMARY"
-          echo "HEAD=$HEAD_SHA" >> "$GITHUB_STEP_SUMMARY"
-          echo "WORKFLOW_CHANGED=$WORKFLOW_CHANGED" >> "$GITHUB_STEP_SUMMARY"
-          echo "CHANGED_FILES:" >> "$GITHUB_STEP_SUMMARY"
-          printf -- '- %s\n' "${CHANGED[@]}" >> "$GITHUB_STEP_SUMMARY"
-
+          if [ "${#CHANGED[@]}" -eq 0 ]; then echo "ERROR: no changed files detected."; exit 1; fi
+          export BASE_SHA HEAD_SHA
+          scripts/detect-impact.sh "${CHANGED[@]}"
       - name: Bootstrap theme 0.2.0 if missing
         shell: bash
         run: |
@@ -591,7 +416,7 @@ jobs:
           done
 
       - name: Run impact-selected Node contracts
-        if: steps.impact.outputs.full_regression == 'true' || steps.impact.outputs.run_account == 'true' || steps.impact.outputs.run_home == 'true' || steps.impact.outputs.run_category == 'true' || steps.impact.outputs.run_product == 'true' || steps.impact.outputs.run_checkout == 'true' || steps.impact.outputs.run_global_shell == 'true' || steps.impact.outputs.run_catalog_benchmark == 'true'
+        if: steps.impact.outputs.selected_test_files != '' || steps.impact.outputs.full_regression == 'true' || steps.impact.outputs.run_account == 'true' || steps.impact.outputs.run_home == 'true' || steps.impact.outputs.run_category == 'true' || steps.impact.outputs.run_product == 'true' || steps.impact.outputs.run_checkout == 'true' || steps.impact.outputs.run_global_shell == 'true' || steps.impact.outputs.run_catalog_benchmark == 'true'
         shell: bash
         env:
           FULL_REGRESSION: ${{ steps.impact.outputs.full_regression }}
@@ -602,6 +427,7 @@ jobs:
           RUN_CHECKOUT: ${{ steps.impact.outputs.run_checkout }}
           RUN_GLOBAL_SHELL: ${{ steps.impact.outputs.run_global_shell }}
           RUN_CATALOG: ${{ steps.impact.outputs.run_catalog_benchmark }}
+          SELECTED_TEST_FILES: ${{ steps.impact.outputs.selected_test_files }}
         run: |
           set -euo pipefail
           declare -a TESTS=()
@@ -615,6 +441,11 @@ jobs:
               done
             done
           }
+
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            if [ -z "${SEEN[$file]+x}" ]; then TESTS+=("$file"); SEEN[$file]=1; fi
+          done <<< "$SELECTED_TEST_FILES"
 
           if [ "$FULL_REGRESSION" = true ]; then
             mapfile -t TESTS < <(find tests -maxdepth 1 -type f -name '*.test.cjs' | sort)
@@ -691,6 +522,7 @@ jobs:
           echo "THEME_STRUCTURE=PASS"
 
       - name: Check exact PR13 staging HEAD compatibility and PR14 staging HEAD
+        if: steps.impact.outputs.scope != 'TEST_ONLY' && steps.impact.outputs.scope != 'CI_VALIDATION'
         id: staging-head
         shell: bash
         run: |
@@ -1107,7 +939,7 @@ jobs:
           fi
 
       - name: Verify remote staging build.json SHA
-        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && steps.staging-head.outputs.current == 'true'
+        if: (github.ref == 'refs/heads/fix/catalog-runtime-parity' || github.ref == 'refs/heads/fix/category-grid-app-parity' || github.ref == 'refs/heads/feat/outlet-bubbles' || github.ref == 'refs/heads/feat/wp-login-branding' || github.ref == 'refs/heads/style/product-detail-app-skin') && steps.staging-head.outputs.current == 'true' && steps.impact.outputs.scope != 'TEST_ONLY' && steps.impact.outputs.scope != 'CI_VALIDATION'
         shell: bash
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
