@@ -40,12 +40,29 @@
       summaryColumn.appendChild(reviewTable);
     }
 
-    // Move only the shipping presentation; the review table remains the AJAX target.
+    // WooCommerce replaces the review table on every order-review fragment refresh.
+    // The previous section was moved outside that fragment, so discard it before
+    // adopting the freshly rendered section from the replacement table.
     var shippingRow = reviewTable && reviewTable.querySelector('.cr-checkout-shipping-section-row');
     var shippingSection = shippingRow && shippingRow.querySelector('.cr-checkout-shipping-section');
-    if (shippingSection) {
-      shippingColumn.insertBefore(shippingSection, customerShipping || null);
+    function removeStaleShippingSections(currentSection) {
+      Array.prototype.slice.call(shippingColumn.querySelectorAll(':scope > .cr-checkout-shipping-section'))
+        .forEach(function (existingSection) {
+          if (existingSection !== currentSection) existingSection.remove();
+        });
+    }
+
+    if (shippingRow) {
+      removeStaleShippingSections(shippingSection);
+      if (shippingSection) {
+        shippingColumn.insertBefore(shippingSection, customerShipping || null);
+      }
       shippingRow.remove();
+      reviewTable.dataset.crCheckoutShippingLayoutProcessed = 'true';
+    } else if (reviewTable && reviewTable.dataset.crCheckoutShippingLayoutProcessed !== 'true') {
+      // A fresh fragment with no shipping row means shipping is no longer required.
+      removeStaleShippingSections(null);
+      reviewTable.dataset.crCheckoutShippingLayoutProcessed = 'true';
     }
 
     // Payment stays native; its fragment can still be replaced by WooCommerce.

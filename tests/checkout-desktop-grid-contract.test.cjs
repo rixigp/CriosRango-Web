@@ -57,6 +57,17 @@ test('layout grouping preserves native review and payment fragments across check
   assert.doesNotMatch(checkoutLayoutJs, /preventDefault\(|\.trigger\(|radio\.(?:value|checked)\s*=|#place_order/);
 });
 
+
+test('shipping fragment refresh replaces the moved section instead of accumulating stale copies', () => {
+  assert.match(checkoutLayoutJs, /function removeStaleShippingSections\(currentSection\)/);
+  assert.match(checkoutLayoutJs, /shippingColumn\.querySelectorAll\(':scope > \.cr-checkout-shipping-section'\)/);
+  assert.match(checkoutLayoutJs, /if \(existingSection !== currentSection\) existingSection\.remove\(\)/);
+  assert.match(checkoutLayoutJs, /reviewTable\.dataset\.crCheckoutShippingLayoutProcessed = 'true'/);
+  assert.match(checkoutLayoutJs, /reviewTable\.dataset\.crCheckoutShippingLayoutProcessed !== 'true'/);
+  assert.match(checkoutLayoutJs, /updated_checkout\.crCheckoutLayout/);
+  assert.doesNotMatch(checkoutLayoutJs, /cloneNode\s*\(/);
+});
+
 test('desktop layout script is enqueued with the existing checkout-only assets', () => {
   assert.match(assets, /cr2026-checkout-desktop-layout/);
   assert.match(assets, /assets\/js\/checkout-desktop-layout\.js/);
