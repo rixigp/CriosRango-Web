@@ -1485,3 +1485,96 @@ function cr2026_cecabank_redirect_loading_ui( $order_id ) {
         . '</div></section>';
 }
 add_action( 'woocommerce_receipt_cecabank_gateway', 'cr2026_cecabank_redirect_loading_ui', 1, 1 );
+
+
+
+/**
+ * Use WooCommerce's own registration handler, nonce, customer factory and
+ * registration hooks while exposing the account fields required by the app.
+ */
+function cr2026_account_is_registration_request() {
+    if ( is_user_logged_in() || ! function_exists( 'is_account_page' ) || ! is_account_page() ) {
+        return false;
+    }
+    if ( function_exists( 'cr2026_account_guest_register_view' ) && cr2026_account_guest_register_view() ) {
+        return true;
+    }
+    return isset( $_POST['register'], $_POST['woocommerce-register-nonce'] );
+}
+
+/** Enable native registration only on the dedicated registration view/request. */
+function cr2026_account_registration_native_options( $pre_option ) {
+    return cr2026_account_is_registration_request() ? 'yes' : $pre_option;
+}
+add_filter( 'pre_option_woocommerce_enable_myaccount_registration', 'cr2026_account_registration_native_options', 1 );
+
+/** The form has no separate username field: WooCommerce derives it from email. */
+function cr2026_account_registration_generate_username( $pre_option ) {
+    return cr2026_account_is_registration_request() ? 'yes' : $pre_option;
+}
+add_filter( 'pre_option_woocommerce_registration_generate_username', 'cr2026_account_registration_generate_username', 1 );
+
+/** Use the password entered in the native WooCommerce registration form. */
+function cr2026_account_registration_generate_password( $pre_option ) {
+    return cr2026_account_is_registration_request() ? 'no' : $pre_option;
+}
+add_filter( 'pre_option_woocommerce_registration_generate_password', 'cr2026_account_registration_generate_password', 1 );
+
+/** Validate theme-specific required fields inside WooCommerce's native validation chain. */
+function cr2026_account_validate_registration_fields( $username, $email, $errors ) {
+    $first_name = isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '';
+    $last_name  = isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '';
+    $birthday   = isset( $_POST['birthday'] ) ? sanitize_text_field( wp_unslash( $_POST['birthday'] ) ) : '';
+    $password   = isset( $_POST['password'] ) ? (string) wp_unslash( $_POST['password'] ) : '';
+    $confirmation = isset( $_POST['password_confirmation'] ) ? (string) wp_unslash( $_POST['password_confirmation'] ) : '';
+
+    if ( '' === $first_name ) {
+        $errors->add( 'cr2026_registration_first_name', __( 'Por favor, introduce tu nombre.', 'crios-rango-2026' ) );
+    }
+    if ( '' === $last_name ) {
+        $errors->add( 'cr2026_registration_last_name', __( 'Por favor, introduce tus apellidos.', 'crios-rango-2026' ) );
+    }
+
+    $date = DateTimeImmutable::createFromFormat( '!Y-m-d', $birthday );
+    $date_errors = DateTimeImmutable::getLastErrors();
+    $valid_birthday = $date instanceof DateTimeImmutable
+        && $date->format( 'Y-m-d' ) === $birthday
+        && ( false === $date_errors || ( 0 === $date_errors['warning_count'] && 0 === $date_errors['error_count'] ) );
+    if ( ! $valid_birthday ) {
+        $errors->add( 'cr2026_registration_birthday', __( 'Introduce una fecha de nacimiento válida.', 'crios-rango-2026' ) );
+    }
+
+    if ( '' === $password ) {
+        $errors->add( 'cr2026_registration_password', __( 'Por favor, introduce una contraseña.', 'crios-rango-2026' ) );
+    } elseif ( $password !== $confirmation ) {
+        $errors->add( 'cr2026_registration_password_confirmation', __( 'Las contraseñas no coinciden.', 'crios-rango-2026' ) );
+    }
+
+    return $errors;
+}
+add_action( 'woocommerce_register_post', 'cr2026_account_validate_registration_fields', 10, 3 );
+
+/** Persist profile values on the customer WooCommerce has just created. */
+function cr2026_account_save_registration_profile( $customer_id, $new_customer_data = array(), $password_generated = false ) {
+    $customer_id = absint( $customer_id );
+    if ( ! $customer_id ) {
+        return;
+    }
+
+    $first_name = isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '';
+    $last_name  = isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '';
+    $phone      = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
+    $birthday   = isset( $_POST['birthday'] ) ? sanitize_text_field( wp_unslash( $_POST['birthday'] ) ) : '';
+
+    wp_update_user( array(
+        'ID'         => $customer_id,
+        'first_name' => $first_name,
+        'last_name'  => $last_name,
+    ) );
+    update_user_meta( $customer_id, 'billing_first_name', $first_name );
+    update_user_meta( $customer_id, 'billing_last_name', $last_name );
+    update_user_meta( $customer_id, 'billing_phone', $phone );
+    update_user_meta( $customer_id, 'criosrango_birth_date', $birthday );
+}
+add_action( 'woocommerce_created_customer', 'cr2026_account_save_registration_profile', 10, 3 );
+
