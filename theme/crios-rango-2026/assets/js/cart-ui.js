@@ -78,6 +78,16 @@
     icon.innerHTML = paths[name] || '';
     return icon;
   };
+  const formatPromotionExpiry = (value) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC'
+    }).format(date);
+  };
   const formatWalletAmount = (value, currency) => {
     const amount = Number(text(value).trim().replace(',', '.'));
     return new Intl.NumberFormat('es-ES', {
@@ -219,7 +229,10 @@
       else if (isBirthday) card.appendChild(cartIcon('cake', 'cr-cart-promo-card__icon'));
       body.appendChild(node('h4', 'cr-cart-promo-card__title', promotion.title));
       if (promotion.description) body.appendChild(node('p', 'cr-cart-promo-card__description', promotion.description));
-      if (promotion.expires_at) body.appendChild(node('p', 'cr-cart-promo-card__expiry', 'Válida hasta ' + promotion.expires_at));
+      if (promotion.expires_at) {
+        const expiryDate = formatPromotionExpiry(promotion.expires_at);
+        if (expiryDate) body.appendChild(node('p', 'cr-cart-promo-card__expiry', 'Válida hasta el ' + expiryDate));
+      }
       card.appendChild(body);
       if (promotion.code && !hasCoupon(currentCart, promotion.code)) {
         card.appendChild(createButton('Aplicar', 'cr-cart-apply-button', (event) => applyCoupon(promotion.code, 'Promoción', event.currentTarget)));
