@@ -123,7 +123,18 @@ test('long product description is a single accessible accordion with responsive 
   assert.ok(skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_global_size_help', 24 )") < skin.indexOf("add_action( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 )"));
   assert.ok(skin.includes("add_filter( 'woocommerce_product_tabs', 'cr2026_product_skin_remove_description_tab', 99 )"));
   assert.ok(productUiJs.includes('function initProductDescriptionPlacement()'));
-  assert.ok(productUiJs.includes("window.matchMedia('(min-width: 1280px)')"));
+  const descriptionPlacement = productUiJs.slice(
+    productUiJs.indexOf('function initProductDescriptionPlacement()'),
+    productUiJs.indexOf('function initProductDescriptionAccordion()')
+  );
+  assert.ok(descriptionPlacement.includes("window.matchMedia('(min-width: 768px)')"));
+  assert.ok(descriptionPlacement.includes('if (media.matches)'));
+  assert.ok(descriptionPlacement.includes('product.insertBefore(description, tabs || null)'));
+  assert.ok(descriptionPlacement.includes('summary.insertBefore(description, purchaseForm)'));
+  assert.ok(descriptionPlacement.includes("media.addEventListener('change', placeDescription)"));
+  assert.equal((skin.match(/add_action\\( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 \\)/g) || []).length, 1);
+  assert.equal((skin.match(/function cr2026_product_skin_description_accordion\\(/g) || []).length, 1);
+  assert.doesNotMatch(descriptionPlacement, /cloneNode|appendChild\\(description\\)\\s*;[\\s\\S]*?insertBefore/);
   assert.ok(productUiJs.includes('initProductDescriptionPlacement();'));
   assert.ok(productUiJs.includes('function initProductDescriptionAccordion()'));
   assert.ok(productUiJs.includes("toggle.addEventListener('click'"));
@@ -1689,7 +1700,14 @@ test('desktop Product Detail keeps the canonical toolbar in flow and moves the e
   assert.match(productUiJs, /function initDesktopProductComposition\(\)/);
   assert.ok(productUiJs.includes("purchaseForm.insertAdjacentElement('afterend', actions)"));
   assert.ok(productUiJs.includes('originalParent.insertBefore(actions, originalNext)'));
-  assert.ok(productUiJs.includes("matchMedia('(min-width: 1280px)'"));
+  const desktopComposition = productUiJs.slice(
+    productUiJs.indexOf('function initDesktopProductComposition()'),
+    productUiJs.indexOf('function initProductDescriptionAccordion()')
+  );
+  assert.ok(desktopComposition.includes("window.matchMedia('(min-width: 768px)')"));
+  assert.ok(desktopComposition.includes('purchaseForm.insertAdjacentElement(\'afterend\', actions)'));
+  assert.ok(desktopComposition.includes('originalParent.insertBefore(actions, originalNext)'));
+  assert.ok(desktopComposition.includes("media.addEventListener('change', handleBreakpointChange)"));
   assert.match(desktop, /summary > \.cr-product-actions/);
   assert.match(desktop, /div\.product > \.cr-product-description \{[^}]*grid-column:\s*1 \/ -1;/s);
 });
