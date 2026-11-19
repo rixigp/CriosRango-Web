@@ -921,3 +921,22 @@ function cr2026_account_guest_login_shell_close() {
     echo '</div></div>';
 }
 add_action( 'woocommerce_after_customer_login_form', 'cr2026_account_guest_login_shell_close', 99 );
+
+/** Lost-password uses WooCommerce's native form and reset handler inside the guest Account shell. */
+function cr2026_account_lost_password_shell_open() {
+    echo '<div class="cr-account-shell cr-account-shell--guest"><div class="cr-account-shell__content">';
+}
+add_action( 'woocommerce_before_lost_password_form', 'cr2026_account_lost_password_shell_open', 1 );
+
+function cr2026_account_lost_password_toolbar() {
+    cr2026_account_render_endpoint_toolbar(
+        __( 'Recuperar contraseña', 'crios-rango-2026' ),
+        cr2026_account_guest_login_url()
+    );
+}
+add_action( 'woocommerce_before_lost_password_form', 'cr2026_account_lost_password_toolbar', 2 );
+
+function cr2026_account_lost_password_shell_close() {
+    echo '</div></div>';
+}
+add_action( 'woocommerce_after_lost_password_form', 'cr2026_account_lost_password_shell_close', 99 );
