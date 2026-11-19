@@ -16,7 +16,7 @@ $is_cart_page = function_exists( 'is_cart' ) && is_cart();
                 <?php if ( $is_cart_page ) : ?>
                     <?php
                     $GLOBALS['cr2026_cart_toolbar_rendered_by_page'] = true;
-                    // The empty-cart action belongs only to the cart summary, never the top toolbar.
+                    /* cr2026_cart_empty_action_markup() is rendered by cart.php in the summary only; toolbar right_action_html stays empty. */
                     cr2026_render_category_toolbar( __( 'Tu carrito', 'crios-rango-2026' ), wc_get_page_permalink( 'shop' ), 'cart', false, '', 'cr-cart-title' );
                     ?>
                 <?php elseif ( ( ! function_exists( 'is_cart' ) || ! is_cart() ) && ! $is_checkout_form ) : ?>
