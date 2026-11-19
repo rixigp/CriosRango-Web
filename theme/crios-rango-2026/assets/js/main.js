@@ -628,7 +628,8 @@
     const isNoveltiesListing = totalLimit > 0;
     const defaultOrderby = isNoveltiesListing ? 'date' : 'title';
     const requestedOrderby = currentUrl.searchParams.get('orderby');
-    let orderby = ['date','price','price-desc','title','title-desc'].includes(requestedOrderby) ? requestedOrderby : defaultOrderby;
+    const validOrderbyValues = new Set(['date','price','price-desc','title','title-desc']);
+    let orderby = validOrderbyValues.has(requestedOrderby) ? requestedOrderby : defaultOrderby;
     if (orderControl) orderControl.value = orderby;
     const sortMap = {date:'newest',price:'price_asc','price-desc':'price_desc',title:'title_asc','title-desc':'title_desc'};
     const filterKeys = brandContext ? ['size_ids','color_ids'] : ['size_ids','color_ids','brand_ids'];
@@ -1069,7 +1070,7 @@
       };
       fitOrderControl();
       orderControl.addEventListener('change',()=>{
-        orderby=['date','price','price-desc','title','title-desc'].includes(orderControl.value)?orderControl.value:defaultOrderby;
+        orderby=validOrderbyValues.has(orderControl.value)?orderControl.value:defaultOrderby;
         fitOrderControl();
         if(orderby===defaultOrderby)currentUrl.searchParams.delete('orderby');else currentUrl.searchParams.set('orderby',orderby);
         window.history.replaceState({},'',currentUrl.toString());
