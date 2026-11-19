@@ -9,63 +9,54 @@ async function visit(page, url) {
 }
 async function addPurchasableProduct(page) {
   await visit(page, BASE_URL + '/');
-  const productApiUrl = BASE_URL + '/wp-json/wc/store/v1/products?per_page=100';
-  const candidates = await page.evaluate(async url => {
-    const response = await fetch(url, { credentials: 'same-origin' });
-    if (!response.ok) return [];
-    const products = await response.json();
-    if (!Array.isArray(products)) return [];
-    return products
-      .filter(product => product.is_purchasable && product.is_in_stock
-        && (product.type === 'simple' || product.has_options === false))
-      .map(product => ({
-        id: product.id,
-        name: product.name,
-        price: Number(product.prices && product.prices.price || 0)
-      }))
-      .sort((a, b) => b.price - a.price)
-      .slice(0, 5);
-  }, productApiUrl);
+  const productUrls = await page.evaluate(() => {
+    const links = Array.from(document.querySelectorAll('a[href]'));
+    return Array.from(new Set(links
+      .filter(link => /\\/(producto|product)\\//i.test(link.href))
+      .map(link => link.href)))
+      .slice(0, 12);
+  });
+  if (!productUrls.length) throw new Error('STAGING_PRODUCT_LINK_NOT_FOUND_FROM_HOME');
 
-  if (!candidates.length) throw new Error('STORE_API_NO_PURCHASABLE_SIMPLE_PRODUCTS');
-  const cartApiUrl = BASE_URL + '/wp-json/wc/store/v1/cart';
-  const added = [];
+  for (const productUrl of productUrls) {
+    await visit(page, productUrl);
+    const formState = await page.evaluate(() => {
+      const form = document.querySelector('form.cart');
+      const button = form && form.querySelector('.single_add_to_cart_button');
+      const selects = form ? Array.from(form.querySelectorAll('select[name^="attribute_"]')) : [];
+      return { hasForm: Boolean(form), hasButton: Boolean(button), variationCount: selects.length };
+    });
+    if (!formState.hasForm || !formState.hasButton) continue;
 
-  for (const product of candidates) {
-    await visit(page, BASE_URL + '/?add-to-cart=' + encodeURIComponent(product.id));
-    await page.waitForTimeout(500);
-    const cartState = await page.evaluate(async url => {
-      try {
-        const response = await fetch(url, { credentials: 'same-origin' });
-        if (!response.ok) return { ok: false, count: 0 };
-        const cart = await response.json();
-        return {
-          ok: true,
-          count: Number(cart.items_count || (Array.isArray(cart.items) ? cart.items.length : 0))
-        };
-      } catch (_) {
-        return { ok: false, count: 0 };
-      }
-    }, cartApiUrl);
-    if (cartState.count > 0) {
-      added.push(product.name);
-      log('CHECKOUT_TEST_CART_ITEM', product.id + ':' + product.name);
-      if (added.length >= 2 || cartState.count >= 2) break;
+    const variationSelects = page.locator('form.cart select[name^="attribute_"]');
+    for (let i = 0; i < formState.variationCount; i += 1) {
+      const select = variationSelects.nth(i);
+      const firstAvailable = await select.locator('option').evaluateAll(options => {
+        const option = options.find(item => item.value && !item.disabled);
+        return option ? option.value : '';
+      });
+      if (!firstAvailable) break;
+      await select.selectOption(firstAvailable);
+    }
+
+    const addButton = page.locator('form.cart .single_add_to_cart_button').first();
+    const enabled = await page.waitForFunction(() => {
+      const button = document.querySelector('form.cart .single_add_to_cart_button');
+      return Boolean(button && !button.disabled && !button.classList.contains('disabled'));
+    }, null, { timeout: 8000 }).then(() => true).catch(() => false);
+    if (!enabled) continue;
+
+    await addButton.click({ timeout: 10000 }).catch(() => null);
+    await page.waitForTimeout(1200);
+    await visit(page, BASE_URL + '/carrito/');
+    const cartRows = await page.locator('.woocommerce-cart-form .cart_item').count().catch(() => 0);
+    if (cartRows > 0) {
+      log('CHECKOUT_TEST_PRODUCT_URL', productUrl);
+      log('CHECKOUT_TEST_CART_ITEMS_COUNT', cartRows);
+      return;
     }
   }
-
-  const cartState = await page.evaluate(async url => {
-    try {
-      const response = await fetch(url, { credentials: 'same-origin' });
-      if (!response.ok) return { ok: false, count: 0 };
-      const cart = await response.json();
-      return { ok: true, count: Number(cart.items_count || (Array.isArray(cart.items) ? cart.items.length : 0)) };
-    } catch (_) {
-      return { ok: false, count: 0 };
-    }
-  }, cartApiUrl);
-  if (!cartState.count) throw new Error('NO_PURCHASABLE_SHIPPING_PRODUCT_ADDED');
-  log('CHECKOUT_TEST_CART_ITEMS_COUNT', cartState.count);
+  throw new Error('NO_PURCHASABLE_PRODUCT_ADDED_FROM_PRODUCT_PAGES');
 }
 async function main() {
   const browser = await chromium.launch({ headless: true });
@@ -87,7 +78,37 @@ async function main() {
       const labels = rows.map(row => (row.querySelector('label')?.innerText || row.innerText || '').replace(/\s+/g, ' ').trim());
       const radios = rows.flatMap(row => Array.from(row.querySelectorAll('input.shipping_method[type="radio"]')));
       const total = document.querySelector('.woocommerce-checkout-review-order-table .order-total');
-      return { sectionCount: sections.length, methodsRenderCount: lists.length, radioCount: radios.length, labels, totalText: total ? total.innerText.replace(/\s+/g, ' ').trim() : '' };
+      const additional = Array.from(document.querySelectorAll('.woocommerce-additional-fields'));
+      const additionalInfo = additional[0] || null;
+      const textarea = additionalInfo && additionalInfo.querySelector('#order_comments');
+      const shell = textarea && textarea.closest('.cr-control-shell');
+      const shippingBeforeAdditionalInfo = Boolean(sections[0] && additionalInfo
+        && (sections[0].compareDocumentPosition(additionalInfo) & Node.DOCUMENT_POSITION_FOLLOWING));
+      let textareaContentClipped = null;
+      if (textarea) {
+        const originalValue = textarea.value;
+        textarea.value = 'Primera línea de prueba\\nSegunda línea de prueba';
+        textareaContentClipped = textarea.scrollHeight > textarea.clientHeight + 1;
+        textarea.value = originalValue;
+      }
+      const textareaStyle = textarea ? window.getComputedStyle(textarea) : null;
+      return {
+        sectionCount: sections.length,
+        methodsRenderCount: lists.length,
+        radioCount: radios.length,
+        labels,
+        totalText: total ? total.innerText.replace(/\\s+/g, ' ').trim() : '',
+        additionalInfoCount: additional.length,
+        shippingBeforeAdditionalInfo,
+        textareaMinHeight: textareaStyle ? textareaStyle.minHeight : '',
+        textareaHeight: textarea ? textarea.getBoundingClientRect().height : 0,
+        textareaFontSize: textareaStyle ? textareaStyle.fontSize : '',
+        textareaLineHeight: textareaStyle ? textareaStyle.lineHeight : '',
+        textareaPaddingTop: textareaStyle ? textareaStyle.paddingTop : '',
+        textareaPaddingBottom: textareaStyle ? textareaStyle.paddingBottom : '',
+        textareaShellHeight: shell ? shell.getBoundingClientRect().height : 0,
+        textareaContentClipped
+      };
     });
   }
   async function assertSingle(stage) {
@@ -95,6 +116,14 @@ async function main() {
     log('SHIPPING_SECTION_COUNT_' + stage, state.sectionCount);
     log('SHIPPING_METHODS_RENDER_COUNT_' + stage, state.methodsRenderCount);
     if (state.sectionCount !== 1 || state.methodsRenderCount !== 1) throw new Error('DUPLICATE_SHIPPING_SECTION_' + stage + '=' + JSON.stringify(state));
+    if (state.additionalInfoCount !== 1 || !state.shippingBeforeAdditionalInfo) throw new Error('ADDITIONAL_INFO_ORDER_FAILED_' + stage + '=' + JSON.stringify(state));
+    if (state.textareaMinHeight !== '88px' || state.textareaHeight < 88 || state.textareaShellHeight < 88
+      || state.textareaFontSize !== '16px' || state.textareaLineHeight !== '24px'
+      || state.textareaPaddingTop !== '12px' || state.textareaPaddingBottom !== '12px'
+      || state.textareaContentClipped !== false) throw new Error('ADDITIONAL_INFO_TEXTAREA_FAILED_' + stage + '=' + JSON.stringify(state));
+    log('SHIPPING_BEFORE_ADDITIONAL_INFO_' + stage, 'YES');
+    log('TEXTAREA_MIN_HEIGHT_' + stage, state.textareaMinHeight);
+    log('TEXTAREA_CONTENT_CLIPPED_' + stage, state.textareaContentClipped ? 'YES' : 'NO');
     return state;
   }
   try {
@@ -122,6 +151,13 @@ async function main() {
       if (!address.ok) throw new Error('CHECKOUT_ADDRESS_SETUP_FAILED=' + address.reason);
       log('CHECKOUT_ADDRESS_TEST_VALUE', JSON.stringify(address));
     }, 'ADDRESS_SETUP');
+    for (const width of [390, 820, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.waitForTimeout(150);
+      await assertSingle('VIEWPORT_' + width);
+      log('CHECKOUT_LAYOUT_VIEWPORT_' + width, 'PASS');
+    }
+    await page.setViewportSize({ width: 1280, height: 900 });
     let state = await assertSingle('AFTER_ADDRESS_SETUP');
     const free = state.labels.some(label => /Envío gratuito/i.test(label));
     const pickup = state.labels.some(label => /Recogida en tienda Tarancón/i.test(label));
