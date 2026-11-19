@@ -421,6 +421,7 @@ jobs:
         env:
           FULL_REGRESSION: ${{ steps.impact.outputs.full_regression }}
           RUN_ACCOUNT: ${{ steps.impact.outputs.run_account }}
+          ACCOUNT_REGISTRATION_ONLY: ${{ steps.impact.outputs.account_registration_only }}
           RUN_HOME: ${{ steps.impact.outputs.run_home }}
           RUN_CATEGORY: ${{ steps.impact.outputs.run_category }}
           RUN_PRODUCT: ${{ steps.impact.outputs.run_product }}
@@ -450,7 +451,7 @@ jobs:
           if [ "$FULL_REGRESSION" = true ]; then
             mapfile -t TESTS < <(find tests -maxdepth 1 -type f -name '*.test.cjs' | sort)
           else
-            [ "$RUN_ACCOUNT" = true ] && add_glob 'tests/account-*.test.cjs'
+            [ "$RUN_ACCOUNT" = true ] && [ "$ACCOUNT_REGISTRATION_ONLY" != true ] && add_glob 'tests/account-*.test.cjs'
             [ "$RUN_HOME" = true ] && add_glob 'tests/home-*.test.cjs'
             [ "$RUN_CATEGORY" = true ] && add_glob 'tests/category-*.test.cjs'
             [ "$RUN_PRODUCT" = true ] && add_glob 'tests/product-*.test.cjs'
@@ -472,7 +473,7 @@ jobs:
             node --test "${FILTERED_TESTS[@]}"
           fi
 
-          if [ "$RUN_ACCOUNT" = true ] || [ "$FULL_REGRESSION" = true ]; then
+          if { [ "$RUN_ACCOUNT" = true ] && [ "$ACCOUNT_REGISTRATION_ONLY" != true ]; } || [ "$FULL_REGRESSION" = true ]; then
             node --test tests/account-coupons-promotions-contract.test.cjs
           fi
 
@@ -482,6 +483,7 @@ jobs:
         env:
           FULL_REGRESSION: ${{ steps.impact.outputs.full_regression }}
           RUN_ACCOUNT: ${{ steps.impact.outputs.run_account }}
+          ACCOUNT_REGISTRATION_ONLY: ${{ steps.impact.outputs.account_registration_only }}
           RUN_CHECKOUT: ${{ steps.impact.outputs.run_checkout }}
         run: |
           set -euo pipefail
@@ -497,7 +499,7 @@ jobs:
             mapfile -t PHP_TESTS < <(find tests -maxdepth 1 -type f -name '*.test.php' | sort)
           else
             mapfile -t PHP_FILES < <(git diff --name-only "${{ steps.impact.outputs.base_sha }}" "$GITHUB_SHA" -- '*.php' | sort -u)
-            if [ "$RUN_ACCOUNT" = true ] && [ -f tests/account-birthday-contract.test.php ]; then PHP_TESTS+=(tests/account-birthday-contract.test.php); fi
+            if [ "$RUN_ACCOUNT" = true ] && [ "$ACCOUNT_REGISTRATION_ONLY" != true ] && [ -f tests/account-birthday-contract.test.php ]; then PHP_TESTS+=(tests/account-birthday-contract.test.php); fi
             if [ "$RUN_CHECKOUT" = true ] && [ -f tests/checkout-points-runtime.test.php ]; then PHP_TESTS+=(tests/checkout-points-runtime.test.php); fi
           fi
           for file in "${PHP_FILES[@]}"; do

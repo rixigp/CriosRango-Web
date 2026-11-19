@@ -14,6 +14,23 @@ theme/crios-rango-2026/woocommerce/archive-product.php|theme/crios-rango-2026/wo
 theme/crios-rango-2026/assets/css/category*.css|theme/crios-rango-2026/assets/js/category*.js) DO_CATEGORY=true;;
 theme/crios-rango-2026/woocommerce/cart/*|theme/crios-rango-2026/woocommerce/checkout/*|theme/crios-rango-2026/assets/css/checkout*.css|theme/crios-rango-2026/assets/js/checkout*.js) DO_CHECKOUT=true;;
 *.php) DO_PHP=true; DO_SHARED=true;; *) DO_SHARED=true;; esac; done
+# A dedicated registration-only slice keeps unrelated legacy Account contracts out
+# when the only runtime files changed are the guest login/registration template and
+# its WooCommerce registration option/validation hooks.
+ACCOUNT_REGISTRATION_ONLY=false
+if [ "$RUNTIME_FILE_COUNT" -eq 2 ] && [ "$OTHER_FILE_COUNT" -eq 0 ]; then
+  EXPECTED_RUNTIME_FILES=(
+    "theme/crios-rango-2026/inc/woocommerce.php"
+    "theme/crios-rango-2026/woocommerce/myaccount/form-login.php"
+  )
+  mapfile -t ACTUAL_RUNTIME_FILES < <(printf '%s\n' "${RUNTIME_FILES[@]}" | sort)
+  mapfile -t EXPECTED_RUNTIME_FILES < <(printf '%s\n' "${EXPECTED_RUNTIME_FILES[@]}" | sort)
+  if [ "${ACTUAL_RUNTIME_FILES[*]}" = "${EXPECTED_RUNTIME_FILES[*]}" ]; then
+    ACCOUNT_REGISTRATION_ONLY=true
+    DO_ACCOUNT=true; DO_HOME=false; DO_CATEGORY=false; DO_PRODUCT=false; DO_CHECKOUT=false
+    DO_SHARED=false; DO_CATALOG=false; DO_PHP=true
+  fi
+fi
 DOMAIN_COUNT=0; for f in "$DO_ACCOUNT" "$DO_HOME" "$DO_CATEGORY" "$DO_PRODUCT" "$DO_CHECKOUT"; do [ "$f" = true ] && DOMAIN_COUNT=$((DOMAIN_COUNT+1)); done
 FULL=false
 if [ "$RUNTIME_FILE_COUNT" -eq 0 ] && [ "$WORKFLOW_FILE_COUNT" -eq 0 ] && [ "$TEST_FILE_COUNT" -gt 0 ] && [ "$OTHER_FILE_COUNT" -eq 0 ]; then SCOPE=TEST_ONLY
@@ -31,6 +48,6 @@ RUN_CATALOG_BENCHMARK=false; if [ "$DO_CATALOG" = true ] || [ "$FULL" = true ]; 
 RUN_GLOBAL_SHELL="$DO_SHARED"; if [ "$DO_ACCOUNT" = true ] || [ "$DO_CHECKOUT" = true ] || [ "$DO_PHP" = true ] || [ "$FULL" = true ]; then DO_PHP=true; fi
 SELECTED_TESTS=(); if [ "$FULL" = false ]; then if [ "$SCOPE" = CI_VALIDATION ] && [ "$WORKFLOW_FILE_COUNT" -gt 0 ]; then SELECTED_TESTS+=(tests/impact-selector-contract.test.cjs); else for p in "${TEST_FILES[@]}"; do SELECTED_TESTS+=("$p"); done; case " ${SELECTED_TESTS[*]} " in *" tests/impact-selector-contract.test.cjs "*) SELECTED_TESTS+=(tests/canonical-page-toolbar-contract.test.cjs tests/global-mobile-shell-contract.test.cjs tests/catalog-contract.test.cjs);; esac; fi; fi
 {
-echo "base_sha=${BASE_SHA:-UNKNOWN}"; echo "head_sha=${HEAD_SHA:-UNKNOWN}"; echo "scope=$SCOPE"; echo "run_account=$DO_ACCOUNT"; echo "run_home=$DO_HOME"; echo "run_category=$DO_CATEGORY"; echo "run_product=$DO_PRODUCT"; echo "run_checkout=$DO_CHECKOUT"; echo "run_global_shell=$RUN_GLOBAL_SHELL"; echo "run_php=$DO_PHP"; echo "run_catalog_benchmark=$RUN_CATALOG_BENCHMARK"; echo "full_regression=$FULL"; echo "workflow_changed=$([ "$WORKFLOW_FILE_COUNT" -gt 0 ] && echo true || echo false)"; echo "run_account_browser=$DO_ACCOUNT"; echo "run_home_browser=$DO_HOME"; echo "run_category_browser=$DO_CATEGORY"; echo "run_product_browser=$DO_PRODUCT"; echo "run_checkout_browser=$DO_CHECKOUT"; echo "runtime_file_count=$RUNTIME_FILE_COUNT"; echo "test_file_count=$TEST_FILE_COUNT"; echo "workflow_file_count=$WORKFLOW_FILE_COUNT"; echo "other_file_count=$OTHER_FILE_COUNT"; echo "selected_test_files<<CRIOS_SELECTED_TESTS"; printf '%s\n' "${SELECTED_TESTS[@]}"; echo "CRIOS_SELECTED_TESTS"
+echo "base_sha=${BASE_SHA:-UNKNOWN}"; echo "head_sha=${HEAD_SHA:-UNKNOWN}"; echo "scope=$SCOPE"; echo "account_registration_only=$ACCOUNT_REGISTRATION_ONLY"; echo "run_account=$DO_ACCOUNT"; echo "run_home=$DO_HOME"; echo "run_category=$DO_CATEGORY"; echo "run_product=$DO_PRODUCT"; echo "run_checkout=$DO_CHECKOUT"; echo "run_global_shell=$RUN_GLOBAL_SHELL"; echo "run_php=$DO_PHP"; echo "run_catalog_benchmark=$RUN_CATALOG_BENCHMARK"; echo "full_regression=$FULL"; echo "workflow_changed=$([ "$WORKFLOW_FILE_COUNT" -gt 0 ] && echo true || echo false)"; echo "run_account_browser=$DO_ACCOUNT"; echo "run_home_browser=$DO_HOME"; echo "run_category_browser=$DO_CATEGORY"; echo "run_product_browser=$DO_PRODUCT"; echo "run_checkout_browser=$DO_CHECKOUT"; echo "runtime_file_count=$RUNTIME_FILE_COUNT"; echo "test_file_count=$TEST_FILE_COUNT"; echo "workflow_file_count=$WORKFLOW_FILE_COUNT"; echo "other_file_count=$OTHER_FILE_COUNT"; echo "selected_test_files<<CRIOS_SELECTED_TESTS"; printf '%s\n' "${SELECTED_TESTS[@]}"; echo "CRIOS_SELECTED_TESTS"
 } >> "${GITHUB_OUTPUT:-/dev/null}"
-echo "RUNTIME_FILE_COUNT=$RUNTIME_FILE_COUNT"; echo "TEST_FILE_COUNT=$TEST_FILE_COUNT"; echo "WORKFLOW_FILE_COUNT=$WORKFLOW_FILE_COUNT"; echo "OTHER_FILE_COUNT=$OTHER_FILE_COUNT"; echo "DO_SHARED=$DO_SHARED"; echo "DO_CATALOG=$DO_CATALOG"; echo "DO_CATEGORY=$DO_CATEGORY"; echo "DO_PRODUCT=$DO_PRODUCT"; echo "DO_ACCOUNT=$DO_ACCOUNT"; echo "DO_HOME=$DO_HOME"; echo "DO_CHECKOUT=$DO_CHECKOUT"; echo "DOMAIN_COUNT=$DOMAIN_COUNT"; echo "FULL=$FULL"; echo "CI_SCOPE=$SCOPE"; echo "SELECTED_TEST_FILES=${SELECTED_TESTS[*]:-}"
+echo "RUNTIME_FILE_COUNT=$RUNTIME_FILE_COUNT"; echo "TEST_FILE_COUNT=$TEST_FILE_COUNT"; echo "WORKFLOW_FILE_COUNT=$WORKFLOW_FILE_COUNT"; echo "OTHER_FILE_COUNT=$OTHER_FILE_COUNT"; echo "DO_SHARED=$DO_SHARED"; echo "DO_CATALOG=$DO_CATALOG"; echo "DO_CATEGORY=$DO_CATEGORY"; echo "DO_PRODUCT=$DO_PRODUCT"; echo "DO_ACCOUNT=$DO_ACCOUNT"; echo "ACCOUNT_REGISTRATION_ONLY=$ACCOUNT_REGISTRATION_ONLY"; echo "DO_HOME=$DO_HOME"; echo "DO_CHECKOUT=$DO_CHECKOUT"; echo "DOMAIN_COUNT=$DOMAIN_COUNT"; echo "FULL=$FULL"; echo "CI_SCOPE=$SCOPE"; echo "SELECTED_TEST_FILES=${SELECTED_TESTS[*]:-}"
