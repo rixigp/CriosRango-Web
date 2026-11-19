@@ -335,7 +335,7 @@ test('web sort options reproduce app enum mapping including Name A-Z', () => {
   for (const value of ['date', 'price', 'price-desc', 'title']) {
     assert.match(orderbyMatch[1], new RegExp("['\\\"]" + value + "['\\\"]"), 'web sort options must retain ' + value);
   }
-  assert.match(php, /'title_asc' === \$sort/);
+  assert.match(php, /\$orderby = 'title';\s*\$order = 'ASC';/);
 });
 
 test('price ASC and DESC fail on nonnumeric values and every adjacent pair across pages', () => {
@@ -729,7 +729,7 @@ test('brand and catalog share one canonical sort mapping on the existing main qu
   assert.match(php, /'oldest' === \$sort/);
   assert.match(php, /array\( 'price', 'price_asc' \)/);
   assert.match(php, /array\( 'price-desc', 'price_desc' \)/);
-  assert.match(php, /'title_asc' === \$sort/);
+  assert.match(php, /\$orderby = 'title';\s*\$order = 'ASC';/);
   assert.match(php, /'title_desc' === \$sort/);
   assert.match(php, /function cr2026_product_listing_main_query\( \$query \)/);
   assert.match(php, /\$is_brand_query = \$query->is_tax\( 'product_brand' \)/);
@@ -1271,7 +1271,7 @@ test('DEFAULT_PRODUCT_ORDER=TITLE_ASC for category, subcategory, brand, Outlet a
   assert.match(php, /\$filter_params = array\([\s\S]*?'sort' => \$sort/);
   assert.match(archive, /\$default_listing_orderby = \$is_novelties_view \? 'date' : 'title'/);
   assert.match(brandTemplateSource(), /\$brand_orderby = isset\( \$_GET\['orderby'\] \).*: 'title'/s);
-  assert.match(js, /const defaultOrderby = totalLimit \? 'date' : 'title'/);
+  assert.match(js, /const defaultOrderby = isNoveltiesListing \? 'date' : 'title'/);
   assert.match(js, /sortMap = \{date:'newest'.*title:'title_asc'/);
   const childFn = helpers.slice(helpers.indexOf('function cr2026_product_cat_children'), helpers.indexOf('function cr2026_product_cat_display_name'));
   assert.match(childFn, /'orderby'\s*=>\s*'name'/);
@@ -1294,7 +1294,7 @@ test('BRAND_PRODUCTS=A_TO_Z uses title ASC as the native archive default and sen
   assert.match(mainQuery, /\$query->set\( 'orderby', \$sort_args\['orderby'\] \)/);
   assert.match(mainQuery, /\$query->set\( 'order', \$sort_args\['order'\] \)/);
   assert.match(brandTemplateSource(), /\$brand_orderby = isset\( \$_GET\['orderby'\] \).*: 'title'/s);
-  assert.match(js, /const defaultOrderby = totalLimit \? 'date' : 'title'/);
+  assert.match(js, /const defaultOrderby = isNoveltiesListing \? 'date' : 'title'/);
   assert.match(php, /'sort' => \$sort/);
 });
 
@@ -1312,7 +1312,7 @@ test('NEW_PRODUCTS_ORDER=DATE_DESC and Novedades keeps the newest cohort first',
   assert.match(php, /'orderby' => 'date',[\s\S]*?'order' => 'DESC'/);
   assert.match(php, /\$is_novelties \? max\( 0, min\( \$per_page, \$novelties_limit - \$page_offset \) \) : \$per_page/);
   assert.match(archive, /\$default_listing_orderby = \$is_novelties_view \? 'date' : 'title'/);
-  assert.match(js, /const defaultOrderby = totalLimit \? 'date' : 'title'/);
+  assert.match(js, /const defaultOrderby = isNoveltiesListing \? 'date' : 'title'/);
 });
 
 function brandTemplateSource() {
