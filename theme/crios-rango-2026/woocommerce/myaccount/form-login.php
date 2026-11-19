@@ -69,13 +69,10 @@ $is_register_view = function_exists( 'cr2026_account_guest_register_view' )
 
 
 
-<?php if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) : ?>
-
-<div class="u-columns col2-set" id="customer_login">
-
-	<div class="u-column1 col-1">
-
-<?php endif; ?>
+<?php
+// Login and registration are separate guest views. Never render WooCommerce's
+// two-column login/register layout on the initial login screen.
+?>
 
 
 		<form class="woocommerce-form woocommerce-form-login login" method="post" aria-label="<?php esc_attr_e( 'Acceder', 'crios-rango-2026' ); ?>">
@@ -112,11 +109,6 @@ $is_register_view = function_exists( 'cr2026_account_guest_register_view' )
             <?php do_action( 'woocommerce_login_form_end' ); ?>
 
 		</form>
-
-<?php if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) : ?>
-    </div>
-</div>
-<?php endif; ?>
 
 <?php endif; ?>
 
