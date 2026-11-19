@@ -22,7 +22,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lftp
 
-      - name: Read chroot and download PHP from relative plugin directories
+      - name: Enumerate and download PHP files from confirmed relative paths
         shell: bash
         env:
           WP_CONTENT_FTP_HOST: ${{ secrets.WP_CONTENT_FTP_HOST }}
@@ -36,13 +36,12 @@ jobs:
           : "${WP_CONTENT_FTP_PASSWORD:?Missing WP_CONTENT_FTP_PASSWORD}"
 
           WORK=/tmp/wp-content
-          mkdir -p "$WORK/plugins" "$WORK/mu-plugins"
+          mkdir -p "$WORK"
           ROOT_SCRIPT="$(mktemp)"
-          DOWNLOAD_SCRIPT="$(mktemp)"
-          trap 'rm -f "$ROOT_SCRIPT" "$DOWNLOAD_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
+          LIST_SCRIPT="$(mktemp)"
+          GET_SCRIPT="$(mktemp)"
+          trap 'rm -f "$ROOT_SCRIPT" "$LIST_SCRIPT" "$GET_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
 
-          # FTP user is chrooted directly at wp-content. Use only relative paths.
-          BASE_PATH="."
           {
             printf 'set ftp:ssl-force true\n'
             printf 'set ftp:ssl-protect-data true\n'
@@ -59,7 +58,6 @@ jobs:
             printf 'bye\n'
           } > "$ROOT_SCRIPT"
           lftp -f "$ROOT_SCRIPT" > /tmp/wp-content-root.log 2>&1
-
           echo "FTP_CONNECTION=OK"
           echo "FTP_ROOT=wp-content"
           echo "FTP_INITIAL_PWD=/ (chroot root; host/port suppressed)"
@@ -67,29 +65,10 @@ jobs:
           echo "FTP_ROOT_CONTENTS_BEGIN"
           sed -E '/^[^ ]+:[0-9]+\/?$/d; s#ftp://[^ ]+#ftp://[redacted]#g' /tmp/wp-content-root.log
           echo "FTP_ROOT_CONTENTS_END"
-
-          {
-            printf 'set ftp:ssl-force true\n'
-            printf 'set ftp:ssl-protect-data true\n'
-            printf 'set ssl:verify-certificate true\n'
-            printf 'set ftp:passive-mode true\n'
-            printf 'set net:max-retries 2\n'
-            printf 'set net:timeout 20\n'
-            printf 'set cmd:fail-exit yes\n'
-            printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
-            printf 'cd .\n'
-            printf 'cls -la plugins\n'
-            printf 'cls -la mu-plugins\n'
-            printf 'bye\n'
-          } > "$DOWNLOAD_SCRIPT"
-          lftp -f "$DOWNLOAD_SCRIPT" > /tmp/wp-content-dir-listing.log 2>&1
           echo "PLUGINS_PATH=plugins/"
           echo "MU_PLUGINS_PATH=mu-plugins/"
-          echo "RELATIVE_PLUGIN_LISTINGS_BEGIN"
-          sed -E '/^[^ ]+:[0-9]+\/?$/d; s#ftp://[^ ]+#ftp://[redacted]#g' /tmp/wp-content-dir-listing.log | head -n 200
-          echo "RELATIVE_PLUGIN_LISTINGS_END"
 
-          # Include directories so lftp descends recursively, but transfer PHP files only.
+          # lftp find recursively enumerates names; no remote mutation is possible.
           {
             printf 'set ftp:ssl-force true\n'
             printf 'set ftp:ssl-protect-data true\n'
@@ -100,11 +79,42 @@ jobs:
             printf 'set cmd:fail-exit yes\n'
             printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
             printf 'cd .\n'
-            printf 'mirror --verbose=0 --include-glob=*/ --include-glob=*.php --exclude-glob=* plugins "$WORK/plugins"\n'
-            printf 'mirror --verbose=0 --include-glob=*/ --include-glob=*.php --exclude-glob=* mu-plugins "$WORK/mu-plugins"\n'
+            printf 'find plugins\n'
+            printf 'find mu-plugins\n'
             printf 'bye\n'
-          } > "$DOWNLOAD_SCRIPT"
-          lftp -f "$DOWNLOAD_SCRIPT"
+          } > "$LIST_SCRIPT"
+          lftp -f "$LIST_SCRIPT" > /tmp/wp-content-remote-files.txt 2>/tmp/wp-content-find-errors.log
+
+          # Accept only ordinary relative PHP paths; reject any path traversal or shell metacharacters.
+          grep -E '^(plugins|mu-plugins)/[A-Za-z0-9._/-]+\.php$' /tmp/wp-content-remote-files.txt | sort -u > /tmp/wp-content-php-files.txt || true
+          PHP_COUNT="$(wc -l < /tmp/wp-content-php-files.txt | tr -d ' ')"
+          echo "REMOTE_PHP_FILES=$PHP_COUNT"
+          if [ "$PHP_COUNT" -eq 0 ]; then
+            echo "REMOTE_FIND_SAMPLE_BEGIN"
+            sed -n '1,100p' /tmp/wp-content-remote-files.txt
+            echo "REMOTE_FIND_SAMPLE_END"
+            cat /tmp/wp-content-find-errors.log || true
+            exit 1
+          fi
+
+          {
+            printf 'set ftp:ssl-force true\n'
+            printf 'set ftp:ssl-protect-data true\n'
+            printf 'set ssl:verify-certificate true\n'
+            printf 'set ftp:passive-mode true\n'
+            printf 'set net:max-retries 2\n'
+            printf 'set net:timeout 20\n'
+            printf 'set cmd:fail-exit yes\n'
+            printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
+            printf 'cd .\n'
+            while IFS= read -r remote_file; do
+              local_file="$WORK/$remote_file"
+              mkdir -p "$(dirname "$local_file")"
+              printf 'get "%s" -o "%s"\n' "$remote_file" "$local_file"
+            done < /tmp/wp-content-php-files.txt
+            printf 'bye\n'
+          } > "$GET_SCRIPT"
+          lftp -f "$GET_SCRIPT"
           echo "LOCAL_PHP_FILES=$(find "$WORK" -type f -name '*.php' | wc -l)"
 
       - name: Find REST route and inspect callback source
