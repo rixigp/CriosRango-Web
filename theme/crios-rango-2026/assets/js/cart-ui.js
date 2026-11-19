@@ -81,12 +81,14 @@
   const formatPromotionExpiry = (value) => {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return '';
-    return new Intl.DateTimeFormat('es-ES', {
-      day: 'numeric',
-      month: 'long',
+    const parts = new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
       timeZone: 'UTC'
-    }).format(date);
+    }).formatToParts(date);
+    const formatted = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+    return formatted.day + '/' + formatted.month + '/' + formatted.year;
   };
   const formatWalletAmount = (value, currency) => {
     const amount = Number(text(value).trim().replace(',', '.'));
