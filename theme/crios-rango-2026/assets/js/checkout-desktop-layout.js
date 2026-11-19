@@ -19,6 +19,7 @@
   }
 
   function removeStaleShippingSections(shippingColumn, currentSection) {
+    if (!shippingColumn) return;
     Array.prototype.slice.call(shippingColumn.querySelectorAll('.cr-checkout-shipping-section'))
       .forEach(function (existingSection) {
         if (existingSection !== currentSection) existingSection.remove();

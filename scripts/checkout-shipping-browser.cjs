@@ -9,38 +9,63 @@ async function visit(page, url) {
 }
 async function addPurchasableProduct(page) {
   await visit(page, BASE_URL + '/');
-  const candidates = await page.evaluate(() => Array.from(document.querySelectorAll('a[href]'))
-    .filter(link => /\/(producto|product)\//i.test(link.href)).map(link => link.href)
-    .filter((url, index, urls) => urls.indexOf(url) === index).slice(0, 12));
-  for (const productUrl of candidates) {
-    try {
-      await visit(page, productUrl);
-      const form = page.locator('form.cart').first();
-      if (!(await form.count())) continue;
-      const selects = form.locator('select[name^="attribute_"]');
-      let ready = true;
-      for (let index = 0; index < await selects.count(); index += 1) {
-        const select = selects.nth(index);
-        const options = await select.locator('option').evaluateAll(items => items.filter(option => option.value && !option.disabled).map(option => option.value));
-        if (!options.length) { ready = false; break; }
-        await select.selectOption(options[0]);
+  const productApiUrl = BASE_URL + '/wp-json/wc/store/v1/products?per_page=100';
+  const candidates = await page.evaluate(async url => {
+    const response = await fetch(url, { credentials: 'same-origin' });
+    if (!response.ok) return [];
+    const products = await response.json();
+    if (!Array.isArray(products)) return [];
+    return products
+      .filter(product => product.is_purchasable && product.is_in_stock
+        && (product.type === 'simple' || product.has_options === false))
+      .map(product => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.prices && product.prices.price || 0)
+      }))
+      .sort((a, b) => b.price - a.price)
+      .slice(0, 5);
+  }, productApiUrl);
+
+  if (!candidates.length) throw new Error('STORE_API_NO_PURCHASABLE_SIMPLE_PRODUCTS');
+  const cartApiUrl = BASE_URL + '/wp-json/wc/store/v1/cart';
+  const added = [];
+
+  for (const product of candidates) {
+    await visit(page, BASE_URL + '/?add-to-cart=' + encodeURIComponent(product.id));
+    await page.waitForTimeout(500);
+    const cartState = await page.evaluate(async url => {
+      try {
+        const response = await fetch(url, { credentials: 'same-origin' });
+        if (!response.ok) return { ok: false, count: 0 };
+        const cart = await response.json();
+        return {
+          ok: true,
+          count: Number(cart.items_count || (Array.isArray(cart.items) ? cart.items.length : 0))
+        };
+      } catch (_) {
+        return { ok: false, count: 0 };
       }
-      if (!ready) continue;
-      const button = form.locator('.single_add_to_cart_button').first();
-      if (!(await button.count())) continue;
-      await page.waitForFunction(() => {
-        const variation = document.querySelector('form.cart input.variation_id');
-        return !variation || Number(variation.value) > 0;
-      }, null, { timeout: 12000 }).catch(() => {});
-      if (!(await button.isEnabled())) continue;
-      await button.click();
-      await page.waitForTimeout(1300);
-      if (await page.locator('.woocommerce-error').count()) continue;
-      log('CHECKOUT_TEST_PRODUCT=' + productUrl);
-      return true;
-    } catch (_) {}
+    }, cartApiUrl);
+    if (cartState.count > 0) {
+      added.push(product.name);
+      log('CHECKOUT_TEST_CART_ITEM', product.id + ':' + product.name);
+      if (added.length >= 2 || cartState.count >= 2) break;
+    }
   }
-  throw new Error('NO_PURCHASABLE_SHIPPING_PRODUCT_FOUND');
+
+  const cartState = await page.evaluate(async url => {
+    try {
+      const response = await fetch(url, { credentials: 'same-origin' });
+      if (!response.ok) return { ok: false, count: 0 };
+      const cart = await response.json();
+      return { ok: true, count: Number(cart.items_count || (Array.isArray(cart.items) ? cart.items.length : 0)) };
+    } catch (_) {
+      return { ok: false, count: 0 };
+    }
+  }, cartApiUrl);
+  if (!cartState.count) throw new Error('NO_PURCHASABLE_SHIPPING_PRODUCT_ADDED');
+  log('CHECKOUT_TEST_CART_ITEMS_COUNT', cartState.count);
 }
 async function main() {
   const browser = await chromium.launch({ headless: true });
@@ -86,13 +111,13 @@ async function main() {
         const state = document.querySelector('#billing_state');
         const postcode = document.querySelector('#billing_postcode');
         if (!state || state.tagName !== 'SELECT' || !postcode) return { ok: false, reason: 'BILLING_STATE_OR_POSTCODE_MISSING' };
-        const madrid = Array.from(state.options).find(option => /madrid/i.test(option.textContent));
-        if (!madrid) return { ok: false, reason: 'MADRID_PROVINCE_OPTION_MISSING' };
-        state.value = madrid.value;
-        postcode.value = postcode.value === '28013' ? '28014' : '28013';
+        const cuenca = Array.from(state.options).find(option => /cuenca/i.test(option.textContent));
+        if (!cuenca) return { ok: false, reason: 'CUENCA_PROVINCE_OPTION_MISSING' };
+        state.value = cuenca.value;
+        postcode.value = postcode.value === '16400' ? '16401' : '16400';
         window.jQuery(state).trigger('change');
         window.jQuery(postcode).trigger('change');
-        return { ok: true, province: madrid.textContent.trim(), postcode: postcode.value };
+        return { ok: true, province: cuenca.textContent.trim(), postcode: postcode.value };
       });
       if (!address.ok) throw new Error('CHECKOUT_ADDRESS_SETUP_FAILED=' + address.reason);
       log('CHECKOUT_ADDRESS_TEST_VALUE', JSON.stringify(address));
@@ -131,7 +156,7 @@ async function main() {
       const address = await page.evaluate(() => {
         const postcode = document.querySelector('#billing_postcode');
         if (!postcode) return { ok: false };
-        postcode.value = postcode.value === '28014' ? '28013' : '28014';
+        postcode.value = postcode.value === '16401' ? '16400' : '16401';
         window.jQuery(postcode).trigger('change');
         return { ok: true, postcode: postcode.value };
       });
