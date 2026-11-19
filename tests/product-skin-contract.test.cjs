@@ -1731,7 +1731,7 @@ test('desktop purchase row hides the visual quantity label but names the native 
   const desktop = skinCss.slice(skinCss.lastIndexOf('@media (min-width: 1280px) {'));
   assert.ok(productUiJs.includes("input.setAttribute('aria-label', 'Cantidad')"));
   assert.match(skinCss, /div\.product form\.cart \.cr-product-quantity-label \{\s*display:\s*none !important;/s);
-  assert.match(desktop, /single_variation_wrap \.woocommerce-variation-add-to-cart \{[^}]*display:\s*flex;[^}]*flex-direction:\s*row;[^}]*flex-wrap:\s*nowrap;[^}]*gap:\s*8px;/s);
+  assert.match(desktop, /single_variation_wrap \.woocommerce-variation-add-to-cart \{[^}]*display:\s*flex(?:\s*!important)?;[^}]*flex-direction:\s*row;[^}]*flex-wrap:\s*nowrap;[^}]*gap:\s*8px;/s);
   assert.match(desktop, /product-type-simple form\.cart \{[^}]*display:\s*flex;[^}]*flex-direction:\s*row;[^}]*flex-wrap:\s*nowrap;[^}]*gap:\s*8px;/s);
   assert.match(desktop, /single_variation_wrap \.single_add_to_cart_button \{[^}]*flex:\s*1 1 auto;[^}]*height:\s*58px;/s);
   assert.match(desktop, /product-type-simple form\.cart \.single_add_to_cart_button \{[^}]*flex:\s*1 1 auto;[^}]*height:\s*58px;/s);
