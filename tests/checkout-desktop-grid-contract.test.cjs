@@ -64,6 +64,8 @@ test('order notes textarea has a full-height 88px minimum without reducing typog
   const textarea = ruleBody('body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel textarea#order_comments');
   assert.match(shell, /height:\s*auto\s*!important/);
   assert.match(shell, /min-height:\s*88px\s*!important/);
+  assert.match(checkoutCss, /\.cr-checkout-additional-info__panel \.cr-control-shell:has\(textarea#order_comments\)[^}]*> \.cr-control-shell__content,[\s\S]*?align-items:\s*stretch\s*!important/);
+  assert.match(checkoutCss, /\.cr-checkout-additional-info__panel \.cr-control-shell:has\(textarea#order_comments\) \.woocommerce-input-wrapper\s*\{[^}]*align-items:\s*stretch\s*!important/);
   assert.match(textarea, /min-height:\s*88px\s*!important/);
   assert.match(textarea, /height:\s*100%\s*!important/);
   assert.match(textarea, /line-height:\s*24px\s*!important/);

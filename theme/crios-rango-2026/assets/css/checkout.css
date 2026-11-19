@@ -653,6 +653,11 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-addition
   min-height: 88px !important;
 }
 
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel .cr-control-shell:has(textarea#order_comments) > .cr-control-shell__content,
+body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel .cr-control-shell:has(textarea#order_comments) .woocommerce-input-wrapper {
+  align-items: stretch !important;
+}
+
 body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info__panel textarea#order_comments {
   display: block;
   width: 100%;
