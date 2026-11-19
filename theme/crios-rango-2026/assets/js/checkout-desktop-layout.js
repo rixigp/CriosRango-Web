@@ -18,6 +18,13 @@
     return wrapper;
   }
 
+  function removeStaleShippingSections(shippingColumn, currentSection) {
+    Array.prototype.slice.call(shippingColumn.querySelectorAll('.cr-checkout-shipping-section'))
+      .forEach(function (existingSection) {
+        if (existingSection !== currentSection) existingSection.remove();
+      });
+  }
+
   function initCheckoutDesktopLayout() {
     var form = document.querySelector('body.woocommerce-checkout:not(.woocommerce-order-received) form.checkout.woocommerce-checkout');
     var customerDetails = form && form.querySelector(':scope > #customer_details');
@@ -45,15 +52,8 @@
     // adopting the freshly rendered section from the replacement table.
     var shippingRow = reviewTable && reviewTable.querySelector('.cr-checkout-shipping-section-row');
     var shippingSection = shippingRow && shippingRow.querySelector('.cr-checkout-shipping-section');
-    function removeStaleShippingSections(currentSection) {
-      Array.prototype.slice.call(shippingColumn.querySelectorAll('.cr-checkout-shipping-section'))
-        .forEach(function (existingSection) {
-          if (existingSection !== currentSection) existingSection.remove();
-        });
-    }
-
     if (shippingRow) {
-      removeStaleShippingSections(shippingSection);
+      removeStaleShippingSections(shippingColumn, shippingSection);
       if (shippingSection) {
         shippingColumn.insertBefore(shippingSection, customerShipping || null);
       }

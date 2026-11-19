@@ -983,7 +983,7 @@ jobs:
         run: node tests/desktop-targeted-browser.cjs
 
       - name: Run Checkout shipping fragment browser regression
-        if: steps.impact.outputs.run_checkout_browser == 'true' && steps.staging-head.outputs.current == 'true'
+        if: ${{ always() && !cancelled() && steps.impact.outputs.run_checkout_browser == 'true' && steps.staging-head.outputs.current == 'true' }}
         shell: bash
         env:
           STAGING_BASE_URL: https://criosrango.es/prueba
