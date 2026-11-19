@@ -132,9 +132,9 @@ test('long product description is a single accessible accordion with responsive 
   assert.ok(descriptionPlacement.includes('product.insertBefore(description, tabs || null)'));
   assert.ok(descriptionPlacement.includes('summary.insertBefore(description, purchaseForm)'));
   assert.ok(descriptionPlacement.includes("media.addEventListener('change', placeDescription)"));
-  assert.equal((skin.match(/add_action\\( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 \\)/g) || []).length, 1);
-  assert.equal((skin.match(/function cr2026_product_skin_description_accordion\\(/g) || []).length, 1);
-  assert.doesNotMatch(descriptionPlacement, /cloneNode|appendChild\\(description\\)\\s*;[\\s\\S]*?insertBefore/);
+  assert.equal((skin.match(/add_action\( 'woocommerce_single_product_summary', 'cr2026_product_skin_description_accordion', 25 \)/g) || []).length, 1);
+  assert.equal((skin.match(/function cr2026_product_skin_description_accordion\(/g) || []).length, 1);
+  assert.doesNotMatch(descriptionPlacement, /cloneNode|appendChild\(description\)\s*;[\s\S]*?insertBefore/);
   assert.ok(productUiJs.includes('initProductDescriptionPlacement();'));
   assert.ok(productUiJs.includes('function initProductDescriptionAccordion()'));
   assert.ok(productUiJs.includes("toggle.addEventListener('click'"));
