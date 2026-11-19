@@ -1714,12 +1714,7 @@ body.woocommerce-account:not(.logged-in) .cr-account-register .cr-account-regist
   margin: 0 0 16px !important;
   padding: 0 !important;
 }
-body.woocommerce-account:not(.logged-in) .cr-account-register .cr-account-register__row label {
-  display: block;
-  margin: 0 0 7px;
-  color: var(--cr-ink, #183b35);
-  font: 300 13px/18px "Roboto",Arial,sans-serif;
-}
+/* Leave label positioning to the same floating-control runtime used by login. */
 body.woocommerce-account:not(.logged-in) .cr-account-register .cr-account-register__row input {
   box-sizing: border-box;
   display: block;
