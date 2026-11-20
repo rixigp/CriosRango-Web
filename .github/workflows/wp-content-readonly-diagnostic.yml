@@ -153,6 +153,17 @@ jobs:
             if grep -Rni --include='*.php' -E 'criosrango-filter|criosrango_filter' "$WORK" > "$WORK/current-matches.txt"; then
               echo "FILTER_API_IMPLEMENTATION_FOUND=YES"
               cat "$WORK/current-matches.txt"
+
+              # Fetch only the two helper files directly used by the REST callback.
+              {
+                make_lftp_header
+                printf 'get "plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-eligibility.php" -o "%s"\n' "$WORK/plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-eligibility.php"
+                printf 'get "plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-allowlist.php" -o "%s"\n' "$WORK/plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-allowlist.php"
+                printf 'bye\n'
+              } > "$GET_SCRIPT"
+              mkdir -p "$WORK/plugins/criosrango-filtros-catalogo/includes"
+              lftp -f "$GET_SCRIPT"
+
               echo "MATCHING_PHP_FILES_BEGIN"
               while IFS= read -r matched_file; do
                 file="${matched_file%%:*}"
@@ -161,8 +172,16 @@ jobs:
                   *) continue ;;
                 esac
                 echo "===== SOURCE: ${file#"$WORK"/} ====="
-                nl -ba "$file" | sed -n '1,420p'
+                nl -ba "$file"
               done < <(cut -d: -f1 "$WORK/current-matches.txt" | sort -u)
+              for helper in \
+                "$WORK/plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-eligibility.php" \
+                "$WORK/plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-allowlist.php"; do
+                if [ -f "$helper" ]; then
+                  echo "===== SOURCE: ${helper#"$WORK"/} ====="
+                  nl -ba "$helper"
+                fi
+              done
               exit 0
             fi
             echo "CANDIDATE_ROUTE_MATCH=NO"
