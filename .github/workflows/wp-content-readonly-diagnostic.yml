@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  inspect-wp-content:
+  inspect-plugin-candidates:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -22,27 +22,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lftp
 
-      - name: Enumerate and download PHP files from confirmed relative paths
+      - name: List plugin names and inspect candidates only
         shell: bash
         env:
           WP_CONTENT_FTP_HOST: ${{ secrets.WP_CONTENT_FTP_HOST }}
           WP_CONTENT_FTP_USER: ${{ secrets.WP_CONTENT_FTP_USER }}
           WP_CONTENT_FTP_PASSWORD: ${{ secrets.WP_CONTENT_FTP_PASSWORD }}
-          WP_CONTENT_FTP_PATH: ${{ secrets.WP_CONTENT_FTP_PATH }}
         run: |
           set -euo pipefail
           : "${WP_CONTENT_FTP_HOST:?Missing WP_CONTENT_FTP_HOST}"
           : "${WP_CONTENT_FTP_USER:?Missing WP_CONTENT_FTP_USER}"
           : "${WP_CONTENT_FTP_PASSWORD:?Missing WP_CONTENT_FTP_PASSWORD}"
 
-          WORK=/tmp/wp-content
+          WORK=/tmp/wp-plugin-candidates
           mkdir -p "$WORK"
-          ROOT_SCRIPT="$(mktemp)"
+          BASE_SCRIPT="$(mktemp)"
           LIST_SCRIPT="$(mktemp)"
+          FIND_SCRIPT="$(mktemp)"
           GET_SCRIPT="$(mktemp)"
-          trap 'rm -f "$ROOT_SCRIPT" "$LIST_SCRIPT" "$GET_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
+          trap 'rm -f "$BASE_SCRIPT" "$LIST_SCRIPT" "$FIND_SCRIPT" "$GET_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
 
-          {
+          make_lftp_header() {
             printf 'set ftp:ssl-force true\n'
             printf 'set ftp:ssl-protect-data true\n'
             printf 'set ssl:verify-certificate true\n'
@@ -51,101 +51,111 @@ jobs:
             printf 'set net:timeout 20\n'
             printf 'set cmd:fail-exit yes\n'
             printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
-            printf 'pwd\n'
-            printf 'cls -la\n'
-            printf 'cd .\n'
-            printf 'cls -la\n'
-            printf 'bye\n'
-          } > "$ROOT_SCRIPT"
-          lftp -f "$ROOT_SCRIPT" > /tmp/wp-content-root.log 2>&1
-          echo "FTP_CONNECTION=OK"
-          echo "FTP_ROOT=wp-content"
-          echo "FTP_INITIAL_PWD=/ (chroot root; host/port suppressed)"
-          echo "WP_CONTENT_FTP_PATH_RESOLVED=."
-          echo "FTP_ROOT_CONTENTS_BEGIN"
-          sed -E '/^[^ ]+:[0-9]+\/?$/d; s#ftp://[^ ]+#ftp://[redacted]#g' /tmp/wp-content-root.log
-          echo "FTP_ROOT_CONTENTS_END"
-          echo "PLUGINS_PATH=plugins/"
-          echo "MU_PLUGINS_PATH=mu-plugins/"
+          }
 
-          # lftp find recursively enumerates names; no remote mutation is possible.
+          # The only directory listings in this workflow are these two direct children.
           {
-            printf 'set ftp:ssl-force true\n'
-            printf 'set ftp:ssl-protect-data true\n'
-            printf 'set ssl:verify-certificate true\n'
-            printf 'set ftp:passive-mode true\n'
-            printf 'set net:max-retries 2\n'
-            printf 'set net:timeout 20\n'
-            printf 'set cmd:fail-exit yes\n'
-            printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
-            printf 'cd .\n'
-            printf 'find plugins\n'
-            printf 'find mu-plugins\n'
+            make_lftp_header
+            printf 'cls -1 plugins/\n'
             printf 'bye\n'
           } > "$LIST_SCRIPT"
-          lftp -f "$LIST_SCRIPT" > /tmp/wp-content-remote-files.txt 2>/tmp/wp-content-find-errors.log
-
-          # Accept only ordinary relative PHP paths; reject any path traversal or shell metacharacters.
-          grep -E '^(plugins|mu-plugins)/[A-Za-z0-9._/-]+\.php$' /tmp/wp-content-remote-files.txt | sort -u > /tmp/wp-content-php-files.txt || true
-          PHP_COUNT="$(wc -l < /tmp/wp-content-php-files.txt | tr -d ' ')"
-          echo "REMOTE_PHP_FILES=$PHP_COUNT"
-          if [ "$PHP_COUNT" -eq 0 ]; then
-            echo "REMOTE_FIND_SAMPLE_BEGIN"
-            sed -n '1,100p' /tmp/wp-content-remote-files.txt
-            echo "REMOTE_FIND_SAMPLE_END"
-            cat /tmp/wp-content-find-errors.log || true
-            exit 1
-          fi
+          lftp -f "$LIST_SCRIPT" > "$WORK/plugins.names"
 
           {
-            printf 'set ftp:ssl-force true\n'
-            printf 'set ftp:ssl-protect-data true\n'
-            printf 'set ssl:verify-certificate true\n'
-            printf 'set ftp:passive-mode true\n'
-            printf 'set net:max-retries 2\n'
-            printf 'set net:timeout 20\n'
-            printf 'set cmd:fail-exit yes\n'
-            printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
-            printf 'cd .\n'
-            while IFS= read -r remote_file; do
-              local_file="$WORK/$remote_file"
-              mkdir -p "$(dirname "$local_file")"
-              printf 'get "%s" -o "%s"\n' "$remote_file" "$local_file"
-            done < /tmp/wp-content-php-files.txt
+            make_lftp_header
+            printf 'cls -1 mu-plugins/\n'
             printf 'bye\n'
-          } > "$GET_SCRIPT"
-          lftp -f "$GET_SCRIPT"
-          echo "LOCAL_PHP_FILES=$(find "$WORK" -type f -name '*.php' | wc -l)"
+          } > "$LIST_SCRIPT"
+          lftp -f "$LIST_SCRIPT" > "$WORK/mu-plugins.names"
 
-      - name: Find REST route and inspect callback source
-        if: success()
-        shell: bash
-        run: |
-          set -euo pipefail
-          ROOT=/tmp/wp-content
-          echo "===== EXACT ROUTE SEARCH ====="
-          grep -Rni --include='*.php' 'criosrango-filter' "$ROOT" || true
-          grep -Rni --include='*.php' 'criosrango-filter/v1' "$ROOT" || true
-          echo "===== CRIOS REGISTER_REST_ROUTE ====="
-          grep -Rni --include='*.php' 'register_rest_route' "$ROOT" | grep -i 'crios' || true
+          normalize_names() {
+            sed -E 's#\r$##; s#/$##' "$1" |
+              grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*$' |
+              sort -fu || true
+          }
+          normalize_names "$WORK/plugins.names" > "$WORK/plugins.normalized"
+          normalize_names "$WORK/mu-plugins.names" > "$WORK/mu-plugins.normalized"
 
-          MATCH="$(grep -Ril --include='*.php' 'criosrango-filter/v1' "$ROOT" | head -n 1 || true)"
-          if [ -z "$MATCH" ]; then
-            MATCH="$(grep -Ril --include='*.php' 'criosrango-filter' "$ROOT" | head -n 1 || true)"
-          fi
-          if [ -z "$MATCH" ]; then
-            echo "FILTER_API_IMPLEMENTATION_FOUND=NO"
+          echo "FTP_ROOT=wp-content"
+          echo "SEARCH_PATHS=plugins/,mu-plugins/"
+          echo "UPLOADS_SCANNED=NO"
+          echo "UPLOADS_DOWNLOADED=NO"
+          echo "THEMES_DOWNLOADED=NO"
+          echo "MEDIA_DOWNLOADED=NO"
+          echo "===== PLUGINS DIRECT NAMES ====="
+          cat "$WORK/plugins.normalized"
+          echo "===== MU-PLUGINS DIRECT NAMES ====="
+          cat "$WORK/mu-plugins.normalized"
+
+          : > "$WORK/candidates.txt"
+          for base in plugins mu-plugins; do
+            while IFS= read -r name; do
+              [ -n "$name" ] || continue
+              if printf '%s\n' "$name" | grep -Eiq '(crios|rango|filter|api|rest|woocommerce|custom)'; then
+                printf '%s/%s\n' "$base" "$name" >> "$WORK/candidates.txt"
+              fi
+            done < "$WORK/$base.normalized"
+          done
+
+          echo "===== PRIORITIZED CANDIDATES ====="
+          sort -fu "$WORK/candidates.txt" -o "$WORK/candidates.txt"
+          cat "$WORK/candidates.txt"
+          echo "PLUGIN_CANDIDATES=$(paste -sd ';' "$WORK/candidates.txt")"
+
+          if [ ! -s "$WORK/candidates.txt" ]; then
+            echo "FILTER_API_IMPLEMENTATION_FOUND=NO_CANDIDATES"
             exit 0
           fi
 
-          echo "FILTER_API_IMPLEMENTATION_FOUND=YES"
-          RELATIVE_FILE="${MATCH#"$ROOT"/}"
-          echo "PLUGIN_PATH=${RELATIVE_FILE%%/*}/"
-          echo "PLUGIN_NAME=${RELATIVE_FILE%%/*}"
-          echo "ENDPOINT_FILE=$RELATIVE_FILE"
-          echo "===== MATCHING SOURCE ====="
-          nl -ba "$MATCH" | sed -n '1,360p'
-          echo "===== REST ROUTE AND CALLBACK CONTEXT ====="
-          grep -Rni --include='*.php' -C 12 'criosrango-filter/v1' "$ROOT" || true
-          echo "===== CALLBACK PERFORMANCE SIGNALS ====="
-          grep -Rni --include='*.php' -E 'WP_Query|wc_get_products|wc_get_product|variations|get_available_variations|get_children|get_post_meta|update_post_meta|get_transient|set_transient|wp_cache_(get|set)|wc_product_attributes_lookup|\$wpdb' "$(dirname "$MATCH")" || true
+          # Process one candidate at a time; stop immediately when the route is found.
+          while IFS= read -r candidate; do
+            [ -n "$candidate" ] || continue
+            echo "INSPECTING_CANDIDATE=$candidate"
+            : > "$WORK/current-php.txt"
+
+            if printf '%s' "$candidate" | grep -Eiq '\.php$'; then
+              printf '%s\n' "$candidate" > "$WORK/current-php.txt"
+            else
+              {
+                make_lftp_header
+                printf 'find "%s"\n' "$candidate"
+                printf 'bye\n'
+              } > "$FIND_SCRIPT"
+              lftp -f "$FIND_SCRIPT" > "$WORK/current-find.txt"
+              grep -E "^$candidate/[A-Za-z0-9._/-]+\.php$" "$WORK/current-find.txt" |
+                grep -Ev '(^|/)\.\.?(/|$)' |
+                sort -u > "$WORK/current-php.txt" || true
+            fi
+
+            if [ -s "$WORK/current-php.txt" ]; then
+              {
+                make_lftp_header
+                while IFS= read -r remote_file; do
+                  local_file="$WORK/$remote_file"
+                  mkdir -p "$(dirname "$local_file")"
+                  printf 'get "%s" -o "%s"\n' "$remote_file" "$local_file"
+                done < "$WORK/current-php.txt"
+                printf 'bye\n'
+              } > "$GET_SCRIPT"
+              lftp -f "$GET_SCRIPT"
+            fi
+
+            if grep -Rni --include='*.php' -E 'criosrango-filter(/v1)?|register_rest_route' "$WORK" > "$WORK/current-matches.txt"; then
+              echo "FILTER_API_IMPLEMENTATION_FOUND=YES"
+              cat "$WORK/current-matches.txt"
+              echo "MATCHING_PHP_FILES_BEGIN"
+              while IFS= read -r matched_file; do
+                file="${matched_file%%:*}"
+                case "$file" in
+                  "$WORK/"*) ;;
+                  *) continue ;;
+                esac
+                echo "===== SOURCE: ${file#"$WORK"/} ====="
+                nl -ba "$file" | sed -n '1,420p'
+              done < <(cut -d: -f1 "$WORK/current-matches.txt" | sort -u)
+              exit 0
+            fi
+            echo "CANDIDATE_ROUTE_MATCH=NO"
+          done < "$WORK/candidates.txt"
+
+          echo "FILTER_API_IMPLEMENTATION_FOUND=NO_IN_PRIORITIZED_CANDIDATES"
