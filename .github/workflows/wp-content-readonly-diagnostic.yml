@@ -13,7 +13,7 @@ permissions:
 jobs:
   inspect-campaign-links-plugin:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 12
     steps:
       - name: Install lftp
         shell: bash
@@ -38,9 +38,9 @@ jobs:
 
           WORK=/tmp/campaign-links-plugin
           mkdir -p "$WORK"
-          FIND_SCRIPT="$(mktemp)"
+          LIST_SCRIPT="$(mktemp)"
           GET_SCRIPT="$(mktemp)"
-          trap 'rm -f "$FIND_SCRIPT" "$GET_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
+          trap 'rm -f "$LIST_SCRIPT" "$GET_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
 
           make_header() {
             printf 'set ftp:ssl-force true\n'
@@ -68,11 +68,13 @@ jobs:
           while IFS= read -r dir; do
             {
               make_header
-              printf 'find "%s"\n' "$dir"
+              printf 'cd "%s"\n' "$dir"
+              printf 'cls -1\n'
               printf 'bye\n'
-            } > "$FIND_SCRIPT"
-            lftp -f "$FIND_SCRIPT" > "$WORK/find.txt"
-            grep -E "^$dir/[^/]+\.php$" "$WORK/find.txt" >> "$WORK/root-php.txt" || true
+            } > "$LIST_SCRIPT"
+            lftp -f "$LIST_SCRIPT" > "$WORK/root-list.txt"
+            grep -E '^[A-Za-z0-9._-]+\.php$' "$WORK/root-list.txt" |
+              sed "s#^#$dir/#" >> "$WORK/root-php.txt" || true
           done < "$WORK/crios-directories.txt"
           sort -u "$WORK/root-php.txt" -o "$WORK/root-php.txt"
 
