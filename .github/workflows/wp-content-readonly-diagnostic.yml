@@ -22,7 +22,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lftp
 
-      - name: Locate plugin by directory and header
+      - name: Identify Críos Rango plugin headers only
         shell: bash
         env:
           WP_CONTENT_FTP_HOST: ${{ secrets.WP_CONTENT_FTP_HOST }}
@@ -38,8 +38,9 @@ jobs:
 
           WORK=/tmp/campaign-links-plugin
           mkdir -p "$WORK"
-          SCRIPT="$(mktemp)"
-          trap 'rm -f "$SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
+          FIND_SCRIPT="$(mktemp)"
+          GET_SCRIPT="$(mktemp)"
+          trap 'rm -f "$FIND_SCRIPT" "$GET_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
 
           make_header() {
             printf 'set ftp:ssl-force true\n'
@@ -52,33 +53,47 @@ jobs:
             printf 'open -u "%s","%s" "ftp://%s:21"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST"
           }
 
-          # FTP chroot is already wp-content; WP_CONTENT_FTP_PATH is only validated,
-          # never used to escape or broaden the permitted root.
-          {
-            make_header
-            printf 'cd plugins/\n'
-            printf 'cls -1\n'
-            printf 'bye\n'
-          } > "$SCRIPT"
-          lftp -f "$SCRIPT" > "$WORK/plugin-directories.txt"
+          cat > "$WORK/crios-directories.txt" <<'EOF'
+          plugins/criosrango-cache-catalogo
+          plugins/criosrango-configuracion-inicio
+          plugins/criosrango-cuenta-app
+          plugins/criosrango-filtros-catalogo
+          plugins/criosrango-notificaciones-push
+          plugins/criosrango-origen-outlet
+          plugins/criosrango-pagos-app
+          plugins/criosrango-pedidos-app
+          EOF
+
+          : > "$WORK/root-php.txt"
+          while IFS= read -r dir; do
+            {
+              make_header
+              printf 'find "%s"\n' "$dir"
+              printf 'bye\n'
+            } > "$FIND_SCRIPT"
+            lftp -f "$FIND_SCRIPT" > "$WORK/find.txt"
+            grep -E "^$dir/[^/]+\.php$" "$WORK/find.txt" >> "$WORK/root-php.txt" || true
+          done < "$WORK/crios-directories.txt"
+          sort -u "$WORK/root-php.txt" -o "$WORK/root-php.txt"
 
           echo "FTP_ROOT=wp-content"
-          echo "SEARCH_SCOPE=plugins/"
+          echo "INSPECTED_DIRECTORIES=8_criosrango_plugin_roots_only"
           echo "THEME_FILES_SCANNED=NO"
           echo "THEME_FILES_DOWNLOADED=NO"
-          echo "PLUGIN_DIRECTORIES_BEGIN"
-          cat "$WORK/plugin-directories.txt"
-          echo "PLUGIN_DIRECTORIES_END"
+          echo "ROOT_PLUGIN_PHP_FILES=$(wc -l < "$WORK/root-php.txt" | tr -d ' ')"
+          cat "$WORK/root-php.txt"
 
-          grep -Ei 'crios|enlaces|campana|links' "$WORK/plugin-directories.txt" > "$WORK/name-matches.txt" || true
-          echo "PLUGIN_NAME_MATCHES_BEGIN"
-          cat "$WORK/name-matches.txt"
-          echo "PLUGIN_NAME_MATCHES_END"
+          {
+            make_header
+            while IFS= read -r remote_file; do
+              [ -n "$remote_file" ] || continue
+              local_file="$WORK/$remote_file"
+              mkdir -p "$(dirname "$local_file")"
+              printf 'get "%s" -o "%s"\n' "$remote_file" "$local_file"
+            done < "$WORK/root-php.txt"
+            printf 'bye\n'
+          } > "$GET_SCRIPT"
+          lftp -f "$GET_SCRIPT"
 
-          # No plugin source is downloaded at this stage. If the exact directory
-          # is not apparent, the directory listing is the evidence for next step.
-          if [ -s "$WORK/name-matches.txt" ]; then
-            echo "PLUGIN_DIRECTORY_CANDIDATES=$(paste -sd ';' "$WORK/name-matches.txt")"
-          else
-            echo "PLUGIN_DIRECTORY_CANDIDATES=NO_DIRECT_NAME_MATCH"
-          fi
+          echo "===== PLUGIN HEADERS / NAME MATCHES ====="
+          grep -RniE --include='*.php' 'Plugin Name:|enlaces|campaña|campana|campaign|links' "$WORK/plugins" || true
