@@ -56,14 +56,16 @@ jobs:
           # The only directory listings in this workflow are these two direct children.
           {
             make_lftp_header
-            printf 'cls -1 plugins/\n'
+            printf 'cd plugins/\n'
+            printf 'cls -la\n'
             printf 'bye\n'
           } > "$LIST_SCRIPT"
           lftp -f "$LIST_SCRIPT" > "$WORK/plugins.names"
 
           {
             make_lftp_header
-            printf 'cls -1 mu-plugins/\n'
+            printf 'cd mu-plugins/\n'
+            printf 'cls -la\n'
             printf 'bye\n'
           } > "$LIST_SCRIPT"
           lftp -f "$LIST_SCRIPT" > "$WORK/mu-plugins.names"
@@ -76,9 +78,9 @@ jobs:
           }
           normalize_names "$WORK/plugins.names" > "$WORK/plugins.normalized"
           normalize_names "$WORK/mu-plugins.names" > "$WORK/mu-plugins.normalized"
-          awk '$1 !~ /^d/ && $NF ~ /\\.php$/ {print $NF}' "$WORK/mu-plugins.names" |
+          awk '$1 !~ /^d/ && $NF ~ /\.php$/ {print $NF}' "$WORK/mu-plugins.names" |
             sed -E 's#\\r$##' |
-            grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*\\.php$' |
+            grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*\.php$' |
             sort -fu >> "$WORK/mu-plugins.normalized"
           sort -fu "$WORK/mu-plugins.normalized" -o "$WORK/mu-plugins.normalized"
 
