@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  inspect-campaign-links-plugin:
+  inspect-other-plugin-headers:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -22,7 +22,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lftp
 
-      - name: Identify Críos Rango plugin headers only
+      - name: Verify remaining active plugin headers only
         shell: bash
         env:
           WP_CONTENT_FTP_HOST: ${{ secrets.WP_CONTENT_FTP_HOST }}
@@ -53,18 +53,25 @@ jobs:
             printf 'open -u "%s","%s" "ftp://%s:21"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST"
           }
 
-          cat > "$WORK/crios-directories.txt" <<'EOF'
-          plugins/criosrango-cache-catalogo
-          plugins/criosrango-configuracion-inicio
-          plugins/criosrango-cuenta-app
-          plugins/criosrango-filtros-catalogo
-          plugins/criosrango-notificaciones-push
-          plugins/criosrango-origen-outlet
-          plugins/criosrango-pagos-app
-          plugins/criosrango-pedidos-app
+          cat > "$WORK/other-directories.txt" <<'EOF'
+          plugins/advanced-dynamic-pricing-for-woocommerce-pro
+          plugins/cecabank-woocommerce-0.4.1
+          plugins/contact-form-71
+          plugins/cookie-law-info
+          plugins/google-listings-and-ads
+          plugins/prodscribe-ai-for-woocommerce
+          plugins/variation-swatches-for-woocommerce
+          plugins/woocommerce
+          plugins/woocommerce-payments
+          plugins/woocommerce-pdf-invoices-packing-slips
+          plugins/wp-frontend-delete-account
+          plugins/wployalty
+          plugins/wps-hide-login
+          plugins/yith-woocommerce-ajax-navigation
+          plugins/yith-woocommerce-wishlist1
           EOF
 
-          : > "$WORK/root-php.txt"
+          : > "$WORK/other-root-php.txt"
           while IFS= read -r dir; do
             {
               make_header
@@ -74,16 +81,16 @@ jobs:
             } > "$LIST_SCRIPT"
             lftp -f "$LIST_SCRIPT" > "$WORK/root-list.txt"
             grep -E '^[A-Za-z0-9._-]+\.php$' "$WORK/root-list.txt" |
-              sed "s#^#$dir/#" >> "$WORK/root-php.txt" || true
-          done < "$WORK/crios-directories.txt"
-          sort -u "$WORK/root-php.txt" -o "$WORK/root-php.txt"
+              sed "s#^#$dir/#" >> "$WORK/other-root-php.txt" || true
+          done < "$WORK/other-directories.txt"
+          sort -u "$WORK/other-root-php.txt" -o "$WORK/other-root-php.txt"
 
           echo "FTP_ROOT=wp-content"
-          echo "INSPECTED_DIRECTORIES=8_criosrango_plugin_roots_only"
+          echo "INSPECTED_SCOPE=remaining_active_plugin_root_php_only"
           echo "THEME_FILES_SCANNED=NO"
           echo "THEME_FILES_DOWNLOADED=NO"
-          echo "ROOT_PLUGIN_PHP_FILES=$(wc -l < "$WORK/root-php.txt" | tr -d ' ')"
-          cat "$WORK/root-php.txt"
+          echo "ROOT_PLUGIN_PHP_FILES=$(wc -l < "$WORK/other-root-php.txt" | tr -d ' ')"
+          cat "$WORK/other-root-php.txt"
 
           {
             make_header
@@ -92,10 +99,10 @@ jobs:
               local_file="$WORK/$remote_file"
               mkdir -p "$(dirname "$local_file")"
               printf 'get "%s" -o "%s"\n' "$remote_file" "$local_file"
-            done < "$WORK/root-php.txt"
+            done < "$WORK/other-root-php.txt"
             printf 'bye\n'
           } > "$GET_SCRIPT"
           lftp -f "$GET_SCRIPT"
 
-          echo "===== PLUGIN HEADERS / NAME MATCHES ====="
-          grep -RniE --include='*.php' 'Plugin Name:|enlaces|campaña|campana|campaign|links' "$WORK/plugins" || true
+          echo "===== PLUGIN HEADERS / CAMPAIGN LINKS MATCHES ====="
+          grep -RniE --include='*.php' 'Plugin Name:|Enlaces de campaña|enlaces de campana|campaign links|campaign-links' "$WORK/plugins" || true
