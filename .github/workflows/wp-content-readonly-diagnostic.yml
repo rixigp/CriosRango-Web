@@ -1,4 +1,4 @@
-name: Temporary read-only WordPress plugin inspection
+name: Temporary read-only campaign links plugin inspection
 
 on:
   push:
@@ -11,9 +11,9 @@ permissions:
   contents: read
 
 jobs:
-  inspect-plugin-candidates:
+  inspect-campaign-links-plugin:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       - name: Install lftp
         shell: bash
@@ -22,27 +22,26 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lftp
 
-      - name: List plugin names and inspect candidates only
+      - name: Locate plugin by directory and header
         shell: bash
         env:
           WP_CONTENT_FTP_HOST: ${{ secrets.WP_CONTENT_FTP_HOST }}
           WP_CONTENT_FTP_USER: ${{ secrets.WP_CONTENT_FTP_USER }}
           WP_CONTENT_FTP_PASSWORD: ${{ secrets.WP_CONTENT_FTP_PASSWORD }}
+          WP_CONTENT_FTP_PATH: ${{ secrets.WP_CONTENT_FTP_PATH }}
         run: |
           set -euo pipefail
           : "${WP_CONTENT_FTP_HOST:?Missing WP_CONTENT_FTP_HOST}"
           : "${WP_CONTENT_FTP_USER:?Missing WP_CONTENT_FTP_USER}"
           : "${WP_CONTENT_FTP_PASSWORD:?Missing WP_CONTENT_FTP_PASSWORD}"
+          : "${WP_CONTENT_FTP_PATH:?Missing WP_CONTENT_FTP_PATH}"
 
-          WORK=/tmp/wp-plugin-candidates
+          WORK=/tmp/campaign-links-plugin
           mkdir -p "$WORK"
-          BASE_SCRIPT="$(mktemp)"
-          LIST_SCRIPT="$(mktemp)"
-          FIND_SCRIPT="$(mktemp)"
-          GET_SCRIPT="$(mktemp)"
-          trap 'rm -f "$BASE_SCRIPT" "$LIST_SCRIPT" "$FIND_SCRIPT" "$GET_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
+          SCRIPT="$(mktemp)"
+          trap 'rm -f "$SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
 
-          make_lftp_header() {
+          make_header() {
             printf 'set ftp:ssl-force true\n'
             printf 'set ftp:ssl-protect-data true\n'
             printf 'set ssl:verify-certificate true\n'
@@ -50,141 +49,36 @@ jobs:
             printf 'set net:max-retries 2\n'
             printf 'set net:timeout 20\n'
             printf 'set cmd:fail-exit yes\n'
-            printf 'open -u "%s","%s" "ftp://%s:%s"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST" "${SFTP_PORT:-21}"
+            printf 'open -u "%s","%s" "ftp://%s:21"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST"
           }
 
-          # The only directory listings in this workflow are these two direct children.
+          # FTP chroot is already wp-content; WP_CONTENT_FTP_PATH is only validated,
+          # never used to escape or broaden the permitted root.
           {
-            make_lftp_header
+            make_header
             printf 'cd plugins/\n'
-            printf 'cls -la\n'
+            printf 'cls -1\n'
             printf 'bye\n'
-          } > "$LIST_SCRIPT"
-          lftp -f "$LIST_SCRIPT" > "$WORK/plugins.names"
-
-          {
-            make_lftp_header
-            printf 'cd mu-plugins/\n'
-            printf 'cls -la\n'
-            printf 'bye\n'
-          } > "$LIST_SCRIPT"
-          lftp -f "$LIST_SCRIPT" > "$WORK/mu-plugins.names"
-
-          normalize_names() {
-            awk '$1 ~ /^d/ {print $NF}' "$1" |
-              sed -E 's#/$##' |
-              grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*$' |
-              sort -fu || true
-          }
-          normalize_names "$WORK/plugins.names" > "$WORK/plugins.normalized"
-          normalize_names "$WORK/mu-plugins.names" > "$WORK/mu-plugins.normalized"
-          awk '$1 !~ /^d/ && $NF ~ /\.php$/ {print $NF}' "$WORK/mu-plugins.names" |
-            sed -E 's#\\r$##' |
-            grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*\.php$' |
-            sort -fu >> "$WORK/mu-plugins.normalized"
-          sort -fu "$WORK/mu-plugins.normalized" -o "$WORK/mu-plugins.normalized"
+          } > "$SCRIPT"
+          lftp -f "$SCRIPT" > "$WORK/plugin-directories.txt"
 
           echo "FTP_ROOT=wp-content"
-          echo "SEARCH_PATHS=plugins/,mu-plugins/"
-          echo "UPLOADS_SCANNED=NO"
-          echo "UPLOADS_DOWNLOADED=NO"
-          echo "THEMES_DOWNLOADED=NO"
-          echo "MEDIA_DOWNLOADED=NO"
-          echo "===== PLUGINS DIRECT NAMES ====="
-          cat "$WORK/plugins.normalized"
-          echo "===== MU-PLUGINS DIRECT NAMES ====="
-          cat "$WORK/mu-plugins.normalized"
+          echo "SEARCH_SCOPE=plugins/"
+          echo "THEME_FILES_SCANNED=NO"
+          echo "THEME_FILES_DOWNLOADED=NO"
+          echo "PLUGIN_DIRECTORIES_BEGIN"
+          cat "$WORK/plugin-directories.txt"
+          echo "PLUGIN_DIRECTORIES_END"
 
-          # Continue from the most relevant uninspected catalog plugin.
-          # The previous run's generic register_rest_route match was a false positive:
-          # it registered criosrango/v1/home-config, not criosrango-filter/v1/query.
-          printf '%s\n' \
-            'plugins/criosrango-filtros-catalogo' \
-            'plugins/criosrango-cache-catalogo' \
-            'plugins/criosrango-cuenta-app' \
-            'plugins/criosrango-pedidos-app' \
-            'plugins/criosrango-pagos-app' \
-            'plugins/criosrango-origen-outlet' \
-            'plugins/criosrango-notificaciones-push' \
-            'mu-plugins/criosrango-store-api-diag.php' > "$WORK/candidates.txt"
+          grep -Ei 'crios|enlaces|campana|links' "$WORK/plugin-directories.txt" > "$WORK/name-matches.txt" || true
+          echo "PLUGIN_NAME_MATCHES_BEGIN"
+          cat "$WORK/name-matches.txt"
+          echo "PLUGIN_NAME_MATCHES_END"
 
-          echo "===== NEXT TARGETED CANDIDATES ====="
-          cat "$WORK/candidates.txt"
-          echo "PLUGIN_CANDIDATES=$(paste -sd ';' "$WORK/candidates.txt")"
-
-          if [ ! -s "$WORK/candidates.txt" ]; then
-            echo "FILTER_API_IMPLEMENTATION_FOUND=NO_CANDIDATES"
-            exit 0
+          # No plugin source is downloaded at this stage. If the exact directory
+          # is not apparent, the directory listing is the evidence for next step.
+          if [ -s "$WORK/name-matches.txt" ]; then
+            echo "PLUGIN_DIRECTORY_CANDIDATES=$(paste -sd ';' "$WORK/name-matches.txt")"
+          else
+            echo "PLUGIN_DIRECTORY_CANDIDATES=NO_DIRECT_NAME_MATCH"
           fi
-
-          # Process one candidate at a time; stop immediately when the route is found.
-          while IFS= read -r candidate; do
-            [ -n "$candidate" ] || continue
-            echo "INSPECTING_CANDIDATE=$candidate"
-            : > "$WORK/current-php.txt"
-
-            if printf '%s' "$candidate" | grep -Eiq '\.php$'; then
-              printf '%s\n' "$candidate" > "$WORK/current-php.txt"
-            else
-              {
-                make_lftp_header
-                printf 'find "%s"\n' "$candidate"
-                printf 'bye\n'
-              } > "$FIND_SCRIPT"
-              lftp -f "$FIND_SCRIPT" > "$WORK/current-find.txt"
-              grep -E "^$candidate/[A-Za-z0-9._/-]+\.php$" "$WORK/current-find.txt" |
-                grep -Ev '(^|/)\.\.?(/|$)' |
-                sort -u > "$WORK/current-php.txt" || true
-            fi
-
-            if [ -s "$WORK/current-php.txt" ]; then
-              {
-                make_lftp_header
-                while IFS= read -r remote_file; do
-                  local_file="$WORK/$remote_file"
-                  mkdir -p "$(dirname "$local_file")"
-                  printf 'get "%s" -o "%s"\n' "$remote_file" "$local_file"
-                done < "$WORK/current-php.txt"
-                printf 'bye\n'
-              } > "$GET_SCRIPT"
-              lftp -f "$GET_SCRIPT"
-            fi
-
-            if grep -Rni --include='*.php' -E 'criosrango-filter|criosrango_filter' "$WORK" > "$WORK/current-matches.txt"; then
-              echo "FILTER_API_IMPLEMENTATION_FOUND=YES"
-              cat "$WORK/current-matches.txt"
-
-              # Fetch only the two helper files directly used by the REST callback.
-              {
-                make_lftp_header
-                printf 'get "plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-eligibility.php" -o "%s"\n' "$WORK/plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-eligibility.php"
-                printf 'get "plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-allowlist.php" -o "%s"\n' "$WORK/plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-allowlist.php"
-                printf 'bye\n'
-              } > "$GET_SCRIPT"
-              mkdir -p "$WORK/plugins/criosrango-filtros-catalogo/includes"
-              lftp -f "$GET_SCRIPT"
-
-              echo "MATCHING_PHP_FILES_BEGIN"
-              while IFS= read -r matched_file; do
-                file="${matched_file%%:*}"
-                case "$file" in
-                  "$WORK/"*) ;;
-                  *) continue ;;
-                esac
-                echo "===== SOURCE: ${file#"$WORK"/} ====="
-                nl -ba "$file"
-              done < <(cut -d: -f1 "$WORK/current-matches.txt" | sort -u)
-              for helper in \
-                "$WORK/plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-eligibility.php" \
-                "$WORK/plugins/criosrango-filtros-catalogo/includes/class-criosrango-filter-allowlist.php"; do
-                if [ -f "$helper" ]; then
-                  echo "===== SOURCE: ${helper#"$WORK"/} ====="
-                  nl -ba "$helper"
-                fi
-              done
-              exit 0
-            fi
-            echo "CANDIDATE_ROUTE_MATCH=NO"
-          done < "$WORK/candidates.txt"
-
-          echo "FILTER_API_IMPLEMENTATION_FOUND=NO_IN_PRIORITIZED_CANDIDATES"
