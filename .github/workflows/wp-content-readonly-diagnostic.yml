@@ -69,12 +69,18 @@ jobs:
           lftp -f "$LIST_SCRIPT" > "$WORK/mu-plugins.names"
 
           normalize_names() {
-            sed -E 's#\r$##; s#/$##' "$1" |
+            awk '$1 ~ /^d/ {print $NF}' "$1" |
+              sed -E 's#/$##' |
               grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*$' |
               sort -fu || true
           }
           normalize_names "$WORK/plugins.names" > "$WORK/plugins.normalized"
           normalize_names "$WORK/mu-plugins.names" > "$WORK/mu-plugins.normalized"
+          awk '$1 !~ /^d/ && $NF ~ /\\.php$/ {print $NF}' "$WORK/mu-plugins.names" |
+            sed -E 's#\\r$##' |
+            grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*\\.php$' |
+            sort -fu >> "$WORK/mu-plugins.normalized"
+          sort -fu "$WORK/mu-plugins.normalized" -o "$WORK/mu-plugins.normalized"
 
           echo "FTP_ROOT=wp-content"
           echo "SEARCH_PATHS=plugins/,mu-plugins/"
