@@ -95,18 +95,20 @@ jobs:
           echo "===== MU-PLUGINS DIRECT NAMES ====="
           cat "$WORK/mu-plugins.normalized"
 
-          : > "$WORK/candidates.txt"
-          for base in plugins mu-plugins; do
-            while IFS= read -r name; do
-              [ -n "$name" ] || continue
-              if printf '%s\n' "$name" | grep -Eiq '(crios|rango|filter|api|rest|woocommerce|custom)'; then
-                printf '%s/%s\n' "$base" "$name" >> "$WORK/candidates.txt"
-              fi
-            done < "$WORK/$base.normalized"
-          done
+          # Continue from the most relevant uninspected catalog plugin.
+          # The previous run's generic register_rest_route match was a false positive:
+          # it registered criosrango/v1/home-config, not criosrango-filter/v1/query.
+          printf '%s\n' \
+            'plugins/criosrango-filtros-catalogo' \
+            'plugins/criosrango-cache-catalogo' \
+            'plugins/criosrango-cuenta-app' \
+            'plugins/criosrango-pedidos-app' \
+            'plugins/criosrango-pagos-app' \
+            'plugins/criosrango-origen-outlet' \
+            'plugins/criosrango-notificaciones-push' \
+            'mu-plugins/criosrango-store-api-diag.php' > "$WORK/candidates.txt"
 
-          echo "===== PRIORITIZED CANDIDATES ====="
-          sort -fu "$WORK/candidates.txt" -o "$WORK/candidates.txt"
+          echo "===== NEXT TARGETED CANDIDATES ====="
           cat "$WORK/candidates.txt"
           echo "PLUGIN_CANDIDATES=$(paste -sd ';' "$WORK/candidates.txt")"
 
@@ -148,7 +150,7 @@ jobs:
               lftp -f "$GET_SCRIPT"
             fi
 
-            if grep -Rni --include='*.php' -E 'criosrango-filter(/v1)?|register_rest_route' "$WORK" > "$WORK/current-matches.txt"; then
+            if grep -Rni --include='*.php' -E 'criosrango-filter|criosrango_filter' "$WORK" > "$WORK/current-matches.txt"; then
               echo "FILTER_API_IMPLEMENTATION_FOUND=YES"
               cat "$WORK/current-matches.txt"
               echo "MATCHING_PHP_FILES_BEGIN"
