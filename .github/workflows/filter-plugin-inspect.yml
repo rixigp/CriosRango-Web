@@ -1,0 +1,69 @@
+name: Temporary filter plugin source inspection
+
+on:
+  push:
+    branches:
+      - style/product-detail-app-skin
+    paths:
+      - ".github/workflows/filter-plugin-inspect.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-filter-plugin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect exact filter plugin path over verified FTPS
+        shell: bash
+        env:
+          WP_CONTENT_FTP_HOST: ${{ secrets.WP_CONTENT_FTP_HOST }}
+          WP_CONTENT_FTP_USER: ${{ secrets.WP_CONTENT_FTP_USER }}
+          WP_CONTENT_FTP_PASSWORD: ${{ secrets.WP_CONTENT_FTP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import ftplib, io, os, sys
+          host=os.environ["WP_CONTENT_FTP_HOST"]
+          user=os.environ["WP_CONTENT_FTP_USER"]
+          password=os.environ["WP_CONTENT_FTP_PASSWORD"]
+          ftp=ftplib.FTP_TLS(timeout=25)
+          try:
+              ftp.connect(host,21)
+              ftp.login(user,password)
+              ftp.prot_p()
+              print("FTP_ROOT="+ftp.pwd())
+              target="plugins/criosrango-filtros-catalogo"
+              ftp.cwd(target)
+              print("FILTER_PLUGIN_FOUND=YES")
+              print("PLUGIN_PATH="+target+"/")
+              print("ROOT_LISTING_BEGIN")
+              root=ftp.nlst()
+              for name in root: print(name)
+              print("ROOT_LISTING_END")
+              for sub in ("includes",""):
+                  try:
+                      ftp.cwd("/"+target+"/"+sub if sub else "/"+target)
+                      print("DIRECTORY_LISTING_BEGIN="+(sub or "."))
+                      names=ftp.nlst()
+                      for name in names: print(name)
+                      print("DIRECTORY_LISTING_END="+(sub or "."))
+                  except Exception as e:
+                      print("DIRECTORY_LISTING_ERROR="+(sub or ".")+":"+repr(e))
+              path=target+"/includes/class-criosrango-filter-rest.php"
+              data=io.BytesIO()
+              ftp.retrbinary("RETR "+path,data.write)
+              source=data.getvalue().decode("utf-8","replace")
+              print("ENDPOINT_FILE="+path)
+              print("CALLBACK_SOURCE_BEGIN")
+              print(source)
+              print("CALLBACK_SOURCE_END")
+          except Exception as e:
+              print("INSPECTION_ERROR="+repr(e))
+              raise
+          finally:
+              try: ftp.quit()
+              except Exception: pass
+              password=None
+          PY
