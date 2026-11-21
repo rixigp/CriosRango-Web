@@ -396,12 +396,13 @@
     const writeStore = (key,value) => {memoryCache[key]=value;try{sessionStorage.setItem(key,JSON.stringify(value));}catch(error){}};
     const draft = {sizes:[],colors:[],brands:[]};
     let baseFacets=null, activeDimension='sizes', rowsByDimension={sizes:[],colors:[],brands:[]}, facetAvailability={sizes:null,colors:null,brands:null}, savedScrollY=0;
-    let generation=0, debounceTimer=null, activeControllers=[];
+    let generation=0, baseGeneration=0, debounceTimer=null, activeControllers=[];
+    const facetLoading={sizes:false,colors:false,brands:false}, facetErrors={sizes:false,colors:false,brands:false};
     let prefetchControllers=[], prefetchIdleHandle=null, prefetchTimer=null, prefetchStarted=false;
     const optionsNode=filterSheet.querySelector('[data-cr-filter-options]');
     const dialog=filterSheet.querySelector('.cr-category-filter-sheet__dialog');
     const openButtons=Array.from(document.querySelectorAll('[data-cr-filter-open]'));
-    window.CR2026CatalogFacetContextChanged=()=>{if(outletScope||brandContext){baseFacets=null;if(!filterSheet.hidden){fetchBase(false).then(()=>setDimension(activeDimension)).catch(error=>{if(error&&error.name!=='AbortError')console.error(error);});scheduleDependentRefresh(null);}}};
+    window.CR2026CatalogFacetContextChanged=()=>{if(outletScope||brandContext){baseFacets=null;if(!filterSheet.hidden){fetchBase(false).catch(error=>{if(error&&error.name!=='AbortError')console.error(error);});scheduleDependentRefresh(null);}}};
     const facetEndpoint = async (facet,state,signal) => {
       const key=cacheKey(facet,state), storageKey=storageKeyForContext(), cached=memoryCache[key]||readStore(storageKey+'|'+key);
       if(cached){memoryCache[key]=cached;return cached.rows;}
@@ -461,10 +462,10 @@
     };
     const render = dimension => {
       updateFilterCounters();
-      const measuringRender=metricState.openT0!==null&&metricState.optionsRendered===null, renderStart=measuringRender?performance.now():null;
+      const measuringRender=metricState.openT0!==null&&metricState.optionsRendered===null&&!facetLoading[dimension], renderStart=measuringRender?performance.now():null;
       const finishRender=()=>{if(!measuringRender)return;metricState.optionsRendered=performance.now();const apiDuration=metricState.requestStart!==null&&metricState.responseReceived!==null?Math.round(metricState.responseReceived-metricState.requestStart):0;console.info('[CR2026_FILTER_METRICS]',JSON.stringify({FILTER_MODAL_OPEN_T0:Math.round(metricState.openT0),FILTER_REQUEST_START:metricState.requestStart===null?null:Math.round(metricState.requestStart),FILTER_RESPONSE_RECEIVED:metricState.responseReceived===null?null:Math.round(metricState.responseReceived),FILTER_OPTIONS_RENDERED:Math.round(metricState.optionsRendered),FILTER_API_DURATION_MS:apiDuration,FILTER_RENDER_DURATION_MS:Math.round(metricState.optionsRendered-renderStart),TOTAL_FILTER_READY_MS:Math.round(metricState.optionsRendered-metricState.openT0),FILTER_SERVER_TIMING:metricState.serverTiming,FILTER_REQUEST_COUNT:metricState.requestCount}));};
       const rows=rowsByDimension[dimension]||[];optionsNode.replaceChildren();
-      if(!rows.length){const empty=document.createElement('p');empty.className='cr-category-filter-sheet__empty';empty.textContent='No hay opciones disponibles.';optionsNode.appendChild(empty);finishRender();return;}
+      if(!rows.length){const empty=document.createElement('p');empty.className='cr-category-filter-sheet__empty';empty.textContent=facetLoading[dimension]?'Cargando opciones…':(facetErrors[dimension]?'No se han podido cargar las opciones.':'No hay opciones disponibles.');empty.setAttribute('aria-live','polite');optionsNode.appendChild(empty);finishRender();return;}
       rows.forEach(row=>{
         const selected=row.term_ids.some(id=>draft[dimension].includes(id));
         const available=facetAvailability[dimension];
@@ -495,30 +496,65 @@
         const affected=changedDimension ? dimensions.filter(d=>d!==changedDimension) : dimensions.slice();
         // Keep existing availability/options rendered until a current response is accepted.
         const controllers=affected.map(()=>new AbortController());activeControllers=controllers;
-        try{
-          const results=await Promise.all(affected.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal)));
+        await Promise.allSettled(affected.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal).then(rows=>{
           if(token!==generation)return;
-          results.forEach((rows,index)=>{facetAvailability[affected[index]]=new Set(rows.flatMap(row=>row.term_ids));});
-          render(activeDimension);
-        }catch(error){
-          if(error&&error.name==='AbortError')return;
-          if(token===generation){console.error('[Críos&Rango filtros] Error recalculando facetas dependientes',error);render(activeDimension);}
-        }
+          facetAvailability[facet]=new Set(rows.flatMap(row=>row.term_ids));
+          facetErrors[facet]=false;
+          if(activeDimension===facet)render(facet);
+        }).catch(error=>{
+          if(token!==generation||(error&&error.name==='AbortError'))return;
+          facetErrors[facet]=true;
+          console.error('[Críos&Rango filtros] Error recalculando faceta '+facet,error);
+          if(activeDimension===facet)render(facet);
+        })));
       },120);
     };
     const fetchBase = async (force, isPrefetch=false) => {
-      if(!force&&baseFacets){dimensions.forEach(d=>{rowsByDimension[d]=baseFacets[d]||[];facetAvailability[d]=new Set(rowsByDimension[d].flatMap(row=>row.term_ids));});return baseFacets;}
+      const token=++baseGeneration;
+      if(!force&&baseFacets){dimensions.forEach(d=>{rowsByDimension[d]=baseFacets[d]||[];facetAvailability[d]=new Set(rowsByDimension[d].flatMap(row=>row.term_ids));facetLoading[d]=false;facetErrors[d]=false;});return baseFacets;}
       const storageKey=storageKeyForContext();
       const cache=memoryCache[storageKey]||readStore(storageKey);
-      if(!force&&cache&&dimensions.every(d=>Array.isArray(cache[d]))){baseFacets=cache;dimensions.forEach(d=>{rowsByDimension[d]=cache[d];facetAvailability[d]=new Set(cache[d].flatMap(row=>row.term_ids));});return cache;}
+      if(!force&&cache&&dimensions.every(d=>Array.isArray(cache[d]))){
+        baseFacets=cache;
+        dimensions.forEach(d=>{rowsByDimension[d]=cache[d];facetAvailability[d]=new Set(cache[d].flatMap(row=>row.term_ids));facetLoading[d]=false;facetErrors[d]=false;});
+        if(!filterSheet.hidden)render(activeDimension);
+        return cache;
+      }
       const state={sizes:[],colors:[],brands:[]};
       const controllers=dimensions.map(()=>new AbortController());
       if(isPrefetch)prefetchControllers=controllers;
-      const results=await Promise.all(dimensions.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal)));
-      if(isPrefetch)prefetchControllers=[];
       const value={timestamp:Date.now()};
-      dimensions.forEach((dimension,index)=>{value[dimension]=results[index];});
-      baseFacets=value;writeStore(storageKey,value);dimensions.forEach(d=>{rowsByDimension[d]=value[d];facetAvailability[d]=new Set(value[d].flatMap(row=>row.term_ids));});return value;
+      const results=await Promise.all(dimensions.map(async(facet,index)=>{
+        facetLoading[facet]=true;
+        facetErrors[facet]=false;
+        try{
+          const rows=await facetEndpoint(facet,state,controllers[index].signal);
+          if(token!==baseGeneration)return {facet,ok:false,stale:true};
+          rowsByDimension[facet]=rows;
+          facetAvailability[facet]=new Set(rows.flatMap(row=>row.term_ids));
+          facetLoading[facet]=false;
+          facetErrors[facet]=false;
+          value[facet]=rows;
+          if(!filterSheet.hidden&&activeDimension===facet)render(facet);
+          return {facet,ok:true};
+        }catch(error){
+          if(token!==baseGeneration)return {facet,ok:false,stale:true};
+          facetLoading[facet]=false;
+          if(error&&error.name==='AbortError')return {facet,ok:false,aborted:true};
+          facetErrors[facet]=true;
+          console.error('[Críos&Rango filtros] No se pudo cargar la faceta '+facet,error);
+          if(!filterSheet.hidden&&activeDimension===facet)render(facet);
+          return {facet,ok:false,error};
+        }
+      }));
+      if(isPrefetch)prefetchControllers=[];
+      if(token!==baseGeneration)return null;
+      const complete=results.every(result=>result.ok);
+      if(complete){
+        baseFacets=value;
+        writeStore(storageKey,value);
+      }
+      return complete?value:null;
     };
     const setDimension = dimension => {
       if(!dimensions.includes(dimension))return;activeDimension=dimension;
@@ -538,8 +574,8 @@
       const liveState=window.CR2026CatalogListing&&window.CR2026CatalogListing.getFilters?window.CR2026CatalogListing.getFilters():null;
       dimensions.forEach(d=>draft[d]=liveState?liveState[apiKeys[d]].slice():(filterSheet.dataset[initialKeys[d]]||'').split(',').filter(Boolean));
       filterSheet.hidden=false;document.body.classList.add('cr-category-filter-open');document.body.style.overflow='hidden';
-      if(baseFacets){dimensions.forEach(d=>{rowsByDimension[d]=baseFacets[d];facetAvailability[d]=new Set(baseFacets[d].flatMap(row=>row.term_ids));});setDimension('sizes');}
-      else {optionsNode.textContent='Cargando opciones…';fetchBase(false).then(()=>setDimension('sizes')).catch(error=>{optionsNode.textContent='No se han podido cargar los filtros.';console.error(error);});}
+      if(baseFacets){dimensions.forEach(d=>{rowsByDimension[d]=baseFacets[d];facetAvailability[d]=new Set(baseFacets[d].flatMap(row=>row.term_ids));facetLoading[d]=false;facetErrors[d]=false;});setDimension('sizes');}
+      else {const baseRequest=fetchBase(false);setDimension('sizes');baseRequest.catch(error=>{if(error&&error.name!=='AbortError')console.error(error);});}
       scheduleDependentRefresh(null);
       window.requestAnimationFrame(()=>dialog.focus());
     };

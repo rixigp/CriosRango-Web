@@ -1331,3 +1331,44 @@ test('NORMAL_CATALOG_SELECTOR=A_Z and NEW_PRODUCTS_SELECTOR=MAS_RECIENTES', () =
   assert.match(archive, /value="date".*Más recientes/s);
   assert.match(php, /return \$is_novelties \? 'newest' : 'title_asc'/);
 });
+
+
+test('FACETS_FETCH_IN_PARALLEL=YES FACETS_RENDER_INDEPENDENTLY=YES SIZES_DOES_NOT_WAIT_FOR_COLORS=YES SIZES_DOES_NOT_WAIT_FOR_BRANDS=YES', () => {
+  const start = js.indexOf('const fetchBase = async');
+  const end = js.indexOf('const setDimension =', start);
+  const fetchBaseSource = js.slice(start, end);
+  const dependentStart = js.indexOf('const scheduleDependentRefresh =');
+  const dependentEnd = js.indexOf('const fetchBase =', dependentStart);
+  const dependentSource = js.slice(dependentStart, dependentEnd);
+  const openStart = js.indexOf('const openSheet=');
+  const openEnd = js.indexOf('openButtons.forEach', openStart);
+  const openSource = js.slice(openStart, openEnd);
+
+  assert.match(fetchBaseSource, /Promise\.all\(dimensions\.map\(async\(facet,index\)=>/,
+    'all three facet requests are started together');
+  assert.match(fetchBaseSource, /if\(!filterSheet\.hidden&&activeDimension===facet\)render\(facet\)/,
+    'each facet renders as soon as its own response is accepted');
+  assert.doesNotMatch(fetchBaseSource, /await Promise\.all\(dimensions\.map\(\(facet,index\)=>facetEndpoint/,
+    'fetchBase does not await all facet responses before rendering');
+  assert.match(fetchBaseSource, /token!==baseGeneration/,
+    'stale base responses cannot overwrite the current context');
+  assert.match(fetchBaseSource, /facetErrors\[facet\]=true/,
+    'one facet failure is isolated to that facet');
+  assert.match(dependentSource, /Promise\.allSettled/,
+    'dependent facet failures do not reject the other facet updates');
+  assert.match(dependentSource, /if\(activeDimension===facet\)render\(facet\)/,
+    'dependent facets render independently');
+  assert.match(openSource, /const baseRequest=fetchBase\(false\);setDimension\('sizes'\);/,
+    'sizes is made active and rendered immediately without waiting for colors or brands');
+  assert.match(js, /const facetLoading=\{sizes:false,colors:false,brands:false\}/);
+  assert.match(js, /facetLoading\[dimension\]\?'Cargando opciones…'/,
+    'the active sizes pane exposes its loading state while its request is pending');
+
+  // Existing request lifecycle guarantees remain part of the regression contract.
+  assert.match(js, /new AbortController\(\)/);
+  assert.match(js, /window\.setTimeout\(async\(\)=>\{[\s\S]*?\},120\)/);
+  assert.match(js, /if\(inFlightCache\[key\]\)return inFlightCache\[key\]/);
+  assert.match(js, /const ttl = 300000/);
+  assert.match(js, /sessionStorage\.getItem\(key\)/);
+  assert.match(js, /sessionStorage\.setItem\(key,JSON\.stringify\(value\)\)/);
+});
