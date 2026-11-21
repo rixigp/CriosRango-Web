@@ -55,10 +55,10 @@ jobs:
           {
             make_lftp_header
             printf 'pwd\n'
-  printf 'cls -1\n'
-  printf 'cls -1 plugins/\n'
-  printf 'cls -1 plugins/crios-rango-enlaces/\n'
-  printf 'find plugins/crios-rango-enlaces/\n'
+            printf 'cls -1\n'
+            printf 'cls -1 plugins/\n'
+            printf 'cls -1 plugins/crios-rango-enlaces/\n'
+            printf 'find plugins/crios-rango-enlaces/\n'
             printf 'bye\n'
           } > "$FIND_SCRIPT"
           lftp -f "$FIND_SCRIPT" > "$WORK/remote-files.txt"
