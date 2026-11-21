@@ -1,0 +1,114 @@
+name: Temporary read-only root plugin PHP inspection
+
+on:
+  push:
+    branches:
+      - style/product-detail-app-skin
+    paths:
+      - ".github/workflows/wp-content-root-plugin-diagnostic.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-root-plugin-php:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install lftp
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: List and inspect only root-level plugin PHP files
+        shell: bash
+        env:
+          WP_CONTENT_FTP_HOST: ${{ secrets.WP_CONTENT_FTP_HOST }}
+          WP_CONTENT_FTP_USER: ${{ secrets.WP_CONTENT_FTP_USER }}
+          WP_CONTENT_FTP_PASSWORD: ${{ secrets.WP_CONTENT_FTP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${WP_CONTENT_FTP_HOST:?Missing WP_CONTENT_FTP_HOST}"
+          : "${WP_CONTENT_FTP_USER:?Missing WP_CONTENT_FTP_USER}"
+          : "${WP_CONTENT_FTP_PASSWORD:?Missing WP_CONTENT_FTP_PASSWORD}"
+
+          WORK=/tmp/root-plugin-php
+          mkdir -p "$WORK"
+          LIST_SCRIPT="$(mktemp)"
+          GET_SCRIPT="$(mktemp)"
+          trap 'rm -f "$LIST_SCRIPT" "$GET_SCRIPT"; unset WP_CONTENT_FTP_PASSWORD' EXIT
+
+          make_lftp_header() {
+            printf 'set ftp:ssl-force true\n'
+            printf 'set ftp:ssl-protect-data true\n'
+            printf 'set ssl:verify-certificate true\n'
+            printf 'set ftp:passive-mode true\n'
+            printf 'set net:max-retries 2\n'
+            printf 'set net:timeout 20\n'
+            printf 'set cmd:fail-exit yes\n'
+            printf 'open -u "%s","%s" "ftp://%s:21"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST"
+          }
+
+          # Enter plugins/ and list its direct entries only. No recursive find/list.
+          {
+            make_lftp_header
+            printf 'cd plugins/\n'
+            printf 'cls -la\n'
+            printf 'bye\n'
+          } > "$LIST_SCRIPT"
+          lftp -f "$LIST_SCRIPT" > "$WORK/plugins-root-listing.txt"
+
+          # Extract only direct regular-file entries ending in .php.
+          awk '$1 !~ /^d/ && $NF ~ /^[A-Za-z0-9][A-Za-z0-9._-]*\.php$/ {print $NF}' "$WORK/plugins-root-listing.txt" |
+            sort -fu > "$WORK/root-php-files.txt"
+
+          echo "FTP_ROOT=wp-content"
+          echo "INSPECTION_PATH=plugins/ (direct entries only)"
+          echo "DIRECTORY_RECURSION=NO"
+          echo "MU_PLUGINS_SCANNED=NO"
+          echo "THEMES_SCANNED=NO"
+          echo "ROOT_LEVEL_PLUGIN_PHP_FILES_BEGIN"
+          cat "$WORK/root-php-files.txt"
+          echo "ROOT_LEVEL_PLUGIN_PHP_FILES_END"
+          echo "ROOT_LEVEL_PLUGIN_PHP_COUNT=$(wc -l < "$WORK/root-php-files.txt")"
+
+          if [ ! -s "$WORK/root-php-files.txt" ]; then
+            echo "ENLACES_PLUGIN_FOUND=NO_ROOT_LEVEL_PHP_FILES"
+            exit 0
+          fi
+
+          # Download only the root-level PHP files listed above.
+          {
+            make_lftp_header
+            printf 'cd plugins/\n'
+            while IFS= read -r file; do
+              [ -n "$file" ] || continue
+              printf 'get "%s" -o "%s/%s"\n' "$file" "$WORK" "$file"
+            done < "$WORK/root-php-files.txt"
+            printf 'bye\n'
+          } > "$GET_SCRIPT"
+          lftp -f "$GET_SCRIPT"
+
+          echo "===== ROOT PHP HEADER AND ROUTE MATCHES ====="
+          grep -HniE -m 30 'Plugin Name:|Críos *& *Rango|Enlaces de campaña|/enlaces/|enlaces|campaña|campaign|rewrite_rule|template_redirect|shortcode' "$WORK"/*.php || true
+
+          MATCH="$(grep -ilE 'Plugin Name:.*(Críos[[:space:]]*&[[:space:]]*Rango|Enlaces de campaña)|Críos[[:space:]]*&[[:space:]]*Rango[[:space:]]*\|[[:space:]]*Enlaces de campaña' "$WORK"/*.php | head -n 1 || true)"
+          if [ -n "$MATCH" ]; then
+            echo "ENLACES_PLUGIN_FOUND=YES"
+            echo "PLUGIN_FILE=$(basename "$MATCH")"
+            echo "PLUGIN_NAME=$(grep -im1 '^\\s*\\*?\\s*Plugin Name:' "$MATCH" | sed -E 's/^[[:space:]]*\*?[[:space:]]*Plugin Name:[[:space:]]*//')"
+            echo "MATCHED_ROOT_PLUGIN_SOURCE_BEGIN"
+            nl -ba "$MATCH"
+            echo "MATCHED_ROOT_PLUGIN_SOURCE_END"
+          else
+            echo "ENLACES_PLUGIN_FOUND=NO_MATCH_IN_ROOT_LEVEL_PHP"
+            echo "ROOT_PHP_PLUGIN_HEADERS_BEGIN"
+            for file in "$WORK"/*.php; do
+              [ -f "$file" ] || continue
+              echo "===== $(basename "$file") ====="
+              sed -n '1,45p' "$file"
+            done
+            echo "ROOT_PHP_PLUGIN_HEADERS_END"
+          fi
