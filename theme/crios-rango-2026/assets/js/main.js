@@ -498,7 +498,7 @@
         const controllers=affected.map(()=>new AbortController());activeControllers=controllers;
         await Promise.allSettled(affected.map((facet,index)=>facetEndpoint(facet,state,controllers[index].signal).then(rows=>{
           if(token!==generation)return;
-          facetAvailability[facet]=new Set(rows.flatMap(row=>row.term_ids));
+          facetAvailability[affected[index]]=new Set(rows.flatMap(row=>row.term_ids));
           facetErrors[facet]=false;
           if(activeDimension===facet)render(facet);
         }).catch(error=>{

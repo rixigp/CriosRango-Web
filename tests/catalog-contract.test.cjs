@@ -330,8 +330,8 @@ test('staging deploy is exact-HEAD guarded, incremental and verifies the deploye
 test('web sort options reproduce app enum mapping including Name A-Z', () => {
   assert.match(archive, /value="title".*Nombre A-Z/s);
   assert.match(js, /title:'title_asc'/);
-  const orderbyMatch = js.match(/orderby=\[([^\]]+)\]/);
-  assert.ok(orderbyMatch, 'the web sort option list must be declared');
+  const orderbyMatch = js.match(/validOrderbyValues = new Set\(\[([^\]]+)\]\)/);
+  assert.ok(orderbyMatch, 'the web sort option Set must be declared');
   for (const value of ['date', 'price', 'price-desc', 'title']) {
     assert.match(orderbyMatch[1], new RegExp("['\\\"]" + value + "['\\\"]"), 'web sort options must retain ' + value);
   }
