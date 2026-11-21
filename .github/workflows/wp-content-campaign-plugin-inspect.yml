@@ -6,6 +6,7 @@ on:
       - style/product-detail-app-skin
     paths:
       - ".github/workflows/wp-content-campaign-plugin-inspect.yml"
+      - "diagnostics/campaign-plugin-inspect.trigger"
 
 permissions:
   contents: read
