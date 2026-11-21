@@ -48,7 +48,6 @@ jobs:
             printf 'set ftp:passive-mode true\n'
             printf 'set net:max-retries 2\n'
             printf 'set net:timeout 20\n'
-            printf 'set cmd:fail-exit yes\n'
             printf 'open -u "%s","%s" "ftp://%s:21"\n' "$WP_CONTENT_FTP_USER" "$WP_CONTENT_FTP_PASSWORD" "$WP_CONTENT_FTP_HOST"
           }
 
@@ -57,14 +56,15 @@ jobs:
             printf 'pwd\n'
             printf 'cls -1\n'
             printf 'cls -1 plugins/\n'
-            printf 'cls -1 plugins/crios-rango-enlaces/\n'
-            printf 'find plugins/crios-rango-enlaces/\n'
             printf 'bye\n'
           } > "$FIND_SCRIPT"
           lftp -f "$FIND_SCRIPT" > "$WORK/remote-files.txt"
 
           awk '/^plugins\/crios-rango-enlaces\// && /\.(php|css)$/ {print}' "$WORK/remote-files.txt" | sort -u > "$WORK/allowed-files.txt"
 
+          echo "FTP_ROOT_AND_PLUGINS_LISTING_BEGIN"
+          cat "$WORK/remote-files.txt"
+          echo "FTP_ROOT_AND_PLUGINS_LISTING_END"
           echo "PLUGIN_PATH=plugins/crios-rango-enlaces/"
           echo "PLUGIN_RESOURCE_FILES_BEGIN"
           cat "$WORK/allowed-files.txt"
@@ -73,6 +73,7 @@ jobs:
 
           if [ ! -s "$WORK/allowed-files.txt" ]; then
             echo "PLUGIN_FILES_FOUND=NO"
+          exit 0
             exit 0
           fi
 
