@@ -56,13 +56,12 @@ jobs:
             printf 'cd plugins/crios-rango-enlaces/\n'
             printf 'pwd\n'
             printf 'cls -la\n'
-            printf 'cls -la assets/\n'
-            printf 'find . -type f\n'
+            printf 'cls -la *.php *.css assets/\n'
             printf 'bye\n'
           } > "$FIND_SCRIPT"
           lftp -f "$FIND_SCRIPT" > "$WORK/remote-files.txt"
 
-          awk '/^\.?\/?[^:]+\.(php|css)$/ || /\.(php|css)$/ {print}' "$WORK/remote-files.txt" | sort -u > "$WORK/allowed-files.txt"
+          awk '/\\.(php|css)$/ {print}' "$WORK/remote-files.txt" | sort -u > "$WORK/allowed-files.txt"
 
           echo "PLUGIN_PATH=plugins/crios-rango-enlaces/"
           echo "PLUGIN_DIRECTORY_LISTING_BEGIN"
