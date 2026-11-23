@@ -31,8 +31,8 @@ test('DEPLOY_DEFAULTS_INCREMENTAL_FAIL_CLOSED_AND_MANUAL_FULL_ONLY=PASS',()=>{
   assert.match(deployWorkflow,/REMOTE_BUILD_JSON_UPDATED=NO/);
   assert.match(deployWorkflow,/DEPLOY_STATUS=FAILED/);
   assert.match(deployWorkflow,/build.json\\|README\\.md/);
-  const uploadAt=deployWorkflow.indexOf('for FILE in "${UPLOAD_FILES[@]}"; do');
-  const deleteAt=deployWorkflow.indexOf('for FILE in "${DELETE_FILES[@]}"; do',uploadAt);
+  const uploadAt=deployWorkflow.indexOf('echo "Uploading: $REL"');
+  const deleteAt=deployWorkflow.indexOf('echo "Deleting remote: $REL"',uploadAt);
   const verifyAt=deployWorkflow.indexOf('# Verify every selected runtime upload');
   const manifestAt=deployWorkflow.indexOf('Uploading build.json last with HEAD_SHA=$HEAD_SHA');
   const verifyManifestAt=deployWorkflow.indexOf('REMOTE_BUILD_SHA_VERIFIED=');
