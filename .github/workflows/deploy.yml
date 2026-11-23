@@ -695,13 +695,25 @@ jobs:
           UPLOAD_FILES=()
           DELETE_FILES=()
           DEPLOY_MODE="INCREMENTAL"
+          FULL_DEPLOY=NO
           REMOTE_SHA=""
+          REMOTE_SHA_IS_ANCESTOR=NO
+          REMOTE_BUILD_JSON_UPDATED=NO
+          DEPLOY_STATUS=RUNNING
           THEME_DEPLOY_SHA="$HEAD_SHA"
           DIFF_FILE="$(mktemp)"
           MANIFEST_FILE="$(mktemp)"
           BASELINE_ERROR_FILE="$(mktemp)"
           BASELINE_MANIFEST_FILE="$(mktemp)"
-          trap 'rm -f "$DIFF_FILE" "$MANIFEST_FILE" "$BASELINE_ERROR_FILE" "$BASELINE_MANIFEST_FILE"' EXIT
+          cleanup_deploy() {
+            status=$?
+            if [ "$status" -ne 0 ] && [ "$REMOTE_BUILD_JSON_UPDATED" != "YES" ]; then
+              echo "REMOTE_BUILD_JSON_UPDATED=NO"
+              echo "DEPLOY_STATUS=FAILED"
+            fi
+            rm -f "$DIFF_FILE" "$MANIFEST_FILE" "$BASELINE_ERROR_FILE" "$BASELINE_MANIFEST_FILE"
+          }
+          trap cleanup_deploy EXIT
 
           echo "DEFAULT_DEPLOY_MODE=INCREMENTAL"
           echo "FULL_DEPLOY_AUTOMATIC=NO"
@@ -718,6 +730,7 @@ jobs:
           if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_DEPLOY_MODE" = "FULL" ]; then
             MANUAL_FULL=true
             DEPLOY_MODE="FULL"
+            FULL_DEPLOY=YES
             BASELINE_STATUS="MANUAL_FULL"
             echo "MANUAL_FULL_DEPLOY=YES"
           elif [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_DEPLOY_MODE" != "INCREMENTAL" ]; then
@@ -749,14 +762,23 @@ jobs:
                   BASELINE_STATUS="UNAVAILABLE"
                   BASELINE_ERROR="remote_sha_not_available_in_git"
                 elif ! git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"; then
+                  REMOTE_SHA_IS_ANCESTOR=NO
+                  DEPLOY_ABORTED=YES
+                  FULL_DEPLOY=NO
                   BASELINE_STATUS="UNAVAILABLE"
                   BASELINE_ERROR="remote_sha_not_ancestor_of_head"
+                  echo "REMOTE_SHA_IS_ANCESTOR=NO"
+                  echo "DEPLOY_ABORTED=YES"
+                  echo "FULL_DEPLOY=NO"
                 elif ! git diff --name-status -z --find-renames --find-copies \
                   "$REMOTE_SHA" "$HEAD_SHA" -- "$THEME_ROOT" > "$DIFF_FILE"; then
                   BASELINE_STATUS="UNAVAILABLE"
                   BASELINE_ERROR="git_diff_failed"
                 else
+                  REMOTE_SHA_IS_ANCESTOR=YES
                   DEPLOY_MODE="INCREMENTAL"
+                  FULL_DEPLOY=NO
+                  echo "REMOTE_SHA_IS_ANCESTOR=YES"
                 fi
               fi
             elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then
@@ -773,6 +795,7 @@ jobs:
               if [ "$ROOT_LIST_EXIT" -eq 0 ] && [ ! -s "$REMOTE_LIST_FILE" ]; then
                 BASELINE_STATUS="FIRST_DEPLOY"
                 DEPLOY_MODE="FULL"
+                FULL_DEPLOY=YES
                 echo "FIRST_DEPLOY_CONFIRMED=YES"
               else
                 BASELINE_STATUS="UNAVAILABLE"
@@ -787,11 +810,14 @@ jobs:
 
           echo "BASELINE_STATUS=$BASELINE_STATUS"
           if [ -n "$REMOTE_SHA" ]; then echo "REMOTE_SHA=$REMOTE_SHA"; else echo "REMOTE_SHA=NONE"; fi
+          echo "REMOTE_SHA_IS_ANCESTOR=$REMOTE_SHA_IS_ANCESTOR"
+          echo "FULL_DEPLOY=$FULL_DEPLOY"
           if [ -n "$BASELINE_ERROR" ]; then echo "BASELINE_ERROR=$BASELINE_ERROR"; fi
 
           if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then
             FAIL_CLOSED=YES
             DEPLOY_ABORTED=YES
+            FULL_DEPLOY=NO
             DEPLOY_MODE="ABORTED"
             echo "FAIL_CLOSED=$FAIL_CLOSED"
             echo "DEPLOY_ABORTED=$DEPLOY_ABORTED"
@@ -857,17 +883,7 @@ jobs:
             done < <(find "$LOCAL_ROOT" -type f -print0)
           fi
 
-          # build.json is the control-plane deployment marker and must advance with the runtime diff.
-          # Preserve it byte-for-byte when the diff contains no runtime changes.
-          if [ "$DEPLOY_MODE" = "FULL" ] || [ "${#UPLOAD_FILES[@]}" -gt 0 ] || [ "${#DELETE_FILES[@]}" -gt 0 ]; then
-              node -e 'const fs=require("fs");const branch=process.env.BUILD_BRANCH;const pr=branch==="feat/wp-login-branding"?16:branch==="style/product-detail-app-skin"?null:15;fs.writeFileSync(process.argv[1],JSON.stringify({sha:process.env.HEAD_SHA,branch,pr},null,2)+"\n");' "$LOCAL_ROOT/build.json"
-              UPLOAD_FILES+=("$THEME_ROOT/build.json")
-              THEME_DEPLOY_SHA="$HEAD_SHA"
-          else
-            THEME_DEPLOY_SHA="$REMOTE_SHA"
-          fi
-
-          # De-duplicate paths while preserving deterministic output.
+defer build manifest generation          # De-duplicate paths while preserving deterministic output.
           mapfile -t UPLOAD_FILES < <(printf '%s\n' "${UPLOAD_FILES[@]}" | sed '/^$/d' | sort -u)
           mapfile -t DELETE_FILES < <(printf '%s\n' "${DELETE_FILES[@]}" | sed '/^$/d' | sort -u)
 
@@ -886,18 +902,8 @@ jobs:
           fi
           echo "UPLOAD_COUNT=${#UPLOAD_FILES[@]}"
           echo "DELETE_COUNT=${#DELETE_FILES[@]}"
+          echo "THEME_RUNTIME_CHANGES=$(( ${#UPLOAD_FILES[@]} + ${#DELETE_FILES[@]} ))"
           echo "DEPLOY_THEME_FILES=$(( ${#UPLOAD_FILES[@]} + ${#DELETE_FILES[@]} ))"
-
-          # Delete first so Git renames are always represented as remote delete + upload.
-          for FILE in "${DELETE_FILES[@]}"; do
-            safe_relative_path "$FILE" || { echo "ERROR: unsafe FTP delete path."; exit 1; }
-            REL="${FILE#"$THEME_ROOT"/}"
-            echo "Deleting remote: $REL"
-            curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
-              --connect-timeout 20 --retry 2 \
-              --user "${SFTP_USER}:${SFTP_PASSWORD}" \
-              --quote "-DELE $REL" "${BASE_URL}/"
-          done
 
           for FILE in "${UPLOAD_FILES[@]}"; do
             safe_relative_path "$FILE" || { echo "ERROR: unsafe FTP upload path."; exit 1; }
@@ -908,6 +914,17 @@ jobs:
               --ftp-create-dirs --connect-timeout 20 --retry 2 \
               --user "${SFTP_USER}:${SFTP_PASSWORD}" \
               --upload-file "$FILE" "${BASE_URL}/${ENCODED_REL}"
+          done
+
+          # Process deletions only after every selected runtime upload succeeded.
+          for FILE in "${DELETE_FILES[@]}"; do
+            safe_relative_path "$FILE" || { echo "ERROR: unsafe FTP delete path."; exit 1; }
+            REL="${FILE#"$THEME_ROOT"/}"
+            echo "Deleting remote: $REL"
+            curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
+              --connect-timeout 20 --retry 2 \
+              --user "${SFTP_USER}:${SFTP_PASSWORD}" \
+              --quote "-DELE $REL" "${BASE_URL}/"
           done
 
           # On a controlled staging FULL deploy, remove stale files/directories only
@@ -967,6 +984,48 @@ jobs:
           print("REMOTE_THEME_CLEANUP=PASS")
           PYFTP
           fi
+
+          # Verify every selected runtime upload by downloading it and comparing bytes.
+          VERIFY_FILE="$(mktemp)"
+          for FILE in "${UPLOAD_FILES[@]}"; do
+            safe_relative_path "$FILE" || { echo "ERROR: unsafe verification path."; exit 1; }
+            REL="${FILE#"$THEME_ROOT"/}"
+            ENCODED_REL="$(python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1],safe="/"))' "$REL")"
+            : > "$VERIFY_FILE"
+            curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
+              --connect-timeout 20 --retry 2 \
+              --user "${SFTP_USER}:${SFTP_PASSWORD}" \
+              "${BASE_URL}/${ENCODED_REL}" --output "$VERIFY_FILE"
+            cmp --silent "$FILE" "$VERIFY_FILE" || { echo "ERROR: remote runtime verification failed: $REL"; exit 1; }
+            echo "REMOTE_RUNTIME_FILE_VERIFIED=$REL"
+          done
+          rm -f "$VERIFY_FILE"
+          echo "RUNTIME_TRANSFER_VERIFICATION=PASS"
+
+          if [ "$DEPLOY_MODE" = "FULL" ] || [ "${#UPLOAD_FILES[@]}" -gt 0 ] || [ "${#DELETE_FILES[@]}" -gt 0 ]; then
+            node -e 'const fs=require("fs");const branch=process.env.BUILD_BRANCH;const pr=branch==="feat/wp-login-branding"?16:branch==="style/product-detail-app-skin"?null:15;fs.writeFileSync(process.argv[1],JSON.stringify({sha:process.env.HEAD_SHA,branch,pr},null,2)+"\n");' "$LOCAL_ROOT/build.json"
+            echo "Uploading build.json last with HEAD_SHA=$HEAD_SHA"
+            curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
+              --ftp-create-dirs --connect-timeout 20 --retry 2 \
+              --user "${SFTP_USER}:${SFTP_PASSWORD}" \
+              --upload-file "$LOCAL_ROOT/build.json" "${BASE_URL}/build.json"
+            REMOTE_BUILD_JSON_UPDATED=YES
+            THEME_DEPLOY_SHA="$HEAD_SHA"
+            echo "REMOTE_BUILD_JSON_UPDATED=YES"
+            curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
+              --connect-timeout 20 --retry 2 \
+              --user "${SFTP_USER}:${SFTP_PASSWORD}" \
+              "${BASE_URL}/build.json" --output "$MANIFEST_FILE"
+            node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(m.sha!==process.env.HEAD_SHA){console.error("REMOTE_BUILD_SHA mismatch: "+m.sha+" != "+process.env.HEAD_SHA);process.exit(1)}console.log("REMOTE_BUILD_SHA_VERIFIED="+m.sha)' "$MANIFEST_FILE"
+            echo "REMOTE_BUILD_JSON_VERIFIED=YES"
+          else
+            THEME_DEPLOY_SHA="$REMOTE_SHA"
+            echo "REMOTE_BUILD_JSON_UPDATED=NO"
+            echo "NO_RUNTIME_CHANGES=YES"
+          fi
+          DEPLOY_STATUS=SUCCESS
+          echo "DEPLOY_STATUS=$DEPLOY_STATUS"
+          echo "FULL_DEPLOY=$FULL_DEPLOY"
 
           echo "theme_deploy_sha=$THEME_DEPLOY_SHA" >> "$GITHUB_OUTPUT"
           echo "deploy_mode=$DEPLOY_MODE" >> "$GITHUB_OUTPUT"
