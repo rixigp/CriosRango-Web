@@ -298,7 +298,7 @@ function assertBuildManifestFollowsRuntimeVerification(workflow) {
   const runtimePass = step.indexOf('echo "RUNTIME_TRANSFER_VERIFICATION=PASS"', deletionPass);
   const generation = step.indexOf('node -e', runtimePass);
   const upload = step.indexOf('--upload-file "$LOCAL_ROOT/build.json"', generation);
-  const readback = step.indexOf('"\u0024{BASE_URL}/build.json" --output "$MANIFEST_FILE"', upload);
+  const readback = step.indexOf('"${BASE_URL}/build.json" --output "$MANIFEST_FILE"', upload);
   const shaCheck = step.indexOf('if(m.sha!==process.env.HEAD_SHA)', readback);
   const verified = step.indexOf('echo "REMOTE_BUILD_JSON_VERIFIED=YES"', shaCheck);
   assert.doesNotMatch(step, /UPLOAD_FILES\s*\+=\s*\([^)]*build\.json/);
