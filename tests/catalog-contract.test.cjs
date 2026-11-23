@@ -65,13 +65,26 @@ test('catalog session cache uses a versioned five-minute TTL and state-derived k
   assert.equal(api.isValidCatalogCacheEntry({...entry,key:differentSort}, first, 1001), false);
 });
 
+function assertCatalogInitialLoadErrorPreservesCards() {
+  const start = js.indexOf('const loadPage = async');
+  const end = js.indexOf('const resetAndLoad', start);
+  const source = js.slice(start, end);
+  const catchStart = source.indexOf('} catch (error) {');
+  const finallyStart = source.indexOf('} finally {', catchStart);
+  assert.ok(start >= 0 && end > start && catchStart >= 0 && finallyStart > catchStart);
+  const caught = source.slice(catchStart, finallyStart);
+  assert.doesNotMatch(caught, /showEmpty\s*\(/, 'request errors are not valid empty results');
+  assert.match(caught, /hasMore\s*=\s*false\s*;/);
+  assert.match(caught, /emptyState\.hidden\s*=\s*true\s*;/);
+  assert.doesNotMatch(caught, /grid\.(?:replaceChildren|removeChild)|grid\.innerHTML\s*=|grid\.textContent\s*=/, 'existing cards are preserved');
+}
 test('catalog listing restores session snapshots and revalidates without clearing cached cards', () => {
   assert.match(js, /sessionStorage\.getItem\(cacheStorageKey\(\)/);
   assert.match(js, /sessionStorage\.setItem\(baseKey, JSON\.stringify\(entry\)\)/);
   assert.match(js, /restoreCatalogCache\(\)/);
   assert.match(js, /revalidateCatalogCache\(entry\)/);
   assert.match(js, /loadPage\(index \+ 1, index > 0, token, responses\[index\], true\)/);
-  assert.match(js, /if \(!append && !background\) \{ showEmpty\(\); hasMore = false; \}/);
+  assertCatalogInitialLoadErrorPreservesCards();
   assert.match(js, /entry\.scrollY/);
   assert.match(js, /window\.addEventListener\('pagehide',[\s\S]*?writeCatalogCache\(window\.scrollY\)/);
 });
@@ -219,7 +232,7 @@ test('catalog uses an explicit inline Load more button with retryable append sta
   assert.match(js, /updateLoadMoreButton\(true\)/);
   assert.match(js, /updateLoadMoreButton\(false\)/);
   assert.doesNotMatch(js, /catalogObserver|data-cr-product-sentinel/);
-  assert.match(js, /if \(!append && !background\) \{ showEmpty\(\); hasMore = false; \}/);
+  assertCatalogInitialLoadErrorPreservesCards();
 });
 
 test('product card image source and crop match app responsive source selection and ContentScale.Crop', () => {
@@ -239,73 +252,62 @@ test('price monotonicity validation includes previous pages plus the incoming pa
   assert.match(js, /PRICE_DESC=FAIL/);
 });
 
-test('staging FULL deploy is limited to confirmed absence or confirmed divergence', () => {
-  const deployStep = extractWorkflowStep(deploy, 'Deploy theme by FTP');
-  const stagingStart = deployStep.indexOf('if [ "$IS_STAGING" = true ]; then\n            BASELINE_STATUS="UNAVAILABLE"');
-  const productionBoundary = deployStep.indexOf('\n          else\n            # Production deploys retain the explicitly documented full-deploy policy.');
-  assert.ok(stagingStart >= 0 && productionBoundary > stagingStart,
-    'the staging baseline branch must be structurally separated from the production branch');
-  const stagingBaseline = deployStep.slice(stagingStart, productionBoundary);
-
-  const validStart = stagingBaseline.indexOf('BASELINE_STATUS="VALID"');
-  const divergentStart = stagingBaseline.indexOf('elif ! git merge-base --is-ancestor');
-  const diffStart = stagingBaseline.indexOf('elif ! git diff --name-status -z --find-renames --find-copies');
-  const absentStart = stagingBaseline.indexOf('elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then');
-  const unavailableStart = stagingBaseline.indexOf('else\n              BASELINE_STATUS="UNAVAILABLE"', absentStart);
-  const abortStart = stagingBaseline.indexOf('if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then');
-  const abortReason = stagingBaseline.indexOf('DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE');
-
-  assert.ok(validStart >= 0 && divergentStart > validStart && diffStart > divergentStart,
-    'a present, parseable manifest must be checked for ancestry before diffing');
-  const validBranch = stagingBaseline.slice(validStart, absentStart);
-  assert.ok(validBranch.includes('git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"'),
-    'the staging baseline scope must include the remote SHA ancestry check');
-  assert.ok(validBranch.includes('git diff --name-status -z --find-renames --find-copies'));
-  assert.ok(validBranch.split("\n").some(line => line.trim() === 'DEPLOY_MODE="INCREMENTAL"'),
-    'a valid staging baseline must select INCREMENTAL');
-
-  assert.ok(absentStart >= 0 && unavailableStart > absentStart,
-    'only the explicit FTP 550 missing-manifest response may select absent');
-  const absentBranch = stagingBaseline.slice(absentStart, unavailableStart);
-  assert.match(absentBranch, /BASELINE_STATUS="ABSENT"/);
-  assert.match(absentBranch, /DEPLOY_MODE="FULL"/);
-
-  const divergentBranch = stagingBaseline.slice(divergentStart, diffStart);
-  assert.match(divergentBranch, /BASELINE_STATUS="DIVERGED"/);
-  assert.match(divergentBranch, /BASELINE_ERROR="remote_sha_not_ancestor_of_head"/);
-  assert.match(divergentBranch, /DEPLOY_MODE="FULL"/);
-
-  const fullAssignments = [...stagingBaseline.matchAll(/DEPLOY_MODE="FULL"/g)].map(match => match.index);
-  assert.equal(fullAssignments.length, 2,
-    'staging may select FULL only for confirmed absent and confirmed divergent baselines');
-  assert.ok(fullAssignments.every(index =>
-    (index >= absentStart && index < unavailableStart) ||
-    (index >= divergentStart && index < diffStart)
-  ), 'no unconfirmed staging error branch may select FULL');
-
-  const unknownErrorCases = [
-    'BASELINE_ERROR="invalid_or_unparseable_manifest"',
-    'BASELINE_ERROR="remote_sha_not_available_in_git"',
-    'BASELINE_ERROR="git_diff_failed"',
-    'BASELINE_ERROR="curl_exit_${BASELINE_CURL_EXIT}"'
-  ];
-  for (const errorCase of unknownErrorCases) {
-    assert.ok(stagingBaseline.includes(errorCase), `missing fail-closed handling for ${errorCase}`);
-  }
-  assert.ok(abortStart >= 0 && abortReason > abortStart);
-  const abortBranch = stagingBaseline.slice(abortStart);
-  assert.match(abortBranch, /DEPLOY_MODE="ABORTED"/);
-  assert.match(abortBranch, /exit 1/);
-  assert.ok(deployStep.includes('if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then'),
-    'incremental upload processing must be gated by the selected staging mode');
-
-  assert.ok(!stagingBaseline.includes("Production deploys retain"),
-    'production policy must not be part of the extracted staging baseline');
-  const productionBranch = deployStep.slice(productionBoundary);
-  assert.ok(productionBranch.includes("# Production deploys retain the explicitly documented full-deploy policy."));
-  assert.ok(productionBranch.split("\n").some(line => line.trim() === 'DEPLOY_MODE="FULL"'),
-    'production FULL policy must remain outside the staging-only FULL assignment count');
-});
+test('staging and production destinations are isolated and deploy baseline fails closed', () => {
+  const step = extractWorkflowStep(deploy, 'Deploy theme by FTP');
+  const destination = step.match(/^\s+SFTP_PATH:\s+(.+)$/m)?.[1] || '';
+  const production = '/public/wp-content/themes/crios-rango-2026/';
+  const staging = '/public/prueba/wp-content/themes/crios-rango-2026/';
+  assert.ok(destination.includes("'refs/heads/style/product-detail-app-skin'") && destination.includes(production));
+  for (const branch of ['fix/catalog-runtime-parity','fix/category-grid-app-parity','feat/outlet-bubbles','feat/wp-login-branding']) assert.ok(destination.includes("'refs/heads/" + branch + "'"));
+  assert.ok(destination.includes(staging) && destination.includes('secrets.SFTP_PATH'));
+  assert.ok(!production.startsWith(staging) && !staging.startsWith(production));
+  assert.match(step, /DEPLOY_MODE="INCREMENTAL"/);
+  assert.match(step, /DEFAULT_DEPLOY_MODE=INCREMENTAL/);
+  assert.match(step, /FULL_DEPLOY_AUTOMATIC=NO/);
+  const invalid = step.indexOf('BASELINE_ERROR="invalid_or_unparseable_manifest"');
+  const divergent = step.indexOf('BASELINE_ERROR="remote_sha_not_ancestor_of_head"');
+  const abort = step.indexOf('if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then');
+  const exit = step.indexOf('exit 1', abort);
+  assert.ok(invalid >= 0 && abort > invalid && exit > abort, 'invalid manifest aborts');
+  assert.ok(divergent >= 0 && abort > divergent && exit > abort, 'divergent SHA aborts');
+  const dStart = step.lastIndexOf('elif ! git merge-base --is-ancestor', divergent);
+  const dEnd = step.indexOf('elif ! git diff --name-status', divergent);
+  const d = step.slice(dStart, dEnd);
+  assert.match(d, /BASELINE_STATUS="UNAVAILABLE"/);
+  assert.match(d, /FULL_DEPLOY=NO/);
+  assert.doesNotMatch(d, /DEPLOY_MODE="FULL"/);
+  const absentStart = step.indexOf('elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then');
+  const absentEnd = step.indexOf('else\n              BASELINE_STATUS="UNAVAILABLE"', absentStart);
+  const absent = step.slice(absentStart, absentEnd);
+  assert.ok(absentStart >= 0 && absentEnd > absentStart);
+  assert.match(absent, /--list-only/);
+  assert.match(absent, /ROOT_LIST_EXIT/);
+  assert.match(absent, /! -s/);
+  assert.match(absent, /BASELINE_STATUS="FIRST_DEPLOY"/);
+  assert.match(absent, /DEPLOY_MODE="FULL"/);
+  assert.match(absent, /manifest_missing_but_remote_theme_not_confirmed_empty/);
+  assert.match(step, /DEPLOY_MODE="ABORTED"[\s\S]*?exit 1/);
+}
+function assertBuildManifestFollowsRuntimeVerification(workflow) {
+  const step = extractWorkflowStep(workflow, 'Deploy theme by FTP');
+  const preview = step.indexOf('CI_DEPLOY_PREVIEW=PASS');
+  const runtimeUpload = step.indexOf('for FILE in "${UPLOAD_FILES[@]}"; do', preview);
+  const runtimeVerify = step.indexOf('# Verify every selected runtime upload', runtimeUpload);
+  const deletionVerify = step.indexOf('# Process deletions only after every selected runtime upload succeeded.', runtimeVerify);
+  const deletionPass = step.indexOf('echo "REMOTE_DELETE_VERIFIED=$REL"', deletionVerify);
+  const runtimePass = step.indexOf('echo "RUNTIME_TRANSFER_VERIFICATION=PASS"', deletionPass);
+  const generation = step.indexOf('node -e', runtimePass);
+  const upload = step.indexOf('--upload-file "$LOCAL_ROOT/build.json"', generation);
+  const readback = step.indexOf('"$MANIFEST_URL" --output "$MANIFEST_FILE"', upload);
+  const shaCheck = step.indexOf('if(m.sha!==process.env.HEAD_SHA)', readback);
+  const verified = step.indexOf('echo "REMOTE_BUILD_JSON_VERIFIED=YES"', shaCheck);
+  assert.doesNotMatch(step, /UPLOAD_FILES\s*\+=\s*\([^)]*build\.json/);
+  assert.ok(runtimeUpload > preview && runtimeVerify > runtimeUpload);
+  assert.ok(deletionVerify > runtimeVerify && deletionPass > deletionVerify);
+  assert.ok(runtimePass > deletionPass);
+  assert.ok(generation > runtimePass && upload > generation);
+  assert.ok(readback > upload && shaCheck > readback && verified > shaCheck);
+}
 test('staging deploy is exact-HEAD guarded, incremental and verifies the deployed runtime SHA', () => {
   assert.ok(deploy.includes('Check exact PR13 staging HEAD'));
   assert.ok(deploy.includes('git fetch origin fix/catalog-runtime-parity'));
@@ -318,7 +320,7 @@ test('staging deploy is exact-HEAD guarded, incremental and verifies the deploye
   assert.ok(deploy.includes('--quote "-DELE $REL"'));
   assert.ok(deploy.includes('--ftp-create-dirs'));
   assert.ok(deploy.includes('THEME_DEPLOY_SHA="$REMOTE_SHA"'));
-  assert.ok(deploy.includes('UPLOAD_FILES+=("$THEME_ROOT/build.json")'));
+  assertBuildManifestFollowsRuntimeVerification(deploy);
   assert.ok(deploy.includes('EXPECTED_THEME_SHA'));
   assert.ok(deploy.includes('steps.deploy.outputs.theme_deploy_sha'));
   assert.ok(deploy.includes('Verify remote deployed build.json SHA'));
