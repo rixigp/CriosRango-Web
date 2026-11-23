@@ -707,8 +707,8 @@ jobs:
           BASELINE_MANIFEST_FILE="$(mktemp)"
           cleanup_deploy() {
             status=$?
-            if [ "$status" -ne 0 ] && [ "$REMOTE_BUILD_JSON_UPDATED" != "YES" ]; then
-              echo "REMOTE_BUILD_JSON_UPDATED=NO"
+            if [ "$status" -ne 0 ]; then
+              echo "REMOTE_BUILD_JSON_UPDATED=$REMOTE_BUILD_JSON_UPDATED"
               echo "DEPLOY_STATUS=FAILED"
             fi
             rm -f "$DIFF_FILE" "$MANIFEST_FILE" "$BASELINE_ERROR_FILE" "$BASELINE_MANIFEST_FILE"
@@ -1000,6 +1000,24 @@ defer build manifest generation          # De-duplicate paths while preserving d
             echo "REMOTE_RUNTIME_FILE_VERIFIED=$REL"
           done
           rm -f "$VERIFY_FILE"
+          for FILE in "${DELETE_FILES[@]}"; do
+            safe_relative_path "$FILE" || { echo "ERROR: unsafe deletion verification path."; exit 1; }
+            REL="${FILE#"$THEME_ROOT"/}"
+            ENCODED_REL="$(python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1],safe="/"))' "$REL")"
+            set +e
+            DELETE_RESPONSE="$(curl --silent --show-error --ssl-reqd --ftp-pasv \
+              --connect-timeout 20 --retry 2 \
+              --user "${SFTP_USER}:${SFTP_PASSWORD}" \
+              --head --output /dev/null --write-out '%{response_code}' \
+              "${BASE_URL}/${ENCODED_REL}" 2>/dev/null)"
+            DELETE_CURL_EXIT=$?
+            set -e
+            if [ "$DELETE_CURL_EXIT" -eq 0 ] || [ "$DELETE_RESPONSE" != "550" ]; then
+              echo "ERROR: remote deletion verification failed: $REL (curl=$DELETE_CURL_EXIT response=$DELETE_RESPONSE)"
+              exit 1
+            fi
+            echo "REMOTE_DELETE_VERIFIED=$REL"
+          done
           echo "RUNTIME_TRANSFER_VERIFICATION=PASS"
 
           if [ "$DEPLOY_MODE" = "FULL" ] || [ "${#UPLOAD_FILES[@]}" -gt 0 ] || [ "${#DELETE_FILES[@]}" -gt 0 ]; then
