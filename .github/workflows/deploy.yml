@@ -892,7 +892,10 @@ jobs:
             done < <(find "$LOCAL_ROOT" -type f -print0)
           fi
 
-defer build manifest generation          # De-duplicate paths while preserving deterministic output.
+          # Defer build manifest generation.
+          # De-duplicate paths while preserving deterministic output.
+          mapfile -t UPLOAD_FILES < <(printf '%s\n' "${UPLOAD_FILES[@]}" | sed '/^$/d' | sort -u)
+          mapfile -t DELETE_FILES < <(printf '%s\n' "${DELETE_FILES[@]}" | sed '/^$/d' | sort -u)
           mapfile -t UPLOAD_FILES < <(printf '%s\n' "${UPLOAD_FILES[@]}" | sed '/^$/d' | sort -u)
           mapfile -t DELETE_FILES < <(printf '%s\n' "${DELETE_FILES[@]}" | sed '/^$/d' | sort -u)
 
