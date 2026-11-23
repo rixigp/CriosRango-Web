@@ -30,6 +30,9 @@ test('DEPLOY_DEFAULTS_INCREMENTAL_FAIL_CLOSED_AND_MANUAL_FULL_ONLY=PASS',()=>{
   assert.match(deployWorkflow,/FULL_DEPLOY=NO/);
   assert.match(deployWorkflow,/REMOTE_BUILD_JSON_UPDATED=NO/);
   assert.match(deployWorkflow,/DEPLOY_STATUS=FAILED/);
+  assert.match(deployWorkflow,/CI_SCOPE: \\$\\{\\{ steps\\.impact\\.outputs\\.scope \\}\\}/);
+  assert.match(deployWorkflow,/if \\[ "\\$CI_SCOPE" = "CI_VALIDATION" \\]; then[\\s\\S]*?CI_DEPLOY_PREVIEW=PASS[\\s\\S]*?exit 0/);
+  assert.match(deployWorkflow,/CI_DEPLOY_PREVIEW=ABORTED/);
   assert.match(deployWorkflow,/build.json\\|README\\.md/);
   const uploadAt=deployWorkflow.indexOf('echo "Uploading: $REL"');
   const deleteAt=deployWorkflow.indexOf('echo "Deleting remote: $REL"',uploadAt);
