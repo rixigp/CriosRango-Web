@@ -4,6 +4,15 @@ name: Deploy Crios & Rango Web
 
 on:
   workflow_dispatch:
+    inputs:
+      deploy_mode:
+        description: "Deployment mode (FULL requires an explicit manual selection)"
+        required: true
+        default: INCREMENTAL
+        type: choice
+        options:
+          - INCREMENTAL
+          - FULL
   push:
     branches:
       - main
@@ -637,6 +646,8 @@ jobs:
           HEAD_SHA: ${{ github.sha }}
           BUILD_BRANCH: ${{ github.ref_name }}
           GITHUB_REF: ${{ github.ref }}
+          MANUAL_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode || 'INCREMENTAL' }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
 
@@ -683,21 +694,29 @@ jobs:
 
           UPLOAD_FILES=()
           DELETE_FILES=()
-          DEPLOY_MODE="FULL"
+          DEPLOY_MODE="INCREMENTAL"
           REMOTE_SHA=""
           THEME_DEPLOY_SHA="$HEAD_SHA"
           DIFF_FILE="$(mktemp)"
           MANIFEST_FILE="$(mktemp)"
-          trap 'rm -f "$DIFF_FILE" "$MANIFEST_FILE"' EXIT
+          BASELINE_ERROR_FILE="$(mktemp)"
+          BASELINE_MANIFEST_FILE="$(mktemp)"
+          trap 'rm -f "$DIFF_FILE" "$MANIFEST_FILE" "$BASELINE_ERROR_FILE" "$BASELINE_MANIFEST_FILE"' EXIT
 
-          BASELINE_STATUS="NOT_APPLICABLE"
+          BASELINE_STATUS="UNAVAILABLE"
           BASELINE_ERROR=""
-          if [ "$IS_STAGING" = true ]; then
-            BASELINE_STATUS="UNAVAILABLE"
-            BASELINE_ERROR_FILE="$(mktemp)"
-            BASELINE_MANIFEST_FILE="$(mktemp)"
-            trap 'rm -f "$DIFF_FILE" "$MANIFEST_FILE" "$BASELINE_ERROR_FILE" "$BASELINE_MANIFEST_FILE"' EXIT
+          MANUAL_FULL=false
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_DEPLOY_MODE" = "FULL" ]; then
+            MANUAL_FULL=true
+            DEPLOY_MODE="FULL"
+            BASELINE_STATUS="MANUAL_FULL"
+            echo "MANUAL_FULL_DEPLOY=YES"
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_DEPLOY_MODE" != "INCREMENTAL" ]; then
+            echo "ERROR: unsupported manual deploy mode '$MANUAL_DEPLOY_MODE'."
+            exit 1
+          fi
 
+          if [ "$MANUAL_FULL" = false ]; then
             set +e
             BASELINE_RESPONSE_CODE="$(curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
               --connect-timeout 20 --retry 2 \
@@ -721,11 +740,8 @@ jobs:
                   BASELINE_STATUS="UNAVAILABLE"
                   BASELINE_ERROR="remote_sha_not_available_in_git"
                 elif ! git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"; then
-                  # A present commit that is not an ancestor is a confirmed divergent baseline.
-                  # Do not diff across histories; reconcile staging with a controlled full theme deploy.
-                  BASELINE_STATUS="DIVERGED"
+                  BASELINE_STATUS="UNAVAILABLE"
                   BASELINE_ERROR="remote_sha_not_ancestor_of_head"
-                  DEPLOY_MODE="FULL"
                 elif ! git diff --name-status -z --find-renames --find-copies \
                   "$REMOTE_SHA" "$HEAD_SHA" -- "$THEME_ROOT" > "$DIFF_FILE"; then
                   BASELINE_STATUS="UNAVAILABLE"
@@ -735,36 +751,46 @@ jobs:
                 fi
               fi
             elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then
-              BASELINE_STATUS="ABSENT"
-              REMOTE_SHA=""
-              DEPLOY_MODE="FULL"
+              # A missing manifest is a first deployment ONLY if the remote theme directory
+              # is positively confirmed empty. Any listing failure or existing file aborts.
+              REMOTE_LIST_FILE="$(mktemp)"
+              set +e
+              ROOT_LIST_EXIT="$(curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
+                --connect-timeout 20 --retry 2 --list-only \
+                --user "${SFTP_USER}:${SFTP_PASSWORD}" \
+                "$BASE_URL/" --output "$REMOTE_LIST_FILE" 2>"$BASELINE_ERROR_FILE"; echo $?)"
+              set -e
+              if [ "$ROOT_LIST_EXIT" -eq 0 ] && [ ! -s "$REMOTE_LIST_FILE" ]; then
+                BASELINE_STATUS="FIRST_DEPLOY"
+                DEPLOY_MODE="FULL"
+                echo "FIRST_DEPLOY_CONFIRMED=YES"
+              else
+                BASELINE_STATUS="UNAVAILABLE"
+                BASELINE_ERROR="manifest_missing_but_remote_theme_not_confirmed_empty"
+              fi
+              rm -f "$REMOTE_LIST_FILE"
             else
               BASELINE_STATUS="UNAVAILABLE"
-              BASELINE_ERROR="curl_exit_${BASELINE_CURL_EXIT}"
+              BASELINE_ERROR="curl_exit_${BASELINE_CURL_EXIT}_response_${BASELINE_RESPONSE_CODE:-UNKNOWN}"
             fi
-
-            echo "BASELINE_STATUS=$BASELINE_STATUS"
-            if [ -n "$REMOTE_SHA" ]; then echo "REMOTE_SHA=$REMOTE_SHA"; else echo "REMOTE_SHA=NONE"; fi
-            if [ -n "$BASELINE_ERROR" ]; then echo "BASELINE_ERROR=$BASELINE_ERROR"; fi
-
-            if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then
-              DEPLOY_MODE="ABORTED"
-              echo "DEPLOY_MODE=$DEPLOY_MODE"
-              echo "DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE"
-              echo "UPLOAD_COUNT=0"
-              echo "DELETE_COUNT=0"
-              exit 1
-            fi
-            if [ "$BASELINE_STATUS" = "DIVERGED" ]; then
-              echo "REMOTE_BASELINE_DIVERGED=YES"
-              echo "FULL_DEPLOY_REQUIRED=YES"
-              echo "DEPLOY_MODE=FULL"
-            fi
-          else
-            # Production deploys retain the explicitly documented full-deploy policy.
-            DEPLOY_MODE="FULL"
           fi
 
+          echo "BASELINE_STATUS=$BASELINE_STATUS"
+          if [ -n "$REMOTE_SHA" ]; then echo "REMOTE_SHA=$REMOTE_SHA"; else echo "REMOTE_SHA=NONE"; fi
+          if [ -n "$BASELINE_ERROR" ]; then echo "BASELINE_ERROR=$BASELINE_ERROR"; fi
+
+          if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then
+            FAIL_CLOSED=YES
+            DEPLOY_ABORTED=YES
+            DEPLOY_MODE="ABORTED"
+            echo "FAIL_CLOSED=$FAIL_CLOSED"
+            echo "DEPLOY_ABORTED=$DEPLOY_ABORTED"
+            echo "DEPLOY_MODE=$DEPLOY_MODE"
+            echo "DEPLOY_REASON=REMOTE_BASELINE_UNAVAILABLE"
+            echo "UPLOAD_COUNT=0"
+            echo "DELETE_COUNT=0"
+            exit 1
+          fi
           if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then
             while IFS= read -r -d '' STATUS; do
               case "$STATUS" in
@@ -809,7 +835,7 @@ jobs:
               esac
             done < "$DIFF_FILE"
           else
-            echo "FULL deploy selected: remote manifest absent or confirmed divergent baseline."
+            echo "FULL deploy selected: explicit manual FULL or confirmed first deployment only."
             while IFS= read -r -d '' FILE; do
               PATH_NAME="${FILE#./}"
               if ! safe_relative_path "$PATH_NAME"; then
@@ -821,7 +847,7 @@ jobs:
             done < <(find "$LOCAL_ROOT" -type f -print0)
           fi
 
-          # A build manifest represents deployed runtime, not an arbitrary repository commit.
+          # build.json is the control-plane deployment marker and must advance with the runtime diff.
           # Preserve it byte-for-byte when the diff contains no runtime changes.
           if [ "$DEPLOY_MODE" = "FULL" ] || [ "${#UPLOAD_FILES[@]}" -gt 0 ] || [ "${#DELETE_FILES[@]}" -gt 0 ]; then
               node -e 'const fs=require("fs");const branch=process.env.BUILD_BRANCH;const pr=branch==="feat/wp-login-branding"?16:branch==="style/product-detail-app-skin"?null:15;fs.writeFileSync(process.argv[1],JSON.stringify({sha:process.env.HEAD_SHA,branch,pr},null,2)+"\n");' "$LOCAL_ROOT/build.json"
