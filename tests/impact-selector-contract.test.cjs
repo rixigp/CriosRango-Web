@@ -12,18 +12,18 @@ test('impact-selector tests select the six toolbar contracts',()=>{const r=class
 
 const deployWorkflow=fs.readFileSync(path.join(__dirname,'..','.github','workflows','deploy.yml'),'utf8');
 test('DEPLOY_DEFAULTS_INCREMENTAL_FAIL_CLOSED_AND_MANUAL_FULL_ONLY=PASS',()=>{
-  assert.match(deployWorkflow,/workflow_dispatch:[\\s\\S]*?default: INCREMENTAL[\\s\\S]*?options:[\\s\\S]*?- INCREMENTAL[\\s\\S]*?- FULL/);
+  assert.match(deployWorkflow,/workflow_dispatch:[\s\S]*?default: INCREMENTAL[\s\S]*?options:[\s\S]*?- INCREMENTAL[\s\S]*?- FULL/);
   assert.match(deployWorkflow,/DEPLOY_MODE="INCREMENTAL"/);
-  assert.match(deployWorkflow,/MANUAL_DEPLOY_MODE: \\$\\{\\{ github\\.event_name == 'workflow_dispatch' && inputs\\.deploy_mode \\|\\| 'INCREMENTAL' \\}\\}/);
-  assert.match(deployWorkflow,/if \\[ "\\$EVENT_NAME" = "workflow_dispatch" \\] && \\[ "\\$MANUAL_DEPLOY_MODE" = "FULL" \\]/);
+  assert.match(deployWorkflow,/MANUAL_DEPLOY_MODE: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.deploy_mode \|\| 'INCREMENTAL' \}\}/);
+  assert.match(deployWorkflow,/if \[ "\$EVENT_NAME" = "workflow_dispatch" \] && \[ "\$MANUAL_DEPLOY_MODE" = "FULL" \]/);
   assert.match(deployWorkflow,/MANUAL_FULL_DEPLOY=YES/);
-  assert.match(deployWorkflow,/BASELINE_STATUS="UNAVAILABLE"[\\s\\S]*?FAIL_CLOSED=YES[\\s\\S]*?DEPLOY_ABORTED=YES[\\s\\S]*?DEPLOY_MODE="ABORTED"[\\s\\S]*?exit 1/);
+  assert.match(deployWorkflow,/BASELINE_STATUS="UNAVAILABLE"[\s\S]*?FAIL_CLOSED=YES[\s\S]*?DEPLOY_ABORTED=YES[\s\S]*?DEPLOY_MODE="ABORTED"[\s\S]*?exit 1/);
   assert.match(deployWorkflow,/remote_sha_not_ancestor_of_head/);
-  assert.doesNotMatch(deployWorkflow,/remote_sha_not_ancestor_of_head[\\s\\S]{0,500}DEPLOY_MODE="FULL"/);
-  assert.match(deployWorkflow,/git diff --name-status -z --find-renames --find-copies[\\s\\S]*?"\\$REMOTE_SHA" "\\$HEAD_SHA" -- "\\$THEME_ROOT"/);
-  assert.match(deployWorkflow,/if \\[ "\\$DEPLOY_MODE" = "INCREMENTAL" \\]; then[\\s\\S]*?done < "\\$DIFF_FILE"/);
+  assert.doesNotMatch(deployWorkflow,/remote_sha_not_ancestor_of_head[\s\S]{0,500}DEPLOY_MODE="FULL"/);
+  assert.match(deployWorkflow,/git diff --name-status -z --find-renames --find-copies[\s\S]*?"\$REMOTE_SHA" "\$HEAD_SHA" -- "\$THEME_ROOT"/);
+  assert.match(deployWorkflow,/if \[ "\$DEPLOY_MODE" = "INCREMENTAL" \]; then[\s\S]*?done < "\$DIFF_FILE"/);
   assert.match(deployWorkflow,/FIRST_DEPLOY_CONFIRMED=YES/);
-  assert.match(deployWorkflow,/ROOT_LIST_EXIT=\\$\\?[\\s\\S]*?\\[ ! -s "\\$REMOTE_LIST_FILE" \\]/);
+  assert.match(deployWorkflow,/ROOT_LIST_EXIT=\$\?[\s\S]*?\[ ! -s "\$REMOTE_LIST_FILE" \]/);
   assert.match(deployWorkflow,/FULL deploy selected: explicit manual FULL or confirmed first deployment only/);
   assert.doesNotMatch(deployWorkflow,/Production deploys retain the explicitly documented full-deploy policy/);
   console.log('PUSH_DEFAULTS_TO_INCREMENTAL=YES');
