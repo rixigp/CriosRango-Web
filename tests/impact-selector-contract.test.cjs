@@ -25,6 +25,19 @@ test('DEPLOY_DEFAULTS_INCREMENTAL_FAIL_CLOSED_AND_MANUAL_FULL_ONLY=PASS',()=>{
   assert.match(deployWorkflow,/FIRST_DEPLOY_CONFIRMED=YES/);
   assert.match(deployWorkflow,/ROOT_LIST_EXIT=\$\?[\s\S]*?\[ ! -s "\$REMOTE_LIST_FILE" \]/);
   assert.match(deployWorkflow,/FULL deploy selected: explicit manual FULL or confirmed first deployment only/);
+  assert.match(deployWorkflow,/git merge-base --is-ancestor "\\$REMOTE_SHA" "\\$HEAD_SHA"/);
+  assert.match(deployWorkflow,/REMOTE_SHA_IS_ANCESTOR=NO[\\s\\S]*?DEPLOY_ABORTED=YES[\\s\\S]*?FULL_DEPLOY=NO/);
+  assert.match(deployWorkflow,/FULL_DEPLOY=NO/);
+  assert.match(deployWorkflow,/REMOTE_BUILD_JSON_UPDATED=NO/);
+  assert.match(deployWorkflow,/DEPLOY_STATUS=FAILED/);
+  assert.match(deployWorkflow,/build.json\\|README\\.md/);
+  const uploadAt=deployWorkflow.indexOf('for FILE in "${UPLOAD_FILES[@]}"; do');
+  const deleteAt=deployWorkflow.indexOf('for FILE in "${DELETE_FILES[@]}"; do',uploadAt);
+  const verifyAt=deployWorkflow.indexOf('# Verify every selected runtime upload');
+  const manifestAt=deployWorkflow.indexOf('Uploading build.json last with HEAD_SHA=$HEAD_SHA');
+  const verifyManifestAt=deployWorkflow.indexOf('REMOTE_BUILD_SHA_VERIFIED=');
+  assert.ok(uploadAt>=0 && uploadAt<deleteAt && deleteAt<verifyAt && verifyAt<manifestAt && manifestAt<verifyManifestAt,
+    'required order: runtime uploads -> deletions -> runtime verification -> build.json upload -> build.json verification');
   assert.doesNotMatch(deployWorkflow,/Production deploys retain the explicitly documented full-deploy policy/);
   console.log('PUSH_DEFAULTS_TO_INCREMENTAL=YES');
   console.log('REMOTE_SHA_MISSING_FORCES_FULL=NO');
