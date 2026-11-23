@@ -535,7 +535,7 @@ jobs:
           echo "THEME_STRUCTURE=PASS"
 
       - name: Check exact PR13 staging HEAD compatibility and PR14 staging HEAD
-        if: steps.impact.outputs.scope != 'TEST_ONLY' && steps.impact.outputs.scope != 'CI_VALIDATION'
+        if: steps.impact.outputs.scope != 'TEST_ONLY'
         id: staging-head
         shell: bash
         run: |
@@ -648,6 +648,7 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
           MANUAL_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode || 'INCREMENTAL' }}
           EVENT_NAME: ${{ github.event_name }}
+          CI_SCOPE: ${{ steps.impact.outputs.scope }}
         run: |
           set -euo pipefail
 
@@ -912,6 +913,29 @@ defer build manifest generation          # De-duplicate paths while preserving d
           echo "DELETE_COUNT=${#DELETE_FILES[@]}"
           echo "THEME_RUNTIME_CHANGES=$(( ${#UPLOAD_FILES[@]} + ${#DELETE_FILES[@]} ))"
           echo "DEPLOY_THEME_FILES=$(( ${#UPLOAD_FILES[@]} + ${#DELETE_FILES[@]} ))"
+
+          # CI-only preview: read and calculate the exact production diff, but never write via FTP.
+          if [ "$CI_SCOPE" = "CI_VALIDATION" ]; then
+            if [ "$DEPLOY_MODE" != "INCREMENTAL" ] || [ "$REMOTE_SHA_IS_ANCESTOR" != "YES" ]; then
+              DEPLOY_ABORTED=YES
+              FULL_DEPLOY=NO
+              echo "DEPLOY_ABORTED=YES"
+              echo "FULL_DEPLOY=NO"
+              echo "DEPLOY_STATUS=FAILED"
+              echo "CI_DEPLOY_PREVIEW=ABORTED"
+              exit 1
+            fi
+            echo "THEME_RUNTIME_CHANGES=$(( ${#UPLOAD_FILES[@]} + ${#DELETE_FILES[@]} ))"
+            echo "UPLOAD_COUNT=${#UPLOAD_FILES[@]}"
+            echo "UNCHANGED_THEME_FILES_UPLOADED=NO"
+            echo "FULL_DEPLOY=NO"
+            echo "REMOTE_BUILD_JSON_UPDATED=NO"
+            echo "DEPLOY_STATUS=PREVIEW_ONLY"
+            echo "CI_DEPLOY_PREVIEW=PASS"
+            echo "theme_deploy_sha=$REMOTE_SHA" >> "$GITHUB_OUTPUT"
+            echo "deploy_mode=INCREMENTAL" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
           for FILE in "${UPLOAD_FILES[@]}"; do
             safe_relative_path "$FILE" || { echo "ERROR: unsafe FTP upload path."; exit 1; }
