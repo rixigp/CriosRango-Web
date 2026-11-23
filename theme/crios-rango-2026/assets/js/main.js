@@ -26,6 +26,9 @@
     Number.isInteger(entry.page) && entry.page >= 1 && Array.isArray(entry.pages) &&
     entry.pages.length === entry.page && entry.payload && typeof entry.payload.html === 'string'
   );
+  const hasCatalogCacheProducts = pages => Array.isArray(pages) && pages.some(page =>
+    page && Array.isArray(page.product_ids) && page.product_ids.length > 0
+  );
   const buildCategoryHubFilterUrl = (href, filters) => {
     const destination = new URL(href);
     ['size_ids', 'color_ids', 'brand_ids'].forEach(key => {
@@ -38,7 +41,7 @@
     destination.searchParams.delete('product-page');
     return destination.toString();
   };
-  window.CR2026CatalogState = { toggleFacetSelection, sameOrderedIds, catalogCacheKey, isValidCatalogCacheEntry, buildCategoryHubFilterUrl, CATALOG_SESSION_CACHE_VERSION, CATALOG_SESSION_CACHE_TTL_MS };
+  window.CR2026CatalogState = { toggleFacetSelection, sameOrderedIds, catalogCacheKey, isValidCatalogCacheEntry, hasCatalogCacheProducts, buildCategoryHubFilterUrl, CATALOG_SESSION_CACHE_VERSION, CATALOG_SESSION_CACHE_TTL_MS };
 
   const menuButton = document.querySelector('[data-cr-menu-toggle]');
   const mobileMenu = document.querySelector('[data-cr-mobile-menu]');
@@ -818,6 +821,11 @@
     const restoreCatalogCache = () => {
       const entry = readCatalogCache();
       if (!entry) return false;
+      // An empty session result is never authoritative: fetch the current catalog before showing empty-state.
+      if (!hasCatalogCacheProducts(entry.pages)) {
+        try { sessionStorage.removeItem(entry.baseKey); } catch (error) {}
+        return false;
+      }
       if (totalLimit) {
         const pagesBefore = Array.isArray(entry.pages) ? entry.pages.length : 0;
         entry.pages = normalizeCatalogPages(entry.pages);
@@ -987,7 +995,11 @@
       } catch (error) {
         if(token!==requestGeneration||(error&&error.name==='AbortError'))return;
         console.error('[Críos&Rango productos] No se pudo cargar la página del catálogo',error);
-        if (!append && !background) { showEmpty(); hasMore = false; }
+        if (!append && !background) {
+          hasMore = false;
+          // A failed/stale request is not proof that the current catalog is empty.
+          emptyState.hidden = true;
+        }
       } finally {
         if(token===requestGeneration){
           loading=false;if(activeRequest===controller)activeRequest=null;updateLoadMoreButton(false);

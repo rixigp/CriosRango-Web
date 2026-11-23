@@ -85,3 +85,37 @@ test('Novedades freezes newest-24 IDs, sorts only those hydrated products, then 
     'CATALOG_PRODUCTS_LEAKED='
   ]) assert.ok(browser.includes(marker), 'missing cohort sort browser assertion/log: ' + marker);
 });
+
+test('empty catalog session-cache entries cannot override a current non-empty catalog response', () => {
+  assert.ok(js.includes('const hasCatalogCacheProducts = pages => Array.isArray(pages)'));
+  assert.ok(js.includes('if (!hasCatalogCacheProducts(entry.pages))'));
+  assert.ok(js.includes('sessionStorage.removeItem(entry.baseKey)'));
+  const restoreStart = js.indexOf('const restoreCatalogCache = () =>');
+  const restoreEnd = js.indexOf('const buildCatalogPageUrl', restoreStart);
+  const restore = js.slice(restoreStart, restoreEnd);
+  assert.ok(restore.indexOf('hasCatalogCacheProducts(entry.pages)') < restore.indexOf('grid.replaceChildren(template.content)'),
+    'empty cache must be rejected before restoring any cached grid state');
+  const loadStart = js.indexOf('const loadPage = async');
+  const loadEnd = js.indexOf('const resetAndLoad', loadStart);
+  const load = js.slice(loadStart, loadEnd);
+  const catchStart = load.indexOf('} catch (error) {');
+  const finallyStart = load.indexOf('} finally {', catchStart);
+  assert.ok(catchStart >= 0 && finallyStart > catchStart);
+  assert.doesNotMatch(load.slice(catchStart, finallyStart), /showEmpty\(\)/,
+    'network/validation errors must not clear products or masquerade as a valid empty result');
+  assert.match(load, /if \(!returnedIds\.length\) \{\s*if \(!append\) showEmpty\(\);/,
+    'empty-state is reserved for a validated response containing no product IDs');
+});
+
+test('facet fetch cancellation and generation are isolated from the product listing request', () => {
+  const facetStart = js.indexOf('// Dependent facets:');
+  const listingStart = js.indexOf('// Category catalog:');
+  assert.ok(facetStart >= 0 && listingStart > facetStart);
+  const facets = js.slice(facetStart, listingStart);
+  assert.match(facets, /const controllers=affected\.map\(\(\)=>new AbortController\(\)\)/);
+  assert.match(facets, /generation\+\+;const token=generation/);
+  assert.doesNotMatch(facets, /requestGeneration|activeRequest/,
+    'facet requests must not abort or invalidate product listing requests');
+  assert.ok(js.includes("categoryId: !brandContext && !outletCategoryId ? categoryId : '0'"));
+  assert.ok(js.includes('const cacheStorageKey = () => catalogCacheKey(cacheBaseState(cacheState()))'));
+});
