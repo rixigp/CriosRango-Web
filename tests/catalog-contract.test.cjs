@@ -293,12 +293,12 @@ function assertBuildManifestFollowsRuntimeVerification(workflow) {
   const preview = step.indexOf('CI_DEPLOY_PREVIEW=PASS');
   const runtimeUpload = step.indexOf('for FILE in "${UPLOAD_FILES[@]}"; do', preview);
   const runtimeVerify = step.indexOf('# Verify every selected runtime upload', runtimeUpload);
-  const deletionVerify = step.indexOf('# Process deletions only after every selected runtime upload succeeded.', runtimeVerify);
+  const deletionVerify = step.indexOf('ERROR: unsafe deletion verification path.', runtimeVerify);
   const deletionPass = step.indexOf('echo "REMOTE_DELETE_VERIFIED=$REL"', deletionVerify);
   const runtimePass = step.indexOf('echo "RUNTIME_TRANSFER_VERIFICATION=PASS"', deletionPass);
   const generation = step.indexOf('node -e', runtimePass);
   const upload = step.indexOf('--upload-file "$LOCAL_ROOT/build.json"', generation);
-  const readback = step.indexOf('"$MANIFEST_URL" --output "$MANIFEST_FILE"', upload);
+  const readback = step.indexOf('"\u0024{BASE_URL}/build.json" --output "$MANIFEST_FILE"', upload);
   const shaCheck = step.indexOf('if(m.sha!==process.env.HEAD_SHA)', readback);
   const verified = step.indexOf('echo "REMOTE_BUILD_JSON_VERIFIED=YES"', shaCheck);
   assert.doesNotMatch(step, /UPLOAD_FILES\s*\+=\s*\([^)]*build\.json/);
