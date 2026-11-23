@@ -287,7 +287,7 @@ test('staging and production destinations are isolated and deploy baseline fails
   assert.match(absent, /DEPLOY_MODE="FULL"/);
   assert.match(absent, /manifest_missing_but_remote_theme_not_confirmed_empty/);
   assert.match(step, /DEPLOY_MODE="ABORTED"[\s\S]*?exit 1/);
-}
+});
 function assertBuildManifestFollowsRuntimeVerification(workflow) {
   const step = extractWorkflowStep(workflow, 'Deploy theme by FTP');
   const preview = step.indexOf('CI_DEPLOY_PREVIEW=PASS');
