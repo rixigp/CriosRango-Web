@@ -684,7 +684,7 @@ jobs:
           runtime_file() {
             local relative="$1"
             case "$relative" in
-              README.md|*/README.md|*.md|*.markdown|*.log|*.tmp|*.temp|*.swp|*.swo|*~|.DS_Store|*/.DS_Store|.editorconfig|.gitignore|.gitattributes|.npmrc|.prettierrc*|eslint.config.*)
+              build.json|README.md|*/README.md|*.md|*.markdown|*.log|*.tmp|*.temp|*.swp|*.swo|*~|.DS_Store|*/.DS_Store|.editorconfig|.gitignore|.gitattributes|.npmrc|.prettierrc*|eslint.config.*)
                 return 1 ;;
               docs/*|*/docs/*|documentation/*|*/documentation/*|tests/*|*/tests/*|test/*|*/test/*|fixtures/*|*/fixtures/*|scripts/*|*/scripts/*|.git/*|.github/*|.vscode/*|.idea/*|__pycache__/*|*/__pycache__/*|node_modules/*|*/node_modules/*|tmp/*|*/tmp/*|temp/*|*/temp/*|logs/*|*/logs/*)
                 return 1 ;;
@@ -738,8 +738,7 @@ jobs:
             exit 1
           fi
 
-          if [ "$MANUAL_FULL" = false ]; then
-            set +e
+          set +e
             BASELINE_RESPONSE_CODE="$(curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
               --connect-timeout 20 --retry 2 \
               --user "${SFTP_USER}:${SFTP_PASSWORD}" \
@@ -776,11 +775,21 @@ jobs:
                   BASELINE_ERROR="git_diff_failed"
                 else
                   REMOTE_SHA_IS_ANCESTOR=YES
-                  DEPLOY_MODE="INCREMENTAL"
-                  FULL_DEPLOY=NO
                   echo "REMOTE_SHA_IS_ANCESTOR=YES"
+                  if [ "$MANUAL_FULL" = false ]; then
+                    DEPLOY_MODE="INCREMENTAL"
+                    FULL_DEPLOY=NO
+                  else
+                    DEPLOY_MODE="FULL"
+                    FULL_DEPLOY=YES
+                  fi
                 fi
               fi
+            elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ] && [ "$MANUAL_FULL" = true ]; then
+              BASELINE_STATUS="MANUAL_FULL"
+              DEPLOY_MODE="FULL"
+              FULL_DEPLOY=YES
+              echo "MANUAL_FULL_WITHOUT_EXISTING_MANIFEST=YES"
             elif [ "$BASELINE_CURL_EXIT" -eq 78 ] && [ "$BASELINE_RESPONSE_CODE" = "550" ]; then
               # A missing manifest is a first deployment ONLY if the remote theme directory
               # is positively confirmed empty. Any listing failure or existing file aborts.
@@ -806,7 +815,6 @@ jobs:
               BASELINE_STATUS="UNAVAILABLE"
               BASELINE_ERROR="curl_exit_${BASELINE_CURL_EXIT}_response_${BASELINE_RESPONSE_CODE:-UNKNOWN}"
             fi
-          fi
 
           echo "BASELINE_STATUS=$BASELINE_STATUS"
           if [ -n "$REMOTE_SHA" ]; then echo "REMOTE_SHA=$REMOTE_SHA"; else echo "REMOTE_SHA=NONE"; fi
