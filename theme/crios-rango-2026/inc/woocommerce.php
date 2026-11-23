@@ -534,73 +534,21 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
     $generation = cr2026_catalog_cache_generation();
     $novelties_cohort_ids = $is_novelties ? cr2026_novelties_cohort_ids( $generation ) : array();
     $cache_bypass = cr2026_catalog_cache_session_sensitive();
-    $cache_filters = array();
-    foreach ( $filter_keys as $filter_key ) { $cache_filters[ $filter_key ] = $request->get_param( $filter_key ); }
-    $catalog_cache_key = cr2026_catalog_cache_key(
-        $generation, $scope, $category_id, $brand_id, $outlet_category_id,
-        $origin_category_ids, $cache_filters, $sort, $page, $per_page, $novelties_limit, $novelties_cohort_ids
-    );
-    $cache_result = array( 'state' => 'miss', 'payload' => false );
-    if ( ! $cache_bypass ) {
-        $cache_result = cr2026_catalog_cache_lookup( $catalog_cache_key );
-    }
-
-    // Temporary production trace for the reported empty leaf category only.
-    $catalog_debug = null;
-    if ( 313 === $category_id && $category_term instanceof WP_Term ) {
-        $assigned_ids = get_objects_in_term( $category_id, 'product_cat' );
-        $assigned_ids = is_wp_error( $assigned_ids ) ? array() : array_values( array_unique( array_filter( array_map( 'absint', $assigned_ids ) ) ) );
-        $published_ids = $assigned_ids ? get_posts( array(
-            'post_type' => 'product',
-            'post_status' => 'publish',
-            'post__in' => $assigned_ids,
-            'posts_per_page' => -1,
-            'fields' => 'ids',
-            'orderby' => 'post__in',
-            'suppress_filters' => true,
-        ) ) : array();
-        $published_ids = array_values( array_unique( array_map( 'absint', $published_ids ) ) );
-        $visible_ids = $published_ids ? wc_get_products( array(
-            'status' => 'publish',
-            'visibility' => 'visible',
-            'include' => $published_ids,
-            'limit' => -1,
-            'return' => 'ids',
-        ) ) : array();
-        $visible_ids = is_array( $visible_ids ) ? array_values( array_unique( array_map( 'absint', $visible_ids ) ) ) : array();
-        $wc_debug_result = wc_get_products( array(
-            'status' => 'publish',
-            'visibility' => 'visible',
-            'category' => array( $category_term->slug ),
-            'limit' => 12,
-            'page' => 1,
-            'paginate' => true,
-            'return' => 'objects',
-            'orderby' => 'title',
-            'order' => 'ASC',
-        ) );
-        $wc_debug_products = isset( $wc_debug_result->products ) && is_array( $wc_debug_result->products ) ? $wc_debug_result->products : array();
-        $catalog_debug = array(
-            'term_id' => absint( $category_term->term_id ),
-            'term_slug' => (string) $category_term->slug,
-            'assigned_total' => count( $assigned_ids ),
-            'published_total' => count( $published_ids ),
-            'visible_total' => count( $visible_ids ),
-            'wc_query_total' => isset( $wc_debug_result->total ) ? absint( $wc_debug_result->total ) : null,
-            'wc_query_ids' => array_map( static function ( $product ) { return absint( $product->get_id() ); }, $wc_debug_products ),
-            'cache_generation' => absint( $generation ),
-            'cache_key' => $catalog_cache_key,
-            'cache_status' => strtoupper( $cache_result['state'] ),
+    if ( $cache_bypass ) {
+    } else {
+        $cache_filters = array();
+        foreach ( $filter_keys as $filter_key ) { $cache_filters[ $filter_key ] = $request->get_param( $filter_key ); }
+        $catalog_cache_key = cr2026_catalog_cache_key(
+            $generation, $scope, $category_id, $brand_id, $outlet_category_id,
+            $origin_category_ids, $cache_filters, $sort, $page, $per_page, $novelties_limit, $novelties_cohort_ids
         );
-    }
-
-    if ( ! $cache_bypass && ( 'hit' === $cache_result['state'] || 'stale' === $cache_result['state'] ) ) {
-        $cached_payload = $cache_result['payload'];
-        if ( null !== $catalog_debug ) { $cached_payload['debug'] = $catalog_debug; }
-        return rest_ensure_response( $cached_payload );
-    }
-    if ( ! $cache_bypass && 'locked' === $cache_result['state'] ) {
-        return new WP_Error( 'cr2026_catalog_cache_building', __( 'El catálogo se está actualizando. Inténtalo de nuevo.', 'crios-rango-2026' ), array( 'status' => 503 ) );
+        $cache_result = cr2026_catalog_cache_lookup( $catalog_cache_key );
+        if ( 'hit' === $cache_result['state'] || 'stale' === $cache_result['state'] ) {
+            return rest_ensure_response( $cache_result['payload'] );
+        }
+        if ( 'locked' === $cache_result['state'] ) {
+            return new WP_Error( 'cr2026_catalog_cache_building', __( 'El catálogo se está actualizando. Inténtalo de nuevo.', 'crios-rango-2026' ), array( 'status' => 503 ) );
+        }
     }
     $has_more = false;
     $total = null;
@@ -773,8 +721,6 @@ function cr2026_catalog_page_rest_response( WP_REST_Request $request ) {
             unset( $GLOBALS['cr2026_catalog_cache_lock'] );
         }
     }
-    // Keep diagnostic data out of the shared transient; attach it only to this response.
-    if ( null !== $catalog_debug ) { $payload['debug'] = $catalog_debug; }
     return rest_ensure_response( $payload );
 }
 

@@ -85,18 +85,3 @@ test('Novedades freezes newest-24 IDs, sorts only those hydrated products, then 
     'CATALOG_PRODUCTS_LEAKED='
   ]) assert.ok(browser.includes(marker), 'missing cohort sort browser assertion/log: ' + marker);
 });
-
-test('temporary category 313 runtime diagnostic exposes WooCommerce and cache layers only for that category', () => {
-  for (const key of [
-    'term_id', 'term_slug', 'assigned_total', 'published_total', 'visible_total',
-    'wc_query_total', 'wc_query_ids', 'cache_generation', 'cache_key', 'cache_status'
-  ]) assert.ok(php.includes("'" + key + "' =>"), 'missing temporary diagnostic field: ' + key);
-  assert.ok(php.includes("if ( 313 === $category_id && $category_term instanceof WP_Term )"));
-  assert.ok(php.includes("'category' => array( $category_term->slug )"));
-  assert.ok(php.includes("'paginate' => true"));
-  assert.ok(php.includes("'limit' => 12"));
-  assert.ok(php.includes("'orderby' => 'title'"));
-  assert.ok(php.includes("'order' => 'ASC'"));
-  assert.ok(php.includes("strtoupper( $cache_result['state'] )"));
-  assert.ok(php.includes("Keep diagnostic data out of the shared transient"));
-});
