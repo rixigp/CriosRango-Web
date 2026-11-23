@@ -12,36 +12,58 @@ test('impact-selector tests select the six toolbar contracts',()=>{const r=class
 
 const deployWorkflow=fs.readFileSync(path.join(__dirname,'..','.github','workflows','deploy.yml'),'utf8');
 test('DEPLOY_DEFAULTS_INCREMENTAL_FAIL_CLOSED_AND_MANUAL_FULL_ONLY=PASS',()=>{
-  // Defaults and automatic deploys must never select FULL.
-  assert.match(deployWorkflow,/workflow_dispatch:[\\s\\S]*?default: INCREMENTAL[\\s\\S]*?options:[\\s\\S]*?- INCREMENTAL[\\s\\S]*?- FULL/);
-  assert.match(deployWorkflow,/DEPLOY_MODE="INCREMENTAL"/);
-  assert.match(deployWorkflow,/echo "DEFAULT_DEPLOY_MODE=INCREMENTAL"/);
-  assert.match(deployWorkflow,/echo "FULL_DEPLOY_AUTOMATIC=NO"/);
-  assert.match(deployWorkflow,/MANUAL_DEPLOY_MODE: \\$\\{\\{ github\\.event_name == 'workflow_dispatch' && inputs\\.deploy_mode \\|\\| 'INCREMENTAL' \\}\\}/);
+  const has = value => assert.ok(deployWorkflow.includes(value), `missing workflow contract: ${value}`);
+  const between = (from, to) => {
+    const a=deployWorkflow.indexOf(from), b=deployWorkflow.indexOf(to,a);
+    assert.ok(a>=0 && b>a, `missing ordered workflow section: ${from}`);
+    return deployWorkflow.slice(a,b);
+  };
 
-  // FULL is an explicit workflow_dispatch choice, or the narrowly verified first deployment.
-  assert.match(deployWorkflow,/if \\[ "\\$EVENT_NAME" = "workflow_dispatch" \\] && \\[ "\\$MANUAL_DEPLOY_MODE" = "FULL" \\]/);
-  assert.match(deployWorkflow,/MANUAL_FULL_DEPLOY=YES/);
-  assert.match(deployWorkflow,/FULL deploy selected: explicit manual FULL or confirmed first deployment only/);
-  assert.match(deployWorkflow,/ROOT_LIST_EXIT=\\$\\?[\\s\\S]*?if \\[ "\\$ROOT_LIST_EXIT" -eq 0 \\] && \\[ ! -s "\\$REMOTE_LIST_FILE" \\]; then[\\s\\S]*?FIRST_DEPLOY_CONFIRMED=YES[\\s\\S]*?else[\\s\\S]*?BASELINE_STATUS="UNAVAILABLE"/);
+  // Default mode and FULL selection.
+  has('default: INCREMENTAL');
+  has('          - INCREMENTAL');
+  has('          - FULL');
+  has('DEPLOY_MODE="INCREMENTAL"');
+  has('echo "DEFAULT_DEPLOY_MODE=INCREMENTAL"');
+  has('echo "FULL_DEPLOY_AUTOMATIC=NO"');
+  has("MANUAL_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode || 'INCREMENTAL' }}");
+  has('if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$MANUAL_DEPLOY_MODE" = "FULL" ]; then');
+  has('echo "MANUAL_FULL_DEPLOY=YES"');
 
-  // Missing or invalid build.json, and an unavailable or divergent SHA, fail closed.
-  assert.match(deployWorkflow,/REMOTE_SHA_MISSING_FORCES_FULL=NO/);
-  assert.match(deployWorkflow,/REMOTE_SHA_MISSING_ABORTS_DEPLOY=YES/);
-  assert.match(deployWorkflow,/if \\[ -z "\\$REMOTE_SHA" \\]; then[\\s\\S]*?BASELINE_STATUS="UNAVAILABLE"[\\s\\S]*?BASELINE_ERROR="invalid_or_unparseable_manifest"/);
-  assert.match(deployWorkflow,/git merge-base --is-ancestor "\\$REMOTE_SHA" "\\$HEAD_SHA"/);
-  assert.match(deployWorkflow,/REMOTE_SHA_IS_ANCESTOR=NO[\\s\\S]*?DEPLOY_ABORTED=YES[\\s\\S]*?FULL_DEPLOY=NO[\\s\\S]*?BASELINE_STATUS="UNAVAILABLE"/);
-  assert.match(deployWorkflow,/if \\[ "\\$BASELINE_STATUS" = "UNAVAILABLE" \\]; then[\\s\\S]*?FAIL_CLOSED=YES[\\s\\S]*?DEPLOY_ABORTED=YES[\\s\\S]*?DEPLOY_MODE="ABORTED"[\\s\\S]*?UPLOAD_COUNT=0[\\s\\S]*?DELETE_COUNT=0[\\s\\S]*?exit 1/);
-  assert.doesNotMatch(deployWorkflow,/remote_sha_not_ancestor_of_head[\\s\\S]{0,500}DEPLOY_MODE="FULL"/);
+  // Missing manifest: FULL only after a successful listing proves the remote theme is empty.
+  has('REMOTE_SHA_MISSING_FORCES_FULL=NO');
+  has('REMOTE_SHA_MISSING_ABORTS_DEPLOY=YES');
+  const firstDeploy=between('ROOT_LIST_EXIT=$?', 'rm -f "$REMOTE_LIST_FILE"');
+  assert.ok(firstDeploy.includes('if [ "$ROOT_LIST_EXIT" -eq 0 ] && [ ! -s "$REMOTE_LIST_FILE" ]; then'));
+  assert.ok(firstDeploy.includes('DEPLOY_MODE="FULL"'));
+  assert.ok(firstDeploy.includes('echo "FIRST_DEPLOY_CONFIRMED=YES"'));
+  assert.ok(firstDeploy.includes('else'));
+  assert.ok(firstDeploy.includes('BASELINE_STATUS="UNAVAILABLE"'));
 
-  // Incremental selection is based on the remote-SHA -> HEAD diff and runtime paths only.
-  assert.match(deployWorkflow,/git diff --name-status -z --find-renames --find-copies \\\\[\\s\\S]*?"\\$REMOTE_SHA" "\\$HEAD_SHA" -- "\\$THEME_ROOT"/);
-  assert.match(deployWorkflow,/if \\[ "\\$DEPLOY_MODE" = "INCREMENTAL" \\]; then[\\s\\S]*?done < "\\$DIFF_FILE"/);
-  assert.match(deployWorkflow,/runtime_file\(\)[\\s\\S]*?build\\.json\\|README\\.md[\\s\\S]*?docs\/\\*[\\s\\S]*?tests\/\\*[\\s\\S]*?scripts\/\\*/);
-  assert.match(deployWorkflow,/echo "UNCHANGED_FILES_UPLOADED=NO"/);
-  assert.match(deployWorkflow,/echo "UNCHANGED_THEME_FILES_UPLOADED=NO"/);
+  // Invalid manifest and divergent/unavailable remote SHAs fail closed.
+  const invalidSha=between('if [ -z "$REMOTE_SHA" ]; then','else\n                BASELINE_STATUS="VALID"');
+  assert.ok(invalidSha.includes('BASELINE_STATUS="UNAVAILABLE"'));
+  assert.ok(invalidSha.includes('BASELINE_ERROR="invalid_or_unparseable_manifest"'));
+  has('elif ! git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"; then');
+  const divergent=between('elif ! git merge-base --is-ancestor "$REMOTE_SHA" "$HEAD_SHA"; then','elif ! git diff --name-status');
+  assert.ok(divergent.includes('REMOTE_SHA_IS_ANCESTOR=NO'));
+  assert.ok(divergent.includes('DEPLOY_ABORTED=YES'));
+  assert.ok(divergent.includes('FULL_DEPLOY=NO'));
+  assert.ok(divergent.includes('BASELINE_STATUS="UNAVAILABLE"'));
+  const failClosed=between('if [ "$BASELINE_STATUS" = "UNAVAILABLE" ]; then','if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then');
+  for (const value of ['FAIL_CLOSED=YES','DEPLOY_ABORTED=YES','DEPLOY_MODE="ABORTED"','UPLOAD_COUNT=0','DELETE_COUNT=0','exit 1']) assert.ok(failClosed.includes(value),value);
 
-  // Runtime transfers and verification must complete before build.json is written.
+  // Incremental mode considers only changed paths and filters non-runtime files.
+  has('git diff --name-status -z --find-renames --find-copies');
+  has('"$REMOTE_SHA" "$HEAD_SHA" -- "$THEME_ROOT"');
+  const runtimeFilter=between('runtime_file() {','  UPLOAD_FILES=()');
+  for (const value of ['build.json|README.md','docs/*','tests/*','scripts/*']) assert.ok(runtimeFilter.includes(value),value);
+  const incremental=between('if [ "$DEPLOY_MODE" = "INCREMENTAL" ]; then','else\n            echo "FULL deploy selected:');
+  assert.ok(incremental.includes('done < "$DIFF_FILE"'));
+  has('echo "UNCHANGED_FILES_UPLOADED=NO"');
+  has('echo "UNCHANGED_THEME_FILES_UPLOADED=NO"');
+
+  // Runtime uploads/deletions and their verification precede build.json.
   const uploadAt=deployWorkflow.indexOf('echo "Uploading: $REL"');
   const deleteAt=deployWorkflow.indexOf('echo "Deleting remote: $REL"',uploadAt);
   const verifyAt=deployWorkflow.indexOf('# Verify every selected runtime upload');
@@ -52,18 +74,15 @@ test('DEPLOY_DEFAULTS_INCREMENTAL_FAIL_CLOSED_AND_MANUAL_FULL_ONLY=PASS',()=>{
     transferVerifiedAt<manifestAt && manifestAt<verifyManifestAt,
     'required order: runtime uploads -> deletions -> runtime verification -> transfer verification -> build.json upload -> build.json verification');
 
-  // CI validation is a read-only preview and exits before FTP transfer loops.
-  assert.match(deployWorkflow,/CI_SCOPE: \\$\\{\\{ steps\\.impact\\.outputs\\.scope \\}\\}/);
+  // CI validation is read-only and exits before the FTP upload loop.
+  has('CI_SCOPE: ${{ steps.impact.outputs.scope }}');
   const previewAt=deployWorkflow.indexOf('if [ "$CI_SCOPE" = "CI_VALIDATION" ]; then');
   const ftpUploadAt=deployWorkflow.indexOf('for FILE in "${UPLOAD_FILES[@]}"; do',previewAt);
   assert.ok(previewAt>=0 && ftpUploadAt>previewAt);
   const preview=deployWorkflow.slice(previewAt,ftpUploadAt);
-  assert.match(preview,/DEPLOY_MODE" != "INCREMENTAL"/);
-  assert.match(preview,/REMOTE_SHA_IS_ANCESTOR" != "YES"/);
-  assert.match(preview,/DEPLOY_STATUS=PREVIEW_ONLY/);
-  assert.match(preview,/REMOTE_BUILD_JSON_UPDATED=NO/);
-  assert.match(preview,/CI_DEPLOY_PREVIEW=PASS/);
-  assert.match(preview,/exit 0/);
+  for (const value of ['DEPLOY_MODE" != "INCREMENTAL"','REMOTE_SHA_IS_ANCESTOR" != "YES"',
+    'DEPLOY_STATUS=PREVIEW_ONLY','REMOTE_BUILD_JSON_UPDATED=NO','CI_DEPLOY_PREVIEW=PASS','exit 0']) assert.ok(preview.includes(value),value);
+
   console.log('DEFAULT_DEPLOY_MODE=INCREMENTAL');
   console.log('AUTOMATIC_FULL=NO');
   console.log('REMOTE_SHA_MISSING_WITH_REMOTE_FILES=ABORT');
