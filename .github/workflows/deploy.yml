@@ -755,10 +755,11 @@ jobs:
               # is positively confirmed empty. Any listing failure or existing file aborts.
               REMOTE_LIST_FILE="$(mktemp)"
               set +e
-              ROOT_LIST_EXIT="$(curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
+              curl --silent --show-error --fail --ssl-reqd --ftp-pasv \
                 --connect-timeout 20 --retry 2 --list-only \
                 --user "${SFTP_USER}:${SFTP_PASSWORD}" \
-                "$BASE_URL/" --output "$REMOTE_LIST_FILE" 2>"$BASELINE_ERROR_FILE"; echo $?)"
+                "$BASE_URL/" --output "$REMOTE_LIST_FILE" 2>"$BASELINE_ERROR_FILE"
+              ROOT_LIST_EXIT=$?
               set -e
               if [ "$ROOT_LIST_EXIT" -eq 0 ] && [ ! -s "$REMOTE_LIST_FILE" ]; then
                 BASELINE_STATUS="FIRST_DEPLOY"
