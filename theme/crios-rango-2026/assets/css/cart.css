@@ -242,7 +242,7 @@ body.woocommerce-cart .cr-cart-empty-form button { text-decoration:none; font-we
 
 /* Promotion blocks sit on the page canvas; component panels remain independently tinted. */
 body.woocommerce-cart .cr-cart-promotions { padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
-body.woocommerce-cart .cr-cart-promotions > h2 { font-size: 16px; font-weight: 500; margin-bottom: 10px; }
+body.woocommerce-cart .cr-cart-promotions > h2 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
 body.woocommerce-cart .cr-cart-promotions__subheading { font-size: 13px; font-weight: 500; }
 body.woocommerce-cart .cr-cart-wallet__summary { background: #E8F5EF; }
 body.woocommerce-cart .cr-cart-wallet__points { display:none!important; }
