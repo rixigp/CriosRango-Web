@@ -70,8 +70,8 @@
     const icon = node('span', className || 'cr-cart-icon', null);
     icon.setAttribute('aria-hidden', 'true');
     const paths = {
-      wallet: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 8h18M15 13h3"/></svg>',
-      info: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg>',
+      wallet: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5H18.5L20.5 8.5V18H3.5Z M3.5 6.5V5H17 M15.5 12.5H20.5"/></svg>',
+      info: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 16.5 4.2 19.8 7.5 21 12 19.8 16.5 16.5 19.8 12 21 7.5 19.8 4.2 16.5 3 12 4.2 7.5 7.5 4.2Z M12 11V16 M12 8V8.1"/></svg>',
       tag: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-7 7L3 12Z"/><circle cx="8" cy="8" r="1"/></svg>',
       cake: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16v8H4zM4 16h16M8 12V9a2 2 0 0 1 4 0v3M14 12V8a2 2 0 0 1 4 0v4"/><path d="M10 5v1m6-2v1M4 20h16"/></svg>'
     };
@@ -122,14 +122,13 @@
     const discount=minorValue(t.total_discount)+minorValue(t.total_discount_tax);
     const fees=minorValue(t.total_fees)+minorValue(t.total_fees_tax);
     const net=(gross>discount?gross-discount:0n)+fees;
-    const threshold=50n*(10n**BigInt(Number(t.currency_minor_unit||2)));
     const sub=document.querySelector('[data-cr-summary-subtotal]'), dc=document.querySelector('[data-cr-summary-discount]'), dr=dc&&dc.closest('.cr-cart-summary__row');
     const ship=document.querySelector('[data-cr-summary-shipping]'), total=document.querySelector('[data-cr-summary-total]');
     if(sub)sub.textContent=formatStoreMoney(gross,t);
     if(dr)dr.style.setProperty('display',discount<=0n?'none':'grid','important');
     if(dc&&discount>0n)dc.textContent='-'+formatStoreMoney(discount,t);
     if(!dr&&discount>0n&&sub){const row=document.createElement('div');row.className='cr-cart-summary__row cr-cart-summary__row--discount';const label=document.createElement('span');label.className='cr-cart-summary__label';label.textContent='Descuentos';const value=document.createElement('span');value.className='cr-cart-summary__value';value.dataset.crSummaryDiscount='';value.textContent='-'+formatStoreMoney(discount,t);row.append(label,value);sub.closest('.cr-cart-summary__row').after(row);}
-    if(ship)ship.textContent=gross>threshold?'Gratis':'Se calcula en el checkout';
+    if(ship)ship.textContent='Se calcula en el checkout';
     if(total)total.textContent=formatStoreMoney(net,t);
   };
   const refreshCartUi = async (cart) => { currentCart=cart; renderAppliedCoupons(cart); renderCartSummary(cart); if(promotionsPayload)renderPromotions(promotionsPayload); if(config.authenticated)await refreshWallet(); };
@@ -220,16 +219,19 @@
       promotionsList.appendChild(node('p', 'cr-cart-muted', 'No hay promociones disponibles en este momento.'));
       return;
     }
+    promotionsList.appendChild(node('h3', 'cr-cart-promotions__subheading cr-cart-promotions__available-title', 'Promociones disponibles'));
     visible.slice().sort((a, b) => Number(b.priority || 0) - Number(a.priority || 0)).forEach((promotion) => {
       const identity = text(promotion.title) + ' ' + text(promotion.description) + ' ' + text(promotion.code);
+      const isBlackFriday = /blackcrios|black friday/i.test(identity);
       const isWelcome = /bienvenida|welcome/i.test(identity);
       const isBirthday = /cumple|birthday/i.test(identity);
-      const cardClass = 'cr-cart-promo-card' + (isWelcome ? ' cr-cart-promo-card--welcome' : '') + (isBirthday ? ' cr-cart-promo-card--birthday' : '');
+      const cardClass = 'cr-cart-promo-card' + (isBlackFriday ? ' cr-cart-promo-card--blackfriday' : '') + (isWelcome ? ' cr-cart-promo-card--welcome' : '') + (isBirthday ? ' cr-cart-promo-card--birthday' : '');
       const card = node('article', cardClass);
       const body = node('div', 'cr-cart-promo-card__body');
-      if (isWelcome) card.appendChild(cartIcon('tag', 'cr-cart-promo-card__icon'));
-      else if (isBirthday) card.appendChild(cartIcon('cake', 'cr-cart-promo-card__icon'));
-      body.appendChild(node('h4', 'cr-cart-promo-card__title', promotion.title));
+      const promotionIcon = isBlackFriday ? '％' : (isBirthday ? '🎂' : '🏷');
+      const promotionTitle = isBlackFriday ? 'Black Friday 20%' : (isWelcome ? 'Promoción de bienvenida' : (isBirthday ? 'Tu regalo de cumpleaños' : promotion.title));
+      card.appendChild(node('span', 'cr-cart-promo-card__icon', promotionIcon));
+      body.appendChild(node('h4', 'cr-cart-promo-card__title', promotionTitle));
       if (promotion.description) body.appendChild(node('p', 'cr-cart-promo-card__description', promotion.description));
       if (promotion.expires_at) {
         const expiryDate = formatPromotionExpiry(promotion.expires_at);

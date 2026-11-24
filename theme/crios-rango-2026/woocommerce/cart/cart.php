@@ -164,6 +164,7 @@ $cart_empty_action = cr2026_cart_empty_action_markup();
 
             <div class="cr-cart-secondary-rail">
                 <section class="cr-cart-promotions" data-cr-cart-promotions>
+                    <h2>Promociones y descuentos</h2>
                     <div class="cr-cart-promotions__loading" data-cr-cart-loading role="status" aria-live="polite" aria-label="<?php esc_attr_e( 'Cargando promociones', 'crios-rango-2026' ); ?>">
                         <span class="cr-cart-promotions__skeleton-bar cr-cart-promotions__skeleton-bar--copy" aria-hidden="true"></span>
                         <span class="cr-cart-promotions__skeleton-bar cr-cart-promotions__skeleton-bar--copy" aria-hidden="true"></span>
