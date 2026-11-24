@@ -1252,7 +1252,7 @@ body.woocommerce-cart .cr-cart-wallet__info-icon { width:40px; height:40px; min-
 body.woocommerce-cart .cr-cart-wallet__info-svg,
 body.woocommerce-cart .cr-cart-wallet__info-svg svg { width:20px; height:20px; }
 body.woocommerce-cart .cr-cart-promotions__available-title { margin:0 0 8px; font-size:14px; font-weight:600; }
-body.woocommerce-cart .cr-cart-promo-card { align-items:center; gap:10px; padding:10px 12px; border-radius:12px; }
+body.woocommerce-cart .cr-cart-promo-card { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; }
 body.woocommerce-cart .cr-cart-promo-card + .cr-cart-promo-card { margin-top:8px; }
 body.woocommerce-cart .cr-cart-promo-card__icon {
   display:inline-flex; flex:0 0 22px; align-items:center; justify-content:center;

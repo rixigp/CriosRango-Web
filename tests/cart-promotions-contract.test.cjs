@@ -10,21 +10,21 @@ const cartUi = fs.readFileSync(path.join(theme, 'assets/js/cart-ui.js'), 'utf8')
 const cartCss = fs.readFileSync(path.join(theme, 'assets/css/cart.css'), 'utf8');
 const mainCss = fs.readFileSync(path.join(theme, 'assets/css/main.css'), 'utf8');
 const cartTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart.php'), 'utf8');
+const cartTotalsTemplate = fs.readFileSync(path.join(theme, 'woocommerce/cart/cart-totals.php'), 'utf8');
 
 const renderStart = cartUi.indexOf('const renderPromotions = (payload) => {');
 const renderEnd = cartUi.indexOf('\n  // Mirrors the commonMain', renderStart);
 assert.ok(renderStart >= 0 && renderEnd > renderStart, 'promotion renderer must remain present');
 const renderPromotions = cartUi.slice(renderStart, renderEnd);
 
-test('cart promotions title is removed from the native theme template', () => {
-  assert.equal(cartTemplate.includes("Promociones y descuentos"), false);
+test('cart promotions hierarchy begins with the APP section title in the theme template', () => {
+  assert.ok(cartTemplate.includes('<h2>Promociones y descuentos</h2>'));
   assert.equal(cartTemplate.includes('cr-cart-promotions__skeleton-bar--title'), false);
   assert.ok(cartTemplate.includes('data-cr-cart-promotions-list'));
 });
 
-test('Promociones disponibles is removed at its theme-owned render source', () => {
-  assert.equal(cartUi.includes('Promociones disponibles'), false);
-  assert.equal(renderPromotions.includes('cr-cart-promotions__subheading'), false);
+test('Promociones disponibles is rendered as the APP subheading before promotion cards', () => {
+  assert.ok(renderPromotions.includes("node('h3', 'cr-cart-promotions__subheading cr-cart-promotions__available-title', 'Promociones disponibles')"));
 });
 
 test('birthday promotion expiry is formatted in Spanish without exposing the raw ISO value', () => {
@@ -39,12 +39,15 @@ test('birthday promotion expiry is formatted in Spanish without exposing the raw
   assert.equal(renderPromotions.includes("'Válida hasta ' + promotion.expires_at"), false);
 });
 
-test('birthday promotion keeps its cake icon', () => {
-  assert.ok(renderPromotions.includes("else if (isBirthday) card.appendChild(cartIcon('cake', 'cr-cart-promo-card__icon'))"));
+test('promotion icons and titles mirror the APP promotion presentation', () => {
+  assert.ok(renderPromotions.includes("const promotionIcon = isBlackFriday ? '％' : (isBirthday ? '🎂' : '🏷')"));
+  assert.ok(renderPromotions.includes("const promotionTitle = isBlackFriday ? 'Black Friday 20%'"));
+  assert.ok(renderPromotions.includes("'Promoción de bienvenida'"));
+  assert.ok(renderPromotions.includes("'Tu regalo de cumpleaños'"));
 });
 
 test('promotion cards have a 12px sibling gap without changing the promotions container display', () => {
-  assert.match(cartCss, /\.cr-cart-promo-card \+ \.cr-cart-promo-card\s*\{\s*margin-top:\s*12px;\s*\}/);
+  assert.match(cartCss, /\.cr-cart-promo-card \+ \.cr-cart-promo-card\s*\{\s*margin-top:\s*8px;\s*\}/);
   const containerStart = cartCss.indexOf('body.woocommerce-cart .cr-cart-promotions__available {');
   const containerEnd = cartCss.indexOf('}', containerStart);
   assert.ok(containerStart >= 0 && containerEnd > containerStart, 'promotions container rule must remain present');
@@ -54,16 +57,16 @@ test('promotion cards have a 12px sibling gap without changing the promotions co
 test('promotion cards, title, description and apply action remain rendered', () => {
   assert.ok(renderPromotions.includes("const cardClass = 'cr-cart-promo-card'"));
   assert.ok(renderPromotions.includes("node('article', cardClass)"));
-  assert.ok(renderPromotions.includes("node('h4', 'cr-cart-promo-card__title', promotion.title)"));
+  assert.ok(renderPromotions.includes("node('h4', 'cr-cart-promo-card__title', promotionTitle)"));
   assert.ok(renderPromotions.includes("node('p', 'cr-cart-promo-card__description', promotion.description)"));
   assert.ok(renderPromotions.includes("createButton('Aplicar', 'cr-cart-apply-button'"));
   assert.ok(renderPromotions.includes("applyCoupon(promotion.code, 'Promoción'"));
 });
 
-test('welcome icon is a left sibling of the text body, not above the title inside it', () => {
-  assert.ok(renderPromotions.includes("if (isWelcome) card.appendChild(cartIcon('tag', 'cr-cart-promo-card__icon'))"));
+test('APP promotion symbol is a left sibling of the text body, not above the title inside it', () => {
+  assert.ok(renderPromotions.includes("card.appendChild(node('span', 'cr-cart-promo-card__icon', promotionIcon))"));
   assert.ok(renderPromotions.includes('card.appendChild(body);'));
-  assert.equal(renderPromotions.includes("body.appendChild(cartIcon('tag', 'cr-cart-promo-card__icon'))"), false);
+  assert.ok(renderPromotions.includes("const promotionIcon = isBlackFriday ? '％' : (isBirthday ? '🎂' : '🏷')"));
   assert.ok(cartCss.includes('body.woocommerce-cart .cr-cart-promo-card > .cr-cart-promo-card__icon'));
   assert.ok(cartCss.includes('body.woocommerce-cart .cr-cart-promo-card > .cr-cart-promo-card__body'));
   assert.ok(cartCss.includes('body.woocommerce-cart .cr-cart-promo-card > .cr-cart-apply-button'));
@@ -75,7 +78,7 @@ test('promotion card uses icon, copy and action zones with vertical centering', 
   const rule = cartCss.slice(start, end);
   assert.match(rule, /display:\s*flex/);
   assert.match(rule, /align-items:\s*center/);
-  assert.match(rule, /gap:\s*12px/);
+  assert.match(rule, /gap:\s*10px/);
   assert.match(cartCss, /flex:\s*1 1 auto/);
   assert.match(cartCss, /align-self:\s*center/);
 });
@@ -112,4 +115,12 @@ test('main Cart product cards consume the shared global card surface tokens', ()
   }
   assert.ok(mainCss.includes('--cr-card-border-width: 1px;'));
   assert.ok(mainCss.includes('--cr-card-radius: 18px;'));
+});
+
+
+test('cart shipping remains checkout-calculated regardless of merchandise threshold', () => {
+  assert.ok(cartTotalsTemplate.includes("esc_html_e( 'Se calcula en el checkout', 'crios-rango-2026' )"));
+  assert.doesNotMatch(cartTotalsTemplate, /Gratis|shipping_is_presented_free/);
+  assert.ok(cartUi.includes("if(ship)ship.textContent='Se calcula en el checkout';"));
+  assert.doesNotMatch(cartUi, /gross>threshold/);
 });
