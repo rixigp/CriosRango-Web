@@ -1247,16 +1247,21 @@ body.woocommerce-cart .cr-cart-empty-form button svg {
 
 
 /* Cart parity with the shared KMP wallet and promotion hierarchy. */
-body.woocommerce-cart .cr-cart-wallet__summary { padding:11px 14px; border-radius:14px; }
+body.woocommerce-cart .cr-cart-wallet { margin-bottom:10px; }
+body.woocommerce-cart .cr-cart-wallet__rewards,
+body.woocommerce-cart .cr-cart-wallet__redeem { margin-top:10px; }
+body.woocommerce-cart .cr-cart-wallet__summary { padding:11px 14px; border-radius:14px; gap:10px; }
+body.woocommerce-cart .cr-cart-wallet__title { font-size:16px; font-weight:600; }
 body.woocommerce-cart .cr-cart-wallet__info-icon { width:40px; height:40px; min-width:40px; min-height:40px; }
 body.woocommerce-cart .cr-cart-wallet__info-svg,
 body.woocommerce-cart .cr-cart-wallet__info-svg svg { width:20px; height:20px; }
+body.woocommerce-cart .cr-cart-promotions__subheading { font-size:14px; font-weight:600; }
 body.woocommerce-cart .cr-cart-promotions__available-title { margin:0 0 8px; font-size:14px; font-weight:600; }
 body.woocommerce-cart .cr-cart-promo-card { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; }
 body.woocommerce-cart .cr-cart-promo-card + .cr-cart-promo-card { margin-top:8px; }
 body.woocommerce-cart .cr-cart-promo-card__icon {
   display:inline-flex; flex:0 0 22px; align-items:center; justify-content:center;
-  width:22px; height:auto; margin:0; color:#183B35; font-size:18px; line-height:1.2; text-align:center;
+  width:22px; height:auto; margin:0; color:#183B35; font-size:16px; font-weight:700; line-height:1.2; text-align:center;
 }
 body.woocommerce-cart .cr-cart-promo-card--blackfriday { background:#FFF7D6; }
 body.woocommerce-cart .cr-cart-promo-card--welcome { background:#EAF3FF; }
@@ -1264,6 +1269,6 @@ body.woocommerce-cart .cr-cart-promo-card--birthday { background:#FDECEF; }
 body.woocommerce-cart .cr-cart-promo-card--welcome > .cr-cart-promo-card__icon,
 body.woocommerce-cart .cr-cart-promo-card--birthday > .cr-cart-promo-card__icon {
   width:22px; height:auto; min-height:0; flex:0 0 22px;
-  border-radius:0; background:transparent; color:#183B35; font-size:18px;
+  border-radius:0; background:transparent; color:#183B35; font-size:16px; font-weight:700;
 }
-body.woocommerce-cart .cr-cart-promo-card__title { font-size:14px; font-weight:600; }
+body.woocommerce-cart .cr-cart-promo-card__title { font-size:16px; font-weight:600; }
