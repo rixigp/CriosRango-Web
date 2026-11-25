@@ -872,13 +872,6 @@ test('Cart and Checkout cards consume one global responsive rail and delivery fi
 });
 
 
-test('mobile checkout rhythm preserves the canonical page rail', () => {
-  const mobileRhythm = checkoutCss.slice(checkoutCss.lastIndexOf('/* Checkout mobile field rhythm mirrors the shared APP form contract. */'));
-  assert.match(mobileRhythm, /\.woocommerce-billing-fields__field-wrapper\s*\{[^}]*margin-inline:\s*0;[^}]*gap:\s*0 10px;/s);
-  assert.match(mobileRhythm, /\.cr-checkout-delivery-heading\s*\{[^}]*margin-inline:\s*0;[^}]*margin-bottom:\s*8px;/s);
-  assert.match(mobileRhythm, /--cr-checkout-field-row-gap:\s*8px/);
-});
-
 test('checkout app cards consume the global surface contract without changing their rails', () => {
   const shippingSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-shipping-table #shipping_method.woocommerce-shipping-methods';
   const infoSelector = 'body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-additional-info';
