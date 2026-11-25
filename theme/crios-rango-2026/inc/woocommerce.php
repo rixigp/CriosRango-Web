@@ -1295,49 +1295,6 @@ function cr2026_checkout_benefits_points_earned() {
 }
 
 /**
- * Expose WPLoyalty's existing checkout points calculation through the
- * WooCommerce Store API Checkout extension namespace.
- */
-function cr2026_checkout_store_api_earned_points_data() {
-    $points = cr2026_checkout_benefits_points_earned();
-
-    return array(
-        'earned_points' => null === $points ? null : (float) $points,
-    );
-}
-
-/** Describe the numeric points value returned by the WPLoyalty calculation. */
-function cr2026_checkout_store_api_earned_points_schema() {
-    return array(
-        'earned_points' => array(
-            'description' => __( 'Puntos que WPLoyalty calcula para el carrito actual.', 'crios-rango-2026' ),
-            'type' => array( 'number', 'null' ),
-            'context' => array( 'view' ),
-            'readonly' => true,
-        ),
-    );
-}
-
-/** Register only the read-only checkout extension; never recalculate points here. */
-function cr2026_checkout_register_store_api_earned_points() {
-    if ( ! function_exists( 'woocommerce_store_api_register_endpoint_data' )
-        || ! class_exists( '\\Automattic\\WooCommerce\\StoreApi\\Schemas\\V1\\CheckoutSchema' ) ) {
-        return;
-    }
-
-    woocommerce_store_api_register_endpoint_data(
-        array(
-            'endpoint' => \Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema::IDENTIFIER,
-            'namespace' => 'criosrango',
-            'data_callback' => 'cr2026_checkout_store_api_earned_points_data',
-            'schema_callback' => 'cr2026_checkout_store_api_earned_points_schema',
-            'schema_type' => ARRAY_A,
-        )
-    );
-}
-add_action( 'woocommerce_blocks_loaded', 'cr2026_checkout_register_store_api_earned_points', 20 );
-
-/**
  * Resolve a real free-shipping method for the currently matching shipping
  * package. Settings are read from the live zone instance; no threshold is
  * hardcoded and no shipping rates are altered.
