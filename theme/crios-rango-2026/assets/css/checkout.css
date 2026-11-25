@@ -1457,3 +1457,19 @@ body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-layout__
     grid-area: payment;
   }
 }
+
+
+/* Checkout mobile field rhythm mirrors the shared APP form contract. */
+@media (max-width: 767px) {
+  body.woocommerce-checkout:not(.woocommerce-order-received) {
+    --cr-checkout-field-row-gap: 8px;
+  }
+
+  body.woocommerce-checkout:not(.woocommerce-order-received) .woocommerce-billing-fields__field-wrapper {
+    gap: 0 10px;
+  }
+
+  body.woocommerce-checkout:not(.woocommerce-order-received) .cr-checkout-delivery-heading {
+    margin-bottom: 8px;
+  }
+}
