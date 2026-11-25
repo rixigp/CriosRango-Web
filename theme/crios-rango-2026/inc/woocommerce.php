@@ -1327,7 +1327,7 @@ function cr2026_checkout_register_store_api_earned_points() {
 
     woocommerce_store_api_register_endpoint_data(
         array(
-            'endpoint' => \\Automattic\\WooCommerce\\StoreApi\\Schemas\\V1\\CheckoutSchema::IDENTIFIER,
+            'endpoint' => \Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema::IDENTIFIER,
             'namespace' => 'criosrango',
             'data_callback' => 'cr2026_checkout_store_api_earned_points_data',
             'schema_callback' => 'cr2026_checkout_store_api_earned_points_schema',
