@@ -1315,13 +1315,11 @@ function cr2026_register_checkout_earned_points_extension() {
         },
         'schema_callback' => static function() {
             return array(
-                'properties' => array(
-                    'earned_points' => array(
-                        'description' => __( 'Puntos que WPLoyalty asigna a esta compra.', 'crios-rango-2026' ),
-                        'type' => 'number',
-                        'nullable' => true,
-                        'readonly' => true,
-                    ),
+                'earned_points' => array(
+                    'description' => __( 'Puntos que WPLoyalty asigna a esta compra.', 'crios-rango-2026' ),
+                    'type' => 'number',
+                    'nullable' => true,
+                    'readonly' => true,
                 ),
             );
         },
