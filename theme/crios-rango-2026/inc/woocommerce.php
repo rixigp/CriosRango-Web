@@ -1295,6 +1295,42 @@ function cr2026_checkout_benefits_points_earned() {
 }
 
 /**
+ * Expose WPLoyalty's live earned-points value on the Store API checkout response.
+ * The same helper powers the existing WEB benefits card; no points formula is duplicated.
+ */
+function cr2026_register_checkout_earned_points_extension() {
+    if ( ! function_exists( 'woocommerce_store_api_register_endpoint_data' )
+        || ! class_exists( '\\Automattic\\WooCommerce\\StoreApi\\Schemas\\V1\\CheckoutSchema' ) ) {
+        return;
+    }
+
+    woocommerce_store_api_register_endpoint_data( array(
+        'endpoint' => \\Automattic\\WooCommerce\\StoreApi\\Schemas\\V1\\CheckoutSchema::IDENTIFIER,
+        'namespace' => 'criosrango',
+        'data_callback' => static function() {
+            $earned_points = cr2026_checkout_benefits_points_earned();
+            return array(
+                'earned_points' => null === $earned_points ? null : (float) $earned_points,
+            );
+        },
+        'schema_callback' => static function() {
+            return array(
+                'properties' => array(
+                    'earned_points' => array(
+                        'description' => __( 'Puntos que WPLoyalty asigna a esta compra.', 'crios-rango-2026' ),
+                        'type' => 'number',
+                        'nullable' => true,
+                        'readonly' => true,
+                    ),
+                ),
+            );
+        },
+        'schema_type' => ARRAY_A,
+    ) );
+}
+add_action( 'woocommerce_blocks_loaded', 'cr2026_register_checkout_earned_points_extension' );
+
+/**
  * Resolve a real free-shipping method for the currently matching shipping
  * package. Settings are read from the live zone instance; no threshold is
  * hardcoded and no shipping rates are altered.
