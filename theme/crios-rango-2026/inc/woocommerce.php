@@ -1305,7 +1305,7 @@ function cr2026_register_checkout_earned_points_extension() {
     }
 
     woocommerce_store_api_register_endpoint_data( array(
-        'endpoint' => \\Automattic\\WooCommerce\\StoreApi\\Schemas\\V1\\CheckoutSchema::IDENTIFIER,
+        'endpoint' => \Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema::IDENTIFIER,
         'namespace' => 'criosrango',
         'data_callback' => static function() {
             $earned_points = cr2026_checkout_benefits_points_earned();
