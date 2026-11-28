@@ -1360,7 +1360,7 @@ function cr2026_register_checkout_earned_points_extension() {
         ) );
 
         $registered = true;
-    } catch ( \\Throwable $error ) {
+    } catch ( \Throwable $error ) {
         // Leave registration available for the later lifecycle fallback.
     }
 }
