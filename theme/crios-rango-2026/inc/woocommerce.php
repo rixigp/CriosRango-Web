@@ -1308,7 +1308,20 @@ function cr2026_register_checkout_earned_points_extension() {
         'endpoint' => \Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema::IDENTIFIER,
         'namespace' => 'criosrango',
         'data_callback' => static function() {
+            $logger = function_exists( 'wc_get_logger' ) ? wc_get_logger() : null;
+            if ( $logger ) {
+                $logger->debug( 'callback_executed=yes', array( 'source' => 'cr-checkout-points' ) );
+            }
+
             $earned_points = cr2026_checkout_benefits_points_earned();
+
+            if ( $logger ) {
+                $logger->debug(
+                    'earned_points=' . ( null === $earned_points ? 'null' : (string) $earned_points ),
+                    array( 'source' => 'cr-checkout-points' )
+                );
+            }
+
             return array(
                 'earned_points' => null === $earned_points ? null : (float) $earned_points,
             );
