@@ -1299,47 +1299,73 @@ function cr2026_checkout_benefits_points_earned() {
  * The same helper powers the existing WEB benefits card; no points formula is duplicated.
  */
 function cr2026_register_checkout_earned_points_extension() {
-    if ( ! function_exists( 'woocommerce_store_api_register_endpoint_data' )
-        || ! class_exists( '\\Automattic\\WooCommerce\\StoreApi\\Schemas\\V1\\CheckoutSchema' ) ) {
+    static $registered = false;
+
+    if ( $registered ) {
         return;
     }
 
-    woocommerce_store_api_register_endpoint_data( array(
-        'endpoint' => \Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema::IDENTIFIER,
-        'namespace' => 'criosrango',
-        'data_callback' => static function() {
-            $logger = function_exists( 'wc_get_logger' ) ? wc_get_logger() : null;
-            if ( $logger ) {
-                $logger->debug( 'callback_executed=yes', array( 'source' => 'cr-checkout-points' ) );
-            }
+    $checkout_schema_class = '\\Automattic\\WooCommerce\\StoreApi\\Schemas\\V1\\CheckoutSchema';
+    $extend_schema_class = '\\Automattic\\WooCommerce\\StoreApi\\Schemas\\ExtendSchema';
+    $store_api_class = '\\Automattic\\WooCommerce\\StoreApi\\StoreApi';
 
-            $earned_points = cr2026_checkout_benefits_points_earned();
+    if ( ! class_exists( $checkout_schema_class )
+        || ! class_exists( $extend_schema_class )
+        || ! class_exists( $store_api_class ) ) {
+        return;
+    }
 
-            if ( $logger ) {
-                $logger->debug(
-                    'earned_points=' . ( null === $earned_points ? 'null' : (string) $earned_points ),
-                    array( 'source' => 'cr-checkout-points' )
+    try {
+        $container = $store_api_class::container();
+        $extend_schema = $container->get( $extend_schema_class );
+
+        if ( ! is_object( $extend_schema )
+            || ! is_callable( array( $extend_schema, 'register_endpoint_data' ) ) ) {
+            return;
+        }
+
+        $extend_schema->register_endpoint_data( array(
+            'endpoint' => $checkout_schema_class::IDENTIFIER,
+            'namespace' => 'criosrango',
+            'data_callback' => static function() {
+                $logger = function_exists( 'wc_get_logger' ) ? wc_get_logger() : null;
+                if ( $logger ) {
+                    $logger->debug( 'callback_executed=yes', array( 'source' => 'cr-checkout-points' ) );
+                }
+
+                $earned_points = cr2026_checkout_benefits_points_earned();
+
+                if ( $logger ) {
+                    $logger->debug(
+                        'earned_points=' . ( null === $earned_points ? 'null' : (string) $earned_points ),
+                        array( 'source' => 'cr-checkout-points' )
+                    );
+                }
+
+                return array(
+                    'earned_points' => null === $earned_points ? null : (float) $earned_points,
                 );
-            }
+            },
+            'schema_callback' => static function() {
+                return array(
+                    'earned_points' => array(
+                        'description' => __( 'Puntos que WPLoyalty asigna a esta compra.', 'crios-rango-2026' ),
+                        'type' => 'number',
+                        'nullable' => true,
+                        'readonly' => true,
+                    ),
+                );
+            },
+            'schema_type' => ARRAY_A,
+        ) );
 
-            return array(
-                'earned_points' => null === $earned_points ? null : (float) $earned_points,
-            );
-        },
-        'schema_callback' => static function() {
-            return array(
-                'earned_points' => array(
-                    'description' => __( 'Puntos que WPLoyalty asigna a esta compra.', 'crios-rango-2026' ),
-                    'type' => 'number',
-                    'nullable' => true,
-                    'readonly' => true,
-                ),
-            );
-        },
-        'schema_type' => ARRAY_A,
-    ) );
+        $registered = true;
+    } catch ( \\Throwable $error ) {
+        // Leave registration available for the later lifecycle fallback.
+    }
 }
-add_action( 'woocommerce_blocks_loaded', 'cr2026_register_checkout_earned_points_extension' );
+add_action( 'woocommerce_blocks_loaded', 'cr2026_register_checkout_earned_points_extension', 10 );
+add_action( 'init', 'cr2026_register_checkout_earned_points_extension', 100 );
 
 /**
  * Resolve a real free-shipping method for the currently matching shipping
